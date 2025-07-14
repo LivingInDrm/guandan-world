@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - guandan-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=guandan
+      - DB_USER=guandan
+      - DB_PASSWORD=guandan
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - guandan-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: guandan
+      POSTGRES_PASSWORD: guandan
+      POSTGRES_DB: guandan
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - guandan-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - guandan-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  guandan-network:
+    driver: bridge 
