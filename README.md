@@ -18,6 +18,9 @@ guandan-world/
 │   ├── card.go           # 卡牌结构体和逻辑
 │   ├── card_test.go      # 卡牌测试用例
 │   ├── card_example.go   # 卡牌功能演示
+│   ├── comp.go           # 牌组识别和比较
+│   ├── comp_test.go      # 牌组测试用例
+│   ├── comp_example.go   # 牌组功能演示
 │   └── go.mod            # SDK 模块配置
 ├── infra/                # DevOps 相关脚本
 ├── .github/workflows/    # GitHub Actions 工作流
@@ -92,6 +95,45 @@ if card.IsWildcard() {
 }
 ```
 
+### 牌组系统 (Comp)
+
+完整的掼蛋牌组识别和比较系统，支持：
+
+- **基础牌型**：单张、对子、三张、葫芦、顺子
+- **特殊牌型**：钢板（连续三张）、钢管（连续对子）、同花顺
+- **炸弹牌型**：4-8张炸弹、王炸
+- **智能识别**：自动识别牌型、处理变化牌、验证合法性
+- **大小比较**：完整的牌型优先级比较
+
+```go
+// 自动识别牌型
+cards := []*Card{card1, card2, card3, card4, card5}
+comp := FromCardList(cards, nil)
+
+// 检查牌型
+fmt.Printf("牌型: %v, 有效: %v, 炸弹: %v\n", 
+    comp.GetType(), comp.IsValid(), comp.IsBomb())
+
+// 比较牌组
+if comp1.GreaterThan(comp2) {
+    fmt.Printf("%s 压过 %s\n", comp1.String(), comp2.String())
+}
+
+// 支持的牌型
+switch comp.GetType() {
+case TypeSingle:       // 单张
+case TypePair:         // 对子
+case TypeTriple:       // 三张
+case TypeStraight:     // 顺子
+case TypeFullHouse:    // 葫芦
+case TypePlate:        // 钢板
+case TypeTube:         // 钢管
+case TypeNaiveBomb:    // 炸弹
+case TypeJokerBomb:    // 王炸
+case TypeStraightFlush: // 同花顺
+}
+```
+
 ## 🔧 开发环境
 
 ### 本地开发
@@ -145,6 +187,9 @@ docker-compose -f docker-compose.yml up -d
 - ✅ 实时聊天功能
 - ✅ 游戏回放功能
 - ✅ 完整的卡牌系统
+- ✅ 智能牌型识别
+- ✅ 变化牌处理
+- ✅ 炸弹优先级判断
 
 ## 📚 API 文档
 
@@ -163,13 +208,33 @@ GET /healthz
 
 ## 🧪 测试覆盖
 
+### 卡牌系统测试
 - ✅ 卡牌创建与验证
 - ✅ 卡牌比较逻辑
 - ✅ 变化牌判断
 - ✅ 顺子比较
 - ✅ JSON 编码
 - ✅ 克隆与相等判断
-- ✅ 完整的单元测试
+
+### 牌组系统测试
+- ✅ 各种牌型识别
+- ✅ 牌组大小比较
+- ✅ 炸弹优先级逻辑
+- ✅ 变化牌处理
+- ✅ 非法牌组验证
+- ✅ 自动牌型识别
+
+## 🎯 牌型优先级
+
+掼蛋牌型优先级（从高到低）：
+
+1. **王炸** - 最高优先级，压过所有牌型
+2. **同花顺** - 压过除王炸外的所有牌型
+3. **6张以上炸弹** - 压过同花顺
+4. **5张炸弹** - 压过普通牌型，但小于同花顺
+5. **4张炸弹** - 压过普通牌型，但小于同花顺和5张炸弹
+6. **普通牌型** - 相同牌型间比较数值大小
+   - 葫芦、顺子、钢板、钢管、三张、对子、单张
 
 ## 🤝 贡献指南
 
