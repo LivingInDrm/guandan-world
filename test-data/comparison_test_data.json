@@ -1,6 +1,6 @@
 {
   "level": 5,
-  "description": "Card comparison test data",
+  "description": "牌组比较测试数据",
   "total_comparisons": 816,
   "intra_type_comparisons": 208,
   "intra_type_cross_wildcard_comparisons": 306,
@@ -1217,7 +1217,7 @@
         "cards": [[3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1232,7 +1232,7 @@
         "cards": [[3, "Spade"], [3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1247,7 +1247,7 @@
         "cards": [[3, "Spade"], [3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Diamond"], [3, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1262,7 +1262,7 @@
         "cards": [[10, "Diamond"], [5, "Heart"], [10, "Diamond"], [10, "Heart"], [10, "Heart"], [10, "Club"], [10, "Club"], [10, "Spade"], [10, "Spade"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1519,7 +1519,7 @@
         "cards": [[3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1535,7 +1535,7 @@
         "cards": [[3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Heart"], [3, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1551,7 +1551,7 @@
         "cards": [[3, "Spade"], [3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Heart"], [3, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1599,7 +1599,7 @@
         "cards": [[3, "Spade"], [3, "Club"], [3, "Diamond"], [5, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1615,7 +1615,7 @@
         "cards": [[3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1631,7 +1631,7 @@
         "cards": [[3, "Spade"], [3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1647,7 +1647,7 @@
         "cards": [[3, "Spade"], [3, "Spade"], [3, "Club"], [3, "Diamond"], [3, "Diamond"], [3, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "NaiveBomb"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": true
     },
     {
@@ -1904,7 +1904,7 @@
         "type": "NaiveBomb"
       },
       "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -2016,7 +2016,7 @@
         "type": "NaiveBomb"
       },
       "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",

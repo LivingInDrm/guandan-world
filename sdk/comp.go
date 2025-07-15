@@ -65,6 +65,72 @@ func (ct CompType) String() string {
 	}
 }
 
+// 公共工具函数
+
+// sortCards 对卡片进行排序
+func sortCards(cards []*Card) []*Card {
+	sortedCards := make([]*Card, len(cards))
+	copy(sortedCards, cards)
+	sort.Slice(sortedCards, func(i, j int) bool {
+		return sortedCards[i].LessThan(sortedCards[j])
+	})
+	return sortedCards
+}
+
+// countWildcards 统计变化牌数量
+func countWildcards(cards []*Card) int {
+	count := 0
+	for _, card := range cards {
+		if card.IsWildcard() {
+			count++
+		}
+	}
+	return count
+}
+
+// hasJokers 检查是否有王牌
+func hasJokers(cards []*Card) bool {
+	for _, card := range cards {
+		if card.Color == "Joker" {
+			return true
+		}
+	}
+	return false
+}
+
+// getNormalCards 获取非变化牌
+func getNormalCards(cards []*Card) []*Card {
+	normalCards := []*Card{}
+	for _, card := range cards {
+		if !card.IsWildcard() {
+			normalCards = append(normalCards, card)
+		}
+	}
+	return normalCards
+}
+
+// countCardNumbers 统计卡片数字出现次数
+func countCardNumbers(cards []*Card) map[int]int {
+	cardCounts := make(map[int]int)
+	for _, card := range cards {
+		if !card.IsWildcard() {
+			cardCounts[card.Number]++
+		}
+	}
+	return cardCounts
+}
+
+// getMaxCardNumber 获取最大卡片数字
+func getMaxCardNumber(cards []*Card) int {
+	maxNumber := 0
+	for _, card := range cards {
+		if card.Number > maxNumber {
+			maxNumber = card.Number
+		}
+	}
+	return maxNumber
+}
+
 // BaseComp 基础牌组结构
 type BaseComp struct {
 	Cards []*Card
@@ -99,19 +165,10 @@ func SortNoLevel(cards []*Card) []*Card {
 	}
 
 	// 首先按照正常规则排序
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].LessThan(sortedCards[j])
-	})
+	sortedCards := sortCards(cards)
 
 	// 统计变化牌数量
-	numWildcards := 0
-	for _, card := range sortedCards {
-		if card.IsWildcard() {
-			numWildcards++
-		}
-	}
+	numWildcards := countWildcards(sortedCards)
 
 	if numWildcards == 0 {
 		// 检查最后一张牌是否为级别牌
@@ -124,13 +181,11 @@ func SortNoLevel(cards []*Card) []*Card {
 
 	// 将非变化牌重新排序
 	wildcards := []*Card{}
-	normalCards := []*Card{}
+	normalCards := getNormalCards(sortedCards)
 
 	for _, card := range sortedCards {
 		if card.IsWildcard() {
 			wildcards = append(wildcards, card)
-		} else {
-			normalCards = append(normalCards, card)
 		}
 	}
 
@@ -205,16 +260,23 @@ func FromCardList(cards []*Card, prev CardComp) CardComp {
 			return comp
 		}
 
-		// 如果前一个牌组不是钢板，优先尝试钢管
+		// 优先级处理：根据Python实现，如果前一个牌组不是钢板，优先尝试钢管
 		if prev == nil || prev.GetType() != TypePlate {
 			if comp := NewTube(cards); comp.IsValid() {
 				return comp
 			}
 		}
 
+		// 然后尝试钢板
 		if comp := NewPlate(cards); comp.IsValid() {
 			return comp
 		}
+
+		// 如果钢板失败，再试钢管（防止错过）
+		if comp := NewTube(cards); comp.IsValid() {
+			return comp
+		}
+
 		return &IllegalComp{BaseComp: BaseComp{Cards: cards, Valid: false, Type: TypeIllegal}}
 
 	default:
@@ -293,15 +355,9 @@ func NewPair(cards []*Card) *Pair {
 		valid = cards[0].Equals(cards[1]) || levelCond0 || levelCond1
 	}
 
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].LessThan(sortedCards[j])
-	})
-
 	return &Pair{
 		BaseComp: BaseComp{
-			Cards: sortedCards,
+			Cards: sortCards(cards),
 			Valid: valid,
 			Type:  TypePair,
 		},
@@ -327,15 +383,11 @@ type Triple struct {
 
 func NewTriple(cards []*Card) *Triple {
 	valid := false
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].LessThan(sortedCards[j])
-	})
+	sortedCards := sortCards(cards)
 
 	if len(cards) == 3 {
 		// 如果有王，则非法
-		if sortedCards[len(sortedCards)-1].Color == "Joker" {
+		if hasJokers(sortedCards) {
 			valid = false
 		} else {
 			// 检查是否为三张相同或包含变化牌
@@ -387,48 +439,15 @@ type FullHouse struct {
 
 func NewFullHouse(cards []*Card) *FullHouse {
 	valid := false
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].LessThan(sortedCards[j])
-	})
+	var sortedCards []*Card
 
 	if len(cards) == 5 {
-		// 复杂的葫芦判断逻辑
-		// 简化实现：检查是否有3张相同和2张相同
-		cardCounts := make(map[int]int)
-		for _, card := range sortedCards {
-			if card.IsWildcard() {
-				continue // 变化牌稍后处理
-			}
-			cardCounts[card.Number]++
-		}
-
-		// 统计变化牌数量
-		wildcardCount := 0
-		for _, card := range sortedCards {
-			if card.IsWildcard() {
-				wildcardCount++
-			}
-		}
-
-		// 检查是否能构成葫芦
-		counts := make([]int, 0)
-		for _, count := range cardCounts {
-			counts = append(counts, count)
-		}
-		sort.Ints(counts)
-
-		// 根据变化牌数量判断是否能构成葫芦
-		if wildcardCount == 0 {
-			valid = len(counts) == 2 && counts[0] == 2 && counts[1] == 3
-		} else if wildcardCount == 1 {
-			valid = (len(counts) == 2 && ((counts[0] == 1 && counts[1] == 3) || (counts[0] == 2 && counts[1] == 2))) ||
-				(len(counts) == 1 && counts[0] == 4)
-		} else if wildcardCount == 2 {
-			valid = (len(counts) == 1 && counts[0] == 3) ||
-				(len(counts) == 2 && counts[0] == 1 && counts[1] == 2)
-		}
+		// 使用Python的satisfy逻辑
+		var ok bool
+		ok, sortedCards = fullHouseSatisfy(cards)
+		valid = ok
+	} else {
+		sortedCards = sortCards(cards)
 	}
 
 	return &FullHouse{
@@ -438,6 +457,109 @@ func NewFullHouse(cards []*Card) *FullHouse {
 			Type:  TypeFullHouse,
 		},
 	}
+}
+
+// fullHouseSatisfy 实现Python的FullHouse.satisfy逻辑
+func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
+	if len(cards) != 5 {
+		return false, sortCards(cards)
+	}
+
+	// 排序卡片
+	sortedCards := sortCards(cards)
+
+	// 如果最大的卡片是王牌，它必须是一对王牌
+	if sortedCards[4].Color == "Joker" {
+		if !sortedCards[3].Equals(sortedCards[4]) {
+			return false, sortedCards
+		}
+		// 检查剩余的是否是一个三张
+		triple := NewTriple(sortedCards[:3])
+		if !triple.Valid {
+			return false, sortedCards
+		}
+		return true, append(triple.Cards, sortedCards[3:]...)
+	}
+
+	// 统计变化牌数量
+	wildcardCount := countWildcards(sortedCards)
+
+	// 如果有两个变化牌
+	if wildcardCount == 2 && sortedCards[3].IsWildcard() && sortedCards[4].IsWildcard() {
+		// 检查 1 + 2 优先选择更大的葫芦
+		pair := NewPair(sortedCards[1:3])
+		if pair.Valid && !sortedCards[0].Equals(pair.Cards[0]) {
+			result := []*Card{sortedCards[0]}
+			result = append(result, sortedCards[3:]...)
+			result = append(result, pair.Cards...)
+			return true, result
+		}
+		// 检查 2 + 1
+		pair = NewPair(sortedCards[:2])
+		if pair.Valid && !sortedCards[2].Equals(pair.Cards[0]) {
+			result := []*Card{sortedCards[2]}
+			result = append(result, sortedCards[3:]...)
+			result = append(result, pair.Cards...)
+			return true, result
+		}
+		// 检查 3
+		triple := NewTriple(sortedCards[:3])
+		if triple.Valid {
+			return true, append(triple.Cards, sortedCards[3:]...)
+		}
+		return false, sortedCards
+	}
+
+	// 如果没有变化牌
+	if wildcardCount == 0 {
+		// 可以是 3 + 2 或 2 + 3
+		// 检查 2 + 3 优先选择更大的葫芦
+		triple := NewTriple(sortedCards[2:])
+		pair := NewPair(sortedCards[:2])
+		if triple.Valid && pair.Valid && !triple.Cards[0].Equals(pair.Cards[0]) {
+			return true, append(triple.Cards, pair.Cards...)
+		}
+		// 检查 3 + 2
+		triple = NewTriple(sortedCards[:3])
+		pair = NewPair(sortedCards[3:])
+		if triple.Valid && pair.Valid && !triple.Cards[0].Equals(pair.Cards[0]) {
+			return true, append(triple.Cards, pair.Cards...)
+		}
+		return false, sortedCards
+	}
+
+	// 如果有一个变化牌
+	if wildcardCount == 1 {
+		// 可以是 2 + 2, 3 + 1, 1 + 3
+		// 检查 2 + 2
+		pair1 := NewPair(sortedCards[:2])
+		pair2 := NewPair(sortedCards[2:4])
+		if pair1.Valid && pair2.Valid && !pair1.Cards[0].Equals(pair2.Cards[0]) {
+			result := pair2.Cards
+			result = append(result, sortedCards[4])
+			result = append(result, pair1.Cards...)
+			return true, result
+		}
+		// 检查 1 + 3 优先选择更大的葫芦
+		triple := NewTriple(sortedCards[1:4])
+		if triple.Valid && !triple.Cards[0].Equals(sortedCards[0]) {
+			result := triple.Cards
+			result = append(result, sortedCards[0])
+			result = append(result, sortedCards[4])
+			return true, result
+		}
+		// 检查 3 + 1
+		triple = NewTriple(sortedCards[:3])
+		if triple.Valid && !triple.Cards[0].Equals(sortedCards[3]) {
+			result := triple.Cards
+			result = append(result, sortedCards[3])
+			result = append(result, sortedCards[4])
+			return true, result
+		}
+		return false, sortedCards
+	}
+
+	return false, sortedCards
 }
 
 func (f *FullHouse) GreaterThan(other CardComp) bool {
@@ -459,36 +581,15 @@ type Straight struct {
 
 func NewStraight(cards []*Card) *Straight {
 	valid := false
-	sortedCards := SortNoLevel(cards)
+	var sortedCards []*Card
 
 	if len(cards) == 5 {
-		// 统计变化牌数量
-		wildcardCount := 0
-		for _, card := range sortedCards {
-			if card.IsWildcard() {
-				wildcardCount++
-			}
-		}
-
-		// 获取非变化牌的数字
-		normalCards := []*Card{}
-		for _, card := range sortedCards {
-			if !card.IsWildcard() {
-				normalCards = append(normalCards, card)
-			}
-		}
-
-		// 检查最大牌不超过A
-		maxNumber := 0
-		for _, card := range cards {
-			if card.Number > maxNumber {
-				maxNumber = card.Number
-			}
-		}
-
-		if maxNumber <= 14 {
-			valid = checkStraightValid(normalCards, wildcardCount)
-		}
+		// 使用Python的satisfy逻辑
+		var ok bool
+		ok, sortedCards = straightSatisfy(cards)
+		valid = ok
+	} else {
+		sortedCards = sortCards(cards)
 	}
 
 	return &Straight{
@@ -500,41 +601,162 @@ func NewStraight(cards []*Card) *Straight {
 	}
 }
 
-func checkStraightValid(normalCards []*Card, wildcardCount int) bool {
-	if len(normalCards) == 0 {
-		return wildcardCount == 5
+// straightSatisfy 实现Python的Straight.satisfy逻辑
+func straightSatisfy(cards []*Card) (bool, []*Card) {
+	if len(cards) != 5 {
+		return false, sortCards(cards)
 	}
 
-	// 按RawNumber排序用于顺子检查
-	sort.Slice(normalCards, func(i, j int) bool {
-		return normalCards[i].RawNumber < normalCards[j].RawNumber
-	})
+	// 排序卡片，将level卡片放在适当位置
+	sortedCards := SortNoLevel(cards)
 
-	// 检查是否能构成顺子
-	needed := 5 - len(normalCards)
-	if needed != wildcardCount {
+	// 统计变化牌数量
+	numWildcards := countWildcards(sortedCards)
+
+	// 获取卡片数字
+	cardNumbers := make([]int, len(sortedCards))
+	for i, card := range sortedCards {
+		cardNumbers[i] = card.Number
+	}
+
+	// 最大牌不能超过A
+	maxCard := 0
+	for _, num := range cardNumbers {
+		if num > maxCard {
+			maxCard = num
+		}
+	}
+	if maxCard > 14 {
+		return false, sortCards(cards)
+	}
+
+	// 没有变化牌
+	if numWildcards == 0 {
+		if cardNumbers[0]+4 == cardNumbers[4] && len(removeDuplicates(cardNumbers)) == 5 {
+			return true, sortedCards
+		}
+		return false, sortCards(cards)
+	}
+
+	// 一个变化牌
+	if numWildcards == 1 {
+		firstFour := make([]int, 4)
+		for i := 0; i < 4; i++ {
+			firstFour[i] = cardNumbers[i] - cardNumbers[0]
+		}
+
+		// i, i+1, i+2, i+3 wild
+		if isArrayEqual(firstFour, []int{0, 1, 2, 3}) {
+			if cardNumbers[3] <= 13 {
+				return true, sortedCards
+			}
+			if cardNumbers[3] == 14 {
+				// A的特殊处理：将变化牌放在前面
+				newOrder := make([]*Card, 5)
+				newOrder[0] = sortedCards[4] // 变化牌
+				copy(newOrder[1:], sortedCards[0:3])
+				newOrder[4] = sortedCards[3] // A
+				return true, newOrder
+			}
+		}
+
+		// i, i+1, i+2, i+4 wild
+		if isArrayEqual(firstFour, []int{0, 1, 2, 4}) {
+			newOrder := make([]*Card, 5)
+			copy(newOrder[0:3], sortedCards[0:3])
+			newOrder[3] = sortedCards[4] // 变化牌
+			newOrder[4] = sortedCards[3]
+			return true, newOrder
+		}
+
+		// i, i+1, i+3, i+4 wild
+		if isArrayEqual(firstFour, []int{0, 1, 3, 4}) {
+			newOrder := make([]*Card, 5)
+			copy(newOrder[0:2], sortedCards[0:2])
+			newOrder[2] = sortedCards[4] // 变化牌
+			copy(newOrder[3:], sortedCards[2:4])
+			return true, newOrder
+		}
+
+		// i, i+2, i+3, i+4 wild
+		if isArrayEqual(firstFour, []int{0, 2, 3, 4}) {
+			newOrder := make([]*Card, 5)
+			newOrder[0] = sortedCards[0]
+			newOrder[1] = sortedCards[4] // 变化牌
+			copy(newOrder[2:], sortedCards[1:4])
+			return true, newOrder
+		}
+
+		return false, sortCards(cards)
+	}
+
+	// 两个变化牌
+	if numWildcards == 2 {
+		firstThree := make([]int, 3)
+		for i := 0; i < 3; i++ {
+			firstThree[i] = cardNumbers[i] - cardNumbers[0]
+		}
+
+		// i, i+1, i+2, wild, wild
+		if isArrayEqual(firstThree, []int{0, 1, 2}) {
+			if cardNumbers[2] <= 12 {
+				return true, sortedCards
+			}
+			if cardNumbers[2] == 13 {
+				// K的特殊处理
+				newOrder := make([]*Card, 5)
+				newOrder[0] = sortedCards[4]
+				copy(newOrder[1:4], sortedCards[1:4])
+				newOrder[4] = sortedCards[3]
+				return true, newOrder
+			}
+			if cardNumbers[2] == 14 {
+				// A的特殊处理
+				newOrder := make([]*Card, 5)
+				copy(newOrder[0:2], sortedCards[3:5])
+				copy(newOrder[2:], sortedCards[1:4])
+				return true, newOrder
+			}
+		}
+
+		// 处理其他二变化牌的情况
+		if isArrayEqual(firstThree, []int{0, 2, 3}) ||
+			isArrayEqual(firstThree, []int{0, 1, 3}) ||
+			isArrayEqual(firstThree, []int{0, 2, 4}) ||
+			isArrayEqual(firstThree, []int{0, 3, 4}) ||
+			isArrayEqual(firstThree, []int{0, 1, 4}) {
+			return true, sortedCards
+		}
+
+		return false, sortCards(cards)
+	}
+
+	return false, sortCards(cards)
+}
+
+// removeDuplicates 移除重复元素
+func removeDuplicates(arr []int) []int {
+	seen := make(map[int]bool)
+	result := []int{}
+	for _, num := range arr {
+		if !seen[num] {
+			seen[num] = true
+			result = append(result, num)
+		}
+	}
+	return result
+}
+
+// isArrayEqual 检查两个数组是否相等
+func isArrayEqual(a, b []int) bool {
+	if len(a) != len(b) {
 		return false
 	}
-
-	// 检查正常牌之间的间隔
-	gaps := 0
-	for i := 1; i < len(normalCards); i++ {
-		gap := normalCards[i].RawNumber - normalCards[i-1].RawNumber - 1
-		if gap < 0 {
-			return false // 有重复
-		}
-		gaps += gap
-	}
-
-	// 检查首尾需要的牌数
-	if len(normalCards) > 1 {
-		totalSpan := normalCards[len(normalCards)-1].RawNumber - normalCards[0].RawNumber + 1
-		if totalSpan > 5 {
+	for i := range a {
+		if a[i] != b[i] {
 			return false
 		}
-		return gaps <= wildcardCount
 	}
-
 	return true
 }
 
@@ -543,7 +765,48 @@ func (s *Straight) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherStraight := other.(*Straight)
+
+	// 直接比较第一张牌的ConsecutiveGreaterThan
 	return s.Cards[0].ConsecutiveGreaterThan(otherStraight.Cards[0])
+}
+
+// getStraightComparisonKey 获取顺子的比较键值
+func getStraightComparisonKey(cards []*Card) int {
+	normalCards := getNormalCards(cards)
+	if len(normalCards) == 0 {
+		return 0
+	}
+
+	// 获取非变化牌的数字
+	cardNumbers := make([]int, len(normalCards))
+	for i, card := range normalCards {
+		cardNumbers[i] = card.Number
+	}
+
+	// 如果包含A，需要特殊处理
+	hasAce := false
+	for _, num := range cardNumbers {
+		if num == 14 {
+			hasAce = true
+			break
+		}
+	}
+
+	// 如果有A，判断是低端序列还是高端序列
+	if hasAce {
+		// 检查是否为A-2-3-4-5类型的低端序列
+		minNum := cardNumbers[0]
+		if minNum <= 5 {
+			// 低端序列，A作为1处理
+			return 1
+		} else {
+			// 高端序列，A作为14处理
+			return 14
+		}
+	}
+
+	// 没有A的情况，返回最小的牌
+	return cardNumbers[0]
 }
 
 func (s *Straight) IsBomb() bool {
@@ -557,26 +820,15 @@ type Plate struct {
 
 func NewPlate(cards []*Card) *Plate {
 	valid := false
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].LessThan(sortedCards[j])
-	})
+	var sortedCards []*Card
 
 	if len(cards) == 6 {
-		// 检查是否没有王
-		hasJoker := false
-		for _, card := range sortedCards {
-			if card.Color == "Joker" {
-				hasJoker = true
-				break
-			}
-		}
-
-		if !hasJoker {
-			// 简化的钢板判断
-			valid = checkPlateValid(sortedCards)
-		}
+		// 使用Python的satisfy逻辑
+		var ok bool
+		ok, sortedCards = plateSatisfy(cards)
+		valid = ok
+	} else {
+		sortedCards = sortCards(cards)
 	}
 
 	return &Plate{
@@ -588,39 +840,95 @@ func NewPlate(cards []*Card) *Plate {
 	}
 }
 
-func checkPlateValid(cards []*Card) bool {
-	// 检查是否为两个连续的三张
-	// 简化实现
-	cardCounts := make(map[int]int)
-	for _, card := range cards {
-		if card.IsWildcard() {
-			continue
+// plateSatisfy 实现Python的Plate.satisfy逻辑
+func plateSatisfy(cards []*Card) (bool, []*Card) {
+	if len(cards) != 6 {
+		return false, sortCards(cards)
+	}
+
+	// 排序卡片
+	sortedCards := sortCards(cards)
+
+	// 检查是否有王牌
+	if hasJokers(sortedCards) {
+		return false, sortedCards
+	}
+
+	// 统计变化牌数量
+	wildcardCount := countWildcards(sortedCards)
+
+	// 如果没有变化牌
+	if wildcardCount == 0 {
+		// 检查 3 + 3 模式
+		triple1 := NewTriple(sortedCards[:3])
+		triple2 := NewTriple(sortedCards[3:])
+		if triple1.Valid && triple2.Valid {
+			card1Num := triple1.Cards[0].Number
+			card2Num := triple2.Cards[0].Number
+
+			// 普通连续情况：如3-4
+			if card1Num+1 == card2Num {
+				return true, append(triple1.Cards, triple2.Cards...)
+			}
+
+			// A的特殊情况：2-A，需要重新排序为A-2
+			if card1Num == 2 && card2Num == 14 {
+				return true, append(triple2.Cards, triple1.Cards...)
+			}
 		}
-		cardCounts[card.Number]++
+		return false, sortedCards
 	}
 
-	// 统计变化牌
-	wildcardCount := 0
-	for _, card := range cards {
-		if card.IsWildcard() {
-			wildcardCount++
+	// 如果有至少1个变化牌
+	if wildcardCount >= 1 {
+		// 检查前5张牌是否能构成葫芦
+		fullhouse := NewFullHouse(sortedCards[:5])
+		if fullhouse.Valid {
+			// fullhouse的前3张是triple，后2张是pair
+			triple := fullhouse.Cards[:3]
+			pair := fullhouse.Cards[3:5]
+
+			tripleNum := triple[0].Number
+			pairNum := pair[0].Number
+
+			// 普通连续情况
+			if tripleNum+1 == pairNum {
+				result := make([]*Card, 0)
+				result = append(result, triple...)
+				result = append(result, pair...)
+				result = append(result, sortedCards[5]) // 变化牌
+				return true, result
+			}
+
+			if tripleNum-1 == pairNum {
+				result := make([]*Card, 0)
+				result = append(result, pair...)
+				result = append(result, sortedCards[5]) // 变化牌
+				result = append(result, triple...)
+				return true, result
+			}
+
+			// A的特殊情况
+			if tripleNum == 14 && pairNum == 2 {
+				result := make([]*Card, 0)
+				result = append(result, triple...)
+				result = append(result, pair...)
+				result = append(result, sortedCards[5]) // 变化牌
+				return true, result
+			}
+
+			if tripleNum == 2 && pairNum == 14 {
+				result := make([]*Card, 0)
+				result = append(result, pair...)
+				result = append(result, sortedCards[5]) // 变化牌
+				result = append(result, triple...)
+				return true, result
+			}
 		}
+		return false, sortedCards
 	}
 
-	numbers := make([]int, 0)
-	for num := range cardCounts {
-		numbers = append(numbers, num)
-	}
-	sort.Ints(numbers)
-
-	// 检查是否为连续的两个三张
-	if len(numbers) == 2 && numbers[1] == numbers[0]+1 {
-		count1 := cardCounts[numbers[0]]
-		count2 := cardCounts[numbers[1]]
-		return count1+count2+wildcardCount == 6 && count1 >= 1 && count2 >= 1
-	}
-
-	return false
+	return false, sortedCards
 }
 
 func (p *Plate) GreaterThan(other CardComp) bool {
@@ -642,10 +950,15 @@ type Tube struct {
 
 func NewTube(cards []*Card) *Tube {
 	valid := false
-	sortedCards := SortNoLevel(cards)
+	var sortedCards []*Card
 
 	if len(cards) == 6 {
-		valid = checkTubeValid(sortedCards)
+		// 使用Python的satisfy逻辑
+		var ok bool
+		ok, sortedCards = tubeSatisfy(cards)
+		valid = ok
+	} else {
+		sortedCards = sortCards(cards)
 	}
 
 	return &Tube{
@@ -657,42 +970,137 @@ func NewTube(cards []*Card) *Tube {
 	}
 }
 
-func checkTubeValid(cards []*Card) bool {
-	// 检查是否为三个连续的对子
-	// 简化实现
-	cardCounts := make(map[int]int)
-	for _, card := range cards {
-		if card.IsWildcard() {
-			continue
+// tubeSatisfy 实现Python的Tube.satisfy逻辑
+func tubeSatisfy(cards []*Card) (bool, []*Card) {
+	if len(cards) != 6 {
+		return false, sortCards(cards)
+	}
+
+	// 使用sort_no_level排序
+	sortedCards := SortNoLevel(cards)
+	wildcardCount := countWildcards(sortedCards)
+
+	// 获取牌的数字
+	cardNumbers := make([]int, len(sortedCards))
+	for i, card := range sortedCards {
+		cardNumbers[i] = card.Number
+	}
+
+	// 检查最大牌数不超过A
+	maxCard := 0
+	for _, num := range cardNumbers {
+		if num > maxCard {
+			maxCard = num
 		}
-		cardCounts[card.Number]++
+	}
+	if maxCard > 14 {
+		return false, sortCards(cards)
 	}
 
-	wildcardCount := 0
-	for _, card := range cards {
-		if card.IsWildcard() {
-			wildcardCount++
+	// 没有变化牌的情况
+	if wildcardCount == 0 {
+		// 必须是 i, i, i+1, i+1, i+2, i+2
+		uniqueNumbers := make(map[int]bool)
+		for _, num := range cardNumbers {
+			uniqueNumbers[num] = true
 		}
-	}
-
-	numbers := make([]int, 0)
-	for num := range cardCounts {
-		numbers = append(numbers, num)
-	}
-	sort.Ints(numbers)
-
-	// 检查是否为连续的三个对子
-	if len(numbers) == 3 {
-		if numbers[1] == numbers[0]+1 && numbers[2] == numbers[1]+1 {
-			totalCount := 0
-			for _, count := range cardCounts {
-				totalCount += count
+		if len(uniqueNumbers) == 3 {
+			temp := make([]int, len(cardNumbers))
+			for i, num := range cardNumbers {
+				temp[i] = num - cardNumbers[0]
 			}
-			return totalCount+wildcardCount == 6
+			if isArrayEqual(temp, []int{0, 0, 1, 1, 2, 2}) {
+				return true, sortedCards
+			}
 		}
+		return false, sortCards(cards)
 	}
 
-	return false
+	// 一个变化牌的情况
+	if wildcardCount == 1 {
+		firstFive := make([]int, 5)
+		for i := 0; i < 5; i++ {
+			firstFive[i] = cardNumbers[i] - cardNumbers[0]
+		}
+
+		// i, i, i+1, i+1, i+2 wild
+		if isArrayEqual(firstFive, []int{0, 0, 1, 1, 2}) {
+			return true, sortedCards
+		}
+		// i, i, i+1, i+2, i+2 wild
+		if isArrayEqual(firstFive, []int{0, 0, 1, 2, 2}) {
+			result := make([]*Card, 0)
+			result = append(result, sortedCards[0:3]...)
+			result = append(result, sortedCards[5])
+			result = append(result, sortedCards[3:5]...)
+			return true, result
+		}
+		// i, i+1, i+1, i+2, i+2 wild
+		if isArrayEqual(firstFive, []int{0, 1, 1, 2, 2}) {
+			result := make([]*Card, 0)
+			result = append(result, sortedCards[0:1]...)
+			result = append(result, sortedCards[5])
+			result = append(result, sortedCards[1:5]...)
+			return true, result
+		}
+		return false, sortCards(cards)
+	}
+
+	// 两个变化牌的情况
+	if wildcardCount == 2 {
+		firstFour := make([]int, 4)
+		for i := 0; i < 4; i++ {
+			firstFour[i] = cardNumbers[i] - cardNumbers[0]
+		}
+
+		// i, i, i+1, i+1, wild wild
+		if isArrayEqual(firstFour, []int{0, 0, 1, 1}) {
+			if sortedCards[3].Number < 14 { // i+1 smaller than Ace
+				return true, sortedCards
+			} else {
+				// 重新排序：将后面的变化牌移到前面
+				result := make([]*Card, 0)
+				result = append(result, sortedCards[4:6]...)
+				result = append(result, sortedCards[0:4]...)
+				return true, result
+			}
+		}
+		// i, i, i+2, i+2, wild, wild
+		if isArrayEqual(firstFour, []int{0, 0, 2, 2}) {
+			result := make([]*Card, 0)
+			result = append(result, sortedCards[0:2]...)
+			result = append(result, sortedCards[4:6]...)
+			result = append(result, sortedCards[2:4]...)
+			return true, result
+		}
+		// i i i+1 i+2 wild wild
+		if isArrayEqual(firstFour, []int{0, 0, 1, 2}) {
+			result := make([]*Card, 0)
+			result = append(result, sortedCards[0:2]...)
+			result = append(result, sortedCards[2], sortedCards[5])
+			result = append(result, sortedCards[3], sortedCards[4])
+			return true, result
+		}
+		// i i+1 i+1 i+2 wild wild
+		if isArrayEqual(firstFour, []int{0, 1, 1, 2}) {
+			result := make([]*Card, 0)
+			result = append(result, sortedCards[0], sortedCards[5])
+			result = append(result, sortedCards[1:3]...)
+			result = append(result, sortedCards[3], sortedCards[4])
+			return true, result
+		}
+		// i i+1 i+2 i+2 wild wild
+		if isArrayEqual(firstFour, []int{0, 1, 2, 2}) {
+			result := make([]*Card, 0)
+			result = append(result, sortedCards[0], sortedCards[5])
+			result = append(result, sortedCards[1], sortedCards[4])
+			result = append(result, sortedCards[2:4]...)
+			return true, result
+		}
+		return false, sortCards(cards)
+	}
+
+	return false, sortCards(cards)
 }
 
 func (t *Tube) GreaterThan(other CardComp) bool {
@@ -714,11 +1122,7 @@ type JokerBomb struct {
 
 func NewJokerBomb(cards []*Card) *JokerBomb {
 	valid := false
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].LessThan(sortedCards[j])
-	})
+	sortedCards := sortCards(cards)
 
 	if len(cards) == 4 {
 		numbers := make([]int, 0)
@@ -728,9 +1132,7 @@ func NewJokerBomb(cards []*Card) *JokerBomb {
 		sort.Ints(numbers)
 
 		// 检查是否为两个小王和两个大王
-		if len(numbers) == 4 && numbers[0] == 15 && numbers[1] == 15 && numbers[2] == 16 && numbers[3] == 16 {
-			valid = true
-		}
+		valid = len(numbers) == 4 && numbers[0] == 15 && numbers[1] == 15 && numbers[2] == 16 && numbers[3] == 16
 	}
 
 	return &JokerBomb{
@@ -758,28 +1160,10 @@ type NaiveBomb struct {
 
 func NewNaiveBomb(cards []*Card) *NaiveBomb {
 	valid := false
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].LessThan(sortedCards[j])
-	})
+	sortedCards := sortCards(cards)
 
 	if len(cards) >= 4 {
-		// 统计变化牌数量
-		wildcardCount := 0
-		for _, card := range sortedCards {
-			if card.IsWildcard() {
-				wildcardCount++
-			}
-		}
-
-		// 获取非变化牌的数字
-		normalCards := []*Card{}
-		for _, card := range sortedCards {
-			if !card.IsWildcard() {
-				normalCards = append(normalCards, card)
-			}
-		}
+		normalCards := getNormalCards(sortedCards)
 
 		// 检查是否所有正常牌都是同一数字
 		if len(normalCards) > 0 {
@@ -793,7 +1177,7 @@ func NewNaiveBomb(cards []*Card) *NaiveBomb {
 			}
 			valid = allSame
 		} else {
-			valid = wildcardCount >= 4
+			valid = countWildcards(sortedCards) >= 4
 		}
 	}
 
@@ -823,13 +1207,17 @@ func (n *NaiveBomb) GreaterThan(other CardComp) bool {
 		return len(n.Cards) >= 6
 	}
 
-	// 如果对方也是炸弹，比较张数然后比较数值
+	// 如果对方也是炸弹，按照Python逻辑比较张数然后比较数值
 	if other.GetType() == TypeNaiveBomb {
 		otherBomb := other.(*NaiveBomb)
-		if len(n.Cards) != len(otherBomb.Cards) {
-			return len(n.Cards) > len(otherBomb.Cards)
+		if len(n.Cards) > len(otherBomb.Cards) {
+			return true
+		} else if len(n.Cards) < len(otherBomb.Cards) {
+			return false
+		} else {
+			// 张数相同，比较数值
+			return n.Cards[0].GreaterThan(otherBomb.Cards[0])
 		}
-		return n.Cards[0].GreaterThan(otherBomb.Cards[0])
 	}
 
 	return false
@@ -847,34 +1235,25 @@ type StraightFlush struct {
 func NewStraightFlush(cards []*Card) *StraightFlush {
 	valid := false
 	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
 
 	if len(cards) == 5 {
 		// 首先检查是否为顺子
 		straight := NewStraight(cards)
 		if straight.IsValid() {
 			sortedCards = straight.Cards
-
-			// 然后检查是否为同花
-			wildcardCount := 0
+			wildcardCount := countWildcards(sortedCards)
 			colors := make(map[string]int)
 
 			for _, card := range sortedCards {
-				if card.IsWildcard() {
-					wildcardCount++
-				} else {
+				if !card.IsWildcard() {
 					colors[card.Color]++
 				}
 			}
 
-			// 检查是否为同花
-			if wildcardCount == 0 {
-				valid = len(colors) == 1
-			} else if wildcardCount == 1 {
-				valid = len(colors) == 1
-			} else if wildcardCount == 2 {
-				valid = len(colors) == 1
-			}
+			// 检查是否为同花（根据变化牌数量）
+			valid = (wildcardCount == 0 && len(colors) == 1) ||
+				(wildcardCount == 1 && len(colors) == 1) ||
+				(wildcardCount == 2 && len(colors) == 1)
 		}
 	}
 
@@ -903,7 +1282,6 @@ func (s *StraightFlush) GreaterThan(other CardComp) bool {
 		otherStraightFlush := other.(*StraightFlush)
 		return s.Cards[0].GreaterThan(otherStraightFlush.Cards[0])
 	}
-
 	// 如果对方是炸弹，5张以下的炸弹 < 同花顺
 	if other.GetType() == TypeNaiveBomb {
 		return len(other.GetCards()) <= 5
