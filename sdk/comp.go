@@ -33,6 +33,38 @@ const (
 	TypeStraightFlush
 )
 
+// String 返回CompType的字符串表示
+func (ct CompType) String() string {
+	switch ct {
+	case TypeFold:
+		return "Fold"
+	case TypeIllegal:
+		return "IllegalComp"
+	case TypeSingle:
+		return "Single"
+	case TypePair:
+		return "Pair"
+	case TypeTriple:
+		return "Triple"
+	case TypeFullHouse:
+		return "FullHouse"
+	case TypeStraight:
+		return "Straight"
+	case TypePlate:
+		return "Plate"
+	case TypeTube:
+		return "Tube"
+	case TypeJokerBomb:
+		return "JokerBomb"
+	case TypeNaiveBomb:
+		return "NaiveBomb"
+	case TypeStraightFlush:
+		return "StraightFlush"
+	default:
+		return "Unknown"
+	}
+}
+
 // BaseComp 基础牌组结构
 type BaseComp struct {
 	Cards []*Card
