@@ -766,8 +766,11 @@ func (s *Straight) GreaterThan(other CardComp) bool {
 	}
 	otherStraight := other.(*Straight)
 
-	// 直接比较第一张牌的ConsecutiveGreaterThan
-	return s.Cards[0].ConsecutiveGreaterThan(otherStraight.Cards[0])
+	// 使用getStraightComparisonKey来正确比较顺子大小
+	myKey := getStraightComparisonKey(s.Cards)
+	otherKey := getStraightComparisonKey(otherStraight.Cards)
+
+	return myKey > otherKey
 }
 
 // getStraightComparisonKey 获取顺子的比较键值
@@ -796,17 +799,28 @@ func getStraightComparisonKey(cards []*Card) int {
 	if hasAce {
 		// 检查是否为A-2-3-4-5类型的低端序列
 		minNum := cardNumbers[0]
+		for _, num := range cardNumbers {
+			if num < minNum {
+				minNum = num
+			}
+		}
 		if minNum <= 5 {
 			// 低端序列，A作为1处理
 			return 1
 		} else {
 			// 高端序列，A作为14处理
-			return 14
+			return 10 // 使用10作为所有包含A的高端顺子的键值，确保相等
 		}
 	}
 
 	// 没有A的情况，返回最小的牌
-	return cardNumbers[0]
+	minNum := cardNumbers[0]
+	for _, num := range cardNumbers {
+		if num < minNum {
+			minNum = num
+		}
+	}
+	return minNum
 }
 
 func (s *Straight) IsBomb() bool {

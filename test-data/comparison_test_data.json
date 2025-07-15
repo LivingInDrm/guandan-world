@@ -3282,8 +3282,8 @@
         "cards": [[1, "Spade"], [11, "Club"], [12, "Heart"], [13, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -3402,8 +3402,8 @@
         "cards": [[6, "Spade"], [5, "Heart"], [7, "Club"], [8, "Heart"], [10, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -3417,8 +3417,8 @@
         "cards": [[6, "Spade"], [5, "Heart"], [7, "Club"], [9, "Heart"], [10, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -3432,8 +3432,8 @@
         "cards": [[6, "Spade"], [9, "Club"], [8, "Heart"], [10, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -3477,7 +3477,7 @@
         "cards": [[5, "Spade"], [6, "Club"], [7, "Heart"], [8, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
+      "comp1_greater_than_comp2": true,
       "comp2_greater_than_comp1": false
     },
     {
@@ -3492,8 +3492,8 @@
         "cards": [[7, "Spade"], [8, "Spade"], [9, "Spade"], [5, "Heart"], [10, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -3822,8 +3822,8 @@
         "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -3837,8 +3837,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [13, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -3957,8 +3957,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -3972,8 +3972,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -4032,8 +4032,8 @@
         "cards": [[6, "Spade"], [7, "Club"], [8, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4045,66 +4045,6 @@
       },
       "comp2": {
         "cards": [[6, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[6, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[7, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[11, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[4, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
       "comp1_greater_than_comp2": true,
@@ -4119,10 +4059,70 @@
         "type": "Straight"
       },
       "comp2": {
+        "cards": [[6, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
+        "cards": [[7, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
+        "cards": [[11, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
+        "cards": [[4, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
         "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
+      "comp1_greater_than_comp2": true,
       "comp2_greater_than_comp1": false
     },
     {
@@ -4168,7 +4168,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4183,7 +4183,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4197,8 +4197,8 @@
         "cards": [[6, "Spade"], [7, "Club"], [8, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4212,8 +4212,8 @@
         "cards": [[6, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4227,8 +4227,8 @@
         "cards": [[6, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4242,8 +4242,8 @@
         "cards": [[7, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4257,8 +4257,8 @@
         "cards": [[11, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4287,7 +4287,7 @@
         "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
+      "comp1_greater_than_comp2": true,
       "comp2_greater_than_comp1": false
     },
     {
@@ -4333,7 +4333,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4348,7 +4348,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -4452,8 +4452,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -4467,8 +4467,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -4587,8 +4587,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -4600,21 +4600,6 @@
       },
       "comp2": {
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[6, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
@@ -4629,6 +4614,21 @@
         "type": "Straight"
       },
       "comp2": {
+        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[6, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
         "cards": [[10, "Diamond"], [5, "Heart"], [1, "Diamond"], [11, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
@@ -4707,8 +4707,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -4722,8 +4722,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -4812,8 +4812,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -4825,21 +4825,6 @@
       },
       "comp2": {
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[7, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
@@ -4854,6 +4839,21 @@
         "type": "Straight"
       },
       "comp2": {
+        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[7, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
         "cards": [[10, "Diamond"], [5, "Heart"], [1, "Diamond"], [11, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
@@ -4902,8 +4902,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type",
@@ -4915,21 +4915,6 @@
       },
       "comp2": {
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[11, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
@@ -4944,6 +4929,21 @@
         "type": "Straight"
       },
       "comp2": {
+        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[11, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
         "cards": [[10, "Diamond"], [5, "Heart"], [1, "Diamond"], [11, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
@@ -5035,6 +5035,66 @@
       },
       "comp2": {
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
+        "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
+        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
+        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Diamond"], [11, "Club"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
+    },
+    {
+      "comparison_type": "intra_type",
+      "comp_type": "Straight",
+      "wildcard_count": 2,
+      "comp1": {
+        "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
+        "type": "Straight"
+      },
+      "comp2": {
+        "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
@@ -5045,56 +5105,11 @@
       "comp_type": "Straight",
       "wildcard_count": 2,
       "comp1": {
-        "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": false
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
-        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Diamond"], [11, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
       "comp2": {
-        "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
+        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
@@ -5109,26 +5124,11 @@
         "type": "Straight"
       },
       "comp2": {
-        "cards": [[10, "Diamond"], [5, "Heart"], [1, "Club"], [13, "Spade"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
-    },
-    {
-      "comparison_type": "intra_type",
-      "comp_type": "Straight",
-      "wildcard_count": 2,
-      "comp1": {
-        "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
-        "type": "Straight"
-      },
-      "comp2": {
         "cards": [[10, "Diamond"], [5, "Heart"], [1, "Diamond"], [11, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -5143,7 +5143,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -5158,7 +5158,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type",
@@ -5204,8 +5204,8 @@
         "cards": [[1, "Spade"], [11, "Club"], [12, "Heart"], [13, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -5348,7 +5348,7 @@
         "cards": [[1, "Spade"], [11, "Club"], [12, "Heart"], [13, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": false
     },
     {
@@ -5492,8 +5492,8 @@
         "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -5508,8 +5508,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [13, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -5636,8 +5636,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -5652,8 +5652,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -5716,7 +5716,7 @@
         "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": false
     },
     {
@@ -5732,7 +5732,7 @@
         "cards": [[11, "Spade"], [12, "Club"], [13, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": false
     },
     {
@@ -5860,7 +5860,7 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": false
     },
     {
@@ -5876,7 +5876,7 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
+      "comp1_greater_than_comp2": false,
       "comp2_greater_than_comp1": false
     },
     {
@@ -5940,8 +5940,8 @@
         "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -5956,8 +5956,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [13, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6084,8 +6084,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6100,8 +6100,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6148,8 +6148,8 @@
         "cards": [[6, "Spade"], [7, "Club"], [8, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6196,8 +6196,8 @@
         "cards": [[6, "Spade"], [7, "Club"], [8, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6212,8 +6212,8 @@
         "cards": [[6, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6228,8 +6228,8 @@
         "cards": [[6, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6244,8 +6244,8 @@
         "cards": [[7, "Spade"], [8, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6260,8 +6260,8 @@
         "cards": [[11, "Spade"], [7, "Club"], [9, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp1_greater_than_comp2": true,
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6292,7 +6292,7 @@
         "cards": [[7, "Spade"], [6, "Club"], [5, "Heart"], [5, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": false,
+      "comp1_greater_than_comp2": true,
       "comp2_greater_than_comp1": false
     },
     {
@@ -6341,7 +6341,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6357,7 +6357,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": true
+      "comp2_greater_than_comp1": false
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6388,8 +6388,8 @@
         "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6404,8 +6404,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [13, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6532,8 +6532,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6548,8 +6548,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6612,8 +6612,8 @@
         "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6628,8 +6628,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [13, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6756,8 +6756,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6772,8 +6772,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6836,8 +6836,8 @@
         "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6852,8 +6852,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [13, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6980,8 +6980,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -6996,8 +6996,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -7509,7 +7509,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": false
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -7525,7 +7525,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": false
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -7653,7 +7653,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": false
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -7669,7 +7669,7 @@
         "type": "Straight"
       },
       "comp1_greater_than_comp2": false,
-      "comp2_greater_than_comp1": false
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -7732,8 +7732,8 @@
         "cards": [[12, "Spade"], [13, "Club"], [1, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -7748,8 +7748,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [13, "Heart"], [5, "Heart"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -7876,8 +7876,8 @@
         "cards": [[11, "Spade"], [13, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
@@ -7892,8 +7892,8 @@
         "cards": [[11, "Spade"], [12, "Club"], [5, "Heart"], [1, "Club"], [5, "Heart"]],
         "type": "Straight"
       },
-      "comp1_greater_than_comp2": true,
-      "comp2_greater_than_comp1": false
+      "comp1_greater_than_comp2": false,
+      "comp2_greater_than_comp1": true
     },
     {
       "comparison_type": "intra_type_cross_wildcard",
