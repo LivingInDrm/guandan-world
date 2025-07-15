@@ -5,6 +5,98 @@ import (
 	"sort"
 )
 
+// 常量定义
+const (
+	STRAIGHT_CARD_COUNT   = 5
+	PLATE_CARD_COUNT      = 6
+	TUBE_CARD_COUNT       = 6
+	FULL_HOUSE_CARD_COUNT = 5
+)
+
+// 预定义的数组模式常量
+var (
+	// 顺子模式（4张牌的相对位置）
+	STRAIGHT_PATTERN_0123 = []int{0, 1, 2, 3}
+	STRAIGHT_PATTERN_0124 = []int{0, 1, 2, 4}
+	STRAIGHT_PATTERN_0134 = []int{0, 1, 3, 4}
+	STRAIGHT_PATTERN_0234 = []int{0, 2, 3, 4}
+
+	// 顺子模式（3张牌的相对位置）
+	STRAIGHT_PATTERN_012 = []int{0, 1, 2}
+	STRAIGHT_PATTERN_023 = []int{0, 2, 3}
+	STRAIGHT_PATTERN_013 = []int{0, 1, 3}
+	STRAIGHT_PATTERN_024 = []int{0, 2, 4}
+	STRAIGHT_PATTERN_034 = []int{0, 3, 4}
+	STRAIGHT_PATTERN_014 = []int{0, 1, 4}
+
+	// 钢管模式
+	TUBE_PATTERN_TRIPLET  = []int{0, 0, 1, 1, 2, 2}
+	TUBE_PATTERN_0112     = []int{0, 0, 1, 1, 2}
+	TUBE_PATTERN_0122     = []int{0, 0, 1, 2, 2}
+	TUBE_PATTERN_1122     = []int{0, 1, 1, 2, 2}
+	TUBE_PATTERN_0011     = []int{0, 0, 1, 1}
+	TUBE_PATTERN_0022     = []int{0, 0, 2, 2}
+	TUBE_PATTERN_0012     = []int{0, 0, 1, 2}
+	TUBE_PATTERN_0112_ALT = []int{0, 1, 1, 2}
+	TUBE_PATTERN_0122_ALT = []int{0, 1, 2, 2}
+)
+
+// 辅助函数
+func failWithSortedCards(cards []*Card) (bool, []*Card) {
+	return false, sortCards(cards)
+}
+
+func matchesPattern(diffs []int, pattern []int) bool {
+	return isArrayEqual(diffs, pattern)
+}
+
+func createNewOrder(size int) []*Card {
+	return make([]*Card, size)
+}
+
+func createResult() []*Card {
+	return make([]*Card, 0)
+}
+
+func combineCardArrays(arrays ...[]*Card) []*Card {
+	result := createResult()
+	for _, arr := range arrays {
+		result = append(result, arr...)
+	}
+	return result
+}
+
+func combineCardsAndSlices(cards []*Card, slices ...[]int) []*Card {
+	result := createResult()
+	for _, slice := range slices {
+		start, end := slice[0], slice[1]
+		if end >= 0 {
+			result = append(result, cards[start:end+1]...)
+		} else {
+			result = append(result, cards[start])
+		}
+	}
+	return result
+}
+
+func computeRelativeDiffs(numbers []int, count int) []int {
+	diffs := make([]int, count)
+	baseValue := numbers[0]
+	for i := 0; i < count; i++ {
+		diffs[i] = numbers[i] - baseValue
+	}
+	return diffs
+}
+
+func anyPatternMatches(diffs []int, patterns ...[]int) bool {
+	for _, pattern := range patterns {
+		if matchesPattern(diffs, pattern) {
+			return true
+		}
+	}
+	return false
+}
+
 // CardComp 牌组接口
 type CardComp interface {
 	GreaterThan(other CardComp) bool
@@ -461,8 +553,8 @@ func NewFullHouse(cards []*Card) *FullHouse {
 
 // fullHouseSatisfy 实现Python的FullHouse.satisfy逻辑
 func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
-	if len(cards) != 5 {
-		return false, sortCards(cards)
+	if len(cards) != FULL_HOUSE_CARD_COUNT {
+		return failWithSortedCards(cards)
 	}
 
 	// 排序卡片
@@ -489,7 +581,8 @@ func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
 		// 检查 1 + 2 优先选择更大的葫芦
 		pair := NewPair(sortedCards[1:3])
 		if pair.Valid && !sortedCards[0].Equals(pair.Cards[0]) {
-			result := []*Card{sortedCards[0]}
+			result := createResult()
+			result = append(result, sortedCards[0])
 			result = append(result, sortedCards[3:]...)
 			result = append(result, pair.Cards...)
 			return true, result
@@ -497,7 +590,8 @@ func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
 		// 检查 2 + 1
 		pair = NewPair(sortedCards[:2])
 		if pair.Valid && !sortedCards[2].Equals(pair.Cards[0]) {
-			result := []*Card{sortedCards[2]}
+			result := createResult()
+			result = append(result, sortedCards[2])
 			result = append(result, sortedCards[3:]...)
 			result = append(result, pair.Cards...)
 			return true, result
@@ -507,7 +601,7 @@ func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
 		if triple.Valid {
 			return true, append(triple.Cards, sortedCards[3:]...)
 		}
-		return false, sortedCards
+		return failWithSortedCards(sortedCards)
 	}
 
 	// 如果没有变化牌
@@ -525,7 +619,7 @@ func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
 		if triple.Valid && pair.Valid && !triple.Cards[0].Equals(pair.Cards[0]) {
 			return true, append(triple.Cards, pair.Cards...)
 		}
-		return false, sortedCards
+		return failWithSortedCards(sortedCards)
 	}
 
 	// 如果有一个变化牌
@@ -535,7 +629,8 @@ func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
 		pair1 := NewPair(sortedCards[:2])
 		pair2 := NewPair(sortedCards[2:4])
 		if pair1.Valid && pair2.Valid && !pair1.Cards[0].Equals(pair2.Cards[0]) {
-			result := pair2.Cards
+			result := createResult()
+			result = append(result, pair2.Cards...)
 			result = append(result, sortedCards[4])
 			result = append(result, pair1.Cards...)
 			return true, result
@@ -543,7 +638,8 @@ func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
 		// 检查 1 + 3 优先选择更大的葫芦
 		triple := NewTriple(sortedCards[1:4])
 		if triple.Valid && !triple.Cards[0].Equals(sortedCards[0]) {
-			result := triple.Cards
+			result := createResult()
+			result = append(result, triple.Cards...)
 			result = append(result, sortedCards[0])
 			result = append(result, sortedCards[4])
 			return true, result
@@ -551,15 +647,16 @@ func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
 		// 检查 3 + 1
 		triple = NewTriple(sortedCards[:3])
 		if triple.Valid && !triple.Cards[0].Equals(sortedCards[3]) {
-			result := triple.Cards
+			result := createResult()
+			result = append(result, triple.Cards...)
 			result = append(result, sortedCards[3])
 			result = append(result, sortedCards[4])
 			return true, result
 		}
-		return false, sortedCards
+		return failWithSortedCards(sortedCards)
 	}
 
-	return false, sortedCards
+	return failWithSortedCards(sortedCards)
 }
 
 func (f *FullHouse) GreaterThan(other CardComp) bool {
@@ -603,8 +700,8 @@ func NewStraight(cards []*Card) *Straight {
 
 // straightSatisfy 实现Python的Straight.satisfy逻辑
 func straightSatisfy(cards []*Card) (bool, []*Card) {
-	if len(cards) != 5 {
-		return false, sortCards(cards)
+	if len(cards) != STRAIGHT_CARD_COUNT {
+		return failWithSortedCards(cards)
 	}
 
 	// 排序卡片，将level卡片放在适当位置
@@ -620,14 +717,8 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 	}
 
 	// 最大牌不能超过A
-	maxCard := 0
-	for _, num := range cardNumbers {
-		if num > maxCard {
-			maxCard = num
-		}
-	}
-	if maxCard > 14 {
-		return false, sortCards(cards)
+	if getMaxCardNumber(sortedCards) > 14 {
+		return failWithSortedCards(cards)
 	}
 
 	// 没有变化牌
@@ -635,24 +726,21 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 		if cardNumbers[0]+4 == cardNumbers[4] && len(removeDuplicates(cardNumbers)) == 5 {
 			return true, sortedCards
 		}
-		return false, sortCards(cards)
+		return failWithSortedCards(cards)
 	}
 
 	// 一个变化牌
 	if numWildcards == 1 {
-		firstFour := make([]int, 4)
-		for i := 0; i < 4; i++ {
-			firstFour[i] = cardNumbers[i] - cardNumbers[0]
-		}
+		firstFour := computeRelativeDiffs(cardNumbers, 4)
 
 		// i, i+1, i+2, i+3 wild
-		if isArrayEqual(firstFour, []int{0, 1, 2, 3}) {
+		if matchesPattern(firstFour, STRAIGHT_PATTERN_0123) {
 			if cardNumbers[3] <= 13 {
 				return true, sortedCards
 			}
 			if cardNumbers[3] == 14 {
 				// A的特殊处理：将变化牌放在前面
-				newOrder := make([]*Card, 5)
+				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
 				newOrder[0] = sortedCards[4] // 变化牌
 				copy(newOrder[1:], sortedCards[0:3])
 				newOrder[4] = sortedCards[3] // A
@@ -661,8 +749,8 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 		}
 
 		// i, i+1, i+2, i+4 wild
-		if isArrayEqual(firstFour, []int{0, 1, 2, 4}) {
-			newOrder := make([]*Card, 5)
+		if matchesPattern(firstFour, STRAIGHT_PATTERN_0124) {
+			newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
 			copy(newOrder[0:3], sortedCards[0:3])
 			newOrder[3] = sortedCards[4] // 变化牌
 			newOrder[4] = sortedCards[3]
@@ -670,8 +758,8 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 		}
 
 		// i, i+1, i+3, i+4 wild
-		if isArrayEqual(firstFour, []int{0, 1, 3, 4}) {
-			newOrder := make([]*Card, 5)
+		if matchesPattern(firstFour, STRAIGHT_PATTERN_0134) {
+			newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
 			copy(newOrder[0:2], sortedCards[0:2])
 			newOrder[2] = sortedCards[4] // 变化牌
 			copy(newOrder[3:], sortedCards[2:4])
@@ -679,32 +767,29 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 		}
 
 		// i, i+2, i+3, i+4 wild
-		if isArrayEqual(firstFour, []int{0, 2, 3, 4}) {
-			newOrder := make([]*Card, 5)
+		if matchesPattern(firstFour, STRAIGHT_PATTERN_0234) {
+			newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
 			newOrder[0] = sortedCards[0]
 			newOrder[1] = sortedCards[4] // 变化牌
 			copy(newOrder[2:], sortedCards[1:4])
 			return true, newOrder
 		}
 
-		return false, sortCards(cards)
+		return failWithSortedCards(cards)
 	}
 
 	// 两个变化牌
 	if numWildcards == 2 {
-		firstThree := make([]int, 3)
-		for i := 0; i < 3; i++ {
-			firstThree[i] = cardNumbers[i] - cardNumbers[0]
-		}
+		firstThree := computeRelativeDiffs(cardNumbers, 3)
 
 		// i, i+1, i+2, wild, wild
-		if isArrayEqual(firstThree, []int{0, 1, 2}) {
+		if matchesPattern(firstThree, STRAIGHT_PATTERN_012) {
 			if cardNumbers[2] <= 12 {
 				return true, sortedCards
 			}
 			if cardNumbers[2] == 13 {
 				// K的特殊处理
-				newOrder := make([]*Card, 5)
+				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
 				newOrder[0] = sortedCards[4]
 				copy(newOrder[1:4], sortedCards[1:4])
 				newOrder[4] = sortedCards[3]
@@ -712,7 +797,7 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 			}
 			if cardNumbers[2] == 14 {
 				// A的特殊处理
-				newOrder := make([]*Card, 5)
+				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
 				copy(newOrder[0:2], sortedCards[3:5])
 				copy(newOrder[2:], sortedCards[1:4])
 				return true, newOrder
@@ -720,18 +805,14 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 		}
 
 		// 处理其他二变化牌的情况
-		if isArrayEqual(firstThree, []int{0, 2, 3}) ||
-			isArrayEqual(firstThree, []int{0, 1, 3}) ||
-			isArrayEqual(firstThree, []int{0, 2, 4}) ||
-			isArrayEqual(firstThree, []int{0, 3, 4}) ||
-			isArrayEqual(firstThree, []int{0, 1, 4}) {
+		if anyPatternMatches(firstThree, STRAIGHT_PATTERN_023, STRAIGHT_PATTERN_013, STRAIGHT_PATTERN_024, STRAIGHT_PATTERN_034, STRAIGHT_PATTERN_014) {
 			return true, sortedCards
 		}
 
-		return false, sortCards(cards)
+		return failWithSortedCards(cards)
 	}
 
-	return false, sortCards(cards)
+	return failWithSortedCards(cards)
 }
 
 // removeDuplicates 移除重复元素
@@ -775,47 +856,77 @@ func (s *Straight) GreaterThan(other CardComp) bool {
 
 // getStraightComparisonKey 获取顺子的比较键值
 func getStraightComparisonKey(cards []*Card) int {
-	normalCards := getNormalCards(cards)
-	if len(normalCards) == 0 {
+	if len(cards) != STRAIGHT_CARD_COUNT {
 		return 0
 	}
 
-	// 获取非变化牌的数字
-	cardNumbers := make([]int, len(normalCards))
-	for i, card := range normalCards {
-		cardNumbers[i] = card.Number
-	}
+	// cards已经通过straightSatisfy重构，直接分析重构后的序列
+	// 构建数字序列，万能牌用前后推导的值填充
+	sequence := make([]int, STRAIGHT_CARD_COUNT)
+	hasWildcard := false
 
-	// 如果包含A，需要特殊处理
-	hasAce := false
-	for _, num := range cardNumbers {
-		if num == 14 {
-			hasAce = true
-			break
+	// 先填入所有非万能牌的值
+	for i, card := range cards {
+		if card.IsWildcard() {
+			hasWildcard = true
+			sequence[i] = -1 // 标记为待填充
+		} else {
+			sequence[i] = card.Number
 		}
 	}
 
-	// 如果有A，判断是低端序列还是高端序列
-	if hasAce {
-		// 检查是否为A-2-3-4-5类型的低端序列
-		minNum := cardNumbers[0]
-		for _, num := range cardNumbers {
-			if num < minNum {
-				minNum = num
+	// 如果有万能牌，通过前后推导填充
+	if hasWildcard {
+		for i := 0; i < STRAIGHT_CARD_COUNT; i++ {
+			if sequence[i] == -1 {
+				// 查找最近的非万能牌来推导
+				expectedValue := -1
+				if i > 0 && sequence[i-1] != -1 {
+					expectedValue = sequence[i-1] + 1
+				} else if i < STRAIGHT_CARD_COUNT-1 && sequence[i+1] != -1 {
+					expectedValue = sequence[i+1] - 1
+				}
+
+				// 如果还是推导不出，使用位置推导
+				if expectedValue == -1 {
+					// 找到第一个非万能牌作为参考点
+					for j := 0; j < STRAIGHT_CARD_COUNT; j++ {
+						if sequence[j] != -1 {
+							expectedValue = sequence[j] + (i - j)
+							break
+						}
+					}
+				}
+
+				sequence[i] = expectedValue
 			}
 		}
-		if minNum <= 5 {
-			// 低端序列，A作为1处理
-			return 1
-		} else {
-			// 高端序列，A作为14处理
-			return 10 // 使用10作为所有包含A的高端顺子的键值，确保相等
+	}
+
+	// 处理A的循环性
+	// 如果序列包含A(14)和小牌，判断是否为A-2-3-4-5类型
+	hasAce := false
+	hasSmallCard := false
+	for _, num := range sequence {
+		if num == 14 || num == 1 { // A可能被表示为1或14
+			hasAce = true
+		}
+		if num >= 2 && num <= 5 {
+			hasSmallCard = true
 		}
 	}
 
-	// 没有A的情况，返回最小的牌
-	minNum := cardNumbers[0]
-	for _, num := range cardNumbers {
+	if hasAce && hasSmallCard {
+		// A-2-3-4-5 低端顺子
+		return 1
+	} else if hasAce {
+		// 包含A的高端顺子，统一返回相同键值
+		return 10
+	}
+
+	// 普通顺子，返回最小值
+	minNum := sequence[0]
+	for _, num := range sequence {
 		if num < minNum {
 			minNum = num
 		}
@@ -856,8 +967,8 @@ func NewPlate(cards []*Card) *Plate {
 
 // plateSatisfy 实现Python的Plate.satisfy逻辑
 func plateSatisfy(cards []*Card) (bool, []*Card) {
-	if len(cards) != 6 {
-		return false, sortCards(cards)
+	if len(cards) != PLATE_CARD_COUNT {
+		return failWithSortedCards(cards)
 	}
 
 	// 排序卡片
@@ -890,7 +1001,7 @@ func plateSatisfy(cards []*Card) (bool, []*Card) {
 				return true, append(triple2.Cards, triple1.Cards...)
 			}
 		}
-		return false, sortedCards
+		return failWithSortedCards(sortedCards)
 	}
 
 	// 如果有至少1个变化牌
@@ -907,7 +1018,7 @@ func plateSatisfy(cards []*Card) (bool, []*Card) {
 
 			// 普通连续情况
 			if tripleNum+1 == pairNum {
-				result := make([]*Card, 0)
+				result := createResult()
 				result = append(result, triple...)
 				result = append(result, pair...)
 				result = append(result, sortedCards[5]) // 变化牌
@@ -915,7 +1026,7 @@ func plateSatisfy(cards []*Card) (bool, []*Card) {
 			}
 
 			if tripleNum-1 == pairNum {
-				result := make([]*Card, 0)
+				result := createResult()
 				result = append(result, pair...)
 				result = append(result, sortedCards[5]) // 变化牌
 				result = append(result, triple...)
@@ -924,7 +1035,7 @@ func plateSatisfy(cards []*Card) (bool, []*Card) {
 
 			// A的特殊情况
 			if tripleNum == 14 && pairNum == 2 {
-				result := make([]*Card, 0)
+				result := createResult()
 				result = append(result, triple...)
 				result = append(result, pair...)
 				result = append(result, sortedCards[5]) // 变化牌
@@ -932,17 +1043,17 @@ func plateSatisfy(cards []*Card) (bool, []*Card) {
 			}
 
 			if tripleNum == 2 && pairNum == 14 {
-				result := make([]*Card, 0)
+				result := createResult()
 				result = append(result, pair...)
 				result = append(result, sortedCards[5]) // 变化牌
 				result = append(result, triple...)
 				return true, result
 			}
 		}
-		return false, sortedCards
+		return failWithSortedCards(sortedCards)
 	}
 
-	return false, sortedCards
+	return failWithSortedCards(sortedCards)
 }
 
 func (p *Plate) GreaterThan(other CardComp) bool {
@@ -986,8 +1097,8 @@ func NewTube(cards []*Card) *Tube {
 
 // tubeSatisfy 实现Python的Tube.satisfy逻辑
 func tubeSatisfy(cards []*Card) (bool, []*Card) {
-	if len(cards) != 6 {
-		return false, sortCards(cards)
+	if len(cards) != TUBE_CARD_COUNT {
+		return failWithSortedCards(cards)
 	}
 
 	// 使用sort_no_level排序
@@ -1001,14 +1112,8 @@ func tubeSatisfy(cards []*Card) (bool, []*Card) {
 	}
 
 	// 检查最大牌数不超过A
-	maxCard := 0
-	for _, num := range cardNumbers {
-		if num > maxCard {
-			maxCard = num
-		}
-	}
-	if maxCard > 14 {
-		return false, sortCards(cards)
+	if getMaxCardNumber(sortedCards) > 14 {
+		return failWithSortedCards(cards)
 	}
 
 	// 没有变化牌的情况
@@ -1019,102 +1124,93 @@ func tubeSatisfy(cards []*Card) (bool, []*Card) {
 			uniqueNumbers[num] = true
 		}
 		if len(uniqueNumbers) == 3 {
-			temp := make([]int, len(cardNumbers))
-			for i, num := range cardNumbers {
-				temp[i] = num - cardNumbers[0]
-			}
-			if isArrayEqual(temp, []int{0, 0, 1, 1, 2, 2}) {
+			temp := computeRelativeDiffs(cardNumbers, len(cardNumbers))
+			if matchesPattern(temp, TUBE_PATTERN_TRIPLET) {
 				return true, sortedCards
 			}
 		}
-		return false, sortCards(cards)
+		return failWithSortedCards(cards)
 	}
 
 	// 一个变化牌的情况
 	if wildcardCount == 1 {
-		firstFive := make([]int, 5)
-		for i := 0; i < 5; i++ {
-			firstFive[i] = cardNumbers[i] - cardNumbers[0]
-		}
+		firstFive := computeRelativeDiffs(cardNumbers, 5)
 
 		// i, i, i+1, i+1, i+2 wild
-		if isArrayEqual(firstFive, []int{0, 0, 1, 1, 2}) {
+		if matchesPattern(firstFive, TUBE_PATTERN_0112) {
 			return true, sortedCards
 		}
 		// i, i, i+1, i+2, i+2 wild
-		if isArrayEqual(firstFive, []int{0, 0, 1, 2, 2}) {
-			result := make([]*Card, 0)
+		if matchesPattern(firstFive, TUBE_PATTERN_0122) {
+			result := createResult()
 			result = append(result, sortedCards[0:3]...)
 			result = append(result, sortedCards[5])
 			result = append(result, sortedCards[3:5]...)
 			return true, result
 		}
 		// i, i+1, i+1, i+2, i+2 wild
-		if isArrayEqual(firstFive, []int{0, 1, 1, 2, 2}) {
-			result := make([]*Card, 0)
+		if matchesPattern(firstFive, TUBE_PATTERN_1122) {
+			result := createResult()
 			result = append(result, sortedCards[0:1]...)
 			result = append(result, sortedCards[5])
 			result = append(result, sortedCards[1:5]...)
 			return true, result
 		}
-		return false, sortCards(cards)
+		return failWithSortedCards(cards)
 	}
 
 	// 两个变化牌的情况
 	if wildcardCount == 2 {
-		firstFour := make([]int, 4)
-		for i := 0; i < 4; i++ {
-			firstFour[i] = cardNumbers[i] - cardNumbers[0]
-		}
+		firstFour := computeRelativeDiffs(cardNumbers, 4)
 
 		// i, i, i+1, i+1, wild wild
-		if isArrayEqual(firstFour, []int{0, 0, 1, 1}) {
+		if matchesPattern(firstFour, TUBE_PATTERN_0011) {
 			if sortedCards[3].Number < 14 { // i+1 smaller than Ace
 				return true, sortedCards
 			} else {
 				// 重新排序：将后面的变化牌移到前面
-				result := make([]*Card, 0)
+				result := createResult()
 				result = append(result, sortedCards[4:6]...)
 				result = append(result, sortedCards[0:4]...)
 				return true, result
 			}
 		}
 		// i, i, i+2, i+2, wild, wild
-		if isArrayEqual(firstFour, []int{0, 0, 2, 2}) {
-			result := make([]*Card, 0)
+		if matchesPattern(firstFour, TUBE_PATTERN_0022) {
+			result := createResult()
 			result = append(result, sortedCards[0:2]...)
 			result = append(result, sortedCards[4:6]...)
 			result = append(result, sortedCards[2:4]...)
 			return true, result
 		}
 		// i i i+1 i+2 wild wild
-		if isArrayEqual(firstFour, []int{0, 0, 1, 2}) {
-			result := make([]*Card, 0)
+		if matchesPattern(firstFour, TUBE_PATTERN_0012) {
+			result := createResult()
 			result = append(result, sortedCards[0:2]...)
 			result = append(result, sortedCards[2], sortedCards[5])
 			result = append(result, sortedCards[3], sortedCards[4])
 			return true, result
 		}
 		// i i+1 i+1 i+2 wild wild
-		if isArrayEqual(firstFour, []int{0, 1, 1, 2}) {
-			result := make([]*Card, 0)
+		if matchesPattern(firstFour, TUBE_PATTERN_0112_ALT) {
+			result := createResult()
 			result = append(result, sortedCards[0], sortedCards[5])
 			result = append(result, sortedCards[1:3]...)
 			result = append(result, sortedCards[3], sortedCards[4])
 			return true, result
 		}
 		// i i+1 i+2 i+2 wild wild
-		if isArrayEqual(firstFour, []int{0, 1, 2, 2}) {
-			result := make([]*Card, 0)
+		if matchesPattern(firstFour, TUBE_PATTERN_0122_ALT) {
+			result := createResult()
 			result = append(result, sortedCards[0], sortedCards[5])
 			result = append(result, sortedCards[1], sortedCards[4])
 			result = append(result, sortedCards[2:4]...)
 			return true, result
 		}
-		return false, sortCards(cards)
+		return failWithSortedCards(cards)
 	}
 
-	return false, sortCards(cards)
+	return failWithSortedCards(cards)
 }
 
 func (t *Tube) GreaterThan(other CardComp) bool {
