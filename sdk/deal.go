@@ -143,7 +143,10 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 	
 	// Check if trick is finished (all players played or passed)
 	if d.isTrickFinished() {
-		return d.finishCurrentTrick()
+		err = d.finishCurrentTrick()
+		if err != nil {
+			return fmt.Errorf("failed to finish trick: %w", err)
+		}
 	}
 	
 	return nil
@@ -255,7 +258,7 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 	}
 	
 	// Check trick timeout
-	if d.Status == DealStatusPlaying && d.CurrentTrick != nil {
+	if d.Status == DealStatusPlaying && d.CurrentTrick != nil && d.CurrentTrick.Status == TrickStatusPlaying {
 		if now.After(d.CurrentTrick.TurnTimeout) {
 			currentPlayer := d.CurrentTrick.CurrentTurn
 			
@@ -272,6 +275,31 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 					PlayerSeat: currentPlayer,
 				}
 				events = append(events, event)
+			} else {
+				// If pass fails, try to play a card instead (for trick leader)
+				if d.CurrentTrick.LeadComp == nil && len(d.PlayerCards[currentPlayer]) > 0 {
+					// Find smallest card to play
+					smallestCard := d.PlayerCards[currentPlayer][0]
+					for _, card := range d.PlayerCards[currentPlayer] {
+						if card.LessThan(smallestCard) {
+							smallestCard = card
+						}
+					}
+					
+					playErr := d.PlayCards(currentPlayer, []*Card{smallestCard})
+					if playErr == nil {
+						event := &GameEvent{
+							Type: EventPlayerTimeout,
+							Data: map[string]interface{}{
+								"player_seat": currentPlayer,
+								"action":      "auto_play",
+							},
+							Timestamp:  now,
+							PlayerSeat: currentPlayer,
+						}
+						events = append(events, event)
+					}
+				}
 			}
 		}
 	}

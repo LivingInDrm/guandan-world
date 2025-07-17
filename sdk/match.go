@@ -64,6 +64,12 @@ func (m *Match) StartNewDeal() error {
 	m.CurrentDeal = deal
 	m.Status = MatchStatusPlaying
 	
+	// Start the deal (deal cards and begin play)
+	err = deal.StartDeal()
+	if err != nil {
+		return fmt.Errorf("failed to start deal: %w", err)
+	}
+	
 	return nil
 }
 

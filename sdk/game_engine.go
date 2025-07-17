@@ -182,7 +182,17 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 		return nil, errors.New("no active deal")
 	}
 	
-	err := ge.currentMatch.CurrentDeal.PlayCards(playerSeat, cards)
+	deal := ge.currentMatch.CurrentDeal
+	
+	// Use validator to validate the play
+	validator := NewPlayValidator(deal.Level)
+	err := validator.ValidatePlay(playerSeat, cards, deal.PlayerCards[playerSeat], deal.CurrentTrick)
+	if err != nil {
+		return nil, fmt.Errorf("invalid play: %w", err)
+	}
+	
+	// Execute the play
+	err = deal.PlayCards(playerSeat, cards)
 	if err != nil {
 		return nil, fmt.Errorf("failed to play cards: %w", err)
 	}
@@ -195,12 +205,18 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 		Data:       map[string]interface{}{
 			"player_seat": playerSeat,
 			"cards":       cards,
-			"deal_state":  ge.currentMatch.CurrentDeal,
+			"deal_state":  deal,
 		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerSeat,
 	}
 	ge.emitEvent(event)
+	
+	// Check for automatic state transitions
+	events := ge.checkStateTransitions()
+	for _, evt := range events {
+		ge.emitEvent(evt)
+	}
 	
 	return event, nil
 }
@@ -214,7 +230,17 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 		return nil, errors.New("no active deal")
 	}
 	
-	err := ge.currentMatch.CurrentDeal.PassTurn(playerSeat)
+	deal := ge.currentMatch.CurrentDeal
+	
+	// Use validator to validate the pass
+	validator := NewPlayValidator(deal.Level)
+	err := validator.ValidatePass(playerSeat, deal.CurrentTrick)
+	if err != nil {
+		return nil, fmt.Errorf("invalid pass: %w", err)
+	}
+	
+	// Execute the pass
+	err = deal.PassTurn(playerSeat)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pass turn: %w", err)
 	}
@@ -226,12 +252,18 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 		Type:       EventPlayerPassed,
 		Data:       map[string]interface{}{
 			"player_seat": playerSeat,
-			"deal_state":  ge.currentMatch.CurrentDeal,
+			"deal_state":  deal,
 		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerSeat,
 	}
 	ge.emitEvent(event)
+	
+	// Check for automatic state transitions
+	events := ge.checkStateTransitions()
+	for _, evt := range events {
+		ge.emitEvent(evt)
+	}
 	
 	return event, nil
 }
@@ -245,7 +277,17 @@ func (ge *GameEngine) SelectTribute(playerSeat int, card *Card) (*GameEvent, err
 		return nil, errors.New("no active deal")
 	}
 	
-	err := ge.currentMatch.CurrentDeal.SelectTribute(playerSeat, card)
+	deal := ge.currentMatch.CurrentDeal
+	
+	// Use validator to validate the tribute selection
+	validator := NewTributeValidator(deal.Level)
+	err := validator.ValidateTributeSelection(playerSeat, card, deal.TributePhase, deal.PlayerCards[playerSeat])
+	if err != nil {
+		return nil, fmt.Errorf("invalid tribute selection: %w", err)
+	}
+	
+	// Execute the tribute selection
+	err = deal.SelectTribute(playerSeat, card)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select tribute: %w", err)
 	}
@@ -256,14 +298,20 @@ func (ge *GameEngine) SelectTribute(playerSeat int, card *Card) (*GameEvent, err
 	event := &GameEvent{
 		Type:       EventTributePhase,
 		Data:       map[string]interface{}{
-			"player_seat": playerSeat,
-			"card":        card,
-			"tribute_phase": ge.currentMatch.CurrentDeal.TributePhase,
+			"player_seat":   playerSeat,
+			"card":          card,
+			"tribute_phase": deal.TributePhase,
 		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerSeat,
 	}
 	ge.emitEvent(event)
+	
+	// Check for automatic state transitions
+	events := ge.checkStateTransitions()
+	for _, evt := range events {
+		ge.emitEvent(evt)
+	}
 	
 	return event, nil
 }
@@ -447,6 +495,187 @@ func (ge *GameEngine) getVisibleCardsForPlayer(playerSeat int) []*Card {
 	}
 	
 	return visibleCards
+}
+
+// checkStateTransitions checks for and handles automatic state transitions
+func (ge *GameEngine) checkStateTransitions() []*GameEvent {
+	events := make([]*GameEvent, 0)
+	
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return events
+	}
+	
+	deal := ge.currentMatch.CurrentDeal
+	
+	// Check if current trick is finished
+	if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusFinished {
+		// Emit trick ended event
+		trickEndedEvent := &GameEvent{
+			Type: EventTrickEnded,
+			Data: map[string]interface{}{
+				"trick":        deal.CurrentTrick,
+				"winner":       deal.CurrentTrick.Winner,
+				"next_leader":  deal.CurrentTrick.Winner,
+			},
+			Timestamp: time.Now(),
+		}
+		events = append(events, trickEndedEvent)
+		
+		// Check if deal is finished
+		if deal.Status == DealStatusFinished {
+			// Create deal result
+			dealResult := ge.createDealResult(deal)
+			
+			// Emit deal ended event
+			dealEndedEvent := &GameEvent{
+				Type: EventDealEnded,
+				Data: map[string]interface{}{
+					"deal":        deal,
+					"result":      dealResult,
+					"rankings":    deal.Rankings,
+				},
+				Timestamp: time.Now(),
+			}
+			events = append(events, dealEndedEvent)
+			
+			// Update match with deal result
+			err := ge.currentMatch.FinishDeal(dealResult)
+			if err == nil {
+				// Check if match is finished
+				if ge.currentMatch.Status == MatchStatusFinished {
+					ge.status = GameStatusFinished
+					
+					// Emit match ended event
+					matchEndedEvent := &GameEvent{
+						Type: EventMatchEnded,
+						Data: map[string]interface{}{
+							"match":        ge.currentMatch,
+							"winner":       ge.currentMatch.Winner,
+							"final_levels": ge.currentMatch.TeamLevels,
+						},
+						Timestamp: time.Now(),
+					}
+					events = append(events, matchEndedEvent)
+				}
+			}
+		} else if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
+			// Start the new trick
+			err := deal.CurrentTrick.StartTrick()
+			if err == nil {
+				trickStartedEvent := &GameEvent{
+					Type: EventTrickStarted,
+					Data: map[string]interface{}{
+						"trick":        deal.CurrentTrick,
+						"leader":       deal.CurrentTrick.Leader,
+						"current_turn": deal.CurrentTrick.CurrentTurn,
+					},
+					Timestamp: time.Now(),
+				}
+				events = append(events, trickStartedEvent)
+			}
+		}
+	}
+	
+	return events
+}
+
+// createDealResult creates a DealResult from a finished deal
+func (ge *GameEngine) createDealResult(deal *Deal) *DealResult {
+	if deal == nil || deal.Status != DealStatusFinished {
+		return nil
+	}
+	
+	// Determine winning team (team of first finisher)
+	winningTeam := -1
+	if len(deal.Rankings) > 0 {
+		winningTeam = ge.currentMatch.GetTeamForPlayer(deal.Rankings[0])
+	}
+	
+	// Determine victory type
+	victoryType := VictoryTypeNormal
+	if len(deal.Rankings) >= 4 {
+		// Check for double down (both opponents finished last)
+		team0Count := 0
+		team1Count := 0
+		
+		// Count how many from each team finished in top 2
+		for i := 0; i < 2 && i < len(deal.Rankings); i++ {
+			if ge.currentMatch.GetTeamForPlayer(deal.Rankings[i]) == 0 {
+				team0Count++
+			} else {
+				team1Count++
+			}
+		}
+		
+		if team0Count == 2 || team1Count == 2 {
+			victoryType = VictoryTypeDoubleDown
+		}
+	}
+	
+	// Calculate upgrades based on victory type
+	upgrades := [2]int{0, 0}
+	if winningTeam >= 0 {
+		switch victoryType {
+		case VictoryTypeNormal:
+			upgrades[winningTeam] = 1
+		case VictoryTypeDoubleDown:
+			upgrades[winningTeam] = 2
+		case VictoryTypeTripleDown:
+			upgrades[winningTeam] = 3
+		}
+	}
+	
+	// Calculate duration
+	duration := time.Duration(0)
+	if deal.EndTime != nil {
+		duration = deal.EndTime.Sub(deal.StartTime)
+	}
+	
+	return &DealResult{
+		Rankings:    deal.Rankings,
+		WinningTeam: winningTeam,
+		VictoryType: victoryType,
+		Upgrades:    upgrades,
+		Duration:    duration,
+		TrickCount:  len(deal.TrickHistory),
+	}
+}
+
+// AutoPlayForPlayer executes an automatic play for a player (used for disconnected/timeout players)
+func (ge *GameEngine) AutoPlayForPlayer(playerSeat int) (*GameEvent, error) {
+	// Don't lock here since we'll call PlayCards or PassTurn which will lock
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return nil, errors.New("no active deal")
+	}
+	
+	deal := ge.currentMatch.CurrentDeal
+	
+	// Check if it's the player's turn
+	if deal.CurrentTrick == nil || deal.CurrentTrick.CurrentTurn != playerSeat {
+		return nil, errors.New("not player's turn")
+	}
+	
+	// Auto-play strategy: if trick leader, play smallest card; otherwise pass
+	if deal.CurrentTrick.LeadComp == nil {
+		// Player is trick leader - play smallest single card
+		playerCards := deal.PlayerCards[playerSeat]
+		if len(playerCards) > 0 {
+			// Find smallest card
+			smallestCard := playerCards[0]
+			for _, card := range playerCards {
+				if card.LessThan(smallestCard) {
+					smallestCard = card
+				}
+			}
+			
+			return ge.PlayCards(playerSeat, []*Card{smallestCard})
+		}
+	} else {
+		// Player is not leader - pass
+		return ge.PassTurn(playerSeat)
+	}
+	
+	return nil, errors.New("unable to auto-play")
 }
 
 // generateID generates a unique ID for the game engine

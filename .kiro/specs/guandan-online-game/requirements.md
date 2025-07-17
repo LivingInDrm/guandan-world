@@ -121,17 +121,18 @@
 6. WHEN 任一队达到A级 THEN 系统 SHALL 显示Match结算和最终比分
 7. WHEN 未达到A级 THEN 系统 SHALL 提供继续或退出选项
 
+
 ### 需求 9 - Match管理系统
 
 **用户故事：** 作为游戏玩家，我希望能够进行多局连续游戏直到有队伍获胜，这样就能体验完整的掼蛋比赛。
 
 #### 验收标准
-
 1. WHEN Deal结束且未达到A级 THEN 系统 SHALL 允许玩家选择继续当前Match
 2. WHEN 玩家选择继续 THEN 系统 SHALL 更新等级并开始下一局
 3. WHEN 玩家选择退出 THEN 系统 SHALL 结束Match并返回房间大厅
 4. WHEN Match结束 THEN 系统 SHALL 显示两队成员、等级、时间统计
 5. WHEN 有队伍达到A级 THEN 系统 SHALL 显示最终胜负结果
+
 
 ### 需求 10 - 用户断线和托管
 
@@ -144,6 +145,7 @@
 3. WHEN 托管用户非Trick Leader THEN 系统 SHALL 自动执行Pass操作
 4. WHEN 用户连续2次超时 THEN 系统 SHALL 将用户设为托管状态
 5. WHEN 游戏进行中 THEN 系统 SHALL 禁止新用户加入房间
+
 
 ### 需求 11 - 操作时间控制
 
