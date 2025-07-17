@@ -219,14 +219,19 @@ func (m *Match) getLastDealResult() *DealResult {
 		return nil // Deal not finished
 	}
 	
-	// Create deal result from the last deal
-	// This is a simplified version - full implementation would be in deal.go
-	return &DealResult{
-		Rankings:    lastDeal.Rankings,
-		WinningTeam: m.GetTeamForPlayer(lastDeal.Rankings[0]),
-		VictoryType: VictoryTypeNormal, // Simplified
-		Upgrades:    [2]int{1, 0},      // Simplified
+	// Calculate proper deal result using the result calculator
+	result, err := lastDeal.CalculateResult(m)
+	if err != nil {
+		// Fallback to basic result if calculation fails
+		return &DealResult{
+			Rankings:    lastDeal.Rankings,
+			WinningTeam: m.GetTeamForPlayer(lastDeal.Rankings[0]),
+			VictoryType: VictoryTypeNormal,
+			Upgrades:    [2]int{1, 0},
+		}
 	}
+	
+	return result
 }
 
 // updateTeamLevels updates team levels based on deal result
@@ -283,15 +288,7 @@ func generateMatchID() string {
 	return fmt.Sprintf("match_%d", time.Now().UnixNano())
 }
 
-// DealResult represents the result of a completed deal
-type DealResult struct {
-	Rankings    []int         `json:"rankings"`     // Order of finishing (seat numbers)
-	WinningTeam int           `json:"winning_team"` // 0 or 1
-	VictoryType VictoryType   `json:"victory_type"`
-	Upgrades    [2]int        `json:"upgrades"`     // Level upgrades for each team
-	Duration    time.Duration `json:"duration"`
-	TrickCount  int           `json:"trick_count"`
-}
+
 
 // VictoryType represents the type of victory in a deal
 type VictoryType string
@@ -301,6 +298,222 @@ const (
 	VictoryTypeDoubleDown VictoryType = "double_down" // Both opponents finished last
 	VictoryTypeTripleDown VictoryType = "triple_down" // Three players finished before any opponent
 )
+
+// CanStartNewDeal checks if a new deal can be started
+func (m *Match) CanStartNewDeal() bool {
+	return m.Status == MatchStatusWaiting && !m.isMatchFinished()
+}
+
+// GetMatchStatistics returns comprehensive match statistics
+func (m *Match) GetMatchStatistics() *MatchStatistics {
+	stats := &MatchStatistics{
+		TotalDeals:    len(m.DealHistory),
+		TotalDuration: time.Duration(0),
+		FinalLevels:   m.TeamLevels,
+		TeamStats:     [2]*TeamMatchStats{},
+	}
+	
+	// Initialize team stats
+	for team := 0; team < 2; team++ {
+		stats.TeamStats[team] = &TeamMatchStats{
+			Team:        team,
+			DealsWon:    0,
+			TotalTricks: 0,
+			Upgrades:    0,
+		}
+	}
+	
+	// Calculate total duration
+	if m.EndTime != nil {
+		stats.TotalDuration = m.EndTime.Sub(m.StartTime)
+	} else {
+		stats.TotalDuration = time.Since(m.StartTime)
+	}
+	
+	// Calculate team statistics from deal history
+	for _, deal := range m.DealHistory {
+		if result, err := deal.CalculateResult(m); err == nil {
+			// Count deals won
+			stats.TeamStats[result.WinningTeam].DealsWon++
+			
+			// Count upgrades
+			for team := 0; team < 2; team++ {
+				stats.TeamStats[team].Upgrades += result.Upgrades[team]
+			}
+			
+			// Count tricks won by each team
+			if result.Statistics != nil {
+				for _, playerStats := range result.Statistics.PlayerStats {
+					if playerStats != nil {
+						team := m.GetTeamForPlayer(playerStats.PlayerSeat)
+						stats.TeamStats[team].TotalTricks += playerStats.TricksWon
+					}
+				}
+			}
+		}
+	}
+	
+	return stats
+}
+
+// GetMatchResult creates a complete match result (for finished matches)
+func (m *Match) GetMatchResult() *MatchResult {
+	if m.Status != MatchStatusFinished {
+		return nil
+	}
+	
+	duration := time.Duration(0)
+	if m.EndTime != nil {
+		duration = m.EndTime.Sub(m.StartTime)
+	}
+	
+	return &MatchResult{
+		Winner:      m.Winner,
+		FinalLevels: m.TeamLevels,
+		Duration:    duration,
+		Statistics:  m.GetMatchStatistics(),
+	}
+}
+
+// GetCurrentLevel returns the current level for the match (highest team level)
+func (m *Match) GetCurrentLevel() int {
+	return m.getHighestTeamLevel()
+}
+
+// GetTeamLevel returns the current level for a specific team
+func (m *Match) GetTeamLevel(team int) int {
+	if team < 0 || team > 1 {
+		return 0
+	}
+	return m.TeamLevels[team]
+}
+
+// GetPlayerTeamLevel returns the current level for a player's team
+func (m *Match) GetPlayerTeamLevel(playerSeat int) int {
+	team := m.GetTeamForPlayer(playerSeat)
+	return m.GetTeamLevel(team)
+}
+
+// IsTeamAtLevel checks if a team has reached a specific level
+func (m *Match) IsTeamAtLevel(team int, level int) bool {
+	return m.GetTeamLevel(team) >= level
+}
+
+// IsAnyTeamAtALevel checks if any team has reached A level (14)
+func (m *Match) IsAnyTeamAtALevel() bool {
+	return m.isMatchFinished()
+}
+
+// GetLeadingTeam returns the team with the higher level, or -1 if tied
+func (m *Match) GetLeadingTeam() int {
+	if m.TeamLevels[0] > m.TeamLevels[1] {
+		return 0
+	} else if m.TeamLevels[1] > m.TeamLevels[0] {
+		return 1
+	}
+	return -1 // Tied
+}
+
+// GetLevelDifference returns the level difference between teams (team0 - team1)
+func (m *Match) GetLevelDifference() int {
+	return m.TeamLevels[0] - m.TeamLevels[1]
+}
+
+// GetDealCount returns the number of completed deals
+func (m *Match) GetDealCount() int {
+	return len(m.DealHistory)
+}
+
+// GetLastDeal returns the last completed deal, or nil if no deals
+func (m *Match) GetLastDeal() *Deal {
+	if len(m.DealHistory) == 0 {
+		return nil
+	}
+	return m.DealHistory[len(m.DealHistory)-1]
+}
+
+// GetDealByIndex returns a deal by its index in history, or nil if invalid index
+func (m *Match) GetDealByIndex(index int) *Deal {
+	if index < 0 || index >= len(m.DealHistory) {
+		return nil
+	}
+	return m.DealHistory[index]
+}
+
+// HasActiveDeal checks if there's currently an active deal
+func (m *Match) HasActiveDeal() bool {
+	return m.CurrentDeal != nil && m.CurrentDeal.Status != DealStatusFinished
+}
+
+// GetActiveDeal returns the current active deal, or nil if none
+func (m *Match) GetActiveDeal() *Deal {
+	if m.HasActiveDeal() {
+		return m.CurrentDeal
+	}
+	return nil
+}
+
+// GetPlayerCount returns the number of players in the match
+func (m *Match) GetPlayerCount() int {
+	count := 0
+	for _, player := range m.Players {
+		if player != nil {
+			count++
+		}
+	}
+	return count
+}
+
+// GetOnlinePlayerCount returns the number of online players
+func (m *Match) GetOnlinePlayerCount() int {
+	count := 0
+	for _, player := range m.Players {
+		if player != nil && player.Online {
+			count++
+		}
+	}
+	return count
+}
+
+// GetAutoPlayPlayerCount returns the number of players in auto-play mode
+func (m *Match) GetAutoPlayPlayerCount() int {
+	count := 0
+	for _, player := range m.Players {
+		if player != nil && player.AutoPlay {
+			count++
+		}
+	}
+	return count
+}
+
+// GetPlayerByID returns a player by their ID, or nil if not found
+func (m *Match) GetPlayerByID(playerID string) *Player {
+	for _, player := range m.Players {
+		if player != nil && player.ID == playerID {
+			return player
+		}
+	}
+	return nil
+}
+
+// GetPlayerBySeat returns a player by their seat number, or nil if invalid/empty
+func (m *Match) GetPlayerBySeat(seat int) *Player {
+	if seat < 0 || seat > 3 {
+		return nil
+	}
+	return m.Players[seat]
+}
+
+// String returns a human-readable description of the match
+func (m *Match) String() string {
+	status := string(m.Status)
+	if m.Status == MatchStatusFinished {
+		return fmt.Sprintf("Match %s: %s (Winner: Team %d, Levels: %d-%d)", 
+			m.ID, status, m.Winner, m.TeamLevels[0], m.TeamLevels[1])
+	}
+	return fmt.Sprintf("Match %s: %s (Levels: %d-%d, Deals: %d)", 
+		m.ID, status, m.TeamLevels[0], m.TeamLevels[1], len(m.DealHistory))
+}
 
 // generateDealID generates a unique ID for a deal
 func generateDealID() string {

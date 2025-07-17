@@ -523,8 +523,19 @@ func (ge *GameEngine) checkStateTransitions() []*GameEvent {
 		
 		// Check if deal is finished
 		if deal.Status == DealStatusFinished {
-			// Create deal result
-			dealResult := ge.createDealResult(deal)
+			// Calculate deal result using the new result system
+			dealResult, err := deal.CalculateResult(ge.currentMatch)
+			if err != nil {
+				// Log error but continue - create a basic result
+				dealResult = &DealResult{
+					Rankings:    deal.Rankings,
+					WinningTeam: ge.currentMatch.GetTeamForPlayer(deal.Rankings[0]),
+					VictoryType: VictoryTypeNormal,
+					Upgrades:    [2]int{1, 0},
+					Duration:    time.Since(deal.StartTime),
+					TrickCount:  len(deal.TrickHistory),
+				}
+			}
 			
 			// Emit deal ended event
 			dealEndedEvent := &GameEvent{
@@ -533,23 +544,28 @@ func (ge *GameEngine) checkStateTransitions() []*GameEvent {
 					"deal":        deal,
 					"result":      dealResult,
 					"rankings":    deal.Rankings,
+					"statistics":  dealResult.Statistics,
 				},
 				Timestamp: time.Now(),
 			}
 			events = append(events, dealEndedEvent)
 			
 			// Update match with deal result
-			err := ge.currentMatch.FinishDeal(dealResult)
+			err = ge.currentMatch.FinishDeal(dealResult)
 			if err == nil {
 				// Check if match is finished
 				if ge.currentMatch.Status == MatchStatusFinished {
 					ge.status = GameStatusFinished
+					
+					// Create match result
+					matchResult := ge.createMatchResult()
 					
 					// Emit match ended event
 					matchEndedEvent := &GameEvent{
 						Type: EventMatchEnded,
 						Data: map[string]interface{}{
 							"match":        ge.currentMatch,
+							"result":       matchResult,
 							"winner":       ge.currentMatch.Winner,
 							"final_levels": ge.currentMatch.TeamLevels,
 						},
@@ -579,65 +595,64 @@ func (ge *GameEngine) checkStateTransitions() []*GameEvent {
 	return events
 }
 
-// createDealResult creates a DealResult from a finished deal
-func (ge *GameEngine) createDealResult(deal *Deal) *DealResult {
-	if deal == nil || deal.Status != DealStatusFinished {
+// createMatchResult creates a MatchResult from a finished match
+func (ge *GameEngine) createMatchResult() *MatchResult {
+	if ge.currentMatch == nil || ge.currentMatch.Status != MatchStatusFinished {
 		return nil
 	}
 	
-	// Determine winning team (team of first finisher)
-	winningTeam := -1
-	if len(deal.Rankings) > 0 {
-		winningTeam = ge.currentMatch.GetTeamForPlayer(deal.Rankings[0])
+	// Calculate total duration
+	duration := time.Duration(0)
+	if ge.currentMatch.EndTime != nil {
+		duration = ge.currentMatch.EndTime.Sub(ge.currentMatch.StartTime)
 	}
 	
-	// Determine victory type
-	victoryType := VictoryTypeNormal
-	if len(deal.Rankings) >= 4 {
-		// Check for double down (both opponents finished last)
-		team0Count := 0
-		team1Count := 0
-		
-		// Count how many from each team finished in top 2
-		for i := 0; i < 2 && i < len(deal.Rankings); i++ {
-			if ge.currentMatch.GetTeamForPlayer(deal.Rankings[i]) == 0 {
-				team0Count++
-			} else {
-				team1Count++
+	// Calculate match statistics
+	stats := &MatchStatistics{
+		TotalDeals:     len(ge.currentMatch.DealHistory),
+		TotalDuration:  duration,
+		FinalLevels:    ge.currentMatch.TeamLevels,
+		TeamStats:      [2]*TeamMatchStats{},
+	}
+	
+	// Initialize team stats
+	for team := 0; team < 2; team++ {
+		stats.TeamStats[team] = &TeamMatchStats{
+			Team:        team,
+			DealsWon:    0,
+			TotalTricks: 0,
+			Upgrades:    0,
+		}
+	}
+	
+	// Calculate team statistics from deal history
+	for _, deal := range ge.currentMatch.DealHistory {
+		if result, err := deal.CalculateResult(ge.currentMatch); err == nil {
+			// Count deals won
+			stats.TeamStats[result.WinningTeam].DealsWon++
+			
+			// Count upgrades
+			for team := 0; team < 2; team++ {
+				stats.TeamStats[team].Upgrades += result.Upgrades[team]
+			}
+			
+			// Count tricks won by each team
+			if result.Statistics != nil {
+				for _, playerStats := range result.Statistics.PlayerStats {
+					if playerStats != nil {
+						team := ge.currentMatch.GetTeamForPlayer(playerStats.PlayerSeat)
+						stats.TeamStats[team].TotalTricks += playerStats.TricksWon
+					}
+				}
 			}
 		}
-		
-		if team0Count == 2 || team1Count == 2 {
-			victoryType = VictoryTypeDoubleDown
-		}
 	}
 	
-	// Calculate upgrades based on victory type
-	upgrades := [2]int{0, 0}
-	if winningTeam >= 0 {
-		switch victoryType {
-		case VictoryTypeNormal:
-			upgrades[winningTeam] = 1
-		case VictoryTypeDoubleDown:
-			upgrades[winningTeam] = 2
-		case VictoryTypeTripleDown:
-			upgrades[winningTeam] = 3
-		}
-	}
-	
-	// Calculate duration
-	duration := time.Duration(0)
-	if deal.EndTime != nil {
-		duration = deal.EndTime.Sub(deal.StartTime)
-	}
-	
-	return &DealResult{
-		Rankings:    deal.Rankings,
-		WinningTeam: winningTeam,
-		VictoryType: victoryType,
-		Upgrades:    upgrades,
+	return &MatchResult{
+		Winner:      ge.currentMatch.Winner,
+		FinalLevels: ge.currentMatch.TeamLevels,
 		Duration:    duration,
-		TrickCount:  len(deal.TrickHistory),
+		Statistics:  stats,
 	}
 }
 

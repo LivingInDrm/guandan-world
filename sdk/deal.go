@@ -498,7 +498,7 @@ func (d *Deal) finishCurrentTrick() error {
 	return nil
 }
 
-// finishDeal finishes the deal
+// finishDeal finishes the deal and calculates the result
 func (d *Deal) finishDeal() error {
 	// Add remaining players to rankings
 	for seat := 0; seat < 4; seat++ {
@@ -519,6 +519,16 @@ func (d *Deal) finishDeal() error {
 	d.EndTime = &now
 	
 	return nil
+}
+
+// CalculateResult calculates the deal result using the result calculator
+func (d *Deal) CalculateResult(match *Match) (*DealResult, error) {
+	if d.Status != DealStatusFinished {
+		return nil, fmt.Errorf("deal is not finished")
+	}
+	
+	calculator := NewDealResultCalculator(d.Level)
+	return calculator.CalculateDealResult(d, match)
 }
 
 // determineFirstPlayer determines who plays first in the deal
