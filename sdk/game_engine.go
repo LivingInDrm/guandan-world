@@ -7,96 +7,319 @@ import (
 	"time"
 )
 
-// GameEventType defines the types of game events
+// GameEventType 定义游戏事件的类型
+// 游戏引擎通过这些事件类型来通知外部系统游戏状态的变化
 type GameEventType string
 
+// 游戏事件类型常量定义
+// 这些常量用于标识不同类型的游戏事件，外部系统可以通过监听这些事件来响应游戏状态变化
 const (
-	EventMatchStarted     GameEventType = "match_started"
-	EventDealStarted      GameEventType = "deal_started"
-	EventCardsDealt       GameEventType = "cards_dealt"
-	EventTributePhase     GameEventType = "tribute_phase"
-	EventTrickStarted     GameEventType = "trick_started"
-	EventPlayerPlayed     GameEventType = "player_played"
-	EventPlayerPassed     GameEventType = "player_passed"
-	EventTrickEnded       GameEventType = "trick_ended"
-	EventDealEnded        GameEventType = "deal_ended"
-	EventMatchEnded       GameEventType = "match_ended"
-	EventPlayerTimeout    GameEventType = "player_timeout"
-	EventPlayerDisconnect GameEventType = "player_disconnect"
-	EventPlayerReconnect  GameEventType = "player_reconnect"
+	EventMatchStarted     GameEventType = "match_started"     // 比赛开始事件
+	EventDealStarted      GameEventType = "deal_started"      // 牌局开始事件
+	EventCardsDealt       GameEventType = "cards_dealt"       // 发牌完成事件
+	EventTributePhase     GameEventType = "tribute_phase"     // 进贡阶段事件
+	EventTributeImmunity  GameEventType = "tribute_immunity"  // 免贡事件
+	EventTributeStarted   GameEventType = "tribute_started"   // 贡牌开始事件
+	EventTributeGiven     GameEventType = "tribute_given"     // 上贡完成事件
+	EventTributeSelected  GameEventType = "tribute_selected"  // 选牌完成事件（双下）
+	EventReturnTribute    GameEventType = "return_tribute"    // 还贡完成事件
+	EventTributeCompleted GameEventType = "tribute_completed" // 贡牌阶段结束事件
+	EventTrickStarted     GameEventType = "trick_started"     // 新轮次开始事件
+	EventPlayerPlayed     GameEventType = "player_played"     // 玩家出牌事件
+	EventPlayerPassed     GameEventType = "player_passed"     // 玩家过牌事件
+	EventTrickEnded       GameEventType = "trick_ended"       // 轮次结束事件
+	EventDealEnded        GameEventType = "deal_ended"        // 牌局结束事件
+	EventMatchEnded       GameEventType = "match_ended"       // 比赛结束事件
+	EventPlayerTimeout    GameEventType = "player_timeout"    // 玩家超时事件
+	EventPlayerDisconnect GameEventType = "player_disconnect" // 玩家断线事件
+	EventPlayerReconnect  GameEventType = "player_reconnect"  // 玩家重连事件
 )
 
-// GameEvent represents a game event with associated data
+// GameEvent 表示游戏中发生的事件及其相关数据
+// 游戏引擎通过事件系统来通知外部关于游戏状态变化的信息
 type GameEvent struct {
-	Type       GameEventType `json:"type"`
-	Data       interface{}   `json:"data"`
-	Timestamp  time.Time     `json:"timestamp"`
-	PlayerSeat int           `json:"player_seat,omitempty"`
+	Type       GameEventType `json:"type"`                  // 事件类型，标识这是什么类型的事件
+	Data       interface{}   `json:"data"`                  // 事件数据，包含与事件相关的具体信息
+	Timestamp  time.Time     `json:"timestamp"`             // 事件发生的时间戳
+	PlayerSeat int           `json:"player_seat,omitempty"` // 触发事件的玩家座位号（如果适用）
 }
 
-// GameEventHandler is a function type for handling game events
+// GameEventHandler 是处理游戏事件的函数类型
+// 参数:
+//
+//	*GameEvent: 要处理的游戏事件
+//
+// 功能说明:
+//   - 事件处理器在独立的协程中运行，不会阻塞游戏主流程
+//   - 可以用于日志记录、统计分析、UI更新等
+//   - 处理器应该快速执行，避免长时间阻塞
 type GameEventHandler func(*GameEvent)
 
-// GameState represents the complete state of the game
+// GameState 表示游戏的完整状态
+// 包含游戏的全局信息，适用于管理员或观察者视角
 type GameState struct {
-	ID           string     `json:"id"`
-	Status       GameStatus `json:"status"`
-	CurrentMatch *Match     `json:"current_match,omitempty"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
+	ID           string     `json:"id"`                      // 游戏的唯一标识符
+	Status       GameStatus `json:"status"`                  // 当前游戏状态（等待中、进行中、已结束）
+	CurrentMatch *Match     `json:"current_match,omitempty"` // 当前活跃的比赛实例（如果有）
+	CreatedAt    time.Time  `json:"created_at"`              // 游戏创建时间
+	UpdatedAt    time.Time  `json:"updated_at"`              // 最后更新时间
 }
 
-// PlayerGameState represents the game state from a specific player's perspective
+// PlayerGameState 表示从特定玩家视角看到的游戏状态
+// 包含该玩家的私有信息（如手牌）和公共可见信息
 type PlayerGameState struct {
-	PlayerSeat   int        `json:"player_seat"`
-	GameState    *GameState `json:"game_state"`
-	PlayerCards  []*Card    `json:"player_cards"`
-	VisibleCards []*Card    `json:"visible_cards"`
+	PlayerSeat   int        `json:"player_seat"`   // 玩家的座位号(0-3)
+	GameState    *GameState `json:"game_state"`    // 游戏的公共状态信息
+	PlayerCards  []*Card    `json:"player_cards"`  // 该玩家的手牌（只对该玩家可见）
+	VisibleCards []*Card    `json:"visible_cards"` // 当前可见的牌（已出的牌）
 }
 
-// GameStatus represents the current status of the game
+// GameStatus 表示游戏的当前状态
+// 用于跟踪游戏的生命周期
 type GameStatus string
 
+// 游戏状态常量定义
 const (
-	GameStatusWaiting  GameStatus = "waiting"
-	GameStatusStarted  GameStatus = "started"
-	GameStatusFinished GameStatus = "finished"
+	GameStatusWaiting  GameStatus = "waiting"  // 等待开始状态，等待玩家加入
+	GameStatusStarted  GameStatus = "started"  // 游戏进行中状态
+	GameStatusFinished GameStatus = "finished" // 游戏已结束状态
 )
 
-// GameEngine is the main game engine that manages the complete game lifecycle
+// GameEngine 是管理完整游戏生命周期的主要游戏引擎
+// 它协调所有游戏组件，处理玩家操作，管理游戏状态，并发送事件通知
 type GameEngine struct {
-	id            string
-	status        GameStatus
-	currentMatch  *Match
-	eventHandlers map[GameEventType][]GameEventHandler
-	mutex         sync.RWMutex
-	createdAt     time.Time
-	updatedAt     time.Time
+	id            string                               // 游戏引擎的唯一标识符
+	status        GameStatus                           // 当前游戏状态
+	currentMatch  *Match                               // 当前活跃的比赛实例
+	eventHandlers map[GameEventType][]GameEventHandler // 事件处理器映射，按事件类型分组
+	mutex         sync.RWMutex                         // 读写锁，保护并发访问游戏状态
+	createdAt     time.Time                            // 游戏引擎创建时间
+	updatedAt     time.Time                            // 最后更新时间
 }
 
-// GameEngineInterface defines the public interface for the game engine
+// GameEngineInterface 定义了游戏引擎的公共接口
+// 这个接口封装了掼蛋游戏的所有核心功能，包括游戏生命周期管理、
+// 游戏操作、状态查询、事件处理和玩家管理等功能
 type GameEngineInterface interface {
-	// Game lifecycle
+	// 游戏生命周期管理
+
+	// StartMatch 开始一局新的比赛
+	// 参数:
+	//   players: 参与比赛的4个玩家列表，必须包含4个玩家
+	// 返回值:
+	//   error: 如果玩家数量不是4个或游戏状态不允许开始，返回错误
+	// 功能说明:
+	//   - 初始化新的比赛实例
+	//   - 验证玩家数量和游戏状态
+	//   - 设置游戏状态为已开始
+	//   - 触发比赛开始事件
 	StartMatch(players []Player) error
+
+	// StartDeal 开始新的一局牌局
+	// 返回值:
+	//   error: 如果没有活跃的比赛或无法开始新局，返回错误
+	// 功能说明:
+	//   - 洗牌并发牌给4个玩家
+	//   - 初始化进贡阶段（如果需要）
+	//   - 设置首家和当前轮次
+	//   - 触发牌局开始事件
 	StartDeal() error
 
-	// Game operations
+	// 游戏操作
+
+	// PlayCards 玩家出牌
+	// 参数:
+	//   playerSeat: 玩家座位号(0-3)
+	//   cards: 要出的牌的列表
+	// 返回值:
+	//   *GameEvent: 出牌成功时返回的游戏事件
+	//   error: 如果出牌无效或不是该玩家回合，返回错误
+	// 功能说明:
+	//   - 验证玩家是否轮到出牌
+	//   - 验证出牌组合的合法性
+	//   - 更新游戏状态和玩家手牌
+	//   - 检查是否需要进入下一轮或结束牌局
+	//   - 触发玩家出牌事件
 	PlayCards(playerSeat int, cards []*Card) (*GameEvent, error)
+
+	// PassTurn 玩家选择不出牌（过牌）
+	// 参数:
+	//   playerSeat: 玩家座位号(0-3)
+	// 返回值:
+	//   *GameEvent: 过牌成功时返回的游戏事件
+	//   error: 如果不是该玩家回合或不允许过牌，返回错误
+	// 功能说明:
+	//   - 验证玩家是否轮到出牌
+	//   - 验证是否允许过牌（非首家出牌时可以过牌）
+	//   - 更新当前轮次到下一个玩家
+	//   - 触发玩家过牌事件
 	PassTurn(playerSeat int) (*GameEvent, error)
+
+	// 贡牌相关接口
+
+	// ProcessTributePhase 处理贡牌阶段
+	// 返回值:
+	//   *TributeAction: 需要玩家执行的动作（选牌或还贡），如果为nil表示贡牌阶段已完成或免贡
+	//   error: 如果处理失败，返回错误
+	// 功能说明:
+	//   - 委托给 TributeManager 处理所有贡牌逻辑
+	//   - 自动完成免贡判定
+	//   - 自动完成上贡选择（除红桃主牌外最大的牌）
+	//   - 返回需要玩家输入的动作（双下选牌或还贡）
+	//   - 当贡牌完成时，自动应用效果并更新游戏状态
+	ProcessTributePhase() (*TributeAction, error)
+
+	// SubmitTributeSelection 提交贡牌选择（用于双下选牌）
+	// 参数:
+	//   playerID: 选择的玩家座位号(0-3)
+	//   cardID: 选择的牌ID
+	// 返回值:
+	//   error: 如果选择无效或不是该玩家的选择回合，返回错误
+	// 功能说明:
+	//   - 用于双下情况下rank1玩家从贡牌池选择一张牌
+	//   - 验证玩家是否有权选择
+	//   - 验证选择的牌是否在贡牌池中
+	//   - 自动将剩余的牌分配给rank2
+	SubmitTributeSelection(playerID int, cardID string) error
+
+	// SubmitReturnTribute 提交还贡
+	// 参数:
+	//   playerID: 还贡的玩家座位号(0-3)
+	//   cardID: 还贡的牌ID
+	// 返回值:
+	//   error: 如果还贡无效或不是该玩家的还贡回合，返回错误
+	// 功能说明:
+	//   - 用于收到贡牌的玩家选择一张牌还给贡牌方
+	//   - 验证玩家是否需要还贡
+	//   - 验证选择的牌是否在该玩家手中
+	//   - 完成牌的交换
+	SubmitReturnTribute(playerID int, cardID string) error
+
+	// SkipTributeAction 跳过当前贡牌动作（超时处理）
+	// 返回值:
+	//   error: 如果当前没有待处理的贡牌动作，返回错误
+	// 功能说明:
+	//   - 用于处理玩家超时的情况
+	//   - 双下选牌时自动选择最大的牌
+	//   - 还贡时自动选择最小的牌
+	SkipTributeAction() error
+
+	// GetTributeStatus 获取当前贡牌状态
+	// 返回值:
+	//   *TributeStatusInfo: 当前贡牌阶段的详细信息，如果不在贡牌阶段返回nil
+	// 功能说明:
+	//   - 查询当前贡牌阶段的状态
+	//   - 包含已确定的贡牌、还贡信息
+	//   - 包含待执行的动作列表
+	GetTributeStatus() *TributeStatusInfo
+
+	// SelectTribute 进贡阶段选择要进贡的牌（已废弃，请使用新的贡牌接口）
+	// 参数:
+	//   playerSeat: 玩家座位号(0-3)
+	//   card: 要进贡的牌
+	// 返回值:
+	//   *GameEvent: 进贡成功时返回的游戏事件
+	//   error: 如果不在进贡阶段或进贡牌无效，返回错误
+	// 功能说明:
+	//   - 验证当前是否在进贡阶段
+	//   - 验证玩家是否需要进贡
+	//   - 验证进贡牌的合法性（通常需要进贡最大的牌）
+	//   - 处理进贡和回贡逻辑
+	//   - 触发进贡阶段事件
 	SelectTribute(playerSeat int, card *Card) (*GameEvent, error)
 
-	// State queries
+	// 状态查询
+
+	// GetGameState 获取当前完整的游戏状态
+	// 返回值:
+	//   *GameState: 包含游戏ID、状态、当前比赛等信息的完整状态
+	// 功能说明:
+	//   - 返回游戏的全局状态信息
+	//   - 包括比赛进度、当前牌局状态等
+	//   - 适用于管理员或观察者视角
 	GetGameState() *GameState
+
+	// GetPlayerView 获取特定玩家视角的游戏状态
+	// 参数:
+	//   playerSeat: 玩家座位号(0-3)
+	// 返回值:
+	//   *PlayerGameState: 包含该玩家手牌和可见信息的游戏状态
+	// 功能说明:
+	//   - 返回从指定玩家角度看到的游戏状态
+	//   - 包含该玩家的手牌信息
+	//   - 包含当前可见的牌（已出的牌）
+	//   - 隐藏其他玩家的手牌信息
 	GetPlayerView(playerSeat int) *PlayerGameState
+
+	// IsGameFinished 检查游戏是否已结束
+	// 返回值:
+	//   bool: 如果游戏已结束返回true，否则返回false
+	// 功能说明:
+	//   - 快速检查游戏是否处于结束状态
+	//   - 用于判断是否还可以进行游戏操作
 	IsGameFinished() bool
 
-	// Event handling
+	// 事件处理
+
+	// RegisterEventHandler 注册游戏事件处理器
+	// 参数:
+	//   eventType: 要监听的事件类型
+	//   handler: 事件处理函数
+	// 功能说明:
+	//   - 允许外部系统监听游戏事件
+	//   - 支持多个处理器监听同一事件类型
+	//   - 事件处理器在独立的协程中执行，不会阻塞游戏进程
+	//   - 常用事件包括：出牌、过牌、牌局结束、比赛结束等
 	RegisterEventHandler(eventType GameEventType, handler GameEventHandler)
+
+	// ProcessTimeouts 处理超时情况
+	// 返回值:
+	//   []*GameEvent: 因超时产生的事件列表
+	// 功能说明:
+	//   - 检查是否有玩家操作超时
+	//   - 对超时玩家执行自动操作
+	//   - 返回因超时处理产生的事件
+	//   - 需要定期调用以维护游戏进度
 	ProcessTimeouts() []*GameEvent
 
-	// Player management
+	// 玩家管理
+
+	// HandlePlayerDisconnect 处理玩家断线
+	// 参数:
+	//   playerSeat: 断线玩家的座位号(0-3)
+	// 返回值:
+	//   *GameEvent: 断线处理事件
+	//   error: 如果处理断线失败，返回错误
+	// 功能说明:
+	//   - 标记玩家为断线状态
+	//   - 启用该玩家的自动托管模式
+	//   - 触发玩家断线事件
+	//   - 游戏继续进行，由系统代为操作
 	HandlePlayerDisconnect(playerSeat int) (*GameEvent, error)
+
+	// HandlePlayerReconnect 处理玩家重连
+	// 参数:
+	//   playerSeat: 重连玩家的座位号(0-3)
+	// 返回值:
+	//   *GameEvent: 重连处理事件
+	//   error: 如果处理重连失败，返回错误
+	// 功能说明:
+	//   - 恢复玩家的在线状态
+	//   - 关闭自动托管模式
+	//   - 触发玩家重连事件
+	//   - 玩家可以重新手动操作
 	HandlePlayerReconnect(playerSeat int) (*GameEvent, error)
+
+	// SetPlayerAutoPlay 设置玩家的自动托管状态
+	// 参数:
+	//   playerSeat: 玩家座位号(0-3)
+	//   enabled: 是否启用自动托管
+	// 返回值:
+	//   error: 如果设置失败，返回错误
+	// 功能说明:
+	//   - 手动控制玩家的托管状态
+	//   - 启用托管时，系统将自动为该玩家做决策
+	//   - 可用于处理长时间未操作的玩家
 	SetPlayerAutoPlay(playerSeat int, enabled bool) error
 }
 
@@ -481,9 +704,9 @@ func (ge *GameEngine) emitEvent(event *GameEvent) {
 		return
 	}
 
-	// Call all handlers for this event type
+	// Call all handlers for this event type synchronously to maintain order
 	for _, handler := range handlers {
-		go handler(event) // Run handlers in goroutines to avoid blocking
+		handler(event) // 同步调用确保事件按顺序处理
 	}
 }
 
@@ -512,88 +735,101 @@ func (ge *GameEngine) checkStateTransitions() []*GameEvent {
 
 	deal := ge.currentMatch.CurrentDeal
 
-	// Check if current trick is finished
-	if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusFinished {
+	// Check if deal is finished first (can happen at any time)
+	if deal.Status == DealStatusFinished {
+		// Calculate deal result using the new result system
+		dealResult, err := deal.CalculateResult(ge.currentMatch)
+		if err != nil {
+			// Log error but continue - create a basic result
+			winningTeam := ge.currentMatch.GetTeamForPlayer(deal.Rankings[0])
+			upgrades := [2]int{0, 0}
+			upgrades[winningTeam] = 1 // 确保获胜队伍能够升级
+
+			dealResult = &DealResult{
+				Rankings:    deal.Rankings,
+				WinningTeam: winningTeam,
+				VictoryType: VictoryTypePartnerLast,
+				Upgrades:    upgrades,
+				Duration:    time.Since(deal.StartTime),
+				TrickCount:  len(deal.TrickHistory),
+			}
+		}
+
+		// Emit deal ended event
+		dealEndedEvent := &GameEvent{
+			Type: EventDealEnded,
+			Data: map[string]interface{}{
+				"deal":       deal,
+				"result":     dealResult,
+				"rankings":   deal.Rankings,
+				"statistics": dealResult.Statistics,
+			},
+			Timestamp: time.Now(),
+		}
+		events = append(events, dealEndedEvent)
+
+		// Update match with deal result
+		err = ge.currentMatch.FinishDeal(dealResult)
+		if err == nil {
+			// Check if match is finished
+			if ge.currentMatch.Status == MatchStatusFinished {
+				ge.status = GameStatusFinished
+
+				// Create match result
+				matchResult := ge.createMatchResult()
+
+				// Emit match ended event
+				matchEndedEvent := &GameEvent{
+					Type: EventMatchEnded,
+					Data: map[string]interface{}{
+						"match":        ge.currentMatch,
+						"result":       matchResult,
+						"winner":       ge.currentMatch.Winner,
+						"final_levels": ge.currentMatch.TeamLevels,
+					},
+					Timestamp: time.Now(),
+				}
+				events = append(events, matchEndedEvent)
+			}
+		}
+	} else if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusFinished {
+		// Check if current trick is finished
 		// Emit trick ended event
+		finishedTrick := deal.CurrentTrick
 		trickEndedEvent := &GameEvent{
 			Type: EventTrickEnded,
 			Data: map[string]interface{}{
-				"trick":       deal.CurrentTrick,
-				"winner":      deal.CurrentTrick.Winner,
-				"next_leader": deal.CurrentTrick.Winner,
+				"trick":       finishedTrick,
+				"winner":      finishedTrick.Winner,
+				"next_leader": finishedTrick.NextLeader,
 			},
 			Timestamp: time.Now(),
 		}
 		events = append(events, trickEndedEvent)
 
-		// Check if deal is finished
-		if deal.Status == DealStatusFinished {
-			// Calculate deal result using the new result system
-			dealResult, err := deal.CalculateResult(ge.currentMatch)
-			if err != nil {
-				// Log error but continue - create a basic result
-				dealResult = &DealResult{
-					Rankings:    deal.Rankings,
-					WinningTeam: ge.currentMatch.GetTeamForPlayer(deal.Rankings[0]),
-					VictoryType: VictoryTypePartnerLast,
-					Upgrades:    [2]int{1, 0},
-					Duration:    time.Since(deal.StartTime),
-					TrickCount:  len(deal.TrickHistory),
-				}
-			}
+		// Add finished trick to history
+		deal.TrickHistory = append(deal.TrickHistory, finishedTrick)
 
-			// Emit deal ended event
-			dealEndedEvent := &GameEvent{
-				Type: EventDealEnded,
+		// Create new trick with the next leader
+		nextTrick, err := NewTrick(finishedTrick.NextLeader)
+		if err == nil {
+			// Set the new trick but leave it in TrickStatusWaiting
+			deal.CurrentTrick = nextTrick
+		}
+	} else if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
+		// Start the new trick
+		err := deal.CurrentTrick.StartTrick()
+		if err == nil {
+			trickStartedEvent := &GameEvent{
+				Type: EventTrickStarted,
 				Data: map[string]interface{}{
-					"deal":       deal,
-					"result":     dealResult,
-					"rankings":   deal.Rankings,
-					"statistics": dealResult.Statistics,
+					"trick":        deal.CurrentTrick,
+					"leader":       deal.CurrentTrick.Leader,
+					"current_turn": deal.CurrentTrick.CurrentTurn,
 				},
 				Timestamp: time.Now(),
 			}
-			events = append(events, dealEndedEvent)
-
-			// Update match with deal result
-			err = ge.currentMatch.FinishDeal(dealResult)
-			if err == nil {
-				// Check if match is finished
-				if ge.currentMatch.Status == MatchStatusFinished {
-					ge.status = GameStatusFinished
-
-					// Create match result
-					matchResult := ge.createMatchResult()
-
-					// Emit match ended event
-					matchEndedEvent := &GameEvent{
-						Type: EventMatchEnded,
-						Data: map[string]interface{}{
-							"match":        ge.currentMatch,
-							"result":       matchResult,
-							"winner":       ge.currentMatch.Winner,
-							"final_levels": ge.currentMatch.TeamLevels,
-						},
-						Timestamp: time.Now(),
-					}
-					events = append(events, matchEndedEvent)
-				}
-			}
-		} else if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
-			// Start the new trick
-			err := deal.CurrentTrick.StartTrick()
-			if err == nil {
-				trickStartedEvent := &GameEvent{
-					Type: EventTrickStarted,
-					Data: map[string]interface{}{
-						"trick":        deal.CurrentTrick,
-						"leader":       deal.CurrentTrick.Leader,
-						"current_turn": deal.CurrentTrick.CurrentTurn,
-					},
-					Timestamp: time.Now(),
-				}
-				events = append(events, trickStartedEvent)
-			}
+			events = append(events, trickStartedEvent)
 		}
 	}
 
@@ -696,6 +932,189 @@ func (ge *GameEngine) AutoPlayForPlayer(playerSeat int) (*GameEvent, error) {
 	}
 
 	return nil, errors.New("unable to auto-play")
+}
+
+// sendEvent 发送游戏事件到所有注册的处理器
+func (ge *GameEngine) sendEvent(event *GameEvent) {
+	// 获取该事件类型的所有处理器
+	handlers, exists := ge.eventHandlers[event.Type]
+	if !exists || len(handlers) == 0 {
+		return
+	}
+
+	// 在独立的协程中执行每个处理器
+	for _, handler := range handlers {
+		go handler(event)
+	}
+}
+
+// ProcessTributePhase 处理贡牌阶段
+func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
+	ge.mutex.Lock()
+	defer ge.mutex.Unlock()
+
+	// 验证基本状态
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return nil, errors.New("no active deal")
+	}
+
+	deal := ge.currentMatch.CurrentDeal
+	if deal.Status != DealStatusTribute {
+		return nil, errors.New("not in tribute phase")
+	}
+
+	if deal.TributePhase == nil {
+		return nil, nil
+	}
+
+	// 获取 TributeManager 并处理
+	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
+	action, err := tm.ProcessTributePhaseAction(deal.TributePhase, deal.PlayerCards)
+	if err != nil {
+		return nil, err
+	}
+
+	// 如果贡牌阶段完成，更新状态并发送事件
+	if deal.TributePhase.Status == TributeStatusFinished {
+		// 应用贡牌效果
+		err = tm.ApplyTributeToHands(deal.TributePhase, &deal.PlayerCards)
+		if err != nil {
+			return nil, fmt.Errorf("apply tribute failed: %w", err)
+		}
+
+		// 启动游戏阶段（包括创建第一个trick和设置状态）
+		err = deal.StartPlayingPhase()
+		if err != nil {
+			return nil, fmt.Errorf("failed to start playing phase: %w", err)
+		}
+
+		// 发送完成事件
+		ge.sendEvent(&GameEvent{
+			Type:      EventTributeCompleted,
+			Data:      deal.TributePhase,
+			Timestamp: time.Now(),
+		})
+	}
+
+	return action, nil
+}
+
+// SubmitTributeSelection 提交贡牌选择（用于双下选牌）
+func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error {
+	ge.mutex.Lock()
+	defer ge.mutex.Unlock()
+
+	// 验证基本状态
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return errors.New("no active deal")
+	}
+
+	deal := ge.currentMatch.CurrentDeal
+	if deal.Status != DealStatusTribute || deal.TributePhase == nil {
+		return errors.New("not in tribute phase")
+	}
+
+	// 调用 TributeManager 处理选择
+	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
+	err := tm.SubmitSelection(deal.TributePhase, playerID, cardID)
+	if err != nil {
+		return err
+	}
+
+	// 发送选择事件
+	ge.sendEvent(&GameEvent{
+		Type:       EventTributeSelected,
+		Data:       map[string]interface{}{"action": "select", "player": playerID, "cardID": cardID},
+		Timestamp:  time.Now(),
+		PlayerSeat: playerID,
+	})
+
+	return nil
+}
+
+// SubmitReturnTribute 提交还贡
+func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
+	ge.mutex.Lock()
+	defer ge.mutex.Unlock()
+
+	// 验证基本状态
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return errors.New("no active deal")
+	}
+
+	deal := ge.currentMatch.CurrentDeal
+	if deal.Status != DealStatusTribute || deal.TributePhase == nil {
+		return errors.New("not in tribute phase")
+	}
+
+	// 调用 TributeManager 处理还贡
+	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
+	err := tm.SubmitReturn(deal.TributePhase, playerID, cardID, deal.PlayerCards[playerID])
+	if err != nil {
+		return err
+	}
+
+	// 发送还贡事件
+	ge.sendEvent(&GameEvent{
+		Type:       EventReturnTribute,
+		Data:       map[string]interface{}{"action": "return", "player": playerID, "cardID": cardID},
+		Timestamp:  time.Now(),
+		PlayerSeat: playerID,
+	})
+
+	return nil
+}
+
+// SkipTributeAction 跳过当前贡牌动作（超时处理）
+func (ge *GameEngine) SkipTributeAction() error {
+	ge.mutex.Lock()
+	defer ge.mutex.Unlock()
+
+	// 验证基本状态
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return errors.New("no active deal")
+	}
+
+	deal := ge.currentMatch.CurrentDeal
+	if deal.Status != DealStatusTribute || deal.TributePhase == nil {
+		return errors.New("not in tribute phase")
+	}
+
+	// 调用 TributeManager 处理超时
+	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
+	err := tm.HandleTimeoutAction(deal.TributePhase, deal.PlayerCards)
+	if err != nil {
+		return err
+	}
+
+	// 发送超时事件
+	ge.sendEvent(&GameEvent{
+		Type:      EventPlayerTimeout,
+		Data:      map[string]interface{}{"action": "tribute_timeout", "phase": deal.TributePhase.Status},
+		Timestamp: time.Now(),
+	})
+
+	return nil
+}
+
+// GetTributeStatus 获取当前贡牌状态
+func (ge *GameEngine) GetTributeStatus() *TributeStatusInfo {
+	ge.mutex.RLock()
+	defer ge.mutex.RUnlock()
+
+	// 验证基本状态
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return nil
+	}
+
+	deal := ge.currentMatch.CurrentDeal
+	if deal.Status != DealStatusTribute || deal.TributePhase == nil {
+		return nil
+	}
+
+	// 调用 TributeManager 获取状态信息
+	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
+	return tm.GetTributeStatusInfo(deal.TributePhase, deal.PlayerCards)
 }
 
 // generateID generates a unique ID for the game engine

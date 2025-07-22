@@ -27,6 +27,11 @@ type Card struct {
 	Name      string // 牌的名称
 }
 
+// GetID 返回牌的唯一标识符
+func (c *Card) GetID() string {
+	return fmt.Sprintf("%s_%d", c.Color, c.Number)
+}
+
 // NewCard 创建新的牌
 func NewCard(number int, color string, level int) (*Card, error) {
 	// 验证数字范围
@@ -141,6 +146,52 @@ func (c *Card) String() string {
 	} else {
 		return c.Name
 	}
+}
+
+// ToShortString 简化表示，用于方便阅读的输出格式
+// 格式：点数+花色首字母，如 9H, QS, SJ(小王), BJ(大王)
+func (c *Card) ToShortString() string {
+	// 处理王牌
+	if c.Color == "Joker" {
+		if c.Number == 15 {
+			return "SJ" // Small Joker (黑王/小王)
+		} else if c.Number == 16 {
+			return "BJ" // Big Joker (红王/大王)
+		}
+		return "?J" // 未知王牌
+	}
+
+	// 点数转换
+	var numberStr string
+	switch c.Number {
+	case 11:
+		numberStr = "J"
+	case 12:
+		numberStr = "Q"
+	case 13:
+		numberStr = "K"
+	case 14:
+		numberStr = "A"
+	default:
+		numberStr = fmt.Sprintf("%d", c.Number)
+	}
+
+	// 花色转换（取首字母）
+	var suitStr string
+	switch c.Color {
+	case "Spade":
+		suitStr = "S"
+	case "Heart":
+		suitStr = "H"
+	case "Diamond":
+		suitStr = "D"
+	case "Club":
+		suitStr = "C"
+	default:
+		suitStr = "?"
+	}
+
+	return numberStr + suitStr
 }
 
 // JSONEncode 转换为 JSON 格式

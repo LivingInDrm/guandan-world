@@ -8,7 +8,7 @@ import (
 func TestGameEngine_CompleteGameFlow(t *testing.T) {
 	// Create game engine
 	engine := NewGameEngine()
-	
+
 	// Create test players
 	players := []Player{
 		{ID: "player1", Username: "Player1", Seat: 0},
@@ -16,23 +16,23 @@ func TestGameEngine_CompleteGameFlow(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	// Start match
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	// Verify game state
 	gameState := engine.GetGameState()
 	if gameState.Status != GameStatusStarted {
 		t.Errorf("Expected game status %v, got %v", GameStatusStarted, gameState.Status)
 	}
-	
+
 	if gameState.CurrentMatch == nil {
 		t.Fatal("Expected current match to be set")
 	}
-	
+
 	if gameState.CurrentMatch.Status != MatchStatusWaiting {
 		t.Errorf("Expected match status %v, got %v", MatchStatusWaiting, gameState.CurrentMatch.Status)
 	}
@@ -47,33 +47,33 @@ func TestGameEngine_StartDeal(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	// Start deal
 	err = engine.StartDeal()
 	if err != nil {
 		t.Fatalf("Failed to start deal: %v", err)
 	}
-	
+
 	// Verify deal state
 	gameState := engine.GetGameState()
 	if gameState.CurrentMatch.Status != MatchStatusPlaying {
 		t.Errorf("Expected match status %v, got %v", MatchStatusPlaying, gameState.CurrentMatch.Status)
 	}
-	
+
 	if gameState.CurrentMatch.CurrentDeal == nil {
 		t.Fatal("Expected current deal to be set")
 	}
-	
+
 	deal := gameState.CurrentMatch.CurrentDeal
 	if deal.Status != DealStatusPlaying && deal.Status != DealStatusTribute {
 		t.Errorf("Expected deal status to be playing or tribute, got %v", deal.Status)
 	}
-	
+
 	// Verify cards were dealt
 	for i := 0; i < 4; i++ {
 		if len(deal.PlayerCards[i]) != 27 {
@@ -91,27 +91,27 @@ func TestGameEngine_PlayCardsValidation(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	err = engine.StartDeal()
 	if err != nil {
 		t.Fatalf("Failed to start deal: %v", err)
 	}
-	
+
 	gameState := engine.GetGameState()
 	deal := gameState.CurrentMatch.CurrentDeal
-	
+
 	// Skip tribute phase if it exists
 	if deal.Status == DealStatusTribute {
 		// For testing, we'll skip the tribute phase by setting status to playing
 		deal.Status = DealStatusPlaying
 		deal.startFirstTrick()
 	}
-	
+
 	// Test invalid play - wrong player's turn
 	if deal.CurrentTrick != nil && deal.CurrentTrick.CurrentTurn != 0 {
 		playerCards := deal.PlayerCards[0]
@@ -122,7 +122,7 @@ func TestGameEngine_PlayCardsValidation(t *testing.T) {
 			}
 		}
 	}
-	
+
 	// Test valid play - correct player's turn
 	if deal.CurrentTrick != nil {
 		currentPlayer := deal.CurrentTrick.CurrentTurn
@@ -151,26 +151,26 @@ func TestGameEngine_PassValidation(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	err = engine.StartDeal()
 	if err != nil {
 		t.Fatalf("Failed to start deal: %v", err)
 	}
-	
+
 	gameState := engine.GetGameState()
 	deal := gameState.CurrentMatch.CurrentDeal
-	
+
 	// Skip tribute phase if it exists
 	if deal.Status == DealStatusTribute {
 		deal.Status = DealStatusPlaying
 		deal.startFirstTrick()
 	}
-	
+
 	if deal.CurrentTrick != nil {
 		// Test invalid pass - trick leader cannot pass
 		leader := deal.CurrentTrick.Leader
@@ -180,7 +180,7 @@ func TestGameEngine_PassValidation(t *testing.T) {
 				t.Error("Expected error for trick leader trying to pass")
 			}
 		}
-		
+
 		// Test valid pass after someone has played
 		if deal.CurrentTrick.LeadComp != nil {
 			currentPlayer := deal.CurrentTrick.CurrentTurn
@@ -207,20 +207,20 @@ func TestGameEngine_AutoPlay(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	err = engine.StartDeal()
 	if err != nil {
 		t.Fatalf("Failed to start deal: %v", err)
 	}
-	
+
 	gameState := engine.GetGameState()
 	deal := gameState.CurrentMatch.CurrentDeal
-	
+
 	// Skip tribute phase if it exists
 	if deal.Status == DealStatusTribute {
 		deal.Status = DealStatusPlaying
@@ -229,10 +229,10 @@ func TestGameEngine_AutoPlay(t *testing.T) {
 			t.Fatalf("Failed to start first trick: %v", err)
 		}
 	}
-	
+
 	if deal.CurrentTrick != nil {
 		originalCurrentPlayer := deal.CurrentTrick.CurrentTurn
-		
+
 		// Test auto-play for current player
 		event, err := engine.AutoPlayForPlayer(originalCurrentPlayer)
 		if err != nil {
@@ -240,7 +240,7 @@ func TestGameEngine_AutoPlay(t *testing.T) {
 		} else if event == nil {
 			t.Error("Expected event to be returned from auto-play")
 		}
-		
+
 		// After auto-play, the current player may have changed
 		// Test auto-play for the original player (should now be wrong)
 		_, err = engine.AutoPlayForPlayer(originalCurrentPlayer)
@@ -261,34 +261,34 @@ func TestGameEngine_PlayerView(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	err = engine.StartDeal()
 	if err != nil {
 		t.Fatalf("Failed to start deal: %v", err)
 	}
-	
+
 	// Test player view for each player
 	for playerSeat := 0; playerSeat < 4; playerSeat++ {
 		playerView := engine.GetPlayerView(playerSeat)
-		
+
 		if playerView == nil {
 			t.Errorf("Expected player view for player %d", playerSeat)
 			continue
 		}
-		
+
 		if playerView.PlayerSeat != playerSeat {
 			t.Errorf("Expected player seat %d, got %d", playerSeat, playerView.PlayerSeat)
 		}
-		
+
 		if playerView.GameState == nil {
 			t.Errorf("Expected game state in player view for player %d", playerSeat)
 		}
-		
+
 		// Player should have their cards
 		if len(playerView.PlayerCards) != 27 {
 			t.Errorf("Player %d should have 27 cards in view, got %d", playerSeat, len(playerView.PlayerCards))
@@ -305,20 +305,20 @@ func TestGameEngine_ProcessTimeouts(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	err = engine.StartDeal()
 	if err != nil {
 		t.Fatalf("Failed to start deal: %v", err)
 	}
-	
+
 	gameState := engine.GetGameState()
 	deal := gameState.CurrentMatch.CurrentDeal
-	
+
 	// Skip tribute phase if it exists
 	if deal.Status == DealStatusTribute {
 		deal.Status = DealStatusPlaying
@@ -327,30 +327,30 @@ func TestGameEngine_ProcessTimeouts(t *testing.T) {
 			t.Fatalf("Failed to start first trick: %v", err)
 		}
 	}
-	
+
 	// Test timeout processing (should not timeout immediately)
 	events := engine.ProcessTimeouts()
 	if len(events) > 0 {
 		t.Error("Should not have timeout events immediately after starting")
 	}
-	
+
 	// Simulate timeout by setting past time
 	if deal.CurrentTrick != nil {
 		t.Logf("Deal status: %v, Trick status: %v", deal.Status, deal.CurrentTrick.Status)
-		
+
 		// Make sure trick is in playing status
 		deal.CurrentTrick.Status = TrickStatusPlaying
 		deal.CurrentTrick.TurnTimeout = time.Now().Add(-1 * time.Second)
-		
-		t.Logf("After setup - Deal status: %v, Trick status: %v, Timeout: %v", 
+
+		t.Logf("After setup - Deal status: %v, Trick status: %v, Timeout: %v",
 			deal.Status, deal.CurrentTrick.Status, deal.CurrentTrick.TurnTimeout)
-		
+
 		events = engine.ProcessTimeouts()
 		t.Logf("Got %d timeout events", len(events))
 		for i, event := range events {
 			t.Logf("Event %d: Type=%v, Data=%v", i, event.Type, event.Data)
 		}
-		
+
 		if len(events) == 0 {
 			t.Error("Expected timeout events after timeout period")
 		} else {
@@ -378,12 +378,12 @@ func TestGameEngine_PlayerDisconnectReconnect(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	// Test player disconnect
 	event, err := engine.HandlePlayerDisconnect(0)
 	if err != nil {
@@ -395,7 +395,7 @@ func TestGameEngine_PlayerDisconnectReconnect(t *testing.T) {
 	if event.Type != EventPlayerDisconnect {
 		t.Errorf("Expected event type %v, got %v", EventPlayerDisconnect, event.Type)
 	}
-	
+
 	// Verify player is marked as offline and auto-play
 	gameState := engine.GetGameState()
 	if gameState.CurrentMatch.Players[0].Online {
@@ -404,7 +404,7 @@ func TestGameEngine_PlayerDisconnectReconnect(t *testing.T) {
 	if !gameState.CurrentMatch.Players[0].AutoPlay {
 		t.Error("Player should be marked as auto-play")
 	}
-	
+
 	// Test player reconnect
 	event, err = engine.HandlePlayerReconnect(0)
 	if err != nil {
@@ -416,7 +416,7 @@ func TestGameEngine_PlayerDisconnectReconnect(t *testing.T) {
 	if event.Type != EventPlayerReconnect {
 		t.Errorf("Expected event type %v, got %v", EventPlayerReconnect, event.Type)
 	}
-	
+
 	// Verify player is marked as online and not auto-play
 	gameState = engine.GetGameState()
 	if !gameState.CurrentMatch.Players[0].Online {
@@ -436,30 +436,30 @@ func TestGameEngine_SetPlayerAutoPlay(t *testing.T) {
 		{ID: "player3", Username: "Player3", Seat: 2},
 		{ID: "player4", Username: "Player4", Seat: 3},
 	}
-	
+
 	err := engine.StartMatch(players)
 	if err != nil {
 		t.Fatalf("Failed to start match: %v", err)
 	}
-	
+
 	// Test setting auto-play
 	err = engine.SetPlayerAutoPlay(0, true)
 	if err != nil {
 		t.Errorf("Failed to set player auto-play: %v", err)
 	}
-	
+
 	// Verify auto-play is set
 	gameState := engine.GetGameState()
 	if !gameState.CurrentMatch.Players[0].AutoPlay {
 		t.Error("Player should be marked as auto-play")
 	}
-	
+
 	// Test disabling auto-play
 	err = engine.SetPlayerAutoPlay(0, false)
 	if err != nil {
 		t.Errorf("Failed to disable player auto-play: %v", err)
 	}
-	
+
 	// Verify auto-play is disabled
 	gameState = engine.GetGameState()
 	if gameState.CurrentMatch.Players[0].AutoPlay {

@@ -209,9 +209,7 @@ func (d *Deal) SelectTribute(playerSeat int, card *Card) error {
 
 	// Check if tribute phase is finished
 	if d.TributePhase.Status == TributeStatusFinished {
-		// Apply tribute effects to player hands
-		d.applyTributeEffects()
-
+		// Note: Tribute effects are applied by GameEngine, not here
 		// Start first trick
 		err = d.startFirstTrick()
 		if err != nil {
@@ -247,7 +245,7 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 
 				// Check if tribute phase finished
 				if d.TributePhase.Status == TributeStatusFinished {
-					d.applyTributeEffects()
+					// Note: Tribute effects are applied by GameEngine, not here
 					d.startFirstTrick()
 					d.Status = DealStatusPlaying
 				}
@@ -363,6 +361,23 @@ func (d *Deal) startTributePhase() error {
 	return d.TributePhase.Start()
 }
 
+// StartPlayingPhase 开始游戏阶段（公开方法，用于贡牌阶段结束后启动游戏）
+func (d *Deal) StartPlayingPhase() error {
+	if d.Status != DealStatusTribute {
+		return fmt.Errorf("can only start playing phase from tribute status, current status: %s", d.Status)
+	}
+
+	// 启动第一个trick
+	err := d.startFirstTrick()
+	if err != nil {
+		return fmt.Errorf("failed to start first trick: %w", err)
+	}
+
+	// 更新状态为playing
+	d.Status = DealStatusPlaying
+	return nil
+}
+
 // startFirstTrick starts the first trick of the deal
 func (d *Deal) startFirstTrick() error {
 	// Determine first player (usually the player with lowest level card or specific rule)
@@ -446,6 +461,14 @@ func (d *Deal) cardsEqual(card1, card2 *Card) bool {
 
 // getNextPlayer returns the next player in turn order
 func (d *Deal) getNextPlayer(currentPlayer int) int {
+	// Find next player who still has cards
+	for i := 1; i <= 4; i++ {
+		nextPlayer := (currentPlayer + i) % 4
+		if len(d.PlayerCards[nextPlayer]) > 0 {
+			return nextPlayer
+		}
+	}
+	// This should not happen in normal gameplay
 	return (currentPlayer + 1) % 4
 }
 
@@ -479,32 +502,41 @@ func (d *Deal) isTrickFinished() bool {
 	return passCount == 3
 }
 
-// finishCurrentTrick finishes the current trick and starts a new one
+// finishCurrentTrick finishes the current trick and sets it up for GameEngine to handle
 func (d *Deal) finishCurrentTrick() error {
 	if d.CurrentTrick == nil {
 		return errors.New("no current trick to finish")
 	}
 
-	// Set trick winner
+	// Set trick winner and status
 	d.CurrentTrick.Winner = d.CurrentTrick.Leader
 	d.CurrentTrick.Status = TrickStatusFinished
 
-	// Add to history
-	d.TrickHistory = append(d.TrickHistory, d.CurrentTrick)
-
-	// Start new trick with winner as leader
-	nextTrick, err := NewTrick(d.CurrentTrick.Winner)
-	if err != nil {
-		return fmt.Errorf("failed to create next trick: %w", err)
+	// Check if deal is finished
+	if d.isDealFinished() {
+		// Add to history before finishing deal
+		d.TrickHistory = append(d.TrickHistory, d.CurrentTrick)
+		return d.finishDeal()
 	}
 
-	// Start the new trick immediately
-	err = nextTrick.StartTrick()
-	if err != nil {
-		return fmt.Errorf("failed to start next trick: %w", err)
+	// Find next leader for the next trick
+	nextLeader := d.CurrentTrick.Winner
+	if len(d.PlayerCards[nextLeader]) == 0 {
+		// Winner has no cards, find next player with cards
+		for i := 1; i < 4; i++ {
+			candidate := (d.CurrentTrick.Winner + i) % 4
+			if len(d.PlayerCards[candidate]) > 0 {
+				nextLeader = candidate
+				break
+			}
+		}
 	}
 
-	d.CurrentTrick = nextTrick
+	// Store next leader info for GameEngine to use
+	d.CurrentTrick.NextLeader = nextLeader
+
+	// Don't create new trick here - let GameEngine handle the transition
+	// This ensures TrickEnded event can be properly fired
 	return nil
 }
 
@@ -547,36 +579,4 @@ func (d *Deal) determineFirstPlayer() int {
 	// In full implementation, this would consider tribute phase results
 	// or find player with specific card (like 2 of hearts)
 	return 0
-}
-
-// applyTributeEffects applies the effects of tribute phase to player hands
-func (d *Deal) applyTributeEffects() {
-	if d.TributePhase == nil {
-		return
-	}
-
-	// Apply tribute card exchanges
-	for giver, card := range d.TributePhase.TributeCards {
-		if receiver, exists := d.TributePhase.TributeMap[giver]; exists {
-			// Remove tribute card from giver
-			d.removeCardsFromPlayer(giver, []*Card{card})
-
-			// Add tribute card to receiver
-			d.PlayerCards[receiver] = append(d.PlayerCards[receiver], card)
-
-			// Apply return card if exists
-			if returnCard, hasReturn := d.TributePhase.ReturnCards[receiver]; hasReturn {
-				// Remove return card from receiver
-				d.removeCardsFromPlayer(receiver, []*Card{returnCard})
-
-				// Add return card to giver
-				d.PlayerCards[giver] = append(d.PlayerCards[giver], returnCard)
-			}
-		}
-	}
-
-	// Re-sort all hands
-	for player := 0; player < 4; player++ {
-		d.PlayerCards[player] = sortCards(d.PlayerCards[player])
-	}
 }

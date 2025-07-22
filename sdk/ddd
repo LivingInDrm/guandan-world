@@ -1,0 +1,357 @@
+=== RUN   TestMatchSimulatorVerbose
+2025/07/23 01:16:31 Event: Match Started
+2025/07/23 01:16:31 Match started with 4 players
+2025/07/23 01:16:31 === Team Status Before Deal 1 ===
+2025/07/23 01:16:31 Team 0 (Players 0,2): Level 2
+2025/07/23 01:16:31 Team 1 (Players 1,3): Level 2
+2025/07/23 01:16:31 Players:
+2025/07/23 01:16:31   Player 0 (Player 1) - Team 0
+2025/07/23 01:16:31   Player 1 (Player 2) - Team 1
+2025/07/23 01:16:31   Player 2 (Player 3) - Team 0
+2025/07/23 01:16:31   Player 3 (Player 4) - Team 1
+2025/07/23 01:16:31 Event: Deal Started
+2025/07/23 01:16:31 Deal Started - Player Hands:
+2025/07/23 01:16:31 Player 0 (27 cards): [3D, 3H, 4D, 4S, 4S, 4H, 6S, 7S, 8D, 8C, 8D, 9H, 9H, 10S, 10D, 10D, JS, JD, QD, QS, KD, KS, KH, AD, AH, 2S, SJ]
+Player 1 (27 cards): [3S, 3C, 4C, 5C, 5C, 6D, 6C, 6H, 7D, 7C, 8H, 8H, 9D, 10H, 10H, JS, JH, QD, QH, KC, KH, AS, AH, 2C, 2C, 2D, 2H]
+Player 2 (27 cards): [4D, 5S, 6D, 6H, 7C, 7D, 7H, 8S, 8S, 8C, 9C, 9S, 9D, 9S, 10C, 10C, JD, QS, KC, KS, KD, AC, AS, AC, 2D, 2H, SJ]
+Player 3 (27 cards): [3S, 3D, 3C, 3H, 4C, 4H, 5D, 5S, 5D, 5H, 5H, 6S, 6C, 7S, 7H, 9C, 10S, JC, JC, JH, QC, QC, QH, AD, 2S, BJ, BJ]
+2025/07/23 01:16:31 
+=== Deal 1 started ===
+2025/07/23 01:16:31 New Trick Started (Leader: Player 0) - Player Hands:
+2025/07/23 01:16:31 Player 0 (27 cards): [3D, 3H, 4D, 4S, 4S, 4H, 6S, 7S, 8D, 8C, 8D, 9H, 9H, 10S, 10D, 10D, JS, JD, QD, QS, KD, KS, KH, AD, AH, 2S, SJ]
+Player 1 (27 cards): [3S, 3C, 4C, 5C, 5C, 6D, 6C, 6H, 7D, 7C, 8H, 8H, 9D, 10H, 10H, JS, JH, QD, QH, KC, KH, AS, AH, 2C, 2C, 2D, 2H]
+Player 2 (27 cards): [4D, 5S, 6D, 6H, 7C, 7D, 7H, 8S, 8S, 8C, 9C, 9S, 9D, 9S, 10C, 10C, JD, QS, KC, KS, KD, AC, AS, AC, 2D, 2H, SJ]
+Player 3 (27 cards): [3S, 3D, 3C, 3H, 4C, 4H, 5D, 5S, 5D, 5H, 5H, 6S, 6C, 7S, 7H, 9C, 10S, JC, JC, JH, QC, QC, QH, AD, 2S, BJ, BJ]
+2025/07/23 01:16:31 Event: Player 0 played 3 cards: [4D, 4S, 4S]
+2025/07/23 01:16:31 Event: Player 1 played 3 cards: [6D, 6C, 6H]
+2025/07/23 01:16:31 Event: Player 2 played 3 cards: [7C, 7D, 7H]
+2025/07/23 01:16:31 Event: Player 3 played 3 cards: [JC, JC, JH]
+2025/07/23 01:16:31 Event: Player 0 played 3 cards: [KD, KS, KH]
+2025/07/23 01:16:31 Event: Player 1 played 3 cards: [2H, 2D, 2C]
+2025/07/23 01:16:31 Event: Player 2 played 4 cards: [9C, 9S, 9D, 9S]
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 2
+2025/07/23 01:16:31 New Trick Started (Leader: Player 2) - Player Hands:
+2025/07/23 01:16:31 Player 0 (21 cards): [3D, 3H, SJ, AH, 2S, 4H, 6S, 7S, 8D, 8C, 8D, 9H, 9H, 10S, 10D, 10D, JS, JD, QD, QS, AD]
+Player 1 (21 cards): [3S, 3C, 4C, 5C, 5C, 2C, AH, AS, 7D, 7C, 8H, 8H, 9D, 10H, 10H, JS, JH, QD, QH, KC, KH]
+Player 2 (20 cards): [4D, 5S, 6D, 6H, SJ, 2H, 2D, 8S, 8S, 8C, AC, KD, AC, AS, 10C, 10C, JD, QS, KC, KS]
+Player 3 (24 cards): [3S, 3D, 3C, 3H, 4C, 4H, 5D, 5S, 5D, 5H, 5H, 6S, 6C, 7S, 7H, 9C, 10S, BJ, BJ, 2S, QC, QC, QH, AD]
+2025/07/23 01:16:31 Event: Player 2 played 3 cards: [8S, 8S, 8C]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 2
+2025/07/23 01:16:31 Event: Player 3 played 3 cards: [QC, QC, QH]
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Player 2 played 3 cards: [KC, KS, KD]
+2025/07/23 01:16:31 Event: Player 3 played 4 cards: [3S, 3D, 3C, 3H]
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 3
+2025/07/23 01:16:31 New Trick Started (Leader: Player 3) - Player Hands:
+2025/07/23 01:16:31 Player 0 (21 cards): [3D, 3H, SJ, AH, 2S, 4H, 6S, 7S, 8D, 8C, 8D, 9H, 9H, 10S, 10D, 10D, JS, JD, QD, QS, AD]
+Player 1 (21 cards): [3S, 3C, 4C, 5C, 5C, 2C, AH, AS, 7D, 7C, 8H, 8H, 9D, 10H, 10H, JS, JH, QD, QH, KC, KH]
+Player 2 (14 cards): [4D, 5S, 6D, 6H, SJ, 2H, 2D, JD, 10C, QS, AC, 10C, AC, AS]
+Player 3 (17 cards): [AD, 2S, BJ, BJ, 4C, 4H, 5D, 5S, 5D, 5H, 5H, 6S, 6C, 7S, 7H, 9C, 10S]
+2025/07/23 01:16:31 Event: Player 3 played 3 cards: [5D, 5S, 5D]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 3
+2025/07/23 01:16:31 Event: Player 0 played 3 cards: [8D, 8C, 8D]
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Player 2 played 3 cards: [AC, AC, AS]
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 2
+2025/07/23 01:16:31 New Trick Started (Leader: Player 2) - Player Hands:
+2025/07/23 01:16:31 Player 0 (18 cards): [3D, 3H, SJ, AH, 2S, 4H, 6S, 7S, QD, QS, AD, 9H, 9H, 10S, 10D, 10D, JS, JD]
+Player 1 (21 cards): [3S, 3C, 4C, 5C, 5C, 2C, AH, AS, 7D, 7C, 8H, 8H, 9D, 10H, 10H, JS, JH, QD, QH, KC, KH]
+Player 2 (11 cards): [4D, 5S, 6D, 6H, SJ, 2H, 2D, JD, 10C, QS, 10C]
+Player 3 (14 cards): [AD, 2S, BJ, BJ, 4C, 4H, 7H, 9C, 10S, 5H, 5H, 6S, 6C, 7S]
+2025/07/23 01:16:31 Event: Player 2 played 2 cards: [6D, 6H]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 2
+2025/07/23 01:16:31 Event: Player 3 played 2 cards: [7H, 7S]
+2025/07/23 01:16:31 Event: Player 0 played 2 cards: [9H, 9H]
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [10H, 10H]
+2025/07/23 01:16:31 Event: Player 2 played 2 cards: [2H, 2D]
+2025/07/23 01:16:31 Event: Player 3 played 2 cards: [BJ, BJ]
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 3
+2025/07/23 01:16:31 New Trick Started (Leader: Player 3) - Player Hands:
+2025/07/23 01:16:31 Player 0 (16 cards): [3D, 3H, SJ, AH, 2S, 4H, 6S, 7S, QD, QS, AD, JS, JD, 10S, 10D, 10D]
+Player 1 (19 cards): [3S, 3C, 4C, 5C, 5C, 2C, AH, AS, 7D, 7C, 8H, 8H, 9D, KC, KH, JS, JH, QD, QH]
+Player 2 (7 cards): [4D, 5S, 10C, QS, SJ, 10C, JD]
+Player 3 (10 cards): [AD, 2S, 5H, 6S, 4C, 4H, 6C, 9C, 10S, 5H]
+2025/07/23 01:16:31 Event: Player 3 played 2 cards: [4C, 4H]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 3
+2025/07/23 01:16:31 Event: Player 0 played 2 cards: [10S, 10D]
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [JS, JH]
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 played 2 cards: [QD, QS]
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [KC, KH]
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 played 2 cards: [AH, AD]
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 0
+2025/07/23 01:16:31 New Trick Started (Leader: Player 0) - Player Hands:
+2025/07/23 01:16:31 Player 0 (10 cards): [3D, 3H, SJ, JS, 2S, 4H, 6S, 7S, 10D, JD]
+Player 1 (15 cards): [3S, 3C, 4C, 5C, 5C, 2C, AH, AS, 7D, 7C, 8H, 8H, 9D, QD, QH]
+Player 2 (7 cards): [4D, 5S, 10C, QS, SJ, 10C, JD]
+Player 3 (8 cards): [AD, 2S, 5H, 6S, 5H, 10S, 6C, 9C]
+2025/07/23 01:16:31 Event: Player 0 played 2 cards: [3D, 3H]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 0
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [5C, 5C]
+2025/07/23 01:16:31 Event: Player 2 played 2 cards: [10C, 10C]
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 played 2 cards: [JD, JS]
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [QD, QH]
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 1
+2025/07/23 01:16:31 New Trick Started (Leader: Player 1) - Player Hands:
+2025/07/23 01:16:31 Player 0 (6 cards): [7S, 10D, SJ, 6S, 2S, 4H]
+Player 1 (11 cards): [3S, 3C, 4C, 9D, 8H, 2C, AH, AS, 7D, 7C, 8H]
+Player 2 (5 cards): [4D, 5S, JD, QS, SJ]
+Player 3 (8 cards): [AD, 2S, 5H, 6S, 5H, 10S, 6C, 9C]
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [3S, 3C]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 1
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 played 2 cards: [5H, 5H]
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [7C, 7D]
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 1
+2025/07/23 01:16:31 New Trick Started (Leader: Player 1) - Player Hands:
+2025/07/23 01:16:31 Player 0 (6 cards): [7S, 10D, SJ, 6S, 2S, 4H]
+Player 1 (7 cards): [8H, AS, 4C, 9D, 8H, 2C, AH]
+Player 2 (5 cards): [4D, 5S, JD, QS, SJ]
+Player 3 (6 cards): [AD, 2S, 6C, 6S, 9C, 10S]
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [8H, 8H]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 1
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 1
+2025/07/23 01:16:31 New Trick Started (Leader: Player 1) - Player Hands:
+2025/07/23 01:16:31 Player 0 (6 cards): [7S, 10D, SJ, 6S, 2S, 4H]
+Player 1 (5 cards): [2C, AS, 4C, 9D, AH]
+Player 2 (5 cards): [4D, 5S, JD, QS, SJ]
+Player 3 (6 cards): [AD, 2S, 6C, 6S, 9C, 10S]
+2025/07/23 01:16:31 Event: Player 1 played 2 cards: [AS, AH]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 1
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 1
+2025/07/23 01:16:31 New Trick Started (Leader: Player 1) - Player Hands:
+2025/07/23 01:16:31 Player 0 (6 cards): [7S, 10D, SJ, 6S, 2S, 4H]
+Player 1 (3 cards): [2C, 9D, 4C]
+Player 2 (5 cards): [4D, 5S, JD, QS, SJ]
+Player 3 (6 cards): [AD, 2S, 6C, 6S, 9C, 10S]
+2025/07/23 01:16:31 Event: Player 1 played 1 cards: [4C]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 1
+2025/07/23 01:16:31 Event: Player 2 played 1 cards: [5S]
+2025/07/23 01:16:31 Event: Player 3 played 1 cards: [AD]
+2025/07/23 01:16:31 Event: Player 0 played 1 cards: [SJ]
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 0
+2025/07/23 01:16:31 New Trick Started (Leader: Player 0) - Player Hands:
+2025/07/23 01:16:31 Player 0 (5 cards): [7S, 10D, 4H, 6S, 2S]
+Player 1 (2 cards): [2C, 9D]
+Player 2 (4 cards): [4D, SJ, JD, QS]
+Player 3 (5 cards): [10S, 2S, 6C, 6S, 9C]
+2025/07/23 01:16:31 Event: Player 0 played 1 cards: [4H]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 0
+2025/07/23 01:16:31 Event: Player 1 played 1 cards: [2C]
+2025/07/23 01:16:31 Event: Player 2 played 1 cards: [SJ]
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 2
+2025/07/23 01:16:31 New Trick Started (Leader: Player 2) - Player Hands:
+2025/07/23 01:16:31 Player 0 (4 cards): [7S, 10D, 2S, 6S]
+Player 1 (1 cards): [9D]
+Player 2 (3 cards): [4D, QS, JD]
+Player 3 (5 cards): [10S, 2S, 6C, 6S, 9C]
+2025/07/23 01:16:31 Event: Player 2 played 1 cards: [4D]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 2
+2025/07/23 01:16:31 Event: Player 3 played 1 cards: [10S]
+2025/07/23 01:16:31 Event: Player 0 played 1 cards: [2S]
+2025/07/23 01:16:31 Event: Player 1 passed
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 0
+2025/07/23 01:16:31 New Trick Started (Leader: Player 0) - Player Hands:
+2025/07/23 01:16:31 Player 0 (3 cards): [7S, 10D, 6S]
+Player 1 (1 cards): [9D]
+Player 2 (2 cards): [JD, QS]
+Player 3 (4 cards): [9C, 2S, 6C, 6S]
+2025/07/23 01:16:31 Event: Player 0 played 1 cards: [6S]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 0
+2025/07/23 01:16:31 Event: Player 1 played 1 cards: [9D]
+2025/07/23 01:16:31 Event: Player 2 played 1 cards: [JD]
+2025/07/23 01:16:31 Event: Player 3 played 1 cards: [2S]
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 3
+2025/07/23 01:16:31 New Trick Started (Leader: Player 3) - Player Hands:
+2025/07/23 01:16:31 Player 0 (2 cards): [7S, 10D]
+Player 1 (0 cards): []
+Player 2 (1 cards): [QS]
+Player 3 (3 cards): [9C, 6S, 6C]
+2025/07/23 01:16:31 Event: Player 3 played 2 cards: [6S, 6C]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 3
+2025/07/23 01:16:31 Event: Player 0 passed
+2025/07/23 01:16:31 Event: Player 2 passed
+2025/07/23 01:16:31 Event: Player 3 passed
+2025/07/23 01:16:31 Event: Trick Ended, Winner: Player 3
+2025/07/23 01:16:31 New Trick Started (Leader: Player 3) - Player Hands:
+2025/07/23 01:16:31 Player 0 (2 cards): [7S, 10D]
+Player 1 (0 cards): []
+Player 2 (1 cards): [QS]
+Player 3 (1 cards): [9C]
+2025/07/23 01:16:31 Event: Player 3 played 1 cards: [9C]
+2025/07/23 01:16:31 Event: New Trick Started, Leader: Player 3
+2025/07/23 01:16:31 Event: Player 0 played 1 cards: [10D]
+2025/07/23 01:16:31 Event: Player 2 played 1 cards: [QS]
+2025/07/23 01:16:31 Event: Deal Ended, Rankings: [1 3 2 0], Victory Type: double_down
+2025/07/23 01:16:31 === Team Status Before Deal 2 ===
+2025/07/23 01:16:31 Team 0 (Players 0,2): Level 2
+2025/07/23 01:16:31 Team 1 (Players 1,3): Level 5
+2025/07/23 01:16:31 Players:
+2025/07/23 01:16:31   Player 0 (Player 1) - Team 0
+2025/07/23 01:16:31   Player 1 (Player 2) - Team 1
+2025/07/23 01:16:31   Player 2 (Player 3) - Team 0
+2025/07/23 01:16:31   Player 3 (Player 4) - Team 1
+2025/07/23 01:16:31 Event: Deal Started
+2025/07/23 01:16:31 Deal Started - Player Hands:
+2025/07/23 01:16:31 Player 0 (27 cards): [2C, 2H, 3D, 3H, 4D, 4C, 4S, 4C, 8S, 8D, 8C, 9S, 9C, 9C, 9D, 10S, JC, QS, KS, KD, AS, AH, 5C, 5D, 5S, 5H, BJ]
+Player 1 (27 cards): [2S, 2S, 2H, 3C, 6D, 6S, 7D, 7S, 7C, 8H, 9D, 10C, 10S, 10D, JC, JD, JD, JS, QS, QH, KC, KH, KH, AD, AH, 5D, SJ]
+Player 2 (27 cards): [2D, 2D, 2C, 3S, 3H, 4D, 4S, 4H, 6C, 6S, 6C, 6H, 8S, 9H, 9H, 10D, 10H, 10H, QD, QD, KS, KD, KC, AC, AD, AS, 5H]
+Player 3 (27 cards): [3S, 3D, 3C, 4H, 6D, 6H, 7S, 7C, 7D, 7H, 7H, 8C, 8D, 8H, 9S, 10C, JS, JH, JH, QC, QC, QH, AC, 5C, 5S, SJ, BJ]
+2025/07/23 01:16:31 
+=== Deal 2 started ===
+2025/07/23 01:16:31 Tribute phase completed
+2025/07/23 01:16:32 Deal status is tribute instead of playing, skipping this deal
+2025/07/23 01:16:32 === Team Status Before Deal 3 ===
+2025/07/23 01:16:32 Team 0 (Players 0,2): Level 2
+2025/07/23 01:16:32 Team 1 (Players 1,3): Level 5
+2025/07/23 01:16:32 Players:
+2025/07/23 01:16:32   Player 0 (Player 1) - Team 0
+2025/07/23 01:16:32   Player 1 (Player 2) - Team 1
+2025/07/23 01:16:32   Player 2 (Player 3) - Team 0
+2025/07/23 01:16:32   Player 3 (Player 4) - Team 1
+2025/07/23 01:16:32 Event: Deal Started
+2025/07/23 01:16:32 Deal Started - Player Hands:
+2025/07/23 01:16:32 Player 0 (27 cards): [2D, 3H, 6S, 7C, 8S, 8S, 9C, 9S, 9S, 9D, 10C, 10D, 10C, 10H, JS, JD, QD, QH, KS, KC, KS, KD, KH, KH, 5H, SJ, BJ]
+Player 1 (27 cards): [3D, 3C, 3H, 4D, 6S, 6D, 7D, 7C, 8D, 8D, 8H, 9C, 9H, 9H, 10S, 10S, 10H, QC, QC, QH, KC, AS, AC, 5C, 5D, 5H, SJ]
+Player 2 (27 cards): [2C, 2D, 2S, 2H, 3S, 3S, 4S, 4C, 4S, 4H, 6C, 7D, 7H, 7H, 10D, JS, JH, JH, KD, AS, AD, AC, AH, 5S, 5S, 5C, 5D]
+Player 3 (27 cards): [2C, 2S, 2H, 3C, 3D, 4C, 4D, 4H, 6D, 6C, 6H, 6H, 7S, 7S, 8C, 8C, 8H, 9D, JD, JC, JC, QD, QS, QS, AD, AH, BJ]
+2025/07/23 01:16:32 
+=== Deal 3 started ===
+2025/07/23 01:16:32 Tribute phase completed
+2025/07/23 01:16:33 Deal status is tribute instead of playing, skipping this deal
+2025/07/23 01:16:33 === Team Status Before Deal 4 ===
+2025/07/23 01:16:33 Team 0 (Players 0,2): Level 2
+2025/07/23 01:16:33 Team 1 (Players 1,3): Level 5
+2025/07/23 01:16:33 Players:
+2025/07/23 01:16:33   Player 0 (Player 1) - Team 0
+2025/07/23 01:16:33   Player 1 (Player 2) - Team 1
+2025/07/23 01:16:33   Player 2 (Player 3) - Team 0
+2025/07/23 01:16:33   Player 3 (Player 4) - Team 1
+2025/07/23 01:16:33 Event: Deal Started
+2025/07/23 01:16:33 Deal Started - Player Hands:
+2025/07/23 01:16:33 Player 0 (27 cards): [2H, 3C, 3H, 6S, 7C, 7D, 7H, 8C, 8S, 8H, 9D, 9H, 10D, 10H, 10H, JC, JD, JS, QC, QH, KC, KS, KH, AS, 5C, 5H, BJ]
+Player 1 (27 cards): [2H, 3C, 3D, 4S, 4C, 4H, 4H, 6D, 6H, 6H, 7D, 8D, 8S, 8H, 9D, 9C, 9H, 10D, JD, JH, JH, QH, KC, KD, AD, AH, SJ]
+Player 2 (27 cards): [2D, 2C, 3S, 4D, 4C, 4D, 6C, 6D, 6C, 7S, 8D, 10C, 10S, 10S, JS, JC, QS, QD, KH, AD, AH, 5D, 5D, 5C, 5S, 5H, BJ]
+Player 3 (27 cards): [2C, 2D, 2S, 2S, 3D, 3S, 3H, 4S, 6S, 7S, 7C, 7H, 8C, 9C, 9S, 9S, 10C, QS, QD, QC, KS, KD, AC, AS, AC, 5S, SJ]
+2025/07/23 01:16:33 
+=== Deal 4 started ===
+2025/07/23 01:16:33 Tribute phase completed
+2025/07/23 01:16:34 Deal status is tribute instead of playing, skipping this deal
+2025/07/23 01:16:34 === Team Status Before Deal 5 ===
+2025/07/23 01:16:34 Team 0 (Players 0,2): Level 2
+2025/07/23 01:16:34 Team 1 (Players 1,3): Level 5
+2025/07/23 01:16:34 Players:
+2025/07/23 01:16:34   Player 0 (Player 1) - Team 0
+2025/07/23 01:16:34   Player 1 (Player 2) - Team 1
+2025/07/23 01:16:34   Player 2 (Player 3) - Team 0
+2025/07/23 01:16:34   Player 3 (Player 4) - Team 1
+2025/07/23 01:16:34 Event: Deal Started
+2025/07/23 01:16:34 Deal Started - Player Hands:
+2025/07/23 01:16:34 Player 0 (27 cards): [2D, 2C, 2H, 3C, 4D, 4S, 4D, 4C, 6S, 7S, 7C, 8S, 8H, 9D, 9C, 9S, 9H, 10H, 10H, JS, JH, QD, QD, QH, KH, AS, AH]
+Player 1 (27 cards): [2C, 2H, 3C, 3S, 4C, 4H, 6S, 6H, 7D, 8S, 8D, 9S, 10D, 10C, JC, JS, QS, KD, AC, AD, AD, 5D, 5S, 5D, 5H, SJ, BJ]
+Player 2 (27 cards): [2S, 2S, 3S, 3D, 3H, 6D, 7C, 7H, 8C, 8H, 9C, 9D, 9H, JC, JD, JD, JH, QH, KD, KC, KS, AC, AH, 5S, 5C, SJ, BJ]
+Player 3 (27 cards): [2D, 3D, 3H, 4S, 4H, 6C, 6D, 6C, 6H, 7S, 7D, 7H, 8D, 8C, 10S, 10S, 10C, 10D, QC, QC, QS, KS, KC, KH, AS, 5C, 5H]
+2025/07/23 01:16:34 
+=== Deal 5 started ===
+2025/07/23 01:16:34 Tribute phase completed
+2025/07/23 01:16:35 Deal status is tribute instead of playing, skipping this deal
+2025/07/23 01:16:35 === Team Status Before Deal 6 ===
+2025/07/23 01:16:35 Team 0 (Players 0,2): Level 2
+2025/07/23 01:16:35 Team 1 (Players 1,3): Level 5
+2025/07/23 01:16:35 Players:
+2025/07/23 01:16:35   Player 0 (Player 1) - Team 0
+2025/07/23 01:16:35   Player 1 (Player 2) - Team 1
+2025/07/23 01:16:35   Player 2 (Player 3) - Team 0
+2025/07/23 01:16:35   Player 3 (Player 4) - Team 1
+2025/07/23 01:16:35 Event: Deal Started
+2025/07/23 01:16:35 Deal Started - Player Hands:
+2025/07/23 01:16:35 Player 0 (27 cards): [2C, 2H, 3D, 4D, 4S, 6D, 6S, 6D, 8S, 9S, 9S, JD, JS, JC, QD, QS, QH, QH, KC, KS, KC, KS, KD, KH, 5C, 5S, SJ]
+Player 1 (27 cards): [2H, 3S, 3C, 3S, 3D, 4S, 4D, 4H, 7D, 7C, 7D, 8D, 8C, 8D, 9D, 9C, 9C, 9H, 10C, 10D, JS, JH, QC, QD, AS, 5H, BJ]
+Player 2 (27 cards): [2S, 2D, 2S, 3C, 4C, 4C, 6C, 6S, 6H, 6H, 8C, 8S, 8H, 8H, 10S, 10D, 10C, 10H, JC, QC, KH, AD, AC, AH, 5C, 5D, 5S]
+Player 3 (27 cards): [2C, 2D, 3H, 3H, 4H, 6C, 7C, 7S, 7S, 7H, 7H, 9D, 9H, 10S, 10H, JD, JH, QS, KD, AD, AC, AS, AH, 5D, 5H, SJ, BJ]
+2025/07/23 01:16:35 
+=== Deal 6 started ===
+2025/07/23 01:16:35 Tribute phase completed
+panic: test timed out after 5s
+running tests:
+	TestMatchSimulatorVerbose (5s)
+
+goroutine 7 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/local/go/src/testing/testing.go:2366 +0x385
+created by time.goFunc
+	/usr/local/go/src/time/sleep.go:177 +0x2d
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0xc0001104e0, {0x57ae58b?, 0xfcb0b8800131b48?}, 0x5837870)
+	/usr/local/go/src/testing/testing.go:1750 +0x3ab
+testing.runTests.func1(0xc0001104e0)
+	/usr/local/go/src/testing/testing.go:2161 +0x37
+testing.tRunner(0xc0001104e0, 0xc000131c70)
+	/usr/local/go/src/testing/testing.go:1689 +0xfb
+testing.runTests(0xc000010030, {0x5940f80, 0x90, 0x90}, {0x1?, 0x56e790e?, 0x5943820?})
+	/usr/local/go/src/testing/testing.go:2159 +0x445
+testing.(*M).Run(0xc00007e0a0)
+	/usr/local/go/src/testing/testing.go:2027 +0x68b
+main.main()
+	_testmain.go:335 +0x16c
+
+goroutine 6 [sleep]:
+time.Sleep(0x989680)
+	/usr/local/go/src/runtime/time.go:195 +0x115
+guandan-world/sdk.(*MatchSimulator).processDeal(0xc00007c180)
+	/Users/xiaochunliu/program/guandan-world/sdk/match_simulator.go:523 +0x145
+guandan-world/sdk.(*MatchSimulator).SimulateMatch(0xc00007c180)
+	/Users/xiaochunliu/program/guandan-world/sdk/match_simulator.go:470 +0x425
+guandan-world/sdk.TestMatchSimulatorVerbose(0xc000110680)
+	/Users/xiaochunliu/program/guandan-world/sdk/match_simulator_test.go:39 +0xa6
+testing.tRunner(0xc000110680, 0x5837870)
+	/usr/local/go/src/testing/testing.go:1689 +0xfb
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1742 +0x390
+exit status 2
+FAIL	guandan-world/sdk	5.448s

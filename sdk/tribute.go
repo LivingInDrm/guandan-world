@@ -8,7 +8,7 @@ import (
 
 // TributeManager handles all tribute-related operations independently
 type TributeManager struct {
-	level int
+	level int // Current level for the game (used for wildcard detection)
 }
 
 // NewTributeManager creates a new tribute manager
@@ -129,7 +129,8 @@ func (tm *TributeManager) ProcessTribute(tributePhase *TributePhase, playerHands
 	case TributeStatusWaiting:
 		return tm.startTributePhase(tributePhase, playerHands)
 	case TributeStatusSelecting:
-		return tm.handleDoubleDownTribute(tributePhase, playerHands)
+		// Selection is handled by external calls to SelectTribute
+		return nil
 	case TributeStatusReturning:
 		// For normal tribute, we need to select tribute cards first if not already done
 		if len(tributePhase.TributeCards) == 0 {
@@ -193,12 +194,6 @@ func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHa
 	return nil
 }
 
-// handleDoubleDownTribute handles the double down tribute selection
-func (tm *TributeManager) handleDoubleDownTribute(tributePhase *TributePhase, playerHands [4][]*Card) error {
-	// This method would be called when players make selections
-	// For now, we'll implement auto-selection logic
-	return nil
-}
 
 // processReturnCards processes the return cards phase
 func (tm *TributeManager) processReturnCards(tributePhase *TributePhase, playerHands [4][]*Card) error {
@@ -285,21 +280,6 @@ func (tm *TributeManager) getHighestCardExcludingHeartTrump(hand []*Card) *Card 
 	return highest
 }
 
-// getHighestCard returns the highest card from a hand
-func (tm *TributeManager) getHighestCard(hand []*Card) *Card {
-	if len(hand) == 0 {
-		return nil
-	}
-
-	highest := hand[0]
-	for _, card := range hand[1:] {
-		if card.GreaterThan(highest) {
-			highest = card
-		}
-	}
-
-	return highest
-}
 
 // getLowestCard returns the lowest card from a hand
 func (tm *TributeManager) getLowestCard(hand []*Card) *Card {
@@ -374,17 +354,18 @@ func (tm *TributeManager) DetermineTributeRequirements(lastResult *DealResult) (
 
 // Start starts the tribute phase
 func (tp *TributePhase) Start() error {
-	if tp.Status == TributeStatusSelecting {
+	switch tp.Status {
+	case TributeStatusSelecting:
 		// For double down, we need to create the pool from losing players' cards
 		// This would be done by the Deal when it has access to player hands
 		return nil
-	} else if tp.Status == TributeStatusReturning {
+	case TributeStatusReturning:
 		// For normal tribute, players automatically give their highest cards
 		// This would be handled by the Deal when it has access to player hands
 		return nil
+	default:
+		return nil
 	}
-
-	return nil
 }
 
 // SelectTribute handles tribute selection from pool (double down scenario)
@@ -478,4 +459,220 @@ func (tp *TributePhase) getSecondPlace() int {
 	// Find the teammate of current selecting player
 	// In 4-player game: 0<->2, 1<->3 are teammates
 	return (tp.SelectingPlayer + 2) % 4
+}
+
+// ProcessTributePhaseAction processes the tribute phase and returns any required action
+func (tm *TributeManager) ProcessTributePhaseAction(phase *TributePhase, playerCards [4][]*Card) (*TributeAction, error) {
+	if phase == nil {
+		return nil, nil
+	}
+
+	// Process the tribute phase based on current status
+	err := tm.ProcessTribute(phase, playerCards)
+	if err != nil {
+		return nil, fmt.Errorf("process tribute failed: %w", err)
+	}
+
+	// Generate action based on current status
+	switch phase.Status {
+	case TributeStatusSelecting:
+		// Double down selection scenario
+		if phase.SelectingPlayer >= 0 && len(phase.PoolCards) > 0 {
+			return &TributeAction{
+				Type:         TributeActionSelect,
+				PlayerID:     phase.SelectingPlayer,
+				Options:      phase.PoolCards,
+				Timeout:      30 * time.Second,
+			}, nil
+		}
+
+	case TributeStatusReturning:
+		// Find player who needs to return tribute
+		for giver, receiver := range phase.TributeMap {
+			if receiver != -1 && phase.TributeCards[giver] != nil {
+				// Check if return is already done
+				if phase.ReturnCards[receiver] == nil {
+					// Need to return tribute
+					return &TributeAction{
+						Type:         TributeActionReturn,
+						PlayerID:     receiver,
+						Options:      playerCards[receiver],
+						TargetPlayer: giver,
+						Timeout:      30 * time.Second,
+					}, nil
+				}
+			}
+		}
+
+	case TributeStatusFinished:
+		// No action needed, tribute phase is complete
+		return nil, nil
+	}
+
+	return nil, nil
+}
+
+// SubmitSelection handles tribute selection from pool (double down scenario)
+func (tm *TributeManager) SubmitSelection(phase *TributePhase, playerID int, cardID string) error {
+	if phase == nil {
+		return errors.New("no tribute phase")
+	}
+
+	if phase.Status != TributeStatusSelecting {
+		return errors.New("not in selecting status")
+	}
+
+	if phase.SelectingPlayer != playerID {
+		return fmt.Errorf("not player %d's turn to select", playerID)
+	}
+
+	// Find the card in pool
+	var selectedCard *Card
+	for _, card := range phase.PoolCards {
+		if card.GetID() == cardID {
+			selectedCard = card
+			break
+		}
+	}
+
+	if selectedCard == nil {
+		return errors.New("card not found in tribute pool")
+	}
+
+	// Execute selection
+	return phase.SelectTribute(playerID, selectedCard)
+}
+
+// SubmitReturn handles return tribute submission
+func (tm *TributeManager) SubmitReturn(phase *TributePhase, playerID int, cardID string, playerCards []*Card) error {
+	if phase == nil {
+		return errors.New("no tribute phase")
+	}
+
+	if phase.Status != TributeStatusReturning {
+		return errors.New("not in returning status")
+	}
+
+	// Verify player needs to return tribute
+	needsReturn := false
+	for _, receiver := range phase.TributeMap {
+		if receiver == playerID && phase.ReturnCards[playerID] == nil {
+			needsReturn = true
+			break
+		}
+	}
+
+	if !needsReturn {
+		return fmt.Errorf("player %d does not need to return tribute", playerID)
+	}
+
+	// Find the card in player's hand
+	var selectedCard *Card
+	for _, card := range playerCards {
+		if card.GetID() == cardID {
+			selectedCard = card
+			break
+		}
+	}
+
+	if selectedCard == nil {
+		return errors.New("card not found in player's hand")
+	}
+
+	// Record the return
+	phase.AddReturnCard(playerID, selectedCard)
+
+	// Check if all returns are complete
+	allReturned := true
+	for giver, receiver := range phase.TributeMap {
+		if receiver != -1 && phase.TributeCards[giver] != nil {
+			if phase.ReturnCards[receiver] == nil {
+				allReturned = false
+				break
+			}
+		}
+	}
+
+	if allReturned {
+		phase.Status = TributeStatusFinished
+	}
+
+	return nil
+}
+
+// HandleTimeoutAction handles timeout for current tribute action
+func (tm *TributeManager) HandleTimeoutAction(phase *TributePhase, playerCards [4][]*Card) error {
+	if phase == nil {
+		return errors.New("no tribute phase")
+	}
+
+	switch phase.Status {
+	case TributeStatusSelecting:
+		// Handle selection timeout
+		return phase.HandleTimeout()
+
+	case TributeStatusReturning:
+		// Find player who needs to return and auto-select lowest card
+		for giver, receiver := range phase.TributeMap {
+			if receiver != -1 && phase.TributeCards[giver] != nil {
+				if phase.ReturnCards[receiver] == nil {
+					// Get lowest card for auto-return
+					lowestCard := tm.getLowestCard(playerCards[receiver])
+					if lowestCard != nil {
+						phase.AddReturnCard(receiver, lowestCard)
+					}
+					break
+				}
+			}
+		}
+		return nil
+
+	default:
+		return errors.New("no pending tribute action to timeout")
+	}
+}
+
+// GetTributeStatusInfo returns detailed tribute status information
+func (tm *TributeManager) GetTributeStatusInfo(phase *TributePhase, playerCards [4][]*Card) *TributeStatusInfo {
+	if phase == nil {
+		return nil
+	}
+
+	// Build pending actions list
+	pendingActions := make([]*TributeAction, 0)
+
+	switch phase.Status {
+	case TributeStatusSelecting:
+		if phase.SelectingPlayer >= 0 && len(phase.PoolCards) > 0 {
+			pendingActions = append(pendingActions, &TributeAction{
+				Type:         TributeActionSelect,
+				PlayerID:     phase.SelectingPlayer,
+				Options:      phase.PoolCards,
+				Timeout:      30 * time.Second,
+			})
+		}
+
+	case TributeStatusReturning:
+		for giver, receiver := range phase.TributeMap {
+			if receiver != -1 && phase.TributeCards[giver] != nil {
+				if phase.ReturnCards[receiver] == nil {
+					pendingActions = append(pendingActions, &TributeAction{
+						Type:         TributeActionReturn,
+						PlayerID:     receiver,
+						Options:      playerCards[receiver],
+						TargetPlayer: giver,
+						Timeout:      30 * time.Second,
+					})
+				}
+			}
+		}
+	}
+
+	return &TributeStatusInfo{
+		Phase:          phase.Status,
+		TributeCards:   phase.TributeCards,
+		ReturnCards:    phase.ReturnCards,
+		PendingActions: pendingActions,
+		IsImmune:       false, // This would need to be tracked separately
+	}
 }

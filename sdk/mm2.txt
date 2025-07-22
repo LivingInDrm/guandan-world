@@ -1,0 +1,1877 @@
+=== RUN   TestMatchSimulator
+🀄 开始模拟掼蛋牌局...
+玩家信息:
+  座位0: Alice (队伍0)
+  座位1: Bob (队伍1)
+  座位2: Charlie (队伍0)
+  座位3: Diana (队伍1)
+
+🔧 SDK调用: gameEngine.StartMatch([[{player_0 Alice 0 true true} {player_1 Bob 1 true true} {player_2 Charlie 2 true true} {player_3 Diana 3 true true}]])
+
+🎮 === 第1局开始 ===
+🎯 牌局等级: 2
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 2
+  当前局等级: 2
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 2C 3C 3C 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S AD AH AS AS JD QC QS QS] (共27张)
+  玩家1: [10D 2C 2H 3S 3S 4D 5S 5S 6S 7H 7H 7S 8H 8S 9C 9D 9H AC AC JC KC KD KS QC QD QH SJ] (共27张)
+  玩家2: [10C 10C 10H 10S 2D 2S 2S 3H 4C 4H 5D 5H 5H 7C 8D 9H AD AH BJ JC JH JH JS KD KH KS QD] (共27张)
+  玩家3: [10H 10S 2D 2H 3D 4C 4D 4S 5C 5C 6C 6C 6D 6D 6S 7D 8H 8S 9C 9S BJ JD JS KC KH QH SJ] (共27张)
+
+🎲 --- 第1轮Trick ---
+🎯 玩家0: 出牌 [7C 7D 9D 9S QS QS]
+🔧 SDK调用: gameEngine.PlayCards([0 [7 of Club 7 of Diamond 9 of Spade 9 of Diamond Queen of Spade Queen of Spade]])
+🎯 玩家0: 出牌 [3C]
+🔧 SDK调用: gameEngine.PlayCards([0 [3 of Club]])
+🎯 玩家1: 出牌 [4D]
+🔧 SDK调用: gameEngine.PlayCards([1 [4 of Diamond]])
+🎯 玩家2: 出牌 [5D]
+🔧 SDK调用: gameEngine.PlayCards([2 [5 of Diamond]])
+🎯 玩家3: 出牌 [6S]
+🔧 SDK调用: gameEngine.PlayCards([3 [6 of Spade]])
+🎯 玩家0: 出牌 [2C]
+🔧 SDK调用: gameEngine.PlayCards([0 [2 of Club]])
+🎯 玩家1: 出牌 [SJ]
+🔧 SDK调用: gameEngine.PlayCards([1 [Black Joker]])
+🎯 玩家2: 出牌 [BJ]
+🔧 SDK调用: gameEngine.PlayCards([2 [Red Joker]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [2S 2S 4C 4H 5H 5H]
+🔧 SDK调用: gameEngine.PlayCards([2 [4 of Club 4 of Heart 2 of Spade 2 of Spade 5 of Heart 5 of Heart]])
+🎯 玩家2: 出牌 [3H]
+🔧 SDK调用: gameEngine.PlayCards([2 [3 of Heart]])
+🎯 玩家3: 出牌 [4C]
+🔧 SDK调用: gameEngine.PlayCards([3 [4 of Club]])
+🎯 玩家0: 出牌 [AH]
+🔧 SDK调用: gameEngine.PlayCards([0 [Ace of Heart]])
+🎯 玩家1: 出牌 [2H]
+🔧 SDK调用: gameEngine.PlayCards([1 [2 of Heart]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [SJ]
+🔧 SDK调用: gameEngine.PlayCards([3 [Black Joker]])
+📋 第1轮Trick结束后手牌:
+  玩家0: [10D 3C 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S AD AS AS JD QC QS QS] (共24张)
+  玩家1: [10D 2C 3S 3S 5S 5S 6S 7H 7H 7S 8H 8S 9C 9D 9H AC AC JC KC KD KS QC QD QH] (共24张)
+  玩家2: [10C 10C 10H 10S 2D 2S 2S 4C 4H 5H 5H 7C 8D 9H AD AH JC JH JH JS KD KH KS QD] (共24张)
+  玩家3: [10H 10S 2D 2H 3D 4D 4S 5C 5C 6C 6C 6D 6D 7D 8H 8S 9C 9S BJ JD JS KC KH QH] (共24张)
+
+🎲 --- 第2轮Trick ---
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [4D 4S 8H 8S JD JS]
+🔧 SDK调用: gameEngine.PlayCards([3 [4 of Spade 4 of Diamond 8 of Spade 8 of Heart Jack of Diamond Jack of Spade]])
+🎯 玩家3: 出牌 [3D]
+🔧 SDK调用: gameEngine.PlayCards([3 [3 of Diamond]])
+🎯 玩家0: 出牌 [AS]
+🔧 SDK调用: gameEngine.PlayCards([0 [Ace of Spade]])
+🎯 玩家1: 出牌 [2C]
+🔧 SDK调用: gameEngine.PlayCards([1 [2 of Club]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [BJ]
+🔧 SDK调用: gameEngine.PlayCards([3 [Red Joker]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [2D 2H 5C 5C JD JS]
+🔧 SDK调用: gameEngine.PlayCards([3 [Jack of Diamond Jack of Spade 2 of Diamond 2 of Heart 5 of Club 5 of Club]])
+🎯 玩家3: 出牌 [2D]
+🔧 SDK调用: gameEngine.PlayCards([3 [2 of Diamond]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [5C 5C 8H 8S KC KH]
+🔧 SDK调用: gameEngine.PlayCards([3 [8 of Spade 8 of Heart King of Club King of Heart 5 of Club 5 of Club]])
+🎯 玩家3: 出牌 [KC]
+🔧 SDK调用: gameEngine.PlayCards([3 [King of Club]])
+📋 第2轮Trick结束后手牌:
+  玩家0: [10D 3C 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S AD AS JD QC QS QS] (共23张)
+  玩家1: [10D 3S 3S 5S 5S 6S 7H 7H 7S 8H 8S 9C 9D 9H AC AC JC KC KD KS QC QD QH] (共23张)
+  玩家2: [10C 10C 10H 10S 2D 2S 2S 4C 4H 5H 5H 7C 8D 9H AD AH JC JH JH JS KD KH KS QD] (共24张)
+  玩家3: [10H 10S 2H 4D 4S 5C 5C 6C 6C 6D 6D 7D 8H 8S 9C 9S JD JS KH QH] (共20张)
+
+🎲 --- 第3轮Trick ---
+🎯 玩家0: 出牌 [AS]
+🔧 SDK调用: gameEngine.PlayCards([0 [Ace of Spade]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [2D]
+🔧 SDK调用: gameEngine.PlayCards([2 [2 of Diamond]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [10C 10C 2S 2S 4C 4H]
+🔧 SDK调用: gameEngine.PlayCards([2 [10 of Club 10 of Club 2 of Spade 2 of Spade 4 of Club 4 of Heart]])
+🎯 玩家2: 出牌 [2S]
+🔧 SDK调用: gameEngine.PlayCards([2 [2 of Spade]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [4C 4H AD AH JC JS]
+🔧 SDK调用: gameEngine.PlayCards([2 [Jack of Spade Jack of Club 4 of Club 4 of Heart Ace of Heart Ace of Diamond]])
+🎯 玩家2: 出牌 [2S]
+🔧 SDK调用: gameEngine.PlayCards([2 [2 of Spade]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [5H 5H AD AH JC JS]
+🔧 SDK调用: gameEngine.PlayCards([2 [5 of Heart 5 of Heart Jack of Spade Jack of Club Ace of Diamond Ace of Heart]])
+🎯 玩家2: 出牌 [AD]
+🔧 SDK调用: gameEngine.PlayCards([2 [Ace of Diamond]])
+🎯 玩家3: 出牌 [2H]
+🔧 SDK调用: gameEngine.PlayCards([3 [2 of Heart]])
+📋 第3轮Trick结束后手牌:
+  玩家0: [10D 3C 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S AD JD QC QS QS] (共22张)
+  玩家1: [10D 3S 3S 5S 5S 6S 7H 7H 7S 8H 8S 9C 9D 9H AC AC JC KC KD KS QC QD QH] (共23张)
+  玩家2: [10C 10C 10H 10S 4C 4H 5H 5H 7C 8D 9H AH JC JH JH JS KD KH KS QD] (共20张)
+  玩家3: [10H 10S 4D 4S 5C 5C 6C 6C 6D 6D 7D 8H 8S 9C 9S JD JS KH QH] (共19张)
+
+🎲 --- 第4轮Trick ---
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [6C 6D 8H 8S JD JS]
+🔧 SDK调用: gameEngine.PlayCards([3 [Jack of Spade Jack of Diamond 6 of Diamond 6 of Club 8 of Spade 8 of Heart]])
+🎯 玩家3: 出牌 [QH]
+🔧 SDK调用: gameEngine.PlayCards([3 [Queen of Heart]])
+🎯 玩家0: 出牌 [AD]
+🔧 SDK调用: gameEngine.PlayCards([0 [Ace of Diamond]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 出牌 [4H 4S 7C 7D 8C 8C]
+🔧 SDK调用: gameEngine.PlayCards([0 [4 of Spade 4 of Heart 7 of Club 7 of Diamond 8 of Club 8 of Club]])
+🎯 玩家0: 出牌 [3C]
+🔧 SDK调用: gameEngine.PlayCards([0 [3 of Club]])
+🎯 玩家1: 出牌 [AC]
+🔧 SDK调用: gameEngine.PlayCards([1 [Ace of Club]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [7H 7S 9C 9D QC QD]
+🔧 SDK调用: gameEngine.PlayCards([1 [7 of Spade 7 of Heart 9 of Club 9 of Diamond Queen of Diamond Queen of Club]])
+🎯 玩家1: 出牌 [3S]
+🔧 SDK调用: gameEngine.PlayCards([1 [3 of Spade]])
+🎯 玩家2: 出牌 [KH]
+🔧 SDK调用: gameEngine.PlayCards([2 [King of Heart]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+📋 第4轮Trick结束后手牌:
+  玩家0: [10D 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S JD QC QS QS] (共20张)
+  玩家1: [10D 3S 5S 5S 6S 7H 7H 7S 8H 8S 9C 9D 9H AC JC KC KD KS QC QD QH] (共21张)
+  玩家2: [10C 10C 10H 10S 4C 4H 5H 5H 7C 8D 9H AH JC JH JH JS KD KS QD] (共19张)
+  玩家3: [10H 10S 4D 4S 5C 5C 6C 6C 6D 6D 7D 8H 8S 9C 9S JD JS KH] (共18张)
+
+🎲 --- 第5轮Trick ---
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [AC]
+🔧 SDK调用: gameEngine.PlayCards([1 [Ace of Club]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [5S 5S 7H 7S 8H 8S]
+🔧 SDK调用: gameEngine.PlayCards([1 [5 of Spade 5 of Spade 7 of Spade 7 of Heart 8 of Spade 8 of Heart]])
+🎯 玩家1: 出牌 [3S]
+🔧 SDK调用: gameEngine.PlayCards([1 [3 of Spade]])
+🎯 玩家2: 出牌 [KS]
+🔧 SDK调用: gameEngine.PlayCards([2 [King of Spade]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [10C 10C 4C 4H JC JS]
+🔧 SDK调用: gameEngine.PlayCards([2 [10 of Club 10 of Club Jack of Spade Jack of Club 4 of Club 4 of Heart]])
+🎯 玩家2: 出牌 [KD]
+🔧 SDK调用: gameEngine.PlayCards([2 [King of Diamond]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [10C 10C 4C 4H 5H 5H]
+🔧 SDK调用: gameEngine.PlayCards([2 [4 of Club 4 of Heart 5 of Heart 5 of Heart 10 of Club 10 of Club]])
+🎯 玩家2: 出牌 [QD]
+🔧 SDK调用: gameEngine.PlayCards([2 [Queen of Diamond]])
+🎯 玩家3: 出牌 [KH]
+🔧 SDK调用: gameEngine.PlayCards([3 [King of Heart]])
+📋 第5轮Trick结束后手牌:
+  玩家0: [10D 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S JD QC QS QS] (共20张)
+  玩家1: [10D 5S 5S 6S 7H 7H 7S 8H 8S 9C 9D 9H JC KC KD KS QC QD QH] (共19张)
+  玩家2: [10C 10C 10H 10S 4C 4H 5H 5H 7C 8D 9H AH JC JH JH JS] (共16张)
+  玩家3: [10H 10S 4D 4S 5C 5C 6C 6C 6D 6D 7D 8H 8S 9C 9S JD JS] (共17张)
+
+🎲 --- 第6轮Trick ---
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [AH]
+🔧 SDK调用: gameEngine.PlayCards([2 [Ace of Heart]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [10C 10C 5H 5H JH JH]
+🔧 SDK调用: gameEngine.PlayCards([2 [5 of Heart 5 of Heart 10 of Club 10 of Club Jack of Heart Jack of Heart]])
+🎯 玩家2: 出牌 [JH]
+🔧 SDK调用: gameEngine.PlayCards([2 [Jack of Heart]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 出牌 [QS]
+🔧 SDK调用: gameEngine.PlayCards([0 [Queen of Spade]])
+🎯 玩家1: 出牌 [KS]
+🔧 SDK调用: gameEngine.PlayCards([1 [King of Spade]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [5S 5S 7H 7S QD QH]
+🔧 SDK调用: gameEngine.PlayCards([1 [Queen of Heart Queen of Diamond 5 of Spade 5 of Spade 7 of Spade 7 of Heart]])
+🎯 玩家1: 出牌 [QH]
+🔧 SDK调用: gameEngine.PlayCards([1 [Queen of Heart]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+📋 第6轮Trick结束后手牌:
+  玩家0: [10D 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S JD QC QS] (共19张)
+  玩家1: [10D 5S 5S 6S 7H 7H 7S 8H 8S 9C 9D 9H JC KC KD QC QD] (共17张)
+  玩家2: [10C 10C 10H 10S 4C 4H 5H 5H 7C 8D 9H JC JH JS] (共14张)
+  玩家3: [10H 10S 4D 4S 5C 5C 6C 6C 6D 6D 7D 8H 8S 9C 9S JD JS] (共17张)
+
+🎲 --- 第7轮Trick ---
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [9C 9D KC KD QC QD]
+🔧 SDK调用: gameEngine.PlayCards([1 [Queen of Club Queen of Diamond 9 of Club 9 of Diamond King of Club King of Diamond]])
+🎯 玩家1: 出牌 [QC]
+🔧 SDK调用: gameEngine.PlayCards([1 [Queen of Club]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [5S 5S 9C 9D KC KD]
+🔧 SDK调用: gameEngine.PlayCards([1 [King of Club King of Diamond 5 of Spade 5 of Spade 9 of Club 9 of Diamond]])
+🎯 玩家1: 出牌 [QD]
+🔧 SDK调用: gameEngine.PlayCards([1 [Queen of Diamond]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [5S 5S 9C 9D KC KD]
+🔧 SDK调用: gameEngine.PlayCards([1 [9 of Club 9 of Diamond King of Club King of Diamond 5 of Spade 5 of Spade]])
+🎯 玩家1: 出牌 [JC]
+🔧 SDK调用: gameEngine.PlayCards([1 [Jack of Club]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 出牌 [QS]
+🔧 SDK调用: gameEngine.PlayCards([0 [Queen of Spade]])
+🎯 玩家1: 出牌 [KC]
+🔧 SDK调用: gameEngine.PlayCards([1 [King of Club]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+📋 第7轮Trick结束后手牌:
+  玩家0: [10D 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S JD QC] (共18张)
+  玩家1: [10D 5S 5S 6S 7H 7H 7S 8H 8S 9C 9D 9H KD] (共13张)
+  玩家2: [10C 10C 10H 10S 4C 4H 5H 5H 7C 8D 9H JC JH JS] (共14张)
+  玩家3: [10H 10S 4D 4S 5C 5C 6C 6C 6D 6D 7D 8H 8S 9C 9S JD JS] (共17张)
+
+🎲 --- 第8轮Trick ---
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [5S 5S 8H 8S 9C 9H]
+🔧 SDK调用: gameEngine.PlayCards([1 [8 of Spade 8 of Heart 9 of Heart 9 of Club 5 of Spade 5 of Spade]])
+🎯 玩家1: 出牌 [10D]
+🔧 SDK调用: gameEngine.PlayCards([1 [10 of Diamond]])
+🎯 玩家2: 出牌 [JH]
+🔧 SDK调用: gameEngine.PlayCards([2 [Jack of Heart]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 出牌 [QC]
+🔧 SDK调用: gameEngine.PlayCards([0 [Queen of Club]])
+🎯 玩家1: 出牌 [KD]
+🔧 SDK调用: gameEngine.PlayCards([1 [King of Diamond]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [7H 7S 8H 8S 9D 9H]
+🔧 SDK调用: gameEngine.PlayCards([1 [7 of Spade 7 of Heart 8 of Spade 8 of Heart 9 of Diamond 9 of Heart]])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 出牌 [5S 5S]
+🔧 SDK调用: gameEngine.PlayCards([1 [5 of Spade 5 of Spade]])
+🎯 玩家2: 出牌 [JC JS]
+🔧 SDK调用: gameEngine.PlayCards([2 [Jack of Spade Jack of Club]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+📋 第8轮Trick结束后手牌:
+  玩家0: [10D 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S JD] (共17张)
+  玩家1: [6S 7H 9C] (共3张)
+  玩家2: [10C 10C 10H 10S 4C 4H 5H 5H 7C 8D 9H] (共11张)
+  玩家3: [10H 10S 4D 4S 5C 5C 6C 6C 6D 6D 7D 8H 8S 9C 9S JD JS] (共17张)
+
+🎲 --- 第9轮Trick ---
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [10H 10S 4C 4H 5H 5H]
+🔧 SDK调用: gameEngine.PlayCards([2 [5 of Heart 5 of Heart 10 of Heart 10 of Spade 4 of Club 4 of Heart]])
+🎯 玩家2: 出牌 [10H]
+🔧 SDK调用: gameEngine.PlayCards([2 [10 of Heart]])
+🎯 玩家3: 出牌 [JD]
+🔧 SDK调用: gameEngine.PlayCards([3 [Jack of Diamond]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [4D 4S 5C 5C 6C 6D]
+🔧 SDK调用: gameEngine.PlayCards([3 [4 of Spade 4 of Diamond 5 of Club 5 of Club 6 of Diamond 6 of Club]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [6C 6D 8H 8S 9C 9S]
+🔧 SDK调用: gameEngine.PlayCards([3 [9 of Spade 9 of Club 8 of Spade 8 of Heart 6 of Diamond 6 of Club]])
+🎯 玩家3: 出牌 [10S]
+🔧 SDK调用: gameEngine.PlayCards([3 [10 of Spade]])
+🎯 玩家0: 出牌 [JD]
+🔧 SDK调用: gameEngine.PlayCards([0 [Jack of Diamond]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+📋 第9轮Trick结束后手牌:
+  玩家0: [10D 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D 9D 9S] (共16张)
+  玩家1: [6S 7H 9C] (共3张)
+  玩家2: [10C 10C 10S 4C 4H 5H 5H 7C 8D 9H] (共10张)
+  玩家3: [10H 6C 6D 7D 8H 8S 9C 9S JS] (共9张)
+
+🎲 --- 第10轮Trick ---
+🎯 玩家0: 出牌 [4H 4S 6H 6H 7C 7D]
+🔧 SDK调用: gameEngine.PlayCards([0 [4 of Spade 4 of Heart 6 of Heart 6 of Heart 7 of Club 7 of Diamond]])
+🎯 玩家0: 出牌 [9D]
+🔧 SDK调用: gameEngine.PlayCards([0 [9 of Diamond]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [10C]
+🔧 SDK调用: gameEngine.PlayCards([2 [10 of Club]])
+🎯 玩家3: 出牌 [JS]
+🔧 SDK调用: gameEngine.PlayCards([3 [Jack of Spade]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [6C 6D 8H 8S 9C 9S]
+🔧 SDK调用: gameEngine.PlayCards([3 [6 of Club 6 of Diamond 9 of Spade 9 of Club 8 of Spade 8 of Heart]])
+🎯 玩家3: 出牌 [7D]
+🔧 SDK调用: gameEngine.PlayCards([3 [7 of Diamond]])
+🎯 玩家0: 出牌 [9S]
+🔧 SDK调用: gameEngine.PlayCards([0 [9 of Spade]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [10C]
+🔧 SDK调用: gameEngine.PlayCards([2 [10 of Club]])
+🎯 玩家3: 过牌
+🔧 SDK调用: gameEngine.PassTurn([3])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [5H 5H]
+🔧 SDK调用: gameEngine.PlayCards([2 [5 of Heart 5 of Heart]])
+🎯 玩家3: 出牌 [6C 6D]
+🔧 SDK调用: gameEngine.PlayCards([3 [6 of Diamond 6 of Club]])
+📋 第10轮Trick结束后手牌:
+  玩家0: [10D 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S 8C 8C 8D] (共14张)
+  玩家1: [6S 7H 9C] (共3张)
+  玩家2: [10S 4C 4H 7C 8D 9H] (共6张)
+  玩家3: [10H 8H 8S 9C 9S] (共5张)
+
+🎲 --- 第11轮Trick ---
+🎯 玩家0: 出牌 [8C 8D]
+🔧 SDK调用: gameEngine.PlayCards([0 [8 of Diamond 8 of Club]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [9C 9S]
+🔧 SDK调用: gameEngine.PlayCards([3 [9 of Spade 9 of Club]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [8H 8S]
+🔧 SDK调用: gameEngine.PlayCards([3 [8 of Heart 8 of Spade]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家3: 出牌 [10H]
+🔧 SDK调用: gameEngine.PlayCards([3 [10 of Heart]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家0: 出牌 [3D 3H 4H 4S 6H 6H]
+🔧 SDK调用: gameEngine.PlayCards([0 [3 of Diamond 3 of Heart 4 of Spade 4 of Heart 6 of Heart 6 of Heart]])
+🎯 玩家0: 出牌 [8C]
+🔧 SDK调用: gameEngine.PlayCards([0 [8 of Club]])
+📋 第11轮Trick结束后手牌:
+  玩家0: [10D 3D 3H 4H 4S 5D 6H 6H 7C 7D 7S] (共11张)
+  玩家1: [6S 7H 9C] (共3张)
+  玩家2: [10S 4C 4H 7C 8D 9H] (共6张)
+  玩家3: [] (共0张)
+
+🎲 --- 第12轮Trick ---
+🎯 玩家1: 出牌 [9C]
+🔧 SDK调用: gameEngine.PlayCards([1 [9 of Club]])
+🎯 玩家2: 出牌 [10S]
+🔧 SDK调用: gameEngine.PlayCards([2 [10 of Spade]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家2: 出牌 [4C 4H]
+🔧 SDK调用: gameEngine.PlayCards([2 [4 of Club 4 of Heart]])
+🎯 玩家0: 出牌 [7C 7S]
+🔧 SDK调用: gameEngine.PlayCards([0 [7 of Spade 7 of Club]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家0: 出牌 [3D 3H 4H 4S 6H 6H]
+🔧 SDK调用: gameEngine.PlayCards([0 [6 of Heart 6 of Heart 3 of Diamond 3 of Heart 4 of Spade 4 of Heart]])
+🎯 玩家0: 出牌 [7D]
+🔧 SDK调用: gameEngine.PlayCards([0 [7 of Diamond]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 出牌 [9H]
+🔧 SDK调用: gameEngine.PlayCards([2 [9 of Heart]])
+🎯 玩家0: 出牌 [10D]
+🔧 SDK调用: gameEngine.PlayCards([0 [10 of Diamond]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+📋 第12轮Trick结束后手牌:
+  玩家0: [3D 3H 4H 4S 5D 6H 6H] (共7张)
+  玩家1: [6S 7H] (共2张)
+  玩家2: [7C 8D] (共2张)
+  玩家3: [] (共0张)
+
+🎲 --- 第13轮Trick ---
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家0: 出牌 [3D 3H 4H 4S 6H 6H]
+🔧 SDK调用: gameEngine.PlayCards([0 [6 of Heart 6 of Heart 3 of Diamond 3 of Heart 4 of Spade 4 of Heart]])
+🎯 玩家0: 出牌 [6H]
+🔧 SDK调用: gameEngine.PlayCards([0 [6 of Heart]])
+🎯 玩家1: 出牌 [7H]
+🔧 SDK调用: gameEngine.PlayCards([1 [7 of Heart]])
+🎯 玩家2: 出牌 [8D]
+🔧 SDK调用: gameEngine.PlayCards([2 [8 of Diamond]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家2: 过牌
+🔧 SDK调用: gameEngine.PassTurn([2])
+🎯 玩家2: 出牌 [7C]
+🔧 SDK调用: gameEngine.PlayCards([2 [7 of Club]])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+🎯 玩家0: 出牌 [3D 3H]
+🔧 SDK调用: gameEngine.PlayCards([0 [3 of Diamond 3 of Heart]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家0: 出牌 [4H 4S]
+🔧 SDK调用: gameEngine.PlayCards([0 [4 of Heart 4 of Spade]])
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家0: 过牌
+🔧 SDK调用: gameEngine.PassTurn([0])
+📋 第13轮Trick结束后手牌:
+  玩家0: [5D 6H] (共2张)
+  玩家1: [6S] (共1张)
+  玩家2: [] (共0张)
+  玩家3: [] (共0张)
+
+🎲 --- 第14轮Trick ---
+🎯 玩家1: 过牌
+🔧 SDK调用: gameEngine.PassTurn([1])
+🎯 玩家0: 出牌 [5D]
+🔧 SDK调用: gameEngine.PlayCards([0 [5 of Diamond]])
+🎯 玩家1: 出牌 [6S]
+🔧 SDK调用: gameEngine.PlayCards([1 [6 of Spade]])
+📊 Deal 1 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第2局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [2H 2S 3H 3S 4H 4S 5H 6D 6D 6H 6S 7H 7S 8H 9C 9D AS JC JD KH KH KS QC QH QH QS SJ] (共27张)
+  玩家1: [10C 10H 2C 3D 3S 4D 5C 5H 5S 6C 6S 7D 8C 9S AC AD AH BJ JC KC KD KD KS QC QD QD QS] (共27张)
+  玩家2: [10D 10H 10S 2D 2H 3C 3D 4C 4C 5D 6C 7C 8D 8D 8H 8S 8S 9C 9D AC AH AS JH JH JS KC SJ] (共27张)
+  玩家3: [10C 10D 10S 2C 2D 2S 3C 3H 4D 4H 4S 5C 5D 5S 6H 7C 7D 7H 7S 8C 9H 9H 9S AD BJ JD JS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [2H 2S 3H 3S 4H 4S 5H 6D 6D 6H 6S 7H 7S 8H 9C 9D AS JC JD KH KH KS QC QH QH QS SJ] (共27张)
+  玩家1: [10C 10H 2C 3D 3S 4D 5C 5H 5S 6C 6S 7D 8C 9S AC AD AH BJ JC KC KD KD KS QC QD QD QS] (共27张)
+  玩家2: [10D 10H 10S 2D 2H 3C 3D 4C 4C 5D 6C 7C 8D 8D 8H 8S 8S 9C 9D AC AH AS JH JH JS KC SJ] (共27张)
+  玩家3: [10C 10D 10S 2C 2D 2S 3C 3H 4D 4H 4S 5C 5D 5S 6H 7C 7D 7H 7S 8C 9H 9H 9S AD BJ JD JS] (共27张)
+
+⚠️ 第2局未正常结束，状态: tribute
+
+📊 Deal 2 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第3局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10H 2C 2H 2S 3D 3H 4D 4H 4S 6D 6D 6S 6S 8H 8S 9H 9S AD AH BJ BJ JC JD JH KC KC SJ] (共27张)
+  玩家1: [10C 10C 10H 10S 2D 3C 3S 4D 4H 5C 6H 7C 7D 8D 9C 9H AS JC JD JH JS KD QC QD QH QH QS] (共27张)
+  玩家2: [10D 2C 2D 2H 3D 3H 4C 4S 5D 5S 5S 6C 6H 7D 7S 8C 8C 8D 9C 9D AC AD AH JS KH QC QD] (共27张)
+  玩家3: [10D 10S 2S 3C 3S 4C 5C 5D 5H 5H 6C 7C 7H 7H 7S 8H 8S 9D 9S AC AS KD KH KS KS QS SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10H 2C 2H 2S 3D 3H 4D 4H 4S 6D 6D 6S 6S 8H 8S 9H 9S AD AH BJ BJ JC JD JH KC KC SJ] (共27张)
+  玩家1: [10C 10C 10H 10S 2D 3C 3S 4D 4H 5C 6H 7C 7D 8D 9C 9H AS JC JD JH JS KD QC QD QH QH QS] (共27张)
+  玩家2: [10D 2C 2D 2H 3D 3H 4C 4S 5D 5S 5S 6C 6H 7D 7S 8C 8C 8D 9C 9D AC AD AH JS KH QC QD] (共27张)
+  玩家3: [10D 10S 2S 3C 3S 4C 5C 5D 5H 5H 6C 7C 7H 7H 7S 8H 8S 9D 9S AC AS KD KH KS KS QS SJ] (共27张)
+
+⚠️ 第3局未正常结束，状态: tribute
+
+📊 Deal 3 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第4局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10D 10S 3D 4S 5D 5S 6D 6S 6S 7C 7H 8C 8C 9C AC AH BJ BJ JC KD KH QD QH QH SJ SJ] (共27张)
+  玩家1: [10D 10H 10S 2D 2S 3H 3H 4C 4H 4H 5C 5H 6C 8D 8S 8S 9D 9D 9H AD AS JD JH KC KS KS QS] (共27张)
+  玩家2: [2C 2D 2H 2S 3S 4D 4S 5C 5D 5H 5S 6C 7D 7H 7S 8H 8H 9H 9S AD AH JC JH KC KD KH QC] (共27张)
+  玩家3: [10C 10H 2C 2H 3C 3C 3D 3S 4C 4D 6D 6H 6H 7C 7D 7S 8D 9C 9S AC AS JD JS JS QC QD QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10D 10S 3D 4S 5D 5S 6D 6S 6S 7C 7H 8C 8C 9C AC AH BJ BJ JC KD KH QD QH QH SJ SJ] (共27张)
+  玩家1: [10D 10H 10S 2D 2S 3H 3H 4C 4H 4H 5C 5H 6C 8D 8S 8S 9D 9D 9H AD AS JD JH KC KS KS QS] (共27张)
+  玩家2: [2C 2D 2H 2S 3S 4D 4S 5C 5D 5H 5S 6C 7D 7H 7S 8H 8H 9H 9S AD AH JC JH KC KD KH QC] (共27张)
+  玩家3: [10C 10H 2C 2H 3C 3C 3D 3S 4C 4D 6D 6H 6H 7C 7D 7S 8D 9C 9S AC AS JD JS JS QC QD QS] (共27张)
+
+⚠️ 第4局未正常结束，状态: tribute
+
+📊 Deal 4 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第5局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10S 2D 2S 4D 4H 4S 5C 5H 6C 6H 6S 7C 7D 7S 7S 8D AH AS JC JD JH JS KC KD KD KH SJ] (共27张)
+  玩家1: [10H 2H 2S 3H 3S 4H 4S 5C 6C 6H 7D 8C 8H 8S 9D 9H AD BJ BJ JC KC KH QD QH QH QS QS] (共27张)
+  玩家2: [10C 10D 10D 10H 3C 3D 3S 4C 4D 5H 5S 6D 6D 7C 7H 7H 8D 8H 8S 9C 9S JD JH KS QC QD SJ] (共27张)
+  玩家3: [10C 10S 2C 2C 2D 2H 3C 3D 3H 4C 5D 5D 5S 6S 8C 9C 9D 9H 9S AC AC AD AH AS JS KS QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10S 2D 2S 4D 4H 4S 5C 5H 6C 6H 6S 7C 7D 7S 7S 8D AH AS JC JD JH JS KC KD KD KH SJ] (共27张)
+  玩家1: [10H 2H 2S 3H 3S 4H 4S 5C 6C 6H 7D 8C 8H 8S 9D 9H AD BJ BJ JC KC KH QD QH QH QS QS] (共27张)
+  玩家2: [10C 10D 10D 10H 3C 3D 3S 4C 4D 5H 5S 6D 6D 7C 7H 7H 8D 8H 8S 9C 9S JD JH KS QC QD SJ] (共27张)
+  玩家3: [10C 10S 2C 2C 2D 2H 3C 3D 3H 4C 5D 5D 5S 6S 8C 9C 9D 9H 9S AC AC AD AH AS JS KS QC] (共27张)
+
+⚠️ 第5局未正常结束，状态: tribute
+
+📊 Deal 5 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第6局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10D 2D 2D 3D 3D 3H 4D 4S 5S 6D 7C 7C 7H 8D 8H 8S 9C BJ BJ JD JS KC KD QC QD QD] (共27张)
+  玩家1: [10C 10S 2S 3C 4D 5C 5D 5S 6C 6C 6D 6H 6S 7S 8D 8S 9D 9S AD AD JD KH KH KS KS QH SJ] (共27张)
+  玩家2: [10D 10H 2H 2H 2S 3C 3H 4C 4C 4H 4S 5C 5D 7D 7H 7S 9D AH AS AS JC JH JS KC QS QS SJ] (共27张)
+  玩家3: [10H 10S 2C 2C 3S 3S 4H 5H 5H 6H 6S 7D 8C 8C 8H 9C 9H 9H 9S AC AC AH JC JH KD QC QH] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10D 2D 2D 3D 3D 3H 4D 4S 5S 6D 7C 7C 7H 8D 8H 8S 9C BJ BJ JD JS KC KD QC QD QD] (共27张)
+  玩家1: [10C 10S 2S 3C 4D 5C 5D 5S 6C 6C 6D 6H 6S 7S 8D 8S 9D 9S AD AD JD KH KH KS KS QH SJ] (共27张)
+  玩家2: [10D 10H 2H 2H 2S 3C 3H 4C 4C 4H 4S 5C 5D 7D 7H 7S 9D AH AS AS JC JH JS KC QS QS SJ] (共27张)
+  玩家3: [10H 10S 2C 2C 3S 3S 4H 5H 5H 6H 6S 7D 8C 8C 8H 9C 9H 9H 9S AC AC AH JC JH KD QC QH] (共27张)
+
+⚠️ 第6局未正常结束，状态: tribute
+
+📊 Deal 6 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第7局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10S 10S 2C 2S 4C 4D 4H 5D 5H 6D 6H 6H 6S 7H 7S 7S 9C 9S AD AH AS BJ JC JD KD QD QS] (共27张)
+  玩家1: [10C 10D 10H 2C 2H 3C 3D 3D 4D 5S 6C 7H 8D 8H 9D 9H 9H 9S AC JC KC KH KS QD QH QH SJ] (共27张)
+  玩家2: [10D 2D 2D 2S 3C 3H 4C 5C 5C 5S 6C 6D 8C 8D 8S 9C 9D AC AD AS BJ JH JS JS KC QC QC] (共27张)
+  玩家3: [10C 10H 2H 3H 3S 3S 4H 4S 4S 5D 5H 6S 7C 7C 7D 7D 8C 8H 8S AH JD JH KD KH KS QS SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10S 10S 2C 2S 4C 4D 4H 5D 5H 6D 6H 6H 6S 7H 7S 7S 9C 9S AD AH AS BJ JC JD KD QD QS] (共27张)
+  玩家1: [10C 10D 10H 2C 2H 3C 3D 3D 4D 5S 6C 7H 8D 8H 9D 9H 9H 9S AC JC KC KH KS QD QH QH SJ] (共27张)
+  玩家2: [10D 2D 2D 2S 3C 3H 4C 5C 5C 5S 6C 6D 8C 8D 8S 9C 9D AC AD AS BJ JH JS JS KC QC QC] (共27张)
+  玩家3: [10C 10H 2H 3H 3S 3S 4H 4S 4S 5D 5H 6S 7C 7C 7D 7D 8C 8H 8S AH JD JH KD KH KS QS SJ] (共27张)
+
+⚠️ 第7局未正常结束，状态: tribute
+
+📊 Deal 7 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第8局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10H 10S 2C 2H 2S 3D 3D 3S 4C 4D 5D 5H 6C 7D 7H 8H 9S AD JC JD JH KH QC QD SJ SJ] (共27张)
+  玩家1: [10D 3C 4S 5C 5C 6S 7C 8C 8D 8D 8S 9D 9D 9H AH AS BJ JD JS KC KD KH KS KS QD QH QS] (共27张)
+  玩家2: [2C 2D 2H 2S 4C 4D 4H 4S 5H 5S 6C 6H 7C 7S 7S 8C 9C AC AC AH AS BJ JC JH KC QC QS] (共27张)
+  玩家3: [10C 10D 10H 10S 2D 3C 3H 3H 3S 4H 5D 5S 6D 6D 6H 6S 7D 7H 8H 8S 9C 9H 9S AD JS KD QH] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10H 10S 2C 2H 2S 3D 3D 3S 4C 4D 5D 5H 6C 7D 7H 8H 9S AD JC JD JH KH QC QD SJ SJ] (共27张)
+  玩家1: [10D 3C 4S 5C 5C 6S 7C 8C 8D 8D 8S 9D 9D 9H AH AS BJ JD JS KC KD KH KS KS QD QH QS] (共27张)
+  玩家2: [2C 2D 2H 2S 4C 4D 4H 4S 5H 5S 6C 6H 7C 7S 7S 8C 9C AC AC AH AS BJ JC JH KC QC QS] (共27张)
+  玩家3: [10C 10D 10H 10S 2D 3C 3H 3H 3S 4H 5D 5S 6D 6D 6H 6S 7D 7H 8H 8S 9C 9H 9S AD JS KD QH] (共27张)
+
+⚠️ 第8局未正常结束，状态: tribute
+
+📊 Deal 8 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第9局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10H 2C 3C 3C 3H 4S 5S 6C 6D 6H 6S 7D 7S 8S 8S 9C 9H AS JC JD KC KD KH KS QS SJ] (共27张)
+  玩家1: [2D 2D 2S 3D 3S 4C 4D 4H 6D 7C 7H 8D 9D 9H 9S 9S AD AH BJ JS KH QC QD QD QH QH QS] (共27张)
+  玩家2: [10C 10D 10H 10S 2S 3H 3S 4D 4H 4S 5C 5D 5H 5S 6H 7H 8C 8D 9C AC AH AS BJ JC JD JS SJ] (共27张)
+  玩家3: [10C 10S 2C 2H 2H 3D 4C 5C 5D 5H 6C 6S 7C 7D 7S 8C 8H 8H 9D AC AD JH JH KC KD KS QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10H 2C 3C 3C 3H 4S 5S 6C 6D 6H 6S 7D 7S 8S 8S 9C 9H AS JC JD KC KD KH KS QS SJ] (共27张)
+  玩家1: [2D 2D 2S 3D 3S 4C 4D 4H 6D 7C 7H 8D 9D 9H 9S 9S AD AH BJ JS KH QC QD QD QH QH QS] (共27张)
+  玩家2: [10C 10D 10H 10S 2S 3H 3S 4D 4H 4S 5C 5D 5H 5S 6H 7H 8C 8D 9C AC AH AS BJ JC JD JS SJ] (共27张)
+  玩家3: [10C 10S 2C 2H 2H 3D 4C 5C 5D 5H 6C 6S 7C 7D 7S 8C 8H 8H 9D AC AD JH JH KC KD KS QC] (共27张)
+
+⚠️ 第9局未正常结束，状态: tribute
+
+📊 Deal 9 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第10局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 2C 2D 3D 3H 4D 4H 5C 5S 7H 7S 8C 8H 8S 9D 9S AH AS BJ JC JD JD JS KD KD KH QC] (共27张)
+  玩家1: [10C 10S 2C 2H 3C 3S 4C 4D 4S 5D 5D 5H 6D 6S 6S 7C 7D 8C 8S AC AD AH BJ KC QD QH QS] (共27张)
+  玩家2: [10C 2D 2H 2S 3D 4C 4S 5S 6C 6H 7C 7D 7H 8D 8D 9D 9H 9H 9S AD JC JH JH KC KS QC QH] (共27张)
+  玩家3: [10D 10H 10H 10S 2S 3C 3H 3S 4H 5C 5H 6C 6D 6H 7S 8H 9C 9C AC AS JS KH KS QD QS SJ SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 2C 2D 3D 3H 4D 4H 5C 5S 7H 7S 8C 8H 8S 9D 9S AH AS BJ JC JD JD JS KD KD KH QC] (共27张)
+  玩家1: [10C 10S 2C 2H 3C 3S 4C 4D 4S 5D 5D 5H 6D 6S 6S 7C 7D 8C 8S AC AD AH BJ KC QD QH QS] (共27张)
+  玩家2: [10C 2D 2H 2S 3D 4C 4S 5S 6C 6H 7C 7D 7H 8D 8D 9D 9H 9H 9S AD JC JH JH KC KS QC QH] (共27张)
+  玩家3: [10D 10H 10H 10S 2S 3C 3H 3S 4H 5C 5H 6C 6D 6H 7S 8H 9C 9C AC AS JS KH KS QD QS SJ SJ] (共27张)
+
+⚠️ 第10局未正常结束，状态: tribute
+
+📊 Deal 10 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第11局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10S 2H 2S 4C 4D 4H 4S 6H 7C 7D 8H 9C AC BJ JC JC JD KC KD KH KS QC QC QD QH SJ] (共27张)
+  玩家1: [10C 10H 10S 2D 3C 3D 3D 3H 3H 4C 4D 4S 5D 5H 6C 7H 7H 7S 9H 9S AH AS AS JD KC KD SJ] (共27张)
+  玩家2: [10C 10H 2C 2H 2S 3S 4H 5C 5D 5H 5S 6C 7C 8C 8D 8D 8H 8S 8S 9H 9S AC AD AD JH JH KS] (共27张)
+  玩家3: [10D 2C 2D 3C 3S 5C 5S 6D 6D 6H 6S 6S 7D 7S 8C 9C 9D 9D AH BJ JS JS KH QD QH QS QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10S 2H 2S 4C 4D 4H 4S 6H 7C 7D 8H 9C AC BJ JC JC JD KC KD KH KS QC QC QD QH SJ] (共27张)
+  玩家1: [10C 10H 10S 2D 3C 3D 3D 3H 3H 4C 4D 4S 5D 5H 6C 7H 7H 7S 9H 9S AH AS AS JD KC KD SJ] (共27张)
+  玩家2: [10C 10H 2C 2H 2S 3S 4H 5C 5D 5H 5S 6C 7C 8C 8D 8D 8H 8S 8S 9H 9S AC AD AD JH JH KS] (共27张)
+  玩家3: [10D 2C 2D 3C 3S 5C 5S 6D 6D 6H 6S 6S 7D 7S 8C 9C 9D 9D AH BJ JS JS KH QD QH QS QS] (共27张)
+
+⚠️ 第11局未正常结束，状态: tribute
+
+📊 Deal 11 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第12局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 2C 3D 3H 3S 4C 4D 4D 4H 4S 5C 5D 6C 6S 6S 7C 8S 9D 9S AH AS JD JH JS KD QS QS] (共27张)
+  玩家1: [10C 10D 2H 3D 3H 4S 5D 5H 5S 5S 6H 7D 7H 7S 7S 8S 9C 9C AH BJ JC KH QC QD QH QH SJ] (共27张)
+  玩家2: [10D 10H 10S 10S 2C 2D 2S 3C 4H 5C 6C 6H 7H 8C 8H 8H 9H 9S AC AS BJ JS KC KS KS QC QD] (共27张)
+  玩家3: [10H 2D 2H 2S 3C 3S 4C 5H 6D 6D 7C 7D 8C 8D 8D 9D 9H AC AD AD JC JD JH KC KD KH SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 2C 3D 3H 3S 4C 4D 4D 4H 4S 5C 5D 6C 6S 6S 7C 8S 9D 9S AH AS JD JH JS KD QS QS] (共27张)
+  玩家1: [10C 10D 2H 3D 3H 4S 5D 5H 5S 5S 6H 7D 7H 7S 7S 8S 9C 9C AH BJ JC KH QC QD QH QH SJ] (共27张)
+  玩家2: [10D 10H 10S 10S 2C 2D 2S 3C 4H 5C 6C 6H 7H 8C 8H 8H 9H 9S AC AS BJ JS KC KS KS QC QD] (共27张)
+  玩家3: [10H 2D 2H 2S 3C 3S 4C 5H 6D 6D 7C 7D 8C 8D 8D 9D 9H AC AD AD JC JD JH KC KD KH SJ] (共27张)
+
+⚠️ 第12局未正常结束，状态: tribute
+
+📊 Deal 12 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第13局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10H 10S 3D 3H 4D 4S 4S 5D 5H 5S 5S 6C 7C 7D 8C 8D 9C 9D AC AH BJ JD JD JH QC QS] (共27张)
+  玩家1: [10D 10H 2C 2H 2S 3C 3H 3S 4C 4D 4H 6C 6S 7D 9H 9S AD AS AS JH KC KD KS QC QD QD QS] (共27张)
+  玩家2: [10C 10S 2D 2D 3D 4C 4H 5H 6D 6H 7H 7H 7S 8C 8D 8H 8S 9D AC AH BJ JC JS JS KC KH QH] (共27张)
+  玩家3: [10C 2C 2H 2S 3C 3S 5C 5C 5D 6D 6H 6S 7C 7S 8H 8S 9C 9H 9S AD JC KD KH KS QH SJ SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10H 10S 3D 3H 4D 4S 4S 5D 5H 5S 5S 6C 7C 7D 8C 8D 9C 9D AC AH BJ JD JD JH QC QS] (共27张)
+  玩家1: [10D 10H 2C 2H 2S 3C 3H 3S 4C 4D 4H 6C 6S 7D 9H 9S AD AS AS JH KC KD KS QC QD QD QS] (共27张)
+  玩家2: [10C 10S 2D 2D 3D 4C 4H 5H 6D 6H 7H 7H 7S 8C 8D 8H 8S 9D AC AH BJ JC JS JS KC KH QH] (共27张)
+  玩家3: [10C 2C 2H 2S 3C 3S 5C 5C 5D 6D 6H 6S 7C 7S 8H 8S 9C 9H 9S AD JC KD KH KS QH SJ SJ] (共27张)
+
+⚠️ 第13局未正常结束，状态: tribute
+
+📊 Deal 13 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第14局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10C 10D 10S 2D 3D 3S 4C 5S 6S 6S 7C 7H 8C 8D 8H 9D 9S 9S AD AH AH BJ QD QH QS SJ] (共27张)
+  玩家1: [10D 10H 2C 2D 3D 3H 4C 6D 7C 7S 7S 8C 8D 8H 8S 9C 9H AC BJ JH JH KC KC KH KH QC QC] (共27张)
+  玩家2: [10H 2H 2H 3C 3S 4D 4H 5C 5H 5H 5S 6D 6H 7H 9D 9H AC AS AS JC JD JD JS KD KD QH QS] (共27张)
+  玩家3: [10S 2C 2S 2S 3C 3H 4D 4H 4S 4S 5C 5D 5D 6C 6C 6H 7D 7D 8S 9C AD JC JS KS KS QD SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10C 10D 10S 2D 3D 3S 4C 5S 6S 6S 7C 7H 8C 8D 8H 9D 9S 9S AD AH AH BJ QD QH QS SJ] (共27张)
+  玩家1: [10D 10H 2C 2D 3D 3H 4C 6D 7C 7S 7S 8C 8D 8H 8S 9C 9H AC BJ JH JH KC KC KH KH QC QC] (共27张)
+  玩家2: [10H 2H 2H 3C 3S 4D 4H 5C 5H 5H 5S 6D 6H 7H 9D 9H AC AS AS JC JD JD JS KD KD QH QS] (共27张)
+  玩家3: [10S 2C 2S 2S 3C 3H 4D 4H 4S 4S 5C 5D 5D 6C 6C 6H 7D 7D 8S 9C AD JC JS KS KS QD SJ] (共27张)
+
+⚠️ 第14局未正常结束，状态: tribute
+
+📊 Deal 14 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第15局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10H 10H 2C 2D 2S 3C 3C 3D 3H 3S 4D 4H 4H 6H 6S 7C 7H 7S 8D 8S 9S BJ JC JD KC KH] (共27张)
+  玩家1: [10D 10S 10S 2D 3H 3S 5D 5S 5S 6S 7C 7D 8D 8H 9C 9S AD JC JH KC KD KD KH KS KS QC QC] (共27张)
+  玩家2: [10D 2S 4C 4S 4S 5C 5D 5H 5H 7H 8C 8H 8S 9D AC AD AH AS BJ JD JH JS JS QD QH QS SJ] (共27张)
+  玩家3: [10C 2C 2H 2H 3D 4C 4D 5C 6C 6C 6D 6D 6H 7D 7S 8C 9C 9D 9H 9H AC AH AS QD QH QS SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10H 10H 2C 2D 2S 3C 3C 3D 3H 3S 4D 4H 4H 6H 6S 7C 7H 7S 8D 8S 9S BJ JC JD KC KH] (共27张)
+  玩家1: [10D 10S 10S 2D 3H 3S 5D 5S 5S 6S 7C 7D 8D 8H 9C 9S AD JC JH KC KD KD KH KS KS QC QC] (共27张)
+  玩家2: [10D 2S 4C 4S 4S 5C 5D 5H 5H 7H 8C 8H 8S 9D AC AD AH AS BJ JD JH JS JS QD QH QS SJ] (共27张)
+  玩家3: [10C 2C 2H 2H 3D 4C 4D 5C 6C 6C 6D 6D 6H 7D 7S 8C 9C 9D 9H 9H AC AH AS QD QH QS SJ] (共27张)
+
+⚠️ 第15局未正常结束，状态: tribute
+
+📊 Deal 15 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第16局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 2S 3C 3D 3D 3S 4C 4D 4S 5C 5C 5H 5H 6C 6S 9H 9S AD AD AS BJ JD KH KH QD QH SJ] (共27张)
+  玩家1: [10C 10S 2C 2H 3C 3H 3H 6C 6S 7C 7H 7S 7S 8C 8H 8H 9C 9D 9H AC AC AH BJ JC JH KS SJ] (共27张)
+  玩家2: [10D 10H 2C 2D 2D 2H 2S 4C 4H 4H 5D 5S 6D 6H 7C 7D 7H 8C 8S 9S AS JD KD KS QC QS QS] (共27张)
+  玩家3: [10D 10H 10S 3S 4D 4S 5D 5S 6D 6H 7D 8D 8D 8S 9C 9D AH JC JH JS JS KC KC KD QC QD QH] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 2S 3C 3D 3D 3S 4C 4D 4S 5C 5C 5H 5H 6C 6S 9H 9S AD AD AS BJ JD KH KH QD QH SJ] (共27张)
+  玩家1: [10C 10S 2C 2H 3C 3H 3H 6C 6S 7C 7H 7S 7S 8C 8H 8H 9C 9D 9H AC AC AH BJ JC JH KS SJ] (共27张)
+  玩家2: [10D 10H 2C 2D 2D 2H 2S 4C 4H 4H 5D 5S 6D 6H 7C 7D 7H 8C 8S 9S AS JD KD KS QC QS QS] (共27张)
+  玩家3: [10D 10H 10S 3S 4D 4S 5D 5S 6D 6H 7D 8D 8D 8S 9C 9D AH JC JH JS JS KC KC KD QC QD QH] (共27张)
+
+⚠️ 第16局未正常结束，状态: tribute
+
+📊 Deal 16 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第17局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10C 10D 10H 10S 2S 3C 3D 3H 4C 4D 4D 4S 5C 5S 6C 7H 7S 8C 9S AH JS JS KD KH QD QD] (共27张)
+  玩家1: [2C 2H 3S 4S 5C 5H 5S 6H 7H 8D 9D 9D 9H 9H AC AD AH AS AS BJ BJ JD KD KS QH QS SJ] (共27张)
+  玩家2: [10S 2C 2D 2H 2S 3C 3H 4H 4H 5D 6D 6D 6H 8D 8H 8S 9S AC JD JH JH KC KH KS QH QS SJ] (共27张)
+  玩家3: [10D 10H 2D 3D 3S 4C 5D 5H 6C 6S 6S 7C 7C 7D 7D 7S 8C 8H 8S 9C 9C AD JC JC KC QC QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10C 10D 10H 10S 2S 3C 3D 3H 4C 4D 4D 4S 5C 5S 6C 7H 7S 8C 9S AH JS JS KD KH QD QD] (共27张)
+  玩家1: [2C 2H 3S 4S 5C 5H 5S 6H 7H 8D 9D 9D 9H 9H AC AD AH AS AS BJ BJ JD KD KS QH QS SJ] (共27张)
+  玩家2: [10S 2C 2D 2H 2S 3C 3H 4H 4H 5D 6D 6D 6H 8D 8H 8S 9S AC JD JH JH KC KH KS QH QS SJ] (共27张)
+  玩家3: [10D 10H 2D 3D 3S 4C 5D 5H 6C 6S 6S 7C 7C 7D 7D 7S 8C 8H 8S 9C 9C AD JC JC KC QC QC] (共27张)
+
+⚠️ 第17局未正常结束，状态: tribute
+
+📊 Deal 17 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第18局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10H 2C 2D 2S 3H 4D 4H 4S 4S 5C 6H 6S 7D 8C 9D 9H 9S JC JS KC KD KH KH KS QC QH] (共27张)
+  玩家1: [10D 10H 10S 10S 2C 3H 3S 4D 5D 5H 5S 6C 6C 6D 7C 7S 8D 8H 8S 9C AC AD BJ JD JD JH SJ] (共27张)
+  玩家2: [2S 3C 3D 3S 4H 5S 7C 7D 7H 7H 8C 8S 9C 9D 9H AD AH AH AS AS JC JH JS KD KS QD SJ] (共27张)
+  玩家3: [10C 10D 2D 2H 2H 3C 3D 4C 4C 5C 5D 5H 6D 6H 6S 7S 8D 8H 9S AC BJ KC QC QD QH QS QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10H 2C 2D 2S 3H 4D 4H 4S 4S 5C 6H 6S 7D 8C 9D 9H 9S JC JS KC KD KH KH KS QC QH] (共27张)
+  玩家1: [10D 10H 10S 10S 2C 3H 3S 4D 5D 5H 5S 6C 6C 6D 7C 7S 8D 8H 8S 9C AC AD BJ JD JD JH SJ] (共27张)
+  玩家2: [2S 3C 3D 3S 4H 5S 7C 7D 7H 7H 8C 8S 9C 9D 9H AD AH AH AS AS JC JH JS KD KS QD SJ] (共27张)
+  玩家3: [10C 10D 2D 2H 2H 3C 3D 4C 4C 5C 5D 5H 6D 6H 6S 7S 8D 8H 9S AC BJ KC QC QD QH QS QS] (共27张)
+
+⚠️ 第18局未正常结束，状态: tribute
+
+📊 Deal 18 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第19局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 2H 2S 3D 3S 4D 5D 5H 6C 6H 7C 7H 7S 8S 8S 9C 9H 9S BJ BJ JS JS KS QD QH SJ SJ] (共27张)
+  玩家1: [10S 2S 3C 3C 3H 4C 4H 4S 5S 6S 7C 7D 8D 8H 8H 9C 9S AC AS AS JC JH JH KH QC QD QH] (共27张)
+  玩家2: [10C 10S 2C 3H 4D 4H 4S 5C 5C 5D 6C 6D 6D 6H 6S 7H 7S 8C 8D 9D 9D 9H AH JC KH QS QS] (共27张)
+  玩家3: [10D 10D 10H 10H 2C 2D 2D 2H 3D 3S 4C 5H 5S 7D 8C AC AD AD AH JD JD KC KC KD KD KS QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 2H 2S 3D 3S 4D 5D 5H 6C 6H 7C 7H 7S 8S 8S 9C 9H 9S BJ BJ JS JS KS QD QH SJ SJ] (共27张)
+  玩家1: [10S 2S 3C 3C 3H 4C 4H 4S 5S 6S 7C 7D 8D 8H 8H 9C 9S AC AS AS JC JH JH KH QC QD QH] (共27张)
+  玩家2: [10C 10S 2C 3H 4D 4H 4S 5C 5C 5D 6C 6D 6D 6H 6S 7H 7S 8C 8D 9D 9D 9H AH JC KH QS QS] (共27张)
+  玩家3: [10D 10D 10H 10H 2C 2D 2D 2H 3D 3S 4C 5H 5S 7D 8C AC AD AD AH JD JD KC KC KD KD KS QC] (共27张)
+
+⚠️ 第19局未正常结束，状态: tribute
+
+📊 Deal 19 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第20局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 2D 2H 2H 3C 3D 4D 5C 5H 5H 5S 6C 6H 7C 7S 8C 8C 8D 8S 9D AC AD AH AH JH KS QD] (共27张)
+  玩家1: [10H 10H 10S 2S 3C 3S 4H 4S 4S 7D 7H 7H 8D 8H 8H 9H 9S 9S AS AS BJ KC KH KS QH QH QS] (共27张)
+  玩家2: [10C 10D 10D 2D 3D 3H 3S 4D 5C 5D 6H 6S 6S 7C 7D 7S 9C AC JC JC JH JS KC KD KD QC SJ] (共27张)
+  玩家3: [10S 2C 2C 2S 3H 4C 4C 4H 5D 5S 6C 6D 6D 8S 9C 9D 9H AD BJ JD JD JS KH QC QD QS SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 2D 2H 2H 3C 3D 4D 5C 5H 5H 5S 6C 6H 7C 7S 8C 8C 8D 8S 9D AC AD AH AH JH KS QD] (共27张)
+  玩家1: [10H 10H 10S 2S 3C 3S 4H 4S 4S 7D 7H 7H 8D 8H 8H 9H 9S 9S AS AS BJ KC KH KS QH QH QS] (共27张)
+  玩家2: [10C 10D 10D 2D 3D 3H 3S 4D 5C 5D 6H 6S 6S 7C 7D 7S 9C AC JC JC JH JS KC KD KD QC SJ] (共27张)
+  玩家3: [10S 2C 2C 2S 3H 4C 4C 4H 5D 5S 6C 6D 6D 8S 9C 9D 9H AD BJ JD JD JS KH QC QD QS SJ] (共27张)
+
+⚠️ 第20局未正常结束，状态: tribute
+
+📊 Deal 20 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第21局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10H 10H 10S 10S 2C 3H 4C 4H 5C 5C 5D 5H 5S 6S 7D 8H 8S 9C 9S AD AS BJ JC JC KC KS] (共27张)
+  玩家1: [10D 2C 2D 2D 2H 2S 3C 3S 4C 4D 4H 5D 6D 6H 8H 8S 9D AC AD AH AH JD JH JS JS KH QH] (共27张)
+  玩家2: [10D 2S 3C 4D 4S 5H 6C 6S 7C 7S 7S 8C 8D 9H AS JH KC KD KD KH QD QD QH QS QS SJ SJ] (共27张)
+  玩家3: [10C 2H 3D 3D 3H 3S 4S 5S 6C 6D 6H 7C 7D 7H 7H 8C 8D 9C 9D 9H 9S AC BJ JD KS QC QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10H 10H 10S 10S 2C 3H 4C 4H 5C 5C 5D 5H 5S 6S 7D 8H 8S 9C 9S AD AS BJ JC JC KC KS] (共27张)
+  玩家1: [10D 2C 2D 2D 2H 2S 3C 3S 4C 4D 4H 5D 6D 6H 8H 8S 9D AC AD AH AH JD JH JS JS KH QH] (共27张)
+  玩家2: [10D 2S 3C 4D 4S 5H 6C 6S 7C 7S 7S 8C 8D 9H AS JH KC KD KD KH QD QD QH QS QS SJ SJ] (共27张)
+  玩家3: [10C 2H 3D 3D 3H 3S 4S 5S 6C 6D 6H 7C 7D 7H 7H 8C 8D 9C 9D 9H 9S AC BJ JD KS QC QC] (共27张)
+
+⚠️ 第21局未正常结束，状态: tribute
+
+📊 Deal 21 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第22局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10H 2D 4H 5H 6C 6D 6H 7C 7D 7H 7S 8C 8D 8D 9C 9H 9S AC AH AS AS JC JD KS QD QS SJ] (共27张)
+  玩家1: [10C 10D 10H 2C 2H 2H 2S 3C 3H 3S 4C 5C 5D 5H 5S 6C 6D 7D 8S 9D AC AH JS KD KH QH QH] (共27张)
+  玩家2: [10S 2D 3C 3D 3D 3H 4D 4H 4S 5C 5D 5S 6S 7H 7S 8H 8H 8S 9D 9S AD AD BJ JH JS KC QS] (共27张)
+  玩家3: [10C 10D 10S 2C 2S 3S 4C 4D 4S 6H 6S 7C 8C 9C 9H BJ JC JD JH KC KD KH KS QC QC QD SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10H 2D 4H 5H 6C 6D 6H 7C 7D 7H 7S 8C 8D 8D 9C 9H 9S AC AH AS AS JC JD KS QD QS SJ] (共27张)
+  玩家1: [10C 10D 10H 2C 2H 2H 2S 3C 3H 3S 4C 5C 5D 5H 5S 6C 6D 7D 8S 9D AC AH JS KD KH QH QH] (共27张)
+  玩家2: [10S 2D 3C 3D 3D 3H 4D 4H 4S 5C 5D 5S 6S 7H 7S 8H 8H 8S 9D 9S AD AD BJ JH JS KC QS] (共27张)
+  玩家3: [10C 10D 10S 2C 2S 3S 4C 4D 4S 6H 6S 7C 8C 9C 9H BJ JC JD JH KC KD KH KS QC QC QD SJ] (共27张)
+
+⚠️ 第22局未正常结束，状态: tribute
+
+📊 Deal 22 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第23局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10D 10S 2C 2S 4H 5C 7D 7H 7S 8D 8H 8S 9H AC AH AS BJ JC JH JS JS KC KH QD QH QH] (共27张)
+  玩家1: [10C 2C 2D 2H 2S 3C 3H 5H 5H 5S 6C 6C 6D 7C 8C 8C 8H 9D AC AH JC JD KD KD KS QD QS] (共27张)
+  玩家2: [10D 10S 2D 2H 3C 3D 3H 3S 4C 4D 5D 6H 6H 6S 7D 7H 8S 9C 9C 9H 9S AD AS BJ KS QS SJ] (共27张)
+  玩家3: [10H 10H 3D 3S 4C 4D 4H 4S 4S 5C 5D 5S 6D 6S 7C 7S 8D 9D 9S AD JD JH KC KH QC QC SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10D 10S 2C 2S 4H 5C 7D 7H 7S 8D 8H 8S 9H AC AH AS BJ JC JH JS JS KC KH QD QH QH] (共27张)
+  玩家1: [10C 2C 2D 2H 2S 3C 3H 5H 5H 5S 6C 6C 6D 7C 8C 8C 8H 9D AC AH JC JD KD KD KS QD QS] (共27张)
+  玩家2: [10D 10S 2D 2H 3C 3D 3H 3S 4C 4D 5D 6H 6H 6S 7D 7H 8S 9C 9C 9H 9S AD AS BJ KS QS SJ] (共27张)
+  玩家3: [10H 10H 3D 3S 4C 4D 4H 4S 4S 5C 5D 5S 6D 6S 7C 7S 8D 9D 9S AD JD JH KC KH QC QC SJ] (共27张)
+
+⚠️ 第23局未正常结束，状态: tribute
+
+📊 Deal 23 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第24局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [2C 3H 3S 4D 4H 4S 5D 5S 5S 6C 6S 8S 9H 9S 9S AD JC JH JS JS KS QC QC QD QD QH SJ] (共27张)
+  玩家1: [10D 10H 10S 2D 2S 3D 3H 3S 4C 4C 4D 4H 6S 7C 8C 8D 8D 8H 8S 9H AH AS JD KC KS QH SJ] (共27张)
+  玩家2: [10C 10C 10D 10H 10S 2C 2S 4S 5C 5H 7H 7S 7S 8H 9C 9D 9D AC AS BJ JD JH KC KD KH KH QS] (共27张)
+  玩家3: [2D 2H 2H 3C 3C 3D 5C 5D 5H 6C 6D 6D 6H 6H 7C 7D 7D 7H 8C 9C AC AD AH BJ JC KD QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [2C 3H 3S 4D 4H 4S 5D 5S 5S 6C 6S 8S 9H 9S 9S AD JC JH JS JS KS QC QC QD QD QH SJ] (共27张)
+  玩家1: [10D 10H 10S 2D 2S 3D 3H 3S 4C 4C 4D 4H 6S 7C 8C 8D 8D 8H 8S 9H AH AS JD KC KS QH SJ] (共27张)
+  玩家2: [10C 10C 10D 10H 10S 2C 2S 4S 5C 5H 7H 7S 7S 8H 9C 9D 9D AC AS BJ JD JH KC KD KH KH QS] (共27张)
+  玩家3: [2D 2H 2H 3C 3C 3D 5C 5D 5H 6C 6D 6D 6H 6H 7C 7D 7D 7H 8C 9C AC AD AH BJ JC KD QS] (共27张)
+
+⚠️ 第24局未正常结束，状态: tribute
+
+📊 Deal 24 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第25局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10H 2D 2H 3H 3H 3S 4C 4H 5S 7C 7H 7H 7S 7S 8H 8S 9D AH AH JH KC QD QH QS QS SJ] (共27张)
+  玩家1: [10C 10H 10S 2C 2H 3C 3D 3S 4S 5C 5S 6D 8C 8D 9C 9C 9H 9S AC AC JD JH JS KD KH QC QH] (共27张)
+  玩家2: [10C 10D 2C 2S 2S 3D 4D 4H 5C 5H 6C 6D 6H 6S 6S 7D 8H AD AD AS BJ JC JD KD KS QC QD] (共27张)
+  玩家3: [10S 2D 3C 4C 4D 4S 5D 5D 5H 6C 6H 7C 7D 8C 8D 8S 9D 9H 9S AS BJ JC JS KC KH KS SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10H 2D 2H 3H 3H 3S 4C 4H 5S 7C 7H 7H 7S 7S 8H 8S 9D AH AH JH KC QD QH QS QS SJ] (共27张)
+  玩家1: [10C 10H 10S 2C 2H 3C 3D 3S 4S 5C 5S 6D 8C 8D 9C 9C 9H 9S AC AC JD JH JS KD KH QC QH] (共27张)
+  玩家2: [10C 10D 2C 2S 2S 3D 4D 4H 5C 5H 6C 6D 6H 6S 6S 7D 8H AD AD AS BJ JC JD KD KS QC QD] (共27张)
+  玩家3: [10S 2D 3C 4C 4D 4S 5D 5D 5H 6C 6H 7C 7D 8C 8D 8S 9D 9H 9S AS BJ JC JS KC KH KS SJ] (共27张)
+
+⚠️ 第25局未正常结束，状态: tribute
+
+📊 Deal 25 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第26局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [2C 2D 2H 3C 3D 3H 4H 4S 5D 5H 6C 6H 7C 7C 7D 8C 9C 9H 9S JD JH KD KH QC QS SJ SJ] (共27张)
+  玩家1: [10D 10S 2H 3H 3S 4C 4D 5S 5S 6C 6S 7D 7H 8C 8D 8S 9D 9S AC AC AD AH JC JC JD JS KS] (共27张)
+  玩家2: [10C 10D 10H 10H 10S 2D 2S 4C 4H 4S 5D 6H 6S 7S 8H 9C 9H AD BJ JH JS KC KD KS QC QD QH] (共27张)
+  玩家3: [10C 2C 2S 3C 3D 3S 4D 5C 5C 5H 6D 6D 7H 7S 8D 8H 8S 9D AH AS AS BJ KC KH QD QH QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [2C 2D 2H 3C 3D 3H 4H 4S 5D 5H 6C 6H 7C 7C 7D 8C 9C 9H 9S JD JH KD KH QC QS SJ SJ] (共27张)
+  玩家1: [10D 10S 2H 3H 3S 4C 4D 5S 5S 6C 6S 7D 7H 8C 8D 8S 9D 9S AC AC AD AH JC JC JD JS KS] (共27张)
+  玩家2: [10C 10D 10H 10H 10S 2D 2S 4C 4H 4S 5D 6H 6S 7S 8H 9C 9H AD BJ JH JS KC KD KS QC QD QH] (共27张)
+  玩家3: [10C 2C 2S 3C 3D 3S 4D 5C 5C 5H 6D 6D 7H 7S 8D 8H 8S 9D AH AS AS BJ KC KH QD QH QS] (共27张)
+
+⚠️ 第26局未正常结束，状态: tribute
+
+📊 Deal 26 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第27局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10S 2C 2D 3D 3H 4C 4D 6C 6H 6S 7D 7S 8H 9C 9H 9S JD JH KC KD KH QC QD QD QH QS] (共27张)
+  玩家1: [10C 10C 10D 10H 10H 2D 2H 2S 3H 4H 4H 4S 6D 6S 7D 7H 7H 8C 8S 9D JC JD JH JS QC QS SJ] (共27张)
+  玩家2: [10S 2C 2S 3C 3D 3S 3S 4C 5C 5D 5H 5H 5S 6D 8C 8H 8S 9D AC AD AH AH JS KC KH KS QH] (共27张)
+  玩家3: [2H 3C 4D 4S 5C 5D 5S 6C 6H 7C 7C 7S 8D 8D 9C 9H 9S AC AD AS AS BJ BJ JC KD KS SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10S 2C 2D 3D 3H 4C 4D 6C 6H 6S 7D 7S 8H 9C 9H 9S JD JH KC KD KH QC QD QD QH QS] (共27张)
+  玩家1: [10C 10C 10D 10H 10H 2D 2H 2S 3H 4H 4H 4S 6D 6S 7D 7H 7H 8C 8S 9D JC JD JH JS QC QS SJ] (共27张)
+  玩家2: [10S 2C 2S 3C 3D 3S 3S 4C 5C 5D 5H 5H 5S 6D 8C 8H 8S 9D AC AD AH AH JS KC KH KS QH] (共27张)
+  玩家3: [2H 3C 4D 4S 5C 5D 5S 6C 6H 7C 7C 7S 8D 8D 9C 9H 9S AC AD AS AS BJ BJ JC KD KS SJ] (共27张)
+
+⚠️ 第27局未正常结束，状态: tribute
+
+📊 Deal 27 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第28局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10D 10D 10H 10S 2D 3C 4H 5C 5C 5D 6C 6S 7D 7H 7H 8C 8H 8S 9C AS KC KD KH KH QC QD] (共27张)
+  玩家1: [10H 2C 2D 2H 3H 3H 3S 4H 4S 5D 5H 5S 6H 7C 7C 7S 8H 9D 9H 9H AC AD AH AH JC JH KS] (共27张)
+  玩家2: [10S 2H 2S 3C 3D 3D 4C 6D 8C 8D 8S 9D 9S 9S BJ BJ JD JD JH KC KS QC QH QS QS SJ SJ] (共27张)
+  玩家3: [10C 2C 2S 3S 4C 4D 4D 4S 5H 5S 6C 6D 6H 6S 7D 7S 8D 9C AC AD AS JC JS JS KD QD QH] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10D 10D 10H 10S 2D 3C 4H 5C 5C 5D 6C 6S 7D 7H 7H 8C 8H 8S 9C AS KC KD KH KH QC QD] (共27张)
+  玩家1: [10H 2C 2D 2H 3H 3H 3S 4H 4S 5D 5H 5S 6H 7C 7C 7S 8H 9D 9H 9H AC AD AH AH JC JH KS] (共27张)
+  玩家2: [10S 2H 2S 3C 3D 3D 4C 6D 8C 8D 8S 9D 9S 9S BJ BJ JD JD JH KC KS QC QH QS QS SJ SJ] (共27张)
+  玩家3: [10C 2C 2S 3S 4C 4D 4D 4S 5H 5S 6C 6D 6H 6S 7D 7S 8D 9C AC AD AS JC JS JS KD QD QH] (共27张)
+
+⚠️ 第28局未正常结束，状态: tribute
+
+📊 Deal 28 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第29局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 2S 3H 3S 4D 4H 5C 5C 5D 6D 7H 8D 8H 8S 9D AD AS BJ BJ JD JH JS KS QC QD QD QS] (共27张)
+  玩家1: [10D 10H 10S 10S 3C 3S 4C 5D 6C 6D 6H 6S 7C 7S 8H 8S 9H AC AH AH JC KC KC KD KH KH QC] (共27张)
+  玩家2: [10C 10H 2C 2D 2D 2S 3D 4C 4S 5H 6C 6H 7C 7D 8C 8D 9C 9H 9S AD AS JD JH QH QH QS SJ] (共27张)
+  玩家3: [10C 2C 2H 2H 3C 3D 3H 4D 4H 4S 5H 5S 5S 6S 7D 7H 7S 8C 9C 9D 9S AC JC JS KD KS SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 2S 3H 3S 4D 4H 5C 5C 5D 6D 7H 8D 8H 8S 9D AD AS BJ BJ JD JH JS KS QC QD QD QS] (共27张)
+  玩家1: [10D 10H 10S 10S 3C 3S 4C 5D 6C 6D 6H 6S 7C 7S 8H 8S 9H AC AH AH JC KC KC KD KH KH QC] (共27张)
+  玩家2: [10C 10H 2C 2D 2D 2S 3D 4C 4S 5H 6C 6H 7C 7D 8C 8D 9C 9H 9S AD AS JD JH QH QH QS SJ] (共27张)
+  玩家3: [10C 2C 2H 2H 3C 3D 3H 4D 4H 4S 5H 5S 5S 6S 7D 7H 7S 8C 9C 9D 9S AC JC JS KD KS SJ] (共27张)
+
+⚠️ 第29局未正常结束，状态: tribute
+
+📊 Deal 29 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第30局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [2C 2D 3C 3D 3S 3S 4D 4S 5C 5D 5S 6D 8C 8D 9C 9D 9D 9H 9S AD JC KC KC KS QD QS SJ] (共27张)
+  玩家1: [10C 10H 10H 10S 2C 4C 4C 4D 4H 4S 5H 6D 8D 8S 8S AC AD AS BJ BJ JD JS KH KS QC QS SJ] (共27张)
+  玩家2: [10S 2S 3C 3H 3H 5C 5D 5H 5S 6C 6H 6S 7C 7D 7D 7H 7H 7S 7S 8H 9S AC JC JD JH JS QD] (共27张)
+  玩家3: [10C 10D 10D 2D 2H 2H 2S 3D 4H 6C 6H 6S 7C 8C 8H 9C 9H AH AH AS JH KD KD KH QC QH QH] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [2C 2D 3C 3D 3S 3S 4D 4S 5C 5D 5S 6D 8C 8D 9C 9D 9D 9H 9S AD JC KC KC KS QD QS SJ] (共27张)
+  玩家1: [10C 10H 10H 10S 2C 4C 4C 4D 4H 4S 5H 6D 8D 8S 8S AC AD AS BJ BJ JD JS KH KS QC QS SJ] (共27张)
+  玩家2: [10S 2S 3C 3H 3H 5C 5D 5H 5S 6C 6H 6S 7C 7D 7D 7H 7H 7S 7S 8H 9S AC JC JD JH JS QD] (共27张)
+  玩家3: [10C 10D 10D 2D 2H 2H 2S 3D 4H 6C 6H 6S 7C 8C 8H 9C 9H AH AH AS JH KD KD KH QC QH QH] (共27张)
+
+⚠️ 第30局未正常结束，状态: tribute
+
+📊 Deal 30 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第31局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10D 10H 3D 3S 3S 4D 4S 5H 6C 6C 6S 7C 7H 7S 8C 8S 9D 9S AC AH AS BJ BJ JH KH SJ] (共27张)
+  玩家1: [10C 2C 2S 3H 4D 4H 5H 5S 6D 6D 6H 7D 7H 8D 9D 9S AC JD KC KC KD KD KH KS QC QD SJ] (共27张)
+  玩家2: [10D 10H 2D 2H 2S 3C 3H 4C 4H 5C 5C 5D 5S 8C 8D 8H 9C AD AH AS JC JC JS JS KS QC QH] (共27张)
+  玩家3: [10S 10S 2C 2D 2H 3C 3D 4C 4S 5D 6H 6S 7C 7D 7S 8H 8S 9C 9H 9H AD JD JH QD QH QS QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10D 10H 3D 3S 3S 4D 4S 5H 6C 6C 6S 7C 7H 7S 8C 8S 9D 9S AC AH AS BJ BJ JH KH SJ] (共27张)
+  玩家1: [10C 2C 2S 3H 4D 4H 5H 5S 6D 6D 6H 7D 7H 8D 9D 9S AC JD KC KC KD KD KH KS QC QD SJ] (共27张)
+  玩家2: [10D 10H 2D 2H 2S 3C 3H 4C 4H 5C 5C 5D 5S 8C 8D 8H 9C AD AH AS JC JC JS JS KS QC QH] (共27张)
+  玩家3: [10S 10S 2C 2D 2H 3C 3D 4C 4S 5D 6H 6S 7C 7D 7S 8H 8S 9C 9H 9H AD JD JH QD QH QS QS] (共27张)
+
+⚠️ 第31局未正常结束，状态: tribute
+
+📊 Deal 31 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第32局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10D 10H 10S 2C 2D 2H 3D 3S 4C 5C 5S 6C 6D 6H 7S 8H 8S 8S 9C AS BJ JC JS KD KS QC] (共27张)
+  玩家1: [2C 2D 3C 3C 3D 4D 4H 4S 5C 5D 5H 6S 7C 9D 9H 9S AD AS BJ JC JD JD KS QD QH QS SJ] (共27张)
+  玩家2: [10C 10H 10S 3H 5D 5H 5S 6C 6D 6H 6S 7D 7H 8C 8D 8H 9C 9H AC AH AH JS KC KD KH KH SJ] (共27张)
+  玩家3: [10C 2H 2S 2S 3H 3S 4C 4D 4H 4S 7C 7D 7H 7S 8C 8D 9D 9S AC AD JH JH KC QC QD QH QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10D 10H 10S 2C 2D 2H 3D 3S 4C 5C 5S 6C 6D 6H 7S 8H 8S 8S 9C AS BJ JC JS KD KS QC] (共27张)
+  玩家1: [2C 2D 3C 3C 3D 4D 4H 4S 5C 5D 5H 6S 7C 9D 9H 9S AD AS BJ JC JD JD KS QD QH QS SJ] (共27张)
+  玩家2: [10C 10H 10S 3H 5D 5H 5S 6C 6D 6H 6S 7D 7H 8C 8D 8H 9C 9H AC AH AH JS KC KD KH KH SJ] (共27张)
+  玩家3: [10C 2H 2S 2S 3H 3S 4C 4D 4H 4S 7C 7D 7H 7S 8C 8D 9D 9S AC AD JH JH KC QC QD QH QS] (共27张)
+
+⚠️ 第32局未正常结束，状态: tribute
+
+📊 Deal 32 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第33局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10H 2C 2H 3D 4D 4H 5D 5H 5H 5S 6D 7C 7C 7D 7H 8C 9D 9H AC BJ JD JH KD QC QD QH SJ] (共27张)
+  玩家1: [10H 10S 2D 2H 3D 3S 4C 4D 4H 6D 7D 8C 8H 8H 8S 9C 9H 9S AD AH BJ JC JS KC KH KS SJ] (共27张)
+  玩家2: [10C 10C 10D 2C 2D 2S 3H 3H 4S 6C 6C 6H 6S 7H 8D 8D 9S AC AD JD JS KD KS QC QD QH QS] (共27张)
+  玩家3: [10D 10S 2S 3C 3C 3S 4C 4S 5C 5C 5D 5S 6H 6S 7S 7S 8S 9C 9D AH AS AS JC JH KC KH QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10H 2C 2H 3D 4D 4H 5D 5H 5H 5S 6D 7C 7C 7D 7H 8C 9D 9H AC BJ JD JH KD QC QD QH SJ] (共27张)
+  玩家1: [10H 10S 2D 2H 3D 3S 4C 4D 4H 6D 7D 8C 8H 8H 8S 9C 9H 9S AD AH BJ JC JS KC KH KS SJ] (共27张)
+  玩家2: [10C 10C 10D 2C 2D 2S 3H 3H 4S 6C 6C 6H 6S 7H 8D 8D 9S AC AD JD JS KD KS QC QD QH QS] (共27张)
+  玩家3: [10D 10S 2S 3C 3C 3S 4C 4S 5C 5C 5D 5S 6H 6S 7S 7S 8S 9C 9D AH AS AS JC JH KC KH QS] (共27张)
+
+⚠️ 第33局未正常结束，状态: tribute
+
+📊 Deal 33 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第34局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10H 3D 3H 3S 4D 4H 4H 4S 5H 6C 6S 7C 7S 8D 8H 9H AD AH AS BJ JS KC KD QC QH QS] (共27张)
+  玩家1: [10D 10H 2C 2D 2S 3S 4C 4C 4S 5D 5D 6H 6H 7H 7S 8S 9C 9D 9S AH AS BJ JC JC JH JS SJ] (共27张)
+  玩家2: [10C 10S 2C 3C 3C 3D 3H 4D 5C 5H 5S 6C 7D 8C 8D 8H 9D 9H 9S AC JD JH KH KS QH QS SJ] (共27张)
+  玩家3: [10D 10S 2D 2H 2H 2S 5C 5S 6D 6D 6S 7C 7D 7H 8C 8S 9C AC AD JD KC KD KH KS QC QD QD] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10H 3D 3H 3S 4D 4H 4H 4S 5H 6C 6S 7C 7S 8D 8H 9H AD AH AS BJ JS KC KD QC QH QS] (共27张)
+  玩家1: [10D 10H 2C 2D 2S 3S 4C 4C 4S 5D 5D 6H 6H 7H 7S 8S 9C 9D 9S AH AS BJ JC JC JH JS SJ] (共27张)
+  玩家2: [10C 10S 2C 3C 3C 3D 3H 4D 5C 5H 5S 6C 7D 8C 8D 8H 9D 9H 9S AC JD JH KH KS QH QS SJ] (共27张)
+  玩家3: [10D 10S 2D 2H 2H 2S 5C 5S 6D 6D 6S 7C 7D 7H 8C 8S 9C AC AD JD KC KD KH KS QC QD QD] (共27张)
+
+⚠️ 第34局未正常结束，状态: tribute
+
+📊 Deal 34 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第35局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 2H 2H 3D 3H 3S 4C 4D 4D 4S 4S 6C 6H 7C 7D 7H 8C 8H 9C 9D BJ JD JH JS KD QS QS] (共27张)
+  玩家1: [10H 10S 10S 2S 3C 3H 4C 4H 5D 5H 7C 7D 7H 7S 8C 8D 9C 9H AD AH AS JC JC KC QD SJ SJ] (共27张)
+  玩家2: [10C 10D 10D 10H 2D 2D 3S 4H 5C 5S 6S 6S 8D 8H 8S 9S AC AD AS BJ JS KC KH QC QD QH QH] (共27张)
+  玩家3: [2C 2C 2S 3C 3D 5C 5D 5H 5S 6C 6D 6D 6H 7S 8S 9D 9H 9S AC AH JD JH KD KH KS KS QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 2H 2H 3D 3H 3S 4C 4D 4D 4S 4S 6C 6H 7C 7D 7H 8C 8H 9C 9D BJ JD JH JS KD QS QS] (共27张)
+  玩家1: [10H 10S 10S 2S 3C 3H 4C 4H 5D 5H 7C 7D 7H 7S 8C 8D 9C 9H AD AH AS JC JC KC QD SJ SJ] (共27张)
+  玩家2: [10C 10D 10D 10H 2D 2D 3S 4H 5C 5S 6S 6S 8D 8H 8S 9S AC AD AS BJ JS KC KH QC QD QH QH] (共27张)
+  玩家3: [2C 2C 2S 3C 3D 5C 5D 5H 5S 6C 6D 6D 6H 7S 8S 9D 9H 9S AC AH JD JH KD KH KS KS QC] (共27张)
+
+⚠️ 第35局未正常结束，状态: tribute
+
+📊 Deal 35 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第36局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10S 2D 3D 3S 4C 4D 4D 5C 5C 5H 5H 5S 6C 6H 7D 7H 8H 9S JC JH JS QC QD QH QS SJ] (共27张)
+  玩家1: [10C 10C 2S 3C 3C 3H 4C 4S 5D 6D 6S 7D 7S 9D 9H 9H AC AC AD AH BJ JD KD KH QD QH SJ] (共27张)
+  玩家2: [10D 10H 10S 2C 2C 2H 2S 3D 4H 4H 5D 5S 6D 7C 7C 8C 8C 8D 8H 9C AD AS JH KD KS QC QS] (共27张)
+  玩家3: [10H 2D 2H 3H 3S 4S 6C 6H 6S 7H 7S 8D 8S 8S 9C 9D 9S AH AS BJ JC JD JS KC KC KH KS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10S 2D 3D 3S 4C 4D 4D 5C 5C 5H 5H 5S 6C 6H 7D 7H 8H 9S JC JH JS QC QD QH QS SJ] (共27张)
+  玩家1: [10C 10C 2S 3C 3C 3H 4C 4S 5D 6D 6S 7D 7S 9D 9H 9H AC AC AD AH BJ JD KD KH QD QH SJ] (共27张)
+  玩家2: [10D 10H 10S 2C 2C 2H 2S 3D 4H 4H 5D 5S 6D 7C 7C 8C 8C 8D 8H 9C AD AS JH KD KS QC QS] (共27张)
+  玩家3: [10H 2D 2H 3H 3S 4S 6C 6H 6S 7H 7S 8D 8S 8S 9C 9D 9S AH AS BJ JC JD JS KC KC KH KS] (共27张)
+
+⚠️ 第36局未正常结束，状态: tribute
+
+📊 Deal 36 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第37局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [2C 2D 2H 2S 4D 5D 5D 5H 6C 6D 6H 6S 7C 7D 7D 8C 8D 8H AH AH JC JD JS KC KD KH SJ] (共27张)
+  玩家1: [10C 10C 10H 10H 10S 10S 2H 3C 3H 3S 4C 4H 4H 5H 5S 6C 6D 7S 8S 8S 9D AD AS JD KC KS QS] (共27张)
+  玩家2: [10D 2C 2S 3H 4D 4S 5C 5C 7H 8D 9C 9D 9H 9H 9S AC AC AD BJ JC JH JH KS QC QD QD QS] (共27张)
+  玩家3: [10D 2D 3C 3D 3D 3S 4C 4S 5S 6H 6S 7C 7H 7S 8C 8H 9C 9S AS BJ JS KD KH QC QH QH SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [2C 2D 2H 2S 4D 5D 5D 5H 6C 6D 6H 6S 7C 7D 7D 8C 8D 8H AH AH JC JD JS KC KD KH SJ] (共27张)
+  玩家1: [10C 10C 10H 10H 10S 10S 2H 3C 3H 3S 4C 4H 4H 5H 5S 6C 6D 7S 8S 8S 9D AD AS JD KC KS QS] (共27张)
+  玩家2: [10D 2C 2S 3H 4D 4S 5C 5C 7H 8D 9C 9D 9H 9H 9S AC AC AD BJ JC JH JH KS QC QD QD QS] (共27张)
+  玩家3: [10D 2D 3C 3D 3D 3S 4C 4S 5S 6H 6S 7C 7H 7S 8C 8H 9C 9S AS BJ JS KD KH QC QH QH SJ] (共27张)
+
+⚠️ 第37局未正常结束，状态: tribute
+
+📊 Deal 37 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第38局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10H 2S 3C 3D 3H 4D 4S 5C 5H 5H 5S 6D 6S 7S 8H 8S 9C 9S 9S AD AS BJ JD QC QD SJ] (共27张)
+  玩家1: [10C 10H 10S 2D 2S 3C 3D 3S 4C 4S 5C 5D 6H 6S 7D 7H 8S 9C 9H 9H AH AH BJ JC JS KC KS] (共27张)
+  玩家2: [10C 10S 2C 2D 3S 4H 4H 5S 6C 6H 7D 8C 8D 9D 9D AC AC JD JH JH JS KH KH QC QH QH SJ] (共27张)
+  玩家3: [10D 2C 2H 2H 3H 4C 4D 5D 6C 6D 7C 7C 7H 7S 8C 8D 8H AD AS JC KC KD KD KS QD QS QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10H 2S 3C 3D 3H 4D 4S 5C 5H 5H 5S 6D 6S 7S 8H 8S 9C 9S 9S AD AS BJ JD QC QD SJ] (共27张)
+  玩家1: [10C 10H 10S 2D 2S 3C 3D 3S 4C 4S 5C 5D 6H 6S 7D 7H 8S 9C 9H 9H AH AH BJ JC JS KC KS] (共27张)
+  玩家2: [10C 10S 2C 2D 3S 4H 4H 5S 6C 6H 7D 8C 8D 9D 9D AC AC JD JH JH JS KH KH QC QH QH SJ] (共27张)
+  玩家3: [10D 2C 2H 2H 3H 4C 4D 5D 6C 6D 7C 7C 7H 7S 8C 8D 8H AD AS JC KC KD KD KS QD QS QS] (共27张)
+
+⚠️ 第38局未正常结束，状态: tribute
+
+📊 Deal 38 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第39局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10H 2D 2H 3D 3S 4D 5C 5D 6D 6S 7C 7D 7H 9C 9D 9S AC AD JC JH JH JS KH KH KS QC SJ] (共27张)
+  玩家1: [10C 10H 2S 3C 3C 3D 3H 3S 4D 4S 5D 5H 5S 7H 7S 8D 8S 8S 9C 9H AD AH AH BJ JD QH QH] (共27张)
+  玩家2: [2C 2H 4C 4C 4H 4H 4S 5S 6C 6C 7C 7D 7S 8C 9D 9H AC AS BJ JD KC KS QD QD QS QS SJ] (共27张)
+  玩家3: [10C 10D 10D 10S 10S 2C 2D 2S 3H 5C 5H 6D 6H 6H 6S 8C 8D 8H 8H 9S AS JC JS KC KD KD QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10H 2D 2H 3D 3S 4D 5C 5D 6D 6S 7C 7D 7H 9C 9D 9S AC AD JC JH JH JS KH KH KS QC SJ] (共27张)
+  玩家1: [10C 10H 2S 3C 3C 3D 3H 3S 4D 4S 5D 5H 5S 7H 7S 8D 8S 8S 9C 9H AD AH AH BJ JD QH QH] (共27张)
+  玩家2: [2C 2H 4C 4C 4H 4H 4S 5S 6C 6C 7C 7D 7S 8C 9D 9H AC AS BJ JD KC KS QD QD QS QS SJ] (共27张)
+  玩家3: [10C 10D 10D 10S 10S 2C 2D 2S 3H 5C 5H 6D 6H 6H 6S 8C 8D 8H 8H 9S AS JC JS KC KD KD QC] (共27张)
+
+⚠️ 第39局未正常结束，状态: tribute
+
+📊 Deal 39 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第40局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10C 10S 2C 2D 3D 3H 5H 6C 6H 7S 8D 8H 8S 8S AC AD AH JH JH JS KD KS QC QD QH QS] (共27张)
+  玩家1: [10S 3C 3C 3S 4C 4H 4S 5C 5D 5H 5S 5S 6C 6D 6H 6S 7D 7D 8D 8H 9H 9S BJ KS QD QH QS] (共27张)
+  玩家2: [10D 10D 10H 2C 2D 2H 2S 3D 3H 3S 4C 4D 4H 4S 6D 6S 7S 8C 9C 9C AS JC JD JS KH SJ SJ] (共27张)
+  玩家3: [10H 2H 2S 4D 5C 5D 7C 7C 7H 7H 8C 9D 9D 9H 9S AC AD AH AS BJ JC JD KC KC KD KH QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10C 10S 2C 2D 3D 3H 5H 6C 6H 7S 8D 8H 8S 8S AC AD AH JH JH JS KD KS QC QD QH QS] (共27张)
+  玩家1: [10S 3C 3C 3S 4C 4H 4S 5C 5D 5H 5S 5S 6C 6D 6H 6S 7D 7D 8D 8H 9H 9S BJ KS QD QH QS] (共27张)
+  玩家2: [10D 10D 10H 2C 2D 2H 2S 3D 3H 3S 4C 4D 4H 4S 6D 6S 7S 8C 9C 9C AS JC JD JS KH SJ SJ] (共27张)
+  玩家3: [10H 2H 2S 4D 5C 5D 7C 7C 7H 7H 8C 9D 9D 9H 9S AC AD AH AS BJ JC JD KC KC KD KH QC] (共27张)
+
+⚠️ 第40局未正常结束，状态: tribute
+
+📊 Deal 40 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第41局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10D 3D 3H 3S 3S 4C 5C 5H 5S 7D 7S 8C 8D 8S 9C 9C 9H AC AH AS JH JS KC QH QH SJ] (共27张)
+  玩家1: [10H 2H 2S 4D 4H 4S 5H 6C 6D 6D 6H 6H 6S 7C 7D 8C 8S AC AH BJ KD KS QC QC QD QD QS] (共27张)
+  玩家2: [10C 10C 10H 2C 2S 3C 3C 3D 3H 4C 4S 5D 7C 7H 8H 8H 9D 9H AD AD BJ JC JD JD JH KS QS] (共27张)
+  玩家3: [10S 10S 2C 2D 2D 2H 4D 4H 5C 5D 5S 6C 6S 7H 7S 8D 9D 9S 9S AS JC JS KC KD KH KH SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10D 3D 3H 3S 3S 4C 5C 5H 5S 7D 7S 8C 8D 8S 9C 9C 9H AC AH AS JH JS KC QH QH SJ] (共27张)
+  玩家1: [10H 2H 2S 4D 4H 4S 5H 6C 6D 6D 6H 6H 6S 7C 7D 8C 8S AC AH BJ KD KS QC QC QD QD QS] (共27张)
+  玩家2: [10C 10C 10H 2C 2S 3C 3C 3D 3H 4C 4S 5D 7C 7H 8H 8H 9D 9H AD AD BJ JC JD JD JH KS QS] (共27张)
+  玩家3: [10S 10S 2C 2D 2D 2H 4D 4H 5C 5D 5S 6C 6S 7H 7S 8D 9D 9S 9S AS JC JS KC KD KH KH SJ] (共27张)
+
+⚠️ 第41局未正常结束，状态: tribute
+
+📊 Deal 41 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第42局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10H 10H 2H 3D 3H 4C 4S 5H 5S 6C 6D 6H 7D 7H 8C 8H 9C 9H 9S AD JC JD JH KC KS KS QH] (共27张)
+  玩家1: [10C 10D 10S 10S 2D 2S 2S 3S 4D 4S 5C 6H 6S 7C 7S 8D 8H AC AH BJ JS KC KD QC QC QS SJ] (共27张)
+  玩家2: [10D 2C 2D 3C 3C 3S 4D 4H 5C 5H 5S 6D 6S 8D 8S 9D 9H 9S AC JD JH JS KD KH KH QD QS] (共27张)
+  玩家3: [10C 2C 2H 3D 3H 4C 4H 5D 5D 6C 7C 7D 7H 7S 8C 8S 9C 9D AD AH AS AS BJ JC QD QH SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10H 10H 2H 3D 3H 4C 4S 5H 5S 6C 6D 6H 7D 7H 8C 8H 9C 9H 9S AD JC JD JH KC KS KS QH] (共27张)
+  玩家1: [10C 10D 10S 10S 2D 2S 2S 3S 4D 4S 5C 6H 6S 7C 7S 8D 8H AC AH BJ JS KC KD QC QC QS SJ] (共27张)
+  玩家2: [10D 2C 2D 3C 3C 3S 4D 4H 5C 5H 5S 6D 6S 8D 8S 9D 9H 9S AC JD JH JS KD KH KH QD QS] (共27张)
+  玩家3: [10C 2C 2H 3D 3H 4C 4H 5D 5D 6C 7C 7D 7H 7S 8C 8S 9C 9D AD AH AS AS BJ JC QD QH SJ] (共27张)
+
+⚠️ 第42局未正常结束，状态: tribute
+
+📊 Deal 42 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第43局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10H 10S 2H 3C 3C 3H 4C 5C 5H 6C 6H 7C 7H 8D 8S 9H AH BJ JC JC JD JH KC KD KS SJ] (共27张)
+  玩家1: [10C 10D 2C 2S 3S 4H 4S 6C 6D 6S 7D 7D 7S 8C 8H 8S 9D 9H 9S AC AH BJ JS KD QC QD QD] (共27张)
+  玩家2: [10C 10H 10S 2C 2D 2S 4C 4D 5C 5D 5S 6H 7C 7H 8D 9C 9C AC AD AS KC KH KH KS QH QS SJ] (共27张)
+  玩家3: [2D 2H 3D 3D 3H 3S 4D 4H 4S 5D 5H 5S 6D 6S 7S 8C 8H 9D 9S AD AS JD JH JS QC QH QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10H 10S 2H 3C 3C 3H 4C 5C 5H 6C 6H 7C 7H 8D 8S 9H AH BJ JC JC JD JH KC KD KS SJ] (共27张)
+  玩家1: [10C 10D 2C 2S 3S 4H 4S 6C 6D 6S 7D 7D 7S 8C 8H 8S 9D 9H 9S AC AH BJ JS KD QC QD QD] (共27张)
+  玩家2: [10C 10H 10S 2C 2D 2S 4C 4D 5C 5D 5S 6H 7C 7H 8D 9C 9C AC AD AS KC KH KH KS QH QS SJ] (共27张)
+  玩家3: [2D 2H 3D 3D 3H 3S 4D 4H 4S 5D 5H 5S 6D 6S 7S 8C 8H 9D 9S AD AS JD JH JS QC QH QS] (共27张)
+
+⚠️ 第43局未正常结束，状态: tribute
+
+📊 Deal 43 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第44局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10C 10C 10D 10S 2C 2D 2H 2S 4H 5C 5D 6D 6D 6S 6S 7C 7D 8D 8H 9D 9S JH JS KS QD QS SJ] (共27张)
+  玩家1: [10H 2S 3C 3D 4C 4D 4D 4H 4S 5C 5H 5S 7C 8S 9H 9S AD AH AS BJ BJ JC JD JH KH KS QC] (共27张)
+  玩家2: [10H 10S 2C 2D 2H 3H 3H 5H 6C 6H 6H 7D 7S 7S 8C 8H 9C 9C 9D 9H AC AH JD JS KD KH QD] (共27张)
+  玩家3: [10D 3C 3D 3S 3S 4C 4S 5D 5S 6C 7H 7H 8C 8D 8S AC AD AS JC KC KC KD QC QH QH QS SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10C 10C 10D 10S 2C 2D 2H 2S 4H 5C 5D 6D 6D 6S 6S 7C 7D 8D 8H 9D 9S JH JS KS QD QS SJ] (共27张)
+  玩家1: [10H 2S 3C 3D 4C 4D 4D 4H 4S 5C 5H 5S 7C 8S 9H 9S AD AH AS BJ BJ JC JD JH KH KS QC] (共27张)
+  玩家2: [10H 10S 2C 2D 2H 3H 3H 5H 6C 6H 6H 7D 7S 7S 8C 8H 9C 9C 9D 9H AC AH JD JS KD KH QD] (共27张)
+  玩家3: [10D 3C 3D 3S 3S 4C 4S 5D 5S 6C 7H 7H 8C 8D 8S AC AD AS JC KC KC KD QC QH QH QS SJ] (共27张)
+
+⚠️ 第44局未正常结束，状态: tribute
+
+📊 Deal 44 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第45局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10D 2C 2D 2D 2H 2S 2S 3C 4C 5D 6S 6S 7C 7C 7D 7D 8H 8S 9C AS BJ BJ JC KC KH QS] (共27张)
+  玩家1: [10C 10H 10S 10S 2C 4S 5H 6C 6D 6D 7S 8D 8D 9D AC AC AD AS JC JD JS KC KD QC QH QS SJ] (共27张)
+  玩家2: [10C 3C 3D 3D 3H 3S 4D 4H 4S 5C 5D 5S 5S 6H 7H 7H 7S 9C 9D 9H 9S AD AH AH JD KH QH] (共27张)
+  玩家3: [10H 2H 3H 3S 4C 4D 4H 5C 5H 6C 6H 8C 8C 8H 8S 9H 9S JH JH JS KD KS KS QC QD QD SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10D 2C 2D 2D 2H 2S 2S 3C 4C 5D 6S 6S 7C 7C 7D 7D 8H 8S 9C AS BJ BJ JC KC KH QS] (共27张)
+  玩家1: [10C 10H 10S 10S 2C 4S 5H 6C 6D 6D 7S 8D 8D 9D AC AC AD AS JC JD JS KC KD QC QH QS SJ] (共27张)
+  玩家2: [10C 3C 3D 3D 3H 3S 4D 4H 4S 5C 5D 5S 5S 6H 7H 7H 7S 9C 9D 9H 9S AD AH AH JD KH QH] (共27张)
+  玩家3: [10H 2H 3H 3S 4C 4D 4H 5C 5H 6C 6H 8C 8C 8H 8S 9H 9S JH JH JS KD KS KS QC QD QD SJ] (共27张)
+
+⚠️ 第45局未正常结束，状态: tribute
+
+📊 Deal 45 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第46局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10S 2H 3C 3C 3S 3S 4D 4H 4H 5C 5D 5S 6H 6H 6S 7C 7S AD AH JC JD JS KS KS QD QD SJ] (共27张)
+  玩家1: [10C 2D 2H 2S 3D 3H 3H 4S 5H 6C 7D 7H 7S 8D 8H 9C 9H 9S AD AS JD JH KD KD QC QC QS] (共27张)
+  玩家2: [10H 10S 2C 2C 2S 4C 4C 4D 4S 5D 5H 7C 8D 9D 9H 9S AC AH BJ JC JH JS KC KH KH QH SJ] (共27张)
+  玩家3: [10C 10D 10D 10H 2D 3D 5C 5S 6C 6D 6D 6S 7D 7H 8C 8C 8H 8S 8S 9C 9D AC AS BJ KC QH QS] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10S 2H 3C 3C 3S 3S 4D 4H 4H 5C 5D 5S 6H 6H 6S 7C 7S AD AH JC JD JS KS KS QD QD SJ] (共27张)
+  玩家1: [10C 2D 2H 2S 3D 3H 3H 4S 5H 6C 7D 7H 7S 8D 8H 9C 9H 9S AD AS JD JH KD KD QC QC QS] (共27张)
+  玩家2: [10H 10S 2C 2C 2S 4C 4C 4D 4S 5D 5H 7C 8D 9D 9H 9S AC AH BJ JC JH JS KC KH KH QH SJ] (共27张)
+  玩家3: [10C 10D 10D 10H 2D 3D 5C 5S 6C 6D 6D 6S 7D 7H 8C 8C 8H 8S 8S 9C 9D AC AS BJ KC QH QS] (共27张)
+
+⚠️ 第46局未正常结束，状态: tribute
+
+📊 Deal 46 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第47局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 2D 2H 3C 3H 4H 4S 5D 7C 7D 7D 7S 7S 8C 8D 9C 9D 9H AC AS BJ JD JS JS QD QH QS] (共27张)
+  玩家1: [10H 2C 2S 3D 3D 4D 6C 6D 6D 6H 6H 6S 7H 8S 9S AD AH AS JC JD JH KS KS QD QS SJ SJ] (共27张)
+  玩家2: [10D 10H 2C 3H 3S 4C 4S 5C 5D 5H 5S 5S 6S 8C 8S 9C 9H 9S AC AD AH BJ JC JH KD KH QH] (共27张)
+  玩家3: [10C 10C 10S 10S 2D 2H 2S 3C 3S 4C 4D 4H 5C 5H 6C 7C 7H 8D 8H 8H 9D KC KC KD KH QC QC] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 2D 2H 3C 3H 4H 4S 5D 7C 7D 7D 7S 7S 8C 8D 9C 9D 9H AC AS BJ JD JS JS QD QH QS] (共27张)
+  玩家1: [10H 2C 2S 3D 3D 4D 6C 6D 6D 6H 6H 6S 7H 8S 9S AD AH AS JC JD JH KS KS QD QS SJ SJ] (共27张)
+  玩家2: [10D 10H 2C 3H 3S 4C 4S 5C 5D 5H 5S 5S 6S 8C 8S 9C 9H 9S AC AD AH BJ JC JH KD KH QH] (共27张)
+  玩家3: [10C 10C 10S 10S 2D 2H 2S 3C 3S 4C 4D 4H 5C 5H 6C 7C 7H 8D 8H 8H 9D KC KC KD KH QC QC] (共27张)
+
+⚠️ 第47局未正常结束，状态: tribute
+
+📊 Deal 47 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第48局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [4C 4D 4S 4S 5D 5D 6D 7D 7H 8H 8S 9C 9D AD AS BJ JH JH JS JS KD KH KS QC QD QH QS] (共27张)
+  玩家1: [10D 10S 2C 2D 2D 2H 3S 4C 5C 5S 6C 6S 6S 7C 8D 8H 9D 9H 9H AC AD AH JC KH QC QH QS] (共27张)
+  玩家2: [10C 10H 10S 2H 2S 3C 3H 3S 4D 4H 5S 6C 6D 6H 7C 7D 8C 8C 9S AH AS JC JD KC KS QD SJ] (共27张)
+  玩家3: [10C 10D 10H 2C 2S 3C 3D 3D 3H 4H 5C 5H 5H 6H 7H 7S 7S 8D 8S 9C 9S AC BJ JD KC KD SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [4C 4D 4S 4S 5D 5D 6D 7D 7H 8H 8S 9C 9D AD AS BJ JH JH JS JS KD KH KS QC QD QH QS] (共27张)
+  玩家1: [10D 10S 2C 2D 2D 2H 3S 4C 5C 5S 6C 6S 6S 7C 8D 8H 9D 9H 9H AC AD AH JC KH QC QH QS] (共27张)
+  玩家2: [10C 10H 10S 2H 2S 3C 3H 3S 4D 4H 5S 6C 6D 6H 7C 7D 8C 8C 9S AH AS JC JD KC KS QD SJ] (共27张)
+  玩家3: [10C 10D 10H 2C 2S 3C 3D 3D 3H 4H 5C 5H 5H 6H 7H 7S 7S 8D 8S 9C 9S AC BJ JD KC KD SJ] (共27张)
+
+⚠️ 第48局未正常结束，状态: tribute
+
+📊 Deal 48 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第49局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10S 2D 3C 3D 3H 4D 4S 5C 5S 6S 7C 7C 7S 8D 8S 9C 9H AD AH BJ JC JD KC KH QS SJ] (共27张)
+  玩家1: [2H 3H 3S 4C 4C 5D 5S 6C 6D 6S 8D 8S 9D 9S AD AS JC JD JH JH JS JS KC KD QC QC SJ] (共27张)
+  玩家2: [10C 10D 10H 10S 2C 2C 2S 3C 4D 4S 5C 5D 5H 6H 7H 7S 8H 8H 9C 9D AH BJ KD KS QD QH QS] (共27张)
+  玩家3: [10C 10H 2D 2H 2S 3D 3S 4H 4H 5H 6C 6D 6H 7D 7D 7H 8C 8C 9H 9S AC AC AS KH KS QD QH] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10S 2D 3C 3D 3H 4D 4S 5C 5S 6S 7C 7C 7S 8D 8S 9C 9H AD AH BJ JC JD KC KH QS SJ] (共27张)
+  玩家1: [2H 3H 3S 4C 4C 5D 5S 6C 6D 6S 8D 8S 9D 9S AD AS JC JD JH JH JS JS KC KD QC QC SJ] (共27张)
+  玩家2: [10C 10D 10H 10S 2C 2C 2S 3C 4D 4S 5C 5D 5H 6H 7H 7S 8H 8H 9C 9D AH BJ KD KS QD QH QS] (共27张)
+  玩家3: [10C 10H 2D 2H 2S 3D 3S 4H 4H 5H 6C 6D 6H 7D 7D 7H 8C 8C 9H 9S AC AC AS KH KS QD QH] (共27张)
+
+⚠️ 第49局未正常结束，状态: tribute
+
+📊 Deal 49 结束后等级: 队伍0=2, 队伍1=4
+
+🎮 === 第50局开始 ===
+🎯 牌局等级: 4
+
+📊 队伍等级信息:
+  队伍0等级: 2
+  队伍1等级: 4
+  当前局等级: 4
+
+🔧 SDK调用: gameEngine.StartDeal()
+📋 开局手牌:
+  玩家0: [10D 10H 10S 3C 4H 4S 5C 5S 6C 6S 7C 7H 8D 8H 8S 9D AC AD AS BJ JD JH KD KS KS QC QS] (共27张)
+  玩家1: [2C 2H 2S 3S 4C 4S 5C 5D 6C 6H 6H 6S 7C 7D 7H 8C 8H 9C 9D 9H AH JS KC KH KH QH SJ] (共27张)
+  玩家2: [10C 10C 10S 3D 3H 3H 4D 4D 5D 5H 6D 6D 7D 7S 8C 8D 8S 9C 9H 9S 9S JC KC QD QD QH QS] (共27张)
+  玩家3: [10D 10H 2C 2D 2D 2H 2S 3C 3D 3S 4C 4H 5H 5S 7S AC AD AH AS BJ JC JD JH JS KD QC SJ] (共27张)
+
+🎁 === 上贡阶段 ===
+📋 上贡后手牌:
+  玩家0: [10D 10H 10S 3C 4H 4S 5C 5S 6C 6S 7C 7H 8D 8H 8S 9D AC AD AS BJ JD JH KD KS KS QC QS] (共27张)
+  玩家1: [2C 2H 2S 3S 4C 4S 5C 5D 6C 6H 6H 6S 7C 7D 7H 8C 8H 9C 9D 9H AH JS KC KH KH QH SJ] (共27张)
+  玩家2: [10C 10C 10S 3D 3H 3H 4D 4D 5D 5H 6D 6D 7D 7S 8C 8D 8S 9C 9H 9S 9S JC KC QD QD QH QS] (共27张)
+  玩家3: [10D 10H 2C 2D 2D 2H 2S 3C 3D 3S 4C 4H 5H 5S 7S AC AD AH AS BJ JC JD JH JS KD QC SJ] (共27张)
+
+⚠️ 第50局未正常结束，状态: tribute
+
+📊 Deal 50 结束后等级: 队伍0=2, 队伍1=4
+⚠️ 达到最大局数限制，强制结束比赛
+    match_simulator_test.go:14: 模拟比赛失败: 比赛未正常结束
+--- FAIL: TestMatchSimulator (3.77s)
+=== RUN   TestMatchSimulatorQuiet
+    match_simulator_test.go:39: 模拟比赛失败: 比赛未正常结束
+--- FAIL: TestMatchSimulatorQuiet (0.00s)
+FAIL
+exit status 1
+FAIL	guandan-world/sdk	4.161s
