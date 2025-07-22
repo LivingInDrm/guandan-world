@@ -1,8 +1,8 @@
 package sdk
 
 import (
+	"fmt"
 	"testing"
-	"time"
 )
 
 func TestNewTributeManager(t *testing.T) {
@@ -29,18 +29,31 @@ func TestNewTributePhase(t *testing.T) {
 			expectNil:  true,
 		},
 		{
-			name: "Normal tribute scenario",
+			name: "Single Last tribute scenario",
 			lastResult: &DealResult{
-				Rankings: []int{0, 1, 2, 3}, // Team 0 wins (seats 0,2), Team 1 loses (seats 1,3)
+				Rankings:    []int{0, 1, 2, 3}, // Rank1=0, Rank2=1, Rank3=2, Rank4=3
+				WinningTeam: 0,
+				VictoryType: VictoryTypeSingleLast, // rank1(0), rank3(2) 同队
 			},
 			expectedStatus: TributeStatusReturning,
 		},
 		{
 			name: "Double down scenario",
 			lastResult: &DealResult{
-				Rankings: []int{1, 3, 0, 2}, // Team 1: 1(1st), 3(2nd); Team 0: 0(3rd), 2(4th) - both 0,2 from Team 0 last
+				Rankings:    []int{1, 3, 0, 2}, // Rank1=1, Rank2=3, Rank3=0, Rank4=2
+				WinningTeam: 1,
+				VictoryType: VictoryTypeDoubleDown, // rank1(1), rank2(3) 同队
 			},
 			expectedStatus: TributeStatusSelecting,
+		},
+		{
+			name: "Partner Last tribute scenario",
+			lastResult: &DealResult{
+				Rankings:    []int{0, 1, 3, 2}, // Rank1=0, Rank2=1, Rank3=3, Rank4=2
+				WinningTeam: 0,
+				VictoryType: VictoryTypePartnerLast, // rank1(0), rank4(2) 同队
+			},
+			expectedStatus: TributeStatusReturning,
 		},
 		{
 			name: "Invalid rankings",
@@ -50,34 +63,34 @@ func TestNewTributePhase(t *testing.T) {
 			expectError: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tp, err := NewTributePhase(tt.lastResult)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Error("Expected error, got none")
 				}
 				return
 			}
-			
+
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 				return
 			}
-			
+
 			if tt.expectNil {
 				if tp != nil {
 					t.Error("Expected nil tribute phase, got non-nil")
 				}
 				return
 			}
-			
+
 			if tp == nil {
 				t.Fatal("Expected tribute phase, got nil")
 			}
-			
+
 			if tp.Status != tt.expectedStatus {
 				t.Errorf("Expected status %s, got %s", tt.expectedStatus, tp.Status)
 			}
@@ -86,469 +99,397 @@ func TestNewTributePhase(t *testing.T) {
 }
 
 func TestDetermineTributeRequirements(t *testing.T) {
-	tm := NewTributeManager(7)
-	
+	tm := NewTributeManager(5)
+
 	tests := []struct {
-		name           string
-		lastResult     *DealResult
-		expectNil      bool
-		expectError    bool
-		expectedMap    map[int]int
-		isDoubleDown   bool
+		name         string
+		lastResult   *DealResult
+		expectedMap  map[int]int
+		isDoubleDown bool
+		expectError  bool
 	}{
 		{
 			name:       "No last result",
 			lastResult: nil,
-			expectNil:  true,
 		},
 		{
-			name: "Normal tribute",
+			name: "Partner last tribute - rank1,rank4 same team",
 			lastResult: &DealResult{
-				Rankings: []int{0, 1, 2, 3}, // 0 first, 1 second, 2 third, 3 fourth
+				Rankings:    []int{0, 1, 3, 2}, // Rank1=0, Rank2=1, Rank3=3, Rank4=2
+				WinningTeam: 0,
+				VictoryType: VictoryTypePartnerLast,
 			},
 			expectedMap: map[int]int{
-				3: 0, // Fourth gives to first
-				2: 1, // Third gives to second
+				3: 0, // Rank3(3) -> Rank1(0)
 			},
 			isDoubleDown: false,
 		},
 		{
-			name: "Double down - same team last",
+			name: "Single last tribute - rank1,rank3 same team",
 			lastResult: &DealResult{
-				Rankings: []int{1, 3, 0, 2}, // Team 1: 1,3; Team 0: 0,2 - both 0,2 from Team 0 last
+				Rankings:    []int{0, 1, 2, 3}, // Rank1=0, Rank2=1, Rank3=2, Rank4=3
+				WinningTeam: 0,
+				VictoryType: VictoryTypeSingleLast,
 			},
 			expectedMap: map[int]int{
-				0: -1, // Pool contributor (3rd place)
-				2: -1, // Pool contributor (4th place)
+				3: 0, // Rank4(3) -> Rank1(0)
+			},
+			isDoubleDown: false,
+		},
+		{
+			name: "Double down - rank1,rank2 same team",
+			lastResult: &DealResult{
+				Rankings:    []int{1, 3, 0, 2}, // Rank1=1, Rank2=3, Rank3=0, Rank4=2
+				WinningTeam: 1,
+				VictoryType: VictoryTypeDoubleDown,
+			},
+			expectedMap: map[int]int{
+				0: -1, // Rank3(0)贡献到池子
+				2: -1, // Rank4(2)贡献到池子
 			},
 			isDoubleDown: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tributeMap, isDoubleDown, err := tm.DetermineTributeRequirements(tt.lastResult)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Error("Expected error, got none")
 				}
 				return
 			}
-			
+
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 				return
 			}
-			
-			if tt.expectNil {
-				if tributeMap != nil {
-					t.Error("Expected nil tribute map, got non-nil")
+
+			if tt.lastResult == nil {
+				if tributeMap != nil || isDoubleDown {
+					t.Error("Expected nil tribute map and false isDoubleDown for nil result")
 				}
 				return
 			}
-			
+
 			if isDoubleDown != tt.isDoubleDown {
 				t.Errorf("Expected isDoubleDown %v, got %v", tt.isDoubleDown, isDoubleDown)
 			}
-			
+
 			if len(tributeMap) != len(tt.expectedMap) {
 				t.Errorf("Expected tribute map length %d, got %d", len(tt.expectedMap), len(tributeMap))
-			}
-			
-			for giver, receiver := range tt.expectedMap {
-				if tributeMap[giver] != receiver {
-					t.Errorf("Expected tribute map[%d] = %d, got %d", giver, receiver, tributeMap[giver])
-				}
-			}
-		})
-	}
-}
-
-func TestTributeManagerGetHighestCard(t *testing.T) {
-	tm := NewTributeManager(7)
-	
-	// Create test cards
-	card2, _ := NewCard(2, "Spade", 7)
-	card5, _ := NewCard(5, "Heart", 7)
-	cardA, _ := NewCard(14, "Club", 7)
-	joker, _ := NewCard(15, "Joker", 7)
-	
-	tests := []struct {
-		name     string
-		hand     []*Card
-		expected *Card
-	}{
-		{
-			name:     "Empty hand",
-			hand:     []*Card{},
-			expected: nil,
-		},
-		{
-			name:     "Single card",
-			hand:     []*Card{card5},
-			expected: card5,
-		},
-		{
-			name:     "Multiple cards",
-			hand:     []*Card{card2, cardA, card5},
-			expected: cardA,
-		},
-		{
-			name:     "With joker",
-			hand:     []*Card{card2, cardA, joker},
-			expected: joker,
-		},
-	}
-	
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := tm.getHighestCard(tt.hand)
-			
-			if tt.expected == nil {
-				if result != nil {
-					t.Errorf("Expected nil, got %v", result)
-				}
 				return
 			}
-			
-			if result == nil {
-				t.Fatal("Expected card, got nil")
-			}
-			
-			if !tm.cardsEqual(result, tt.expected) {
-				t.Errorf("Expected %v, got %v", tt.expected, result)
-			}
-		})
-	}
-}
 
-func TestTributeManagerGetLowestCard(t *testing.T) {
-	tm := NewTributeManager(7)
-	
-	// Create test cards
-	card2, _ := NewCard(2, "Spade", 7)
-	card5, _ := NewCard(5, "Heart", 7)
-	cardA, _ := NewCard(14, "Club", 7)
-	joker, _ := NewCard(15, "Joker", 7)
-	
-	tests := []struct {
-		name     string
-		hand     []*Card
-		expected *Card
-	}{
-		{
-			name:     "Empty hand",
-			hand:     []*Card{},
-			expected: nil,
-		},
-		{
-			name:     "Single card",
-			hand:     []*Card{card5},
-			expected: card5,
-		},
-		{
-			name:     "Multiple cards",
-			hand:     []*Card{card2, cardA, card5},
-			expected: card2,
-		},
-		{
-			name:     "With joker",
-			hand:     []*Card{card2, cardA, joker},
-			expected: card2,
-		},
-	}
-	
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := tm.getLowestCard(tt.hand)
-			
-			if tt.expected == nil {
-				if result != nil {
-					t.Errorf("Expected nil, got %v", result)
+			for giver, expectedReceiver := range tt.expectedMap {
+				if receiver, exists := tributeMap[giver]; !exists {
+					t.Errorf("Expected giver %d not found in tribute map", giver)
+				} else if receiver != expectedReceiver {
+					t.Errorf("For giver %d, expected receiver %d, got %d", giver, expectedReceiver, receiver)
 				}
-				return
-			}
-			
-			if result == nil {
-				t.Fatal("Expected card, got nil")
-			}
-			
-			if !tm.cardsEqual(result, tt.expected) {
-				t.Errorf("Expected %v, got %v", tt.expected, result)
 			}
 		})
 	}
 }
 
-func TestTributeManagerRemoveCardFromHand(t *testing.T) {
-	tm := NewTributeManager(7)
-	
-	// Create test cards
-	card2, _ := NewCard(2, "Spade", 7)
-	card5, _ := NewCard(5, "Heart", 7)
-	cardA, _ := NewCard(14, "Club", 7)
-	
+func TestCheckTributeImmunity(t *testing.T) {
+	tm := NewTributeManager(5)
+
+	// Create test hands with and without Big Jokers
+	handsWithBigJokers := [4][]*Card{
+		{}, // Player 0: no cards
+		{}, // Player 1: no cards
+		{}, // Player 2: no cards
+		{}, // Player 3: no cards
+	}
+
+	// Add 2 Big Jokers to player 2 and player 3
+	bigJoker1, _ := NewCard(16, "Joker", 5) // Red Joker = Big Joker
+	bigJoker2, _ := NewCard(16, "Joker", 5)
+	bigJoker3, _ := NewCard(16, "Joker", 5)
+
+	handsWithBigJokers[2] = []*Card{bigJoker1}            // Player 2: 1 Big Joker
+	handsWithBigJokers[3] = []*Card{bigJoker2, bigJoker3} // Player 3: 2 Big Jokers
+
+	handsWithoutBigJokers := [4][]*Card{
+		{}, {}, {}, {},
+	}
+
 	tests := []struct {
 		name           string
-		hand           []*Card
-		cardToRemove   *Card
-		expectedLength int
-		shouldContain  []*Card
+		lastResult     *DealResult
+		playerHands    [4][]*Card
+		expectedResult bool
 	}{
 		{
-			name:           "Remove from middle",
-			hand:           []*Card{card2, card5, cardA},
-			cardToRemove:   card5,
-			expectedLength: 2,
-			shouldContain:  []*Card{card2, cardA},
+			name:           "No last result",
+			lastResult:     nil,
+			playerHands:    handsWithBigJokers,
+			expectedResult: false,
 		},
 		{
-			name:           "Remove first card",
-			hand:           []*Card{card2, card5, cardA},
-			cardToRemove:   card2,
-			expectedLength: 2,
-			shouldContain:  []*Card{card5, cardA},
+			name: "Double Down immunity - Rank3,Rank4 have 2+ Big Jokers combined",
+			lastResult: &DealResult{
+				Rankings:    []int{0, 1, 2, 3}, // Rank3=2, Rank4=3
+				VictoryType: VictoryTypeDoubleDown,
+			},
+			playerHands:    handsWithBigJokers, // Player 2 has 1, Player 3 has 2 = 3 total
+			expectedResult: true,
 		},
 		{
-			name:           "Remove last card",
-			hand:           []*Card{card2, card5, cardA},
-			cardToRemove:   cardA,
-			expectedLength: 2,
-			shouldContain:  []*Card{card2, card5},
+			name: "Double Down no immunity - Rank3,Rank4 don't have enough Big Jokers",
+			lastResult: &DealResult{
+				Rankings:    []int{0, 1, 2, 3}, // Rank3=2, Rank4=3
+				VictoryType: VictoryTypeDoubleDown,
+			},
+			playerHands:    handsWithoutBigJokers,
+			expectedResult: false,
 		},
 		{
-			name:           "Card not in hand",
-			hand:           []*Card{card2, card5},
-			cardToRemove:   cardA,
-			expectedLength: 2,
-			shouldContain:  []*Card{card2, card5},
+			name: "Single Last immunity - Rank4 has 2+ Big Jokers",
+			lastResult: &DealResult{
+				Rankings:    []int{0, 1, 2, 3}, // Rank4=3
+				VictoryType: VictoryTypeSingleLast,
+			},
+			playerHands:    handsWithBigJokers, // Player 3 has 2 Big Jokers
+			expectedResult: true,
+		},
+		{
+			name: "Partner Last immunity - Rank3 has 2+ Big Jokers",
+			lastResult: &DealResult{
+				Rankings:    []int{0, 1, 3, 2}, // Rank3=3 (player 3)
+				VictoryType: VictoryTypePartnerLast,
+			},
+			playerHands:    handsWithBigJokers, // Player 3 has 2 Big Jokers
+			expectedResult: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tm.removeCardFromHand(tt.hand, tt.cardToRemove)
-			
-			if len(result) != tt.expectedLength {
-				t.Errorf("Expected length %d, got %d", tt.expectedLength, len(result))
+			result := tm.CheckTributeImmunity(tt.lastResult, tt.playerHands)
+			if result != tt.expectedResult {
+				t.Errorf("Expected %v, got %v", tt.expectedResult, result)
 			}
-			
-			// Check that expected cards are still present
-			for _, expectedCard := range tt.shouldContain {
-				found := false
-				for _, resultCard := range result {
-					if tm.cardsEqual(resultCard, expectedCard) {
-						found = true
-						break
-					}
+		})
+	}
+}
+
+func TestGetHighestCardExcludingHeartTrump(t *testing.T) {
+	tm := NewTributeManager(5) // Level 5
+
+	// Create test cards
+	heartTrump, _ := NewCard(5, "Heart", 5)      // Red Trump (level 5 Heart)
+	aceSpade, _ := NewCard(14, "Spade", 5)       // Ace of Spades
+	kingHeart, _ := NewCard(13, "Heart", 5)      // King of Hearts
+	queenDiamond, _ := NewCard(12, "Diamond", 5) // Queen of Diamonds
+	bigJoker, _ := NewCard(16, "Joker", 5)       // Big Joker
+
+	tests := []struct {
+		name        string
+		hand        []*Card
+		expectedNum int // Expected card number (-1 if no suitable card)
+	}{
+		{
+			name:        "Empty hand",
+			hand:        []*Card{},
+			expectedNum: -1,
+		},
+		{
+			name:        "Hand with only Heart Trump",
+			hand:        []*Card{heartTrump},
+			expectedNum: 5, // Should return the Heart Trump as fallback
+		},
+		{
+			name:        "Hand with mixed cards excluding Heart Trump",
+			hand:        []*Card{aceSpade, kingHeart, queenDiamond},
+			expectedNum: 14, // Ace is highest
+		},
+		{
+			name:        "Hand with Heart Trump and other cards",
+			hand:        []*Card{heartTrump, aceSpade, kingHeart},
+			expectedNum: 14, // Ace, excluding Heart Trump
+		},
+		{
+			name:        "Hand with Big Joker",
+			hand:        []*Card{heartTrump, aceSpade, bigJoker},
+			expectedNum: 16, // Big Joker is highest
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tm.getHighestCardExcludingHeartTrump(tt.hand)
+
+			if tt.expectedNum == -1 {
+				if result != nil {
+					t.Errorf("Expected nil, got %v", result)
 				}
-				if !found {
-					t.Errorf("Expected card %v not found in result", expectedCard)
+			} else {
+				if result == nil {
+					t.Errorf("Expected card with number %d, got nil", tt.expectedNum)
+				} else if result.Number != tt.expectedNum {
+					t.Errorf("Expected card number %d, got %d", tt.expectedNum, result.Number)
 				}
 			}
 		})
 	}
 }
 
-func TestProcessTribute(t *testing.T) {
-	tm := NewTributeManager(7)
-	
-	// Create test hands
-	var playerHands [4][]*Card
-	for player := 0; player < 4; player++ {
-		playerHands[player] = make([]*Card, 0)
-		// Add some test cards
-		for i := 2; i <= 5; i++ {
-			card, _ := NewCard(i, "Spade", 7)
-			playerHands[player] = append(playerHands[player], card)
-		}
-	}
-	
-	// Test normal tribute scenario
+func TestTributeProcessComplete(t *testing.T) {
+	// 创建测试场景：Single Last胜利类型（rank1,rank3同队）
 	lastResult := &DealResult{
-		Rankings: []int{0, 1, 2, 3}, // Normal ranking
+		Rankings:    []int{0, 1, 2, 3}, // rank1=0, rank2=1, rank3=2, rank4=3
+		WinningTeam: 0,
+		VictoryType: VictoryTypeSingleLast, // rank1(0), rank3(2) 同队
 	}
-	
+
+	// 创建测试手牌
+	playerHands := [4][]*Card{
+		// 玩家0 (rank1, 胜方): 有红桃Trump和其他牌
+		{
+			{Number: 7, Color: "Heart"},  // 红桃Trump (level=7)
+			{Number: 14, Color: "Spade"}, // A♠
+			{Number: 13, Color: "Club"},  // K♣
+		},
+		// 玩家1 (rank2, 败方): 普通牌
+		{
+			{Number: 12, Color: "Diamond"}, // Q♦
+			{Number: 11, Color: "Spade"},   // J♠
+			{Number: 10, Color: "Heart"},   // 10♥
+		},
+		// 玩家2 (rank3, 胜方): 普通牌
+		{
+			{Number: 9, Color: "Club"},    // 9♣
+			{Number: 8, Color: "Diamond"}, // 8♦
+			{Number: 7, Color: "Spade"},   // 7♠
+		},
+		// 玩家3 (rank4, 败方): 需要上贡，有大王和其他牌
+		{
+			{Number: 16, Color: "Joker"},   // 大王
+			{Number: 14, Color: "Heart"},   // A♥
+			{Number: 13, Color: "Diamond"}, // K♦
+		},
+	}
+
+	// 创建上贡阶段
 	tributePhase, err := NewTributePhase(lastResult)
 	if err != nil {
-		t.Fatalf("Failed to create tribute phase: %v", err)
+		t.Fatalf("创建上贡阶段失败: %v", err)
 	}
-	
-	// Process tribute
-	err = tm.ProcessTribute(tributePhase, playerHands)
-	if err != nil {
-		t.Errorf("Failed to process tribute: %v", err)
-	}
-	
-	// Verify tribute phase progressed
-	if tributePhase.Status != TributeStatusFinished {
-		t.Errorf("Expected status %s, got %s", TributeStatusFinished, tributePhase.Status)
-	}
-	
-	// Verify tribute cards were selected
-	if len(tributePhase.TributeCards) == 0 {
-		t.Error("Expected tribute cards to be selected")
-	}
-}
 
-func TestApplyTributeToHands(t *testing.T) {
+	// 创建TributeManager
 	tm := NewTributeManager(7)
-	
-	// Create test hands
-	var playerHands [4][]*Card
-	
-	// Player 0 (receiver): gets tribute
-	card2_0, _ := NewCard(2, "Spade", 7)
-	card3_0, _ := NewCard(3, "Spade", 7)
-	playerHands[0] = []*Card{card2_0, card3_0}
-	
-	// Player 1 (receiver): gets tribute
-	card2_1, _ := NewCard(2, "Heart", 7)
-	card3_1, _ := NewCard(3, "Heart", 7)
-	playerHands[1] = []*Card{card2_1, card3_1}
-	
-	// Player 2 (giver): gives tribute
-	card4_2, _ := NewCard(4, "Club", 7)
-	card5_2, _ := NewCard(5, "Club", 7)
-	playerHands[2] = []*Card{card4_2, card5_2}
-	
-	// Player 3 (giver): gives tribute
-	card4_3, _ := NewCard(4, "Diamond", 7)
-	card5_3, _ := NewCard(5, "Diamond", 7)
-	playerHands[3] = []*Card{card4_3, card5_3}
-	
-	// Create tribute phase
-	tributePhase := &TributePhase{
-		Status:       TributeStatusFinished,
-		TributeMap:   map[int]int{3: 0, 2: 1}, // 3->0, 2->1
-		TributeCards: map[int]*Card{3: card5_3, 2: card5_2},
-		ReturnCards:  map[int]*Card{0: card2_0, 1: card2_1},
+
+	// 检查免贡（应该不免贡，因为rank4只有1张大王）
+	isImmune := tm.CheckTributeImmunity(lastResult, playerHands)
+	if isImmune {
+		t.Errorf("期望不免贡，但实际免贡了")
 	}
-	
-	originalLen0 := len(playerHands[0])
-	originalLen3 := len(playerHands[3])
-	
-	// Apply tribute
-	err := tm.ApplyTributeToHands(tributePhase, &playerHands)
-	if err != nil {
-		t.Errorf("Failed to apply tribute: %v", err)
-	}
-	
-	// Verify hand sizes remain the same
-	if len(playerHands[0]) != originalLen0 {
-		t.Errorf("Player 0 hand size changed: expected %d, got %d", originalLen0, len(playerHands[0]))
-	}
-	if len(playerHands[3]) != originalLen3 {
-		t.Errorf("Player 3 hand size changed: expected %d, got %d", originalLen3, len(playerHands[3]))
-	}
-	
-	// Verify tribute card was transferred
-	found := false
-	for _, card := range playerHands[0] {
-		if tm.cardsEqual(card, card5_3) {
-			found = true
+
+	// 处理上贡 - 可能需要多次调用来完成整个流程
+	for i := 0; i < 10; i++ { // 最多尝试10次避免无限循环
+		err = tm.ProcessTribute(tributePhase, playerHands)
+		if err != nil {
+			t.Fatalf("处理上贡失败: %v", err)
+		}
+		if tributePhase.Status == TributeStatusFinished {
 			break
 		}
 	}
-	if !found {
-		t.Error("Tribute card not found in receiver's hand")
-	}
-}
 
-func TestTributePhaseSelectTribute(t *testing.T) {
-	// Create test cards for pool
-	card5, _ := NewCard(5, "Spade", 7)
-	cardA, _ := NewCard(14, "Heart", 7)
-	
-	tributePhase := &TributePhase{
-		Status:          TributeStatusSelecting,
-		SelectingPlayer: 0,
-		PoolCards:       []*Card{card5, cardA},
-		TributeCards:    make(map[int]*Card),
-		SelectTimeout:   time.Now().Add(3 * time.Second),
+	if tributePhase.Status != TributeStatusFinished {
+		t.Fatalf("上贡阶段未完成，当前状态: %s", tributePhase.Status)
 	}
-	
-	// Test valid selection
-	err := tributePhase.SelectTribute(0, card5)
+
+	// 验证上贡映射
+	expectedTributeMap := map[int]int{3: 0} // rank4(3) → rank1(0)
+	if len(tributePhase.TributeMap) != len(expectedTributeMap) {
+		t.Errorf("上贡映射数量不对，期望 %d，实际 %d", len(expectedTributeMap), len(tributePhase.TributeMap))
+	}
+
+	for giver, receiver := range expectedTributeMap {
+		if actualReceiver, exists := tributePhase.TributeMap[giver]; !exists || actualReceiver != receiver {
+			t.Errorf("上贡映射错误：期望 %d→%d，实际 %d→%d", giver, receiver, giver, actualReceiver)
+		}
+	}
+
+	// 验证上贡牌选择
+	if len(tributePhase.TributeCards) == 0 {
+		t.Errorf("未选择上贡牌")
+	}
+
+	// 验证上贡牌是除红桃Trump外最大的牌
+	tributeCard := tributePhase.TributeCards[3]
+	if tributeCard == nil {
+		t.Fatalf("玩家3的上贡牌为空")
+	}
+
+	// 上贡牌应该是大王 (除红桃Trump外最大的牌)
+	expectedTributeCard := &Card{Number: 16, Color: "Joker"} // 大王
+	if tributeCard.Number != expectedTributeCard.Number || tributeCard.Color != expectedTributeCard.Color {
+		t.Errorf("上贡牌错误：期望 %s，实际 %s",
+			formatCardForTest(expectedTributeCard), formatCardForTest(tributeCard))
+	}
+
+	// 应用上贡效果到手牌
+	err = tm.ApplyTributeToHands(tributePhase, &playerHands)
 	if err != nil {
-		t.Errorf("Failed to select tribute: %v", err)
+		t.Fatalf("应用上贡效果失败: %v", err)
 	}
-	
-	// Verify card was selected
-	if tributePhase.TributeCards[0] != card5 {
-		t.Error("Tribute card not recorded correctly")
+
+	// 验证手牌变化
+	// 玩家3应该失去大王
+	for _, card := range playerHands[3] {
+		if card.Number == 16 && card.Color == "Joker" {
+			t.Errorf("玩家3手牌中仍有大王，上贡未生效")
+		}
 	}
-	
-	// Verify card was removed from pool
-	if len(tributePhase.PoolCards) != 1 {
-		t.Errorf("Expected 1 card in pool, got %d", len(tributePhase.PoolCards))
+
+	// 玩家0应该获得大王
+	foundTributeCard := false
+	for _, card := range playerHands[0] {
+		if card.Number == 16 && card.Color == "Joker" {
+			foundTributeCard = true
+			break
+		}
 	}
-	
-	// Test invalid player
-	err = tributePhase.SelectTribute(1, cardA)
-	if err == nil {
-		t.Error("Expected error for wrong player, got none")
+	if !foundTributeCard {
+		t.Errorf("玩家0手牌中没有大王，上贡未生效")
 	}
+
+	t.Logf("✅ 上贡过程验证成功")
+	t.Logf("   上贡映射: %v", tributePhase.TributeMap)
+	t.Logf("   上贡牌: 玩家3 → 玩家0, 牌: %s", formatCardForTest(tributeCard))
+	t.Logf("   玩家3剩余手牌: %d张", len(playerHands[3]))
+	t.Logf("   玩家0手牌: %d张", len(playerHands[0]))
 }
 
-func TestTributePhaseHandleTimeout(t *testing.T) {
-	// Create test cards for pool
-	card5, _ := NewCard(5, "Spade", 7)
-	cardA, _ := NewCard(14, "Heart", 7)
-	
-	tributePhase := &TributePhase{
-		Status:          TributeStatusSelecting,
-		SelectingPlayer: 0,
-		PoolCards:       []*Card{card5, cardA},
-		TributeCards:    make(map[int]*Card),
-		SelectTimeout:   time.Now().Add(-1 * time.Second), // Already expired
+func formatCardForTest(card *Card) string {
+	if card == nil {
+		return "nil"
 	}
-	
-	// Test timeout handling
-	err := tributePhase.HandleTimeout()
-	if err != nil {
-		t.Errorf("Failed to handle timeout: %v", err)
+	if card.Color == "Joker" {
+		if card.Number == 15 {
+			return "小王"
+		} else if card.Number == 16 {
+			return "大王"
+		}
 	}
-	
-	// Verify highest card was selected
-	selectedCard := tributePhase.TributeCards[0]
-	if selectedCard == nil {
-		t.Fatal("No card was selected on timeout")
-	}
-	
-	// Ace should be higher than 5
-	if !selectedCard.GreaterThan(card5) {
-		t.Error("Expected highest card to be selected on timeout")
-	}
-}
+	suits := map[string]string{"Heart": "♥", "Diamond": "♦", "Club": "♣", "Spade": "♠"}
+	numbers := map[int]string{11: "J", 12: "Q", 13: "K", 14: "A"}
 
-func TestCardsEqual(t *testing.T) {
-	tm := NewTributeManager(7)
-	
-	card1, _ := NewCard(5, "Spade", 7)
-	card2, _ := NewCard(5, "Spade", 7)
-	card3, _ := NewCard(5, "Heart", 7)
-	card4, _ := NewCard(6, "Spade", 7)
-	
-	tests := []struct {
-		name     string
-		card1    *Card
-		card2    *Card
-		expected bool
-	}{
-		{"Same card", card1, card1, true},
-		{"Equal cards", card1, card2, true},
-		{"Different suit", card1, card3, false},
-		{"Different number", card1, card4, false},
+	suit := suits[card.Color]
+	if suit == "" {
+		suit = card.Color
 	}
-	
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := tm.cardsEqual(tt.card1, tt.card2)
-			if result != tt.expected {
-				t.Errorf("Expected %v, got %v", tt.expected, result)
-			}
-		})
+
+	number := numbers[card.Number]
+	if number == "" {
+		number = fmt.Sprintf("%d", card.Number)
 	}
+
+	return number + suit
 }

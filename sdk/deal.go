@@ -12,7 +12,7 @@ func NewDeal(level int, lastResult *DealResult) (*Deal, error) {
 	if level < 2 || level > 14 {
 		return nil, fmt.Errorf("invalid level: %d", level)
 	}
-	
+
 	deal := &Deal{
 		ID:           generateDealID(),
 		Level:        level,
@@ -22,7 +22,7 @@ func NewDeal(level int, lastResult *DealResult) (*Deal, error) {
 		StartTime:    time.Now(),
 		TrickHistory: make([]*Trick, 0),
 	}
-	
+
 	// Initialize tribute phase if needed
 	if lastResult != nil {
 		tributePhase, err := NewTributePhase(lastResult)
@@ -30,11 +30,9 @@ func NewDeal(level int, lastResult *DealResult) (*Deal, error) {
 			return nil, fmt.Errorf("failed to create tribute phase: %w", err)
 		}
 		deal.TributePhase = tributePhase
-		if tributePhase != nil {
-			deal.Status = DealStatusTribute
-		}
+		// Keep status as waiting - tribute phase will be started after dealing cards
 	}
-	
+
 	return deal, nil
 }
 
@@ -43,15 +41,15 @@ func (d *Deal) StartDeal() error {
 	if d.Status != DealStatusWaiting {
 		return fmt.Errorf("deal is not in waiting status: %s", d.Status)
 	}
-	
+
 	// Deal cards to all players
 	err := d.dealCards()
 	if err != nil {
 		return fmt.Errorf("failed to deal cards: %w", err)
 	}
-	
+
 	d.Status = DealStatusDealing
-	
+
 	// If there's a tribute phase, start it
 	if d.TributePhase != nil {
 		err = d.startTributePhase()
@@ -67,7 +65,7 @@ func (d *Deal) StartDeal() error {
 		}
 		d.Status = DealStatusPlaying
 	}
-	
+
 	return nil
 }
 
@@ -76,36 +74,36 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 	if d.Status != DealStatusPlaying {
 		return fmt.Errorf("deal is not in playing status: %s", d.Status)
 	}
-	
+
 	if d.CurrentTrick == nil {
 		return errors.New("no active trick")
 	}
-	
+
 	// Validate it's the player's turn
 	if d.CurrentTrick.CurrentTurn != playerSeat {
 		return fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, d.CurrentTrick.CurrentTurn)
 	}
-	
+
 	// Validate cards are from player's hand
 	err := d.validatePlayerCards(playerSeat, cards)
 	if err != nil {
 		return fmt.Errorf("invalid cards: %w", err)
 	}
-	
+
 	// Create card combination and validate it
 	comp := FromCardList(cards, d.CurrentTrick.LeadComp)
 	if !comp.IsValid() {
 		return errors.New("invalid card combination")
 	}
-	
+
 	// If this is not the first play in trick, validate against lead combination
 	if d.CurrentTrick.LeadComp != nil && !d.canPlayCombination(comp, d.CurrentTrick.LeadComp) {
 		return errors.New("card combination cannot beat current lead")
 	}
-	
+
 	// Remove cards from player's hand
 	d.removeCardsFromPlayer(playerSeat, cards)
-	
+
 	// Add play to current trick
 	play := &PlayAction{
 		PlayerSeat: playerSeat,
@@ -115,7 +113,7 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 		IsPass:     false,
 	}
 	d.CurrentTrick.Plays = append(d.CurrentTrick.Plays, play)
-	
+
 	// Update trick state
 	if d.CurrentTrick.LeadComp == nil {
 		// This is the first play, set as lead
@@ -126,21 +124,21 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 		d.CurrentTrick.LeadComp = comp
 		d.CurrentTrick.Leader = playerSeat
 	}
-	
+
 	// Check if player finished (no more cards)
 	if len(d.PlayerCards[playerSeat]) == 0 {
 		d.Rankings = append(d.Rankings, playerSeat)
-		
+
 		// Check if deal is finished
 		if d.isDealFinished() {
 			return d.finishDeal()
 		}
 	}
-	
+
 	// Move to next player
 	d.CurrentTrick.CurrentTurn = d.getNextPlayer(playerSeat)
 	d.CurrentTrick.TurnTimeout = time.Now().Add(20 * time.Second)
-	
+
 	// Check if trick is finished (all players played or passed)
 	if d.isTrickFinished() {
 		err = d.finishCurrentTrick()
@@ -148,7 +146,7 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 			return fmt.Errorf("failed to finish trick: %w", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -157,21 +155,21 @@ func (d *Deal) PassTurn(playerSeat int) error {
 	if d.Status != DealStatusPlaying {
 		return fmt.Errorf("deal is not in playing status: %s", d.Status)
 	}
-	
+
 	if d.CurrentTrick == nil {
 		return errors.New("no active trick")
 	}
-	
+
 	// Validate it's the player's turn
 	if d.CurrentTrick.CurrentTurn != playerSeat {
 		return fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, d.CurrentTrick.CurrentTurn)
 	}
-	
+
 	// Cannot pass if no one has played yet (must play as leader)
 	if d.CurrentTrick.LeadComp == nil {
 		return errors.New("cannot pass as trick leader")
 	}
-	
+
 	// Add pass to current trick
 	play := &PlayAction{
 		PlayerSeat: playerSeat,
@@ -181,16 +179,16 @@ func (d *Deal) PassTurn(playerSeat int) error {
 		IsPass:     true,
 	}
 	d.CurrentTrick.Plays = append(d.CurrentTrick.Plays, play)
-	
+
 	// Move to next player
 	d.CurrentTrick.CurrentTurn = d.getNextPlayer(playerSeat)
 	d.CurrentTrick.TurnTimeout = time.Now().Add(20 * time.Second)
-	
+
 	// Check if trick is finished
 	if d.isTrickFinished() {
 		return d.finishCurrentTrick()
 	}
-	
+
 	return nil
 }
 
@@ -199,21 +197,21 @@ func (d *Deal) SelectTribute(playerSeat int, card *Card) error {
 	if d.Status != DealStatusTribute {
 		return fmt.Errorf("deal is not in tribute status: %s", d.Status)
 	}
-	
+
 	if d.TributePhase == nil {
 		return errors.New("no active tribute phase")
 	}
-	
+
 	err := d.TributePhase.SelectTribute(playerSeat, card)
 	if err != nil {
 		return fmt.Errorf("failed to select tribute: %w", err)
 	}
-	
+
 	// Check if tribute phase is finished
 	if d.TributePhase.Status == TributeStatusFinished {
 		// Apply tribute effects to player hands
 		d.applyTributeEffects()
-		
+
 		// Start first trick
 		err = d.startFirstTrick()
 		if err != nil {
@@ -221,7 +219,7 @@ func (d *Deal) SelectTribute(playerSeat int, card *Card) error {
 		}
 		d.Status = DealStatusPlaying
 	}
-	
+
 	return nil
 }
 
@@ -229,7 +227,7 @@ func (d *Deal) SelectTribute(playerSeat int, card *Card) error {
 func (d *Deal) ProcessTimeouts() []*GameEvent {
 	events := make([]*GameEvent, 0)
 	now := time.Now()
-	
+
 	// Check tribute phase timeout
 	if d.Status == DealStatusTribute && d.TributePhase != nil {
 		if d.TributePhase.Status == TributeStatusSelecting && now.After(d.TributePhase.SelectTimeout) {
@@ -246,7 +244,7 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 					PlayerSeat: d.TributePhase.SelectingPlayer,
 				}
 				events = append(events, event)
-				
+
 				// Check if tribute phase finished
 				if d.TributePhase.Status == TributeStatusFinished {
 					d.applyTributeEffects()
@@ -256,12 +254,12 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 			}
 		}
 	}
-	
+
 	// Check trick timeout
 	if d.Status == DealStatusPlaying && d.CurrentTrick != nil && d.CurrentTrick.Status == TrickStatusPlaying {
 		if now.After(d.CurrentTrick.TurnTimeout) {
 			currentPlayer := d.CurrentTrick.CurrentTurn
-			
+
 			// Auto-pass on timeout
 			err := d.PassTurn(currentPlayer)
 			if err == nil {
@@ -285,7 +283,7 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 							smallestCard = card
 						}
 					}
-					
+
 					playErr := d.PlayCards(currentPlayer, []*Card{smallestCard})
 					if playErr == nil {
 						event := &GameEvent{
@@ -303,7 +301,7 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 			}
 		}
 	}
-	
+
 	return events
 }
 
@@ -311,31 +309,31 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 func (d *Deal) dealCards() error {
 	// Create full deck (108 cards)
 	deck := d.createFullDeck()
-	
+
 	// Shuffle deck
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(deck), func(i, j int) {
 		deck[i], deck[j] = deck[j], deck[i]
 	})
-	
+
 	// Deal 27 cards to each player
 	for player := 0; player < 4; player++ {
 		d.PlayerCards[player] = make([]*Card, 27)
 		for card := 0; card < 27; card++ {
 			d.PlayerCards[player][card] = deck[player*27+card]
 		}
-		
+
 		// Sort player's hand
 		d.PlayerCards[player] = sortCards(d.PlayerCards[player])
 	}
-	
+
 	return nil
 }
 
 // createFullDeck creates a full deck of 108 cards
 func (d *Deal) createFullDeck() []*Card {
 	deck := make([]*Card, 0, 108)
-	
+
 	// Add regular cards (2-A) for each suit, 2 copies each
 	for _, color := range Colors {
 		for number := 2; number <= 14; number++ {
@@ -345,14 +343,14 @@ func (d *Deal) createFullDeck() []*Card {
 			}
 		}
 	}
-	
+
 	// Add jokers (2 small jokers + 2 big jokers)
 	for copy := 0; copy < 2; copy++ {
 		smallJoker, _ := NewCard(15, "Joker", d.Level)
 		bigJoker, _ := NewCard(16, "Joker", d.Level)
 		deck = append(deck, smallJoker, bigJoker)
 	}
-	
+
 	return deck
 }
 
@@ -361,7 +359,7 @@ func (d *Deal) startTributePhase() error {
 	if d.TributePhase == nil {
 		return errors.New("no tribute phase to start")
 	}
-	
+
 	return d.TributePhase.Start()
 }
 
@@ -369,12 +367,18 @@ func (d *Deal) startTributePhase() error {
 func (d *Deal) startFirstTrick() error {
 	// Determine first player (usually the player with lowest level card or specific rule)
 	firstPlayer := d.determineFirstPlayer()
-	
+
 	trick, err := NewTrick(firstPlayer)
 	if err != nil {
 		return fmt.Errorf("failed to create first trick: %w", err)
 	}
-	
+
+	// Start the trick immediately
+	err = trick.StartTrick()
+	if err != nil {
+		return fmt.Errorf("failed to start first trick: %w", err)
+	}
+
 	d.CurrentTrick = trick
 	return nil
 }
@@ -384,9 +388,9 @@ func (d *Deal) validatePlayerCards(playerSeat int, cards []*Card) error {
 	if playerSeat < 0 || playerSeat > 3 {
 		return fmt.Errorf("invalid player seat: %d", playerSeat)
 	}
-	
+
 	playerHand := d.PlayerCards[playerSeat]
-	
+
 	for _, card := range cards {
 		found := false
 		for _, handCard := range playerHand {
@@ -399,7 +403,7 @@ func (d *Deal) validatePlayerCards(playerSeat int, cards []*Card) error {
 			return fmt.Errorf("card %s not in player %d's hand", card.String(), playerSeat)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -409,18 +413,18 @@ func (d *Deal) canPlayCombination(comp, leadComp CardComp) bool {
 	if comp.IsBomb() {
 		return true
 	}
-	
+
 	if comp.GetType() != leadComp.GetType() {
 		return false
 	}
-	
+
 	return comp.GreaterThan(leadComp)
 }
 
 // removeCardsFromPlayer removes cards from a player's hand
 func (d *Deal) removeCardsFromPlayer(playerSeat int, cards []*Card) {
 	playerHand := d.PlayerCards[playerSeat]
-	
+
 	for _, cardToRemove := range cards {
 		for i := len(playerHand) - 1; i >= 0; i-- {
 			if d.cardsEqual(cardToRemove, playerHand[i]) {
@@ -431,7 +435,7 @@ func (d *Deal) removeCardsFromPlayer(playerSeat int, cards []*Card) {
 			}
 		}
 	}
-	
+
 	d.PlayerCards[playerSeat] = playerHand
 }
 
@@ -456,14 +460,14 @@ func (d *Deal) isTrickFinished() bool {
 	if d.CurrentTrick == nil {
 		return false
 	}
-	
-	// Trick is finished when all players have played or passed, 
+
+	// Trick is finished when all players have played or passed,
 	// and we're back to the leader or all others have passed
 	playCount := len(d.CurrentTrick.Plays)
 	if playCount < 4 {
 		return false
 	}
-	
+
 	// Check if last 3 plays were all passes (everyone passed after leader)
 	passCount := 0
 	for i := playCount - 3; i < playCount; i++ {
@@ -471,7 +475,7 @@ func (d *Deal) isTrickFinished() bool {
 			passCount++
 		}
 	}
-	
+
 	return passCount == 3
 }
 
@@ -480,20 +484,26 @@ func (d *Deal) finishCurrentTrick() error {
 	if d.CurrentTrick == nil {
 		return errors.New("no current trick to finish")
 	}
-	
+
 	// Set trick winner
 	d.CurrentTrick.Winner = d.CurrentTrick.Leader
 	d.CurrentTrick.Status = TrickStatusFinished
-	
+
 	// Add to history
 	d.TrickHistory = append(d.TrickHistory, d.CurrentTrick)
-	
+
 	// Start new trick with winner as leader
 	nextTrick, err := NewTrick(d.CurrentTrick.Winner)
 	if err != nil {
 		return fmt.Errorf("failed to create next trick: %w", err)
 	}
-	
+
+	// Start the new trick immediately
+	err = nextTrick.StartTrick()
+	if err != nil {
+		return fmt.Errorf("failed to start next trick: %w", err)
+	}
+
 	d.CurrentTrick = nextTrick
 	return nil
 }
@@ -513,11 +523,11 @@ func (d *Deal) finishDeal() error {
 			d.Rankings = append(d.Rankings, seat)
 		}
 	}
-	
+
 	d.Status = DealStatusFinished
 	now := time.Now()
 	d.EndTime = &now
-	
+
 	return nil
 }
 
@@ -526,7 +536,7 @@ func (d *Deal) CalculateResult(match *Match) (*DealResult, error) {
 	if d.Status != DealStatusFinished {
 		return nil, fmt.Errorf("deal is not finished")
 	}
-	
+
 	calculator := NewDealResultCalculator(d.Level)
 	return calculator.CalculateDealResult(d, match)
 }
@@ -544,27 +554,27 @@ func (d *Deal) applyTributeEffects() {
 	if d.TributePhase == nil {
 		return
 	}
-	
+
 	// Apply tribute card exchanges
 	for giver, card := range d.TributePhase.TributeCards {
 		if receiver, exists := d.TributePhase.TributeMap[giver]; exists {
 			// Remove tribute card from giver
 			d.removeCardsFromPlayer(giver, []*Card{card})
-			
+
 			// Add tribute card to receiver
 			d.PlayerCards[receiver] = append(d.PlayerCards[receiver], card)
-			
+
 			// Apply return card if exists
 			if returnCard, hasReturn := d.TributePhase.ReturnCards[receiver]; hasReturn {
 				// Remove return card from receiver
 				d.removeCardsFromPlayer(receiver, []*Card{returnCard})
-				
+
 				// Add return card to giver
 				d.PlayerCards[giver] = append(d.PlayerCards[giver], returnCard)
 			}
 		}
 	}
-	
+
 	// Re-sort all hands
 	for player := 0; player < 4; player++ {
 		d.PlayerCards[player] = sortCards(d.PlayerCards[player])

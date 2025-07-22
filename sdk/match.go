@@ -11,7 +11,7 @@ func NewMatch(players []Player) (*Match, error) {
 	if len(players) != 4 {
 		return nil, errors.New("exactly 4 players are required")
 	}
-	
+
 	// Validate player seats
 	seatTaken := make(map[int]bool)
 	for _, player := range players {
@@ -23,7 +23,7 @@ func NewMatch(players []Player) (*Match, error) {
 		}
 		seatTaken[player.Seat] = true
 	}
-	
+
 	// Create match
 	match := &Match{
 		ID:          generateMatchID(),
@@ -33,7 +33,7 @@ func NewMatch(players []Player) (*Match, error) {
 		StartTime:   time.Now(),
 		DealHistory: make([]*Deal, 0),
 	}
-	
+
 	// Assign players to seats
 	for _, player := range players {
 		playerCopy := player
@@ -41,7 +41,7 @@ func NewMatch(players []Player) (*Match, error) {
 		playerCopy.AutoPlay = false
 		match.Players[player.Seat] = &playerCopy
 	}
-	
+
 	return match, nil
 }
 
@@ -50,26 +50,26 @@ func (m *Match) StartNewDeal() error {
 	if m.Status == MatchStatusFinished {
 		return errors.New("match is already finished")
 	}
-	
+
 	// Determine the level for this deal
 	level := m.getHighestTeamLevel()
-	
+
 	// Create new deal
 	deal, err := NewDeal(level, m.getLastDealResult())
 	if err != nil {
 		return fmt.Errorf("failed to create deal: %w", err)
 	}
-	
+
 	// Set current deal and update status
 	m.CurrentDeal = deal
 	m.Status = MatchStatusPlaying
-	
+
 	// Start the deal (deal cards and begin play)
 	err = deal.StartDeal()
 	if err != nil {
 		return fmt.Errorf("failed to start deal: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -78,15 +78,15 @@ func (m *Match) HandlePlayerDisconnect(playerSeat int) error {
 	if playerSeat < 0 || playerSeat > 3 {
 		return fmt.Errorf("invalid player seat: %d", playerSeat)
 	}
-	
+
 	if m.Players[playerSeat] == nil {
 		return fmt.Errorf("no player at seat %d", playerSeat)
 	}
-	
+
 	// Mark player as offline and enable auto-play
 	m.Players[playerSeat].Online = false
 	m.Players[playerSeat].AutoPlay = true
-	
+
 	return nil
 }
 
@@ -95,15 +95,15 @@ func (m *Match) HandlePlayerReconnect(playerSeat int) error {
 	if playerSeat < 0 || playerSeat > 3 {
 		return fmt.Errorf("invalid player seat: %d", playerSeat)
 	}
-	
+
 	if m.Players[playerSeat] == nil {
 		return fmt.Errorf("no player at seat %d", playerSeat)
 	}
-	
+
 	// Mark player as online and disable auto-play
 	m.Players[playerSeat].Online = true
 	m.Players[playerSeat].AutoPlay = false
-	
+
 	return nil
 }
 
@@ -112,11 +112,11 @@ func (m *Match) SetPlayerAutoPlay(playerSeat int, enabled bool) error {
 	if playerSeat < 0 || playerSeat > 3 {
 		return fmt.Errorf("invalid player seat: %d", playerSeat)
 	}
-	
+
 	if m.Players[playerSeat] == nil {
 		return fmt.Errorf("no player at seat %d", playerSeat)
 	}
-	
+
 	m.Players[playerSeat].AutoPlay = enabled
 	return nil
 }
@@ -126,13 +126,13 @@ func (m *Match) FinishDeal(result *DealResult) error {
 	if m.CurrentDeal == nil {
 		return errors.New("no active deal to finish")
 	}
-	
+
 	// Add deal to history
 	m.DealHistory = append(m.DealHistory, m.CurrentDeal)
-	
+
 	// Update team levels based on result
 	m.updateTeamLevels(result)
-	
+
 	// Check if match is finished (any team reached A level)
 	if m.isMatchFinished() {
 		m.Status = MatchStatusFinished
@@ -142,10 +142,10 @@ func (m *Match) FinishDeal(result *DealResult) error {
 	} else {
 		m.Status = MatchStatusWaiting
 	}
-	
+
 	// Clear current deal
 	m.CurrentDeal = nil
-	
+
 	return nil
 }
 
@@ -160,13 +160,13 @@ func (m *Match) GetTeamForPlayer(playerSeat int) int {
 func (m *Match) GetTeammates(playerSeat int) []int {
 	team := m.GetTeamForPlayer(playerSeat)
 	teammates := make([]int, 0, 2)
-	
+
 	for seat := 0; seat < 4; seat++ {
 		if m.GetTeamForPlayer(seat) == team {
 			teammates = append(teammates, seat)
 		}
 	}
-	
+
 	return teammates
 }
 
@@ -174,13 +174,13 @@ func (m *Match) GetTeammates(playerSeat int) []int {
 func (m *Match) GetOpponents(playerSeat int) []int {
 	team := m.GetTeamForPlayer(playerSeat)
 	opponents := make([]int, 0, 2)
-	
+
 	for seat := 0; seat < 4; seat++ {
 		if m.GetTeamForPlayer(seat) != team {
 			opponents = append(opponents, seat)
 		}
 	}
-	
+
 	return opponents
 }
 
@@ -213,12 +213,12 @@ func (m *Match) getLastDealResult() *DealResult {
 	if len(m.DealHistory) == 0 {
 		return nil
 	}
-	
+
 	lastDeal := m.DealHistory[len(m.DealHistory)-1]
 	if lastDeal.EndTime == nil {
 		return nil // Deal not finished
 	}
-	
+
 	// Calculate proper deal result using the result calculator
 	result, err := lastDeal.CalculateResult(m)
 	if err != nil {
@@ -226,11 +226,11 @@ func (m *Match) getLastDealResult() *DealResult {
 		return &DealResult{
 			Rankings:    lastDeal.Rankings,
 			WinningTeam: m.GetTeamForPlayer(lastDeal.Rankings[0]),
-			VictoryType: VictoryTypeNormal,
+			VictoryType: VictoryTypePartnerLast,
 			Upgrades:    [2]int{1, 0},
 		}
 	}
-	
+
 	return result
 }
 
@@ -239,11 +239,11 @@ func (m *Match) updateTeamLevels(result *DealResult) {
 	if result == nil {
 		return
 	}
-	
+
 	// Apply upgrades to teams
 	for team := 0; team < 2; team++ {
 		m.TeamLevels[team] += result.Upgrades[team]
-		
+
 		// Cap at A level (14)
 		if m.TeamLevels[team] > 14 {
 			m.TeamLevels[team] = 14
@@ -279,7 +279,7 @@ func (m *Match) getWinningTeam() int {
 	} else if m.TeamLevels[1] >= 14 {
 		return 1
 	}
-	
+
 	return -1 // No winner yet
 }
 
@@ -288,15 +288,13 @@ func generateMatchID() string {
 	return fmt.Sprintf("match_%d", time.Now().UnixNano())
 }
 
-
-
 // VictoryType represents the type of victory in a deal
 type VictoryType string
 
 const (
-	VictoryTypeNormal     VictoryType = "normal"      // Normal victory
-	VictoryTypeDoubleDown VictoryType = "double_down" // Both opponents finished last
-	VictoryTypeTripleDown VictoryType = "triple_down" // Three players finished before any opponent
+	VictoryTypeDoubleDown  VictoryType = "double_down"  // rank1, rank2 same team (+3 levels)
+	VictoryTypeSingleLast  VictoryType = "single_last"  // rank1, rank3 same team (+2 levels)
+	VictoryTypePartnerLast VictoryType = "partner_last" // rank1, rank4 same team (+1 level)
 )
 
 // CanStartNewDeal checks if a new deal can be started
@@ -312,7 +310,7 @@ func (m *Match) GetMatchStatistics() *MatchStatistics {
 		FinalLevels:   m.TeamLevels,
 		TeamStats:     [2]*TeamMatchStats{},
 	}
-	
+
 	// Initialize team stats
 	for team := 0; team < 2; team++ {
 		stats.TeamStats[team] = &TeamMatchStats{
@@ -322,25 +320,25 @@ func (m *Match) GetMatchStatistics() *MatchStatistics {
 			Upgrades:    0,
 		}
 	}
-	
+
 	// Calculate total duration
 	if m.EndTime != nil {
 		stats.TotalDuration = m.EndTime.Sub(m.StartTime)
 	} else {
 		stats.TotalDuration = time.Since(m.StartTime)
 	}
-	
+
 	// Calculate team statistics from deal history
 	for _, deal := range m.DealHistory {
 		if result, err := deal.CalculateResult(m); err == nil {
 			// Count deals won
 			stats.TeamStats[result.WinningTeam].DealsWon++
-			
+
 			// Count upgrades
 			for team := 0; team < 2; team++ {
 				stats.TeamStats[team].Upgrades += result.Upgrades[team]
 			}
-			
+
 			// Count tricks won by each team
 			if result.Statistics != nil {
 				for _, playerStats := range result.Statistics.PlayerStats {
@@ -352,7 +350,7 @@ func (m *Match) GetMatchStatistics() *MatchStatistics {
 			}
 		}
 	}
-	
+
 	return stats
 }
 
@@ -361,12 +359,12 @@ func (m *Match) GetMatchResult() *MatchResult {
 	if m.Status != MatchStatusFinished {
 		return nil
 	}
-	
+
 	duration := time.Duration(0)
 	if m.EndTime != nil {
 		duration = m.EndTime.Sub(m.StartTime)
 	}
-	
+
 	return &MatchResult{
 		Winner:      m.Winner,
 		FinalLevels: m.TeamLevels,
@@ -508,10 +506,10 @@ func (m *Match) GetPlayerBySeat(seat int) *Player {
 func (m *Match) String() string {
 	status := string(m.Status)
 	if m.Status == MatchStatusFinished {
-		return fmt.Sprintf("Match %s: %s (Winner: Team %d, Levels: %d-%d)", 
+		return fmt.Sprintf("Match %s: %s (Winner: Team %d, Levels: %d-%d)",
 			m.ID, status, m.Winner, m.TeamLevels[0], m.TeamLevels[1])
 	}
-	return fmt.Sprintf("Match %s: %s (Levels: %d-%d, Deals: %d)", 
+	return fmt.Sprintf("Match %s: %s (Levels: %d-%d, Deals: %d)",
 		m.ID, status, m.TeamLevels[0], m.TeamLevels[1], len(m.DealHistory))
 }
 

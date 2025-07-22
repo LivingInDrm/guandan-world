@@ -23,57 +23,100 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 	if lastResult == nil {
 		return nil, nil // No tribute needed for first deal
 	}
-	
-	// Determine tribute requirements based on rankings
-	tributeMap := make(map[int]int)
-	
-	// Basic tribute rules:
-	// - Last place (rank 4) gives tribute to first place (rank 1)
-	// - Second to last (rank 3) gives tribute to second place (rank 2)
-	// - Exception: if both last places are from same team (double down), 
-	//   winners choose from a pool
-	
+
 	rankings := lastResult.Rankings
 	if len(rankings) < 4 {
 		return nil, errors.New("invalid rankings for tribute phase")
 	}
-	
-	rank1 := rankings[0] // First place
-	rank2 := rankings[1] // Second place
-	rank3 := rankings[2] // Third place
-	rank4 := rankings[3] // Fourth place
-	
-	// Check for double down (both last places from same team)
-	team3 := rank3 % 2
-	team4 := rank4 % 2
-	isDoubleDown := team3 == team4
-	
+
 	tributePhase := &TributePhase{
 		Status:          TributeStatusWaiting,
-		TributeMap:      tributeMap,
+		TributeMap:      make(map[int]int),
 		TributeCards:    make(map[int]*Card),
 		ReturnCards:     make(map[int]*Card),
 		PoolCards:       make([]*Card, 0),
 		SelectingPlayer: -1,
 	}
-	
-	if isDoubleDown {
-		// Double down: both losers contribute to pool, winners select
+
+	// 按排名获取玩家
+	rank1 := rankings[0] // 第1名
+	rank3 := rankings[2] // 第3名
+	rank4 := rankings[3] // 第4名
+
+	// 根据胜利类型确定上贡规则
+	switch lastResult.VictoryType {
+	case VictoryTypeDoubleDown:
+		// Double Down: rank1, rank2 同队
+		// Rank3 和 Rank4 各上交 1 张贡牌，放入贡牌池
+		// Rank1 优先从贡牌池中挑选其一；Rank2 获得剩下的一张贡牌
 		tributePhase.Status = TributeStatusSelecting
-		tributePhase.SelectingPlayer = rank1 // First place selects first
-		tributePhase.SelectTimeout = time.Now().Add(3 * time.Second)
-		
-		// Store the rankings for later use
-		tributePhase.TributeMap[rank3] = -1 // Mark as pool contributor
-		tributePhase.TributeMap[rank4] = -1 // Mark as pool contributor
-	} else {
-		// Normal tribute: direct exchange
-		tributeMap[rank4] = rank1 // Last gives to first
-		tributeMap[rank3] = rank2 // Third gives to second
+		tributePhase.SelectingPlayer = rank1 // Rank1 先选
+		tributePhase.SelectTimeout = time.Now().Add(30 * time.Second)
+
+		tributePhase.TributeMap[rank3] = -1 // -1 表示贡献到池子
+		tributePhase.TributeMap[rank4] = -1 // -1 表示贡献到池子
+
+	case VictoryTypeSingleLast:
+		// Single Last: rank1, rank3 同队
+		// Rank4 上交 1 张贡牌，直接交给 Rank1
 		tributePhase.Status = TributeStatusReturning
+		tributePhase.TributeMap[rank4] = rank1
+
+	case VictoryTypePartnerLast:
+		// Partner Last: rank1, rank4 同队
+		// Rank3 上交 1 张贡牌，直接交给 Rank1
+		tributePhase.Status = TributeStatusReturning
+		tributePhase.TributeMap[rank3] = rank1
+
+	default:
+		return nil, fmt.Errorf("unknown victory type: %v", lastResult.VictoryType)
 	}
-	
+
 	return tributePhase, nil
+}
+
+// CheckTributeImmunity 检查免贡条件
+func (tm *TributeManager) CheckTributeImmunity(lastResult *DealResult, playerHands [4][]*Card) bool {
+	if lastResult == nil {
+		return false
+	}
+
+	rankings := lastResult.Rankings
+	if len(rankings) < 4 {
+		return false
+	}
+
+	rank3 := rankings[2]
+	rank4 := rankings[3]
+
+	switch lastResult.VictoryType {
+	case VictoryTypeDoubleDown:
+		// Double Down：若 Rank3 和 Rank4 合计持有 两张 Big Joker，则触发免贡
+		bigJokerCount := tm.countBigJokers(playerHands[rank3]) + tm.countBigJokers(playerHands[rank4])
+		return bigJokerCount >= 2
+
+	case VictoryTypeSingleLast:
+		// Single Last：若 Rank4 单独持有 两张 Big Joker，则触发免贡
+		return tm.countBigJokers(playerHands[rank4]) >= 2
+
+	case VictoryTypePartnerLast:
+		// Partner Last：若 Rank3 单独持有 两张 Big Joker，则触发免贡
+		return tm.countBigJokers(playerHands[rank3]) >= 2
+
+	default:
+		return false
+	}
+}
+
+// countBigJokers 统计手牌中大王的数量
+func (tm *TributeManager) countBigJokers(hand []*Card) int {
+	count := 0
+	for _, card := range hand {
+		if card.Number == 16 && card.Color == "Joker" { // Red Joker = Big Joker
+			count++
+		}
+	}
+	return count
 }
 
 // ProcessTribute processes the complete tribute phase with player hands
@@ -81,7 +124,7 @@ func (tm *TributeManager) ProcessTribute(tributePhase *TributePhase, playerHands
 	if tributePhase == nil {
 		return nil // No tribute phase
 	}
-	
+
 	switch tributePhase.Status {
 	case TributeStatusWaiting:
 		return tm.startTributePhase(tributePhase, playerHands)
@@ -91,9 +134,12 @@ func (tm *TributeManager) ProcessTribute(tributePhase *TributePhase, playerHands
 		// For normal tribute, we need to select tribute cards first if not already done
 		if len(tributePhase.TributeCards) == 0 {
 			for giver := range tributePhase.TributeMap {
-				highestCard := tm.getHighestCard(playerHands[giver])
-				if highestCard != nil {
-					tributePhase.TributeCards[giver] = highestCard
+				if tributePhase.TributeMap[giver] != -1 {
+					// 自动选取除红桃Trump外最大的一张牌
+					tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[giver])
+					if tributeCard != nil {
+						tributePhase.TributeCards[giver] = tributeCard
+					}
 				}
 			}
 		}
@@ -113,34 +159,37 @@ func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHa
 			break
 		}
 	}
-	
+
 	if isDoubleDown {
-		// Create tribute pool from losing players' highest cards
+		// Create tribute pool from losing players' highest cards (excluding heart trump)
 		poolCards := make([]*Card, 0)
-		
+
 		for giver := range tributePhase.TributeMap {
 			if tributePhase.TributeMap[giver] == -1 {
-				// Get highest card from this player
-				highestCard := tm.getHighestCard(playerHands[giver])
-				if highestCard != nil {
-					poolCards = append(poolCards, highestCard)
+				// Get highest card excluding heart trump from this player
+				tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[giver])
+				if tributeCard != nil {
+					poolCards = append(poolCards, tributeCard)
+					tributePhase.TributeCards[giver] = tributeCard
 				}
 			}
 		}
-		
+
 		tributePhase.SetPoolCards(poolCards)
 		tributePhase.Status = TributeStatusSelecting
 	} else {
-		// Normal tribute: automatically select highest cards
+		// Normal tribute: automatically select highest cards (excluding heart trump)
 		for giver := range tributePhase.TributeMap {
-			highestCard := tm.getHighestCard(playerHands[giver])
-			if highestCard != nil {
-				tributePhase.TributeCards[giver] = highestCard
+			if tributePhase.TributeMap[giver] != -1 {
+				tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[giver])
+				if tributeCard != nil {
+					tributePhase.TributeCards[giver] = tributeCard
+				}
 			}
 		}
 		tributePhase.Status = TributeStatusReturning
 	}
-	
+
 	return nil
 }
 
@@ -153,7 +202,8 @@ func (tm *TributeManager) handleDoubleDownTribute(tributePhase *TributePhase, pl
 
 // processReturnCards processes the return cards phase
 func (tm *TributeManager) processReturnCards(tributePhase *TributePhase, playerHands [4][]*Card) error {
-	// For each tribute card received, return the lowest card
+	// For each tribute card received, receiver chooses a card to return
+	// For simulation, we use the lowest card
 	for giver, receiver := range tributePhase.TributeMap {
 		if receiver != -1 && tributePhase.TributeCards[giver] != nil {
 			// Find lowest card from receiver to return
@@ -163,7 +213,7 @@ func (tm *TributeManager) processReturnCards(tributePhase *TributePhase, playerH
 			}
 		}
 	}
-	
+
 	tributePhase.Status = TributeStatusFinished
 	return nil
 }
@@ -173,40 +223,66 @@ func (tm *TributeManager) ApplyTributeToHands(tributePhase *TributePhase, player
 	if tributePhase == nil || tributePhase.Status != TributeStatusFinished {
 		return nil
 	}
-	
+
 	// Apply tribute card exchanges
 	for giver, receiver := range tributePhase.TributeMap {
 		if receiver == -1 {
 			continue // Skip pool contributors in double down
 		}
-		
+
 		tributeCard := tributePhase.TributeCards[giver]
 		if tributeCard == nil {
 			continue
 		}
-		
+
 		// Remove tribute card from giver
 		playerHands[giver] = tm.removeCardFromHand(playerHands[giver], tributeCard)
-		
+
 		// Add tribute card to receiver
 		playerHands[receiver] = append(playerHands[receiver], tributeCard)
-		
+
 		// Apply return card if exists
 		if returnCard := tributePhase.ReturnCards[receiver]; returnCard != nil {
 			// Remove return card from receiver
 			playerHands[receiver] = tm.removeCardFromHand(playerHands[receiver], returnCard)
-			
+
 			// Add return card to giver
 			playerHands[giver] = append(playerHands[giver], returnCard)
 		}
 	}
-	
+
 	// Re-sort all hands
 	for player := 0; player < 4; player++ {
 		playerHands[player] = sortCards(playerHands[player])
 	}
-	
+
 	return nil
+}
+
+// getHighestCardExcludingHeartTrump 获取除红桃Trump外最大的一张牌
+func (tm *TributeManager) getHighestCardExcludingHeartTrump(hand []*Card) *Card {
+	if len(hand) == 0 {
+		return nil
+	}
+
+	var highest *Card
+	for _, card := range hand {
+		// 排除红桃Trump牌（红桃且等于当前级别）
+		if card.IsWildcard() { // IsWildcard() 判断是否为红桃Trump
+			continue
+		}
+
+		if highest == nil || card.GreaterThan(highest) {
+			highest = card
+		}
+	}
+
+	// 如果没有找到合适的牌（全部都是红桃Trump），返回其中一张
+	if highest == nil && len(hand) > 0 {
+		highest = hand[0]
+	}
+
+	return highest
 }
 
 // getHighestCard returns the highest card from a hand
@@ -214,14 +290,14 @@ func (tm *TributeManager) getHighestCard(hand []*Card) *Card {
 	if len(hand) == 0 {
 		return nil
 	}
-	
+
 	highest := hand[0]
 	for _, card := range hand[1:] {
 		if card.GreaterThan(highest) {
 			highest = card
 		}
 	}
-	
+
 	return highest
 }
 
@@ -230,14 +306,14 @@ func (tm *TributeManager) getLowestCard(hand []*Card) *Card {
 	if len(hand) == 0 {
 		return nil
 	}
-	
+
 	lowest := hand[0]
 	for _, card := range hand[1:] {
 		if lowest.GreaterThan(card) {
 			lowest = card
 		}
 	}
-	
+
 	return lowest
 }
 
@@ -263,34 +339,36 @@ func (tm *TributeManager) DetermineTributeRequirements(lastResult *DealResult) (
 	if lastResult == nil {
 		return nil, false, nil // No tribute needed for first deal
 	}
-	
+
 	rankings := lastResult.Rankings
 	if len(rankings) < 4 {
 		return nil, false, errors.New("invalid rankings for tribute determination")
 	}
-	
-	rank1 := rankings[0] // First place
-	rank2 := rankings[1] // Second place
-	rank3 := rankings[2] // Third place
-	rank4 := rankings[3] // Fourth place
-	
-	// Check for double down (both last places from same team)
-	team3 := rank3 % 2
-	team4 := rank4 % 2
-	isDoubleDown := team3 == team4
-	
+
 	tributeMap := make(map[int]int)
-	
-	if isDoubleDown {
-		// Double down: both losers contribute to pool
-		tributeMap[rank3] = -1 // Mark as pool contributor
-		tributeMap[rank4] = -1 // Mark as pool contributor
-	} else {
-		// Normal tribute: direct exchange
-		tributeMap[rank4] = rank1 // Last gives to first
-		tributeMap[rank3] = rank2 // Third gives to second
+	isDoubleDown := lastResult.VictoryType == VictoryTypeDoubleDown
+
+	// 按排名获取玩家
+	rank1 := rankings[0] // 第1名
+	rank3 := rankings[2] // 第3名
+	rank4 := rankings[3] // 第4名
+
+	// 根据胜利类型确定上贡规则
+	switch lastResult.VictoryType {
+	case VictoryTypeDoubleDown:
+		// Double Down: Rank3 和 Rank4 贡献到池子
+		tributeMap[rank3] = -1
+		tributeMap[rank4] = -1
+
+	case VictoryTypeSingleLast:
+		// Single Last: Rank4 -> Rank1
+		tributeMap[rank4] = rank1
+
+	case VictoryTypePartnerLast:
+		// Partner Last: Rank3 -> Rank1
+		tributeMap[rank3] = rank1
 	}
-	
+
 	return tributeMap, isDoubleDown, nil
 }
 
@@ -305,7 +383,7 @@ func (tp *TributePhase) Start() error {
 		// This would be handled by the Deal when it has access to player hands
 		return nil
 	}
-	
+
 	return nil
 }
 
@@ -314,11 +392,11 @@ func (tp *TributePhase) SelectTribute(playerSeat int, card *Card) error {
 	if tp.Status != TributeStatusSelecting {
 		return fmt.Errorf("not in selecting status: %s", tp.Status)
 	}
-	
+
 	if playerSeat != tp.SelectingPlayer {
 		return fmt.Errorf("not player %d's turn to select", playerSeat)
 	}
-	
+
 	// Validate card is in pool
 	found := false
 	for i, poolCard := range tp.PoolCards {
@@ -329,25 +407,26 @@ func (tp *TributePhase) SelectTribute(playerSeat int, card *Card) error {
 			break
 		}
 	}
-	
+
 	if !found {
 		return errors.New("card not found in tribute pool")
 	}
-	
-	// Record the selection
+
+	// Record the selection - the card goes to the selecting player
 	tp.TributeCards[tp.SelectingPlayer] = card
-	
+
 	// Move to next selector or finish
-	if len(tp.PoolCards) > 0 && tp.SelectingPlayer%2 == 0 {
-		// First place selected, now second place selects
-		tp.SelectingPlayer = tp.getSecondPlace()
-		tp.SelectTimeout = time.Now().Add(3 * time.Second)
+	if len(tp.PoolCards) > 0 {
+		// Find the second place player (teammate of current selector)
+		secondPlace := tp.getSecondPlace()
+		tp.SelectingPlayer = secondPlace
+		tp.SelectTimeout = time.Now().Add(30 * time.Second)
 	} else {
 		// Selection finished, move to return phase
 		tp.Status = TributeStatusReturning
 		tp.SelectingPlayer = -1
 	}
-	
+
 	return nil
 }
 
@@ -356,11 +435,11 @@ func (tp *TributePhase) HandleTimeout() error {
 	if tp.Status != TributeStatusSelecting {
 		return errors.New("not in selecting status")
 	}
-	
+
 	if len(tp.PoolCards) == 0 {
 		return errors.New("no cards in pool to auto-select")
 	}
-	
+
 	// Auto-select the highest card
 	highestCard := tp.PoolCards[0]
 	for _, card := range tp.PoolCards {
@@ -368,7 +447,7 @@ func (tp *TributePhase) HandleTimeout() error {
 			highestCard = card
 		}
 	}
-	
+
 	return tp.SelectTribute(tp.SelectingPlayer, highestCard)
 }
 
@@ -395,11 +474,8 @@ func (tp *TributePhase) cardsEqual(card1, card2 *Card) bool {
 }
 
 // getSecondPlace returns the seat number of second place
-// This is a simplified implementation - in reality this would be tracked
 func (tp *TributePhase) getSecondPlace() int {
 	// Find the teammate of current selecting player
-	if tp.SelectingPlayer%2 == 0 {
-		return tp.SelectingPlayer + 2 // Teammate
-	}
-	return tp.SelectingPlayer - 2 // Teammate
+	// In 4-player game: 0<->2, 1<->3 are teammates
+	return (tp.SelectingPlayer + 2) % 4
 }
