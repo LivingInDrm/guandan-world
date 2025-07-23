@@ -100,6 +100,55 @@ func (tm *TributeManager) CheckTributeImmunity(lastResult *DealResult, playerHan
 	return bigJokerCount >= 2
 }
 
+// GetTributeImmunityDetails 获取详细的抗贡信息
+// 返回是否免贡以及详细的原因说明
+func (tm *TributeManager) GetTributeImmunityDetails(lastResult *DealResult, playerHands [4][]*Card) (bool, map[string]interface{}) {
+	if lastResult == nil {
+		return false, nil
+	}
+
+	// 获取输掉的队伍编号
+	losingTeam := 1 - lastResult.WinningTeam
+
+	// 统计每个败方玩家的大王详情
+	var bigJokerHolders []map[string]interface{}
+	totalBigJokers := 0
+
+	for playerSeat := 0; playerSeat < 4; playerSeat++ {
+		// 检查该玩家是否属于输掉的队伍
+		if playerSeat%2 == losingTeam {
+			playerBigJokers := tm.countBigJokers(playerHands[playerSeat])
+			if playerBigJokers > 0 {
+				bigJokerHolders = append(bigJokerHolders, map[string]interface{}{
+					"player_seat":     playerSeat,
+					"big_joker_count": playerBigJokers,
+				})
+			}
+			totalBigJokers += playerBigJokers
+		}
+	}
+
+	// 判断是否触发抗贡
+	isImmune := totalBigJokers >= 2
+
+	// 构建详细信息
+	details := map[string]interface{}{
+		"big_joker_count":   totalBigJokers,
+		"big_joker_holders": bigJokerHolders,
+		"losing_team":       losingTeam,
+		"description": fmt.Sprintf("败方队伍(Team %d)持有%d张大王%s",
+			losingTeam, totalBigJokers,
+			func() string {
+				if isImmune {
+					return "，触发抗贡"
+				}
+				return "，未达到抗贡条件(需要2张)"
+			}()),
+	}
+
+	return isImmune, details
+}
+
 // countBigJokers 统计手牌中大王的数量
 func (tm *TributeManager) countBigJokers(hand []*Card) int {
 	count := 0

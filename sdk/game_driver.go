@@ -185,6 +185,14 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 	gd.engine.RegisterEventHandler(EventTrickEnded, gd.handleEngineEvent)
 	gd.engine.RegisterEventHandler(EventDealEnded, gd.handleEngineEvent)
 	gd.engine.RegisterEventHandler(EventMatchEnded, gd.handleEngineEvent)
+
+	// 注册上贡相关事件处理器
+	gd.engine.RegisterEventHandler(EventTributeRulesSet, gd.handleEngineEvent)
+	gd.engine.RegisterEventHandler(EventTributeImmunity, gd.handleEngineEvent)
+	gd.engine.RegisterEventHandler(EventTributePoolCreated, gd.handleEngineEvent)
+	gd.engine.RegisterEventHandler(EventTributeGiven, gd.handleEngineEvent)
+	gd.engine.RegisterEventHandler(EventTributeSelected, gd.handleEngineEvent)
+	gd.engine.RegisterEventHandler(EventReturnTribute, gd.handleEngineEvent)
 	gd.engine.RegisterEventHandler(EventTributeCompleted, gd.handleEngineEvent)
 
 	// 开始比赛

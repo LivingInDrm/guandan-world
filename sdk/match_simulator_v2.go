@@ -208,42 +208,22 @@ func RunVerboseDemoV2() error {
 	return nil
 }
 
-// CompareSimulators 比较新旧模拟器性能
+// CompareSimulators 已删除旧架构，仅测试新模拟器性能
 func CompareSimulators() error {
-	fmt.Println("🔄 比较新旧模拟器架构...")
-
-	// 测试旧版本
-	fmt.Println("\n📊 测试旧版本模拟器...")
-	startTime := time.Now()
-	err := RunMatchSimulation(false)
-	oldDuration := time.Since(startTime)
-	if err != nil {
-		fmt.Printf("❌ 旧版本失败: %v\n", err)
-	} else {
-		fmt.Printf("✅ 旧版本完成，耗时: %v\n", oldDuration)
-	}
+	fmt.Println("🔄 测试新架构模拟器性能...")
 
 	// 测试新版本
 	fmt.Println("\n📊 测试新版本模拟器...")
-	startTime = time.Now()
-	err = RunMatchSimulationV2(false)
-	newDuration := time.Since(startTime)
+	startTime := time.Now()
+	err := RunMatchSimulationV2(false)
+	duration := time.Since(startTime)
 	if err != nil {
 		fmt.Printf("❌ 新版本失败: %v\n", err)
+		return err
 	} else {
-		fmt.Printf("✅ 新版本完成，耗时: %v\n", newDuration)
+		fmt.Printf("✅ 新版本完成，耗时: %v\n", duration)
 	}
 
-	// 性能对比
-	if oldDuration > 0 && newDuration > 0 {
-		improvement := float64(oldDuration-newDuration) / float64(oldDuration) * 100
-		fmt.Printf("\n📈 性能对比: ")
-		if improvement > 0 {
-			fmt.Printf("新版本快 %.1f%%\n", improvement)
-		} else {
-			fmt.Printf("旧版本快 %.1f%%\n", -improvement)
-		}
-	}
-
+	fmt.Println("\n✨ 新架构模拟器运行正常!")
 	return nil
 }

@@ -403,12 +403,8 @@ func (d *Deal) startFirstTrick() error {
 		return fmt.Errorf("failed to create first trick: %w", err)
 	}
 
-	// Start the trick immediately
-	err = trick.StartTrick()
-	if err != nil {
-		return fmt.Errorf("failed to start first trick: %w", err)
-	}
-
+	// Do NOT start the trick immediately - leave it in Waiting status
+	// The trick will be started by checkPreActionStateTransitions when first player acts
 	d.CurrentTrick = trick
 	return nil
 }

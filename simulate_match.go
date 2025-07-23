@@ -20,8 +20,8 @@ func main() {
 		verbose = false
 	}
 
-	// 创建模拟器
-	simulator := sdk.NewMatchSimulator(verbose)
+	// 创建模拟器（使用新架构）
+	simulator := sdk.NewMatchSimulatorV2(verbose)
 
 	fmt.Println("开始模拟掼蛋牌局...")
 	startTime := time.Now()

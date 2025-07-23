@@ -14,25 +14,27 @@ type GameEventType string
 // 游戏事件类型常量定义
 // 这些常量用于标识不同类型的游戏事件，外部系统可以通过监听这些事件来响应游戏状态变化
 const (
-	EventMatchStarted     GameEventType = "match_started"     // 比赛开始事件
-	EventDealStarted      GameEventType = "deal_started"      // 牌局开始事件
-	EventCardsDealt       GameEventType = "cards_dealt"       // 发牌完成事件
-	EventTributePhase     GameEventType = "tribute_phase"     // 进贡阶段事件
-	EventTributeImmunity  GameEventType = "tribute_immunity"  // 免贡事件
-	EventTributeStarted   GameEventType = "tribute_started"   // 贡牌开始事件
-	EventTributeGiven     GameEventType = "tribute_given"     // 上贡完成事件
-	EventTributeSelected  GameEventType = "tribute_selected"  // 选牌完成事件（双下）
-	EventReturnTribute    GameEventType = "return_tribute"    // 还贡完成事件
-	EventTributeCompleted GameEventType = "tribute_completed" // 贡牌阶段结束事件
-	EventTrickStarted     GameEventType = "trick_started"     // 新轮次开始事件
-	EventPlayerPlayed     GameEventType = "player_played"     // 玩家出牌事件
-	EventPlayerPassed     GameEventType = "player_passed"     // 玩家过牌事件
-	EventTrickEnded       GameEventType = "trick_ended"       // 轮次结束事件
-	EventDealEnded        GameEventType = "deal_ended"        // 牌局结束事件
-	EventMatchEnded       GameEventType = "match_ended"       // 比赛结束事件
-	EventPlayerTimeout    GameEventType = "player_timeout"    // 玩家超时事件
-	EventPlayerDisconnect GameEventType = "player_disconnect" // 玩家断线事件
-	EventPlayerReconnect  GameEventType = "player_reconnect"  // 玩家重连事件
+	EventMatchStarted       GameEventType = "match_started"        // 比赛开始事件
+	EventDealStarted        GameEventType = "deal_started"         // 牌局开始事件
+	EventCardsDealt         GameEventType = "cards_dealt"          // 发牌完成事件
+	EventTributePhase       GameEventType = "tribute_phase"        // 进贡阶段事件
+	EventTributeRulesSet    GameEventType = "tribute_rules_set"    // 上贡规则确定事件
+	EventTributeImmunity    GameEventType = "tribute_immunity"     // 免贡事件
+	EventTributePoolCreated GameEventType = "tribute_pool_created" // 贡牌池创建事件（双下）
+	EventTributeStarted     GameEventType = "tribute_started"      // 贡牌开始事件
+	EventTributeGiven       GameEventType = "tribute_given"        // 上贡完成事件
+	EventTributeSelected    GameEventType = "tribute_selected"     // 选牌完成事件（双下）
+	EventReturnTribute      GameEventType = "return_tribute"       // 还贡完成事件
+	EventTributeCompleted   GameEventType = "tribute_completed"    // 贡牌阶段结束事件
+	EventTrickStarted       GameEventType = "trick_started"        // 新轮次开始事件
+	EventPlayerPlayed       GameEventType = "player_played"        // 玩家出牌事件
+	EventPlayerPassed       GameEventType = "player_passed"        // 玩家过牌事件
+	EventTrickEnded         GameEventType = "trick_ended"          // 轮次结束事件
+	EventDealEnded          GameEventType = "deal_ended"           // 牌局结束事件
+	EventMatchEnded         GameEventType = "match_ended"          // 比赛结束事件
+	EventPlayerTimeout      GameEventType = "player_timeout"       // 玩家超时事件
+	EventPlayerDisconnect   GameEventType = "player_disconnect"    // 玩家断线事件
+	EventPlayerReconnect    GameEventType = "player_reconnect"     // 玩家重连事件
 )
 
 // GameEvent 表示游戏中发生的事件及其相关数据
@@ -407,13 +409,59 @@ func (ge *GameEngine) StartDeal() error {
 	}
 	ge.emitEvent(event)
 
+	// If there's a tribute phase, emit tribute rules set event first
+	if ge.currentMatch.CurrentDeal.TributePhase != nil {
+		tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
+		tributeMap, isDoubleDown, _ := tm.DetermineTributeRequirements(ge.currentMatch.CurrentDeal.LastResult)
+
+		// Create rule description based on victory type
+		var ruleDescription string
+		lastResult := ge.currentMatch.CurrentDeal.LastResult
+		switch lastResult.VictoryType {
+		case VictoryTypeDoubleDown:
+			ruleDescription = fmt.Sprintf("双下：Player%d和Player%d上贡到池，Player%d优先选择",
+				lastResult.Rankings[2], lastResult.Rankings[3], lastResult.Rankings[0])
+		case VictoryTypeSingleLast:
+			ruleDescription = fmt.Sprintf("单下：Player%d上贡给Player%d",
+				lastResult.Rankings[3], lastResult.Rankings[0])
+		case VictoryTypePartnerLast:
+			ruleDescription = fmt.Sprintf("对下：Player%d上贡给Player%d",
+				lastResult.Rankings[2], lastResult.Rankings[0])
+		}
+
+		// Emit tribute rules set event
+		rulesEvent := &GameEvent{
+			Type: EventTributeRulesSet,
+			Data: map[string]interface{}{
+				"last_result":  lastResult,
+				"victory_type": lastResult.VictoryType,
+				"tribute_rules": map[string]interface{}{
+					"tribute_map":    tributeMap,
+					"is_double_down": isDoubleDown,
+					"description":    ruleDescription,
+				},
+				"player_rankings": lastResult.Rankings,
+			},
+			Timestamp: time.Now(),
+		}
+		ge.emitEvent(rulesEvent)
+	}
+
 	// Check if tribute phase was skipped due to immunity
 	if ge.currentMatch.CurrentDeal.TributePhase != nil &&
 		ge.currentMatch.CurrentDeal.TributePhase.IsImmune {
-		// Emit immunity event
+		// Get detailed immunity information
+		tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
+		_, immunityDetails := tm.GetTributeImmunityDetails(ge.currentMatch.CurrentDeal.LastResult,
+			ge.currentMatch.CurrentDeal.PlayerCards)
+
+		// Emit immunity event with detailed information
 		immunityEvent := &GameEvent{
-			Type:      EventTributeImmunity,
-			Data:      ge.currentMatch.CurrentDeal.TributePhase,
+			Type: EventTributeImmunity,
+			Data: map[string]interface{}{
+				"tribute_phase":   ge.currentMatch.CurrentDeal.TributePhase,
+				"immunity_reason": immunityDetails,
+			},
 			Timestamp: time.Now(),
 		}
 		ge.emitEvent(immunityEvent)
@@ -440,6 +488,12 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 		return nil, fmt.Errorf("invalid play: %w", err)
 	}
 
+	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the play
+	preEvents := ge.checkPreActionStateTransitions()
+	for _, evt := range preEvents {
+		ge.emitEvent(evt)
+	}
+
 	// Execute the play
 	err = deal.PlayCards(playerSeat, cards)
 	if err != nil {
@@ -461,9 +515,9 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	}
 	ge.emitEvent(event)
 
-	// Check for automatic state transitions
-	events := ge.checkStateTransitions()
-	for _, evt := range events {
+	// Check for post-action state transitions (e.g., trick ending, deal ending)
+	postEvents := ge.checkPostActionStateTransitions()
+	for _, evt := range postEvents {
 		ge.emitEvent(evt)
 	}
 
@@ -488,6 +542,12 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 		return nil, fmt.Errorf("invalid pass: %w", err)
 	}
 
+	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the pass
+	preEvents := ge.checkPreActionStateTransitions()
+	for _, evt := range preEvents {
+		ge.emitEvent(evt)
+	}
+
 	// Execute the pass
 	err = deal.PassTurn(playerSeat)
 	if err != nil {
@@ -508,9 +568,9 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 	}
 	ge.emitEvent(event)
 
-	// Check for automatic state transitions
-	events := ge.checkStateTransitions()
-	for _, evt := range events {
+	// Check for post-action state transitions (e.g., trick ending, deal ending)
+	postEvents := ge.checkPostActionStateTransitions()
+	for _, evt := range postEvents {
 		ge.emitEvent(evt)
 	}
 
@@ -698,8 +758,53 @@ func (ge *GameEngine) getVisibleCardsForPlayer(playerSeat int) []*Card {
 	return visibleCards
 }
 
-// checkStateTransitions checks for and handles automatic state transitions
-func (ge *GameEngine) checkStateTransitions() []*GameEvent {
+// checkPreActionStateTransitions checks for state transitions that should happen before player actions
+// Currently only handles trick starting (TrickStatusWaiting -> TrickStatusPlaying)
+func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
+	events := make([]*GameEvent, 0)
+
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return events
+	}
+
+	deal := ge.currentMatch.CurrentDeal
+
+	// Check if there's a waiting trick that needs to be started
+	if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
+		// Start the new trick
+		err := deal.CurrentTrick.StartTrick()
+		if err == nil {
+			// 收集所有玩家的手牌信息，避免在事件处理器中调用引擎方法
+			playerHands := make(map[int][]*Card)
+			for i := 0; i < 4; i++ {
+				if deal.PlayerCards[i] != nil {
+					// 创建手牌的副本，避免并发访问问题
+					handCopy := make([]*Card, len(deal.PlayerCards[i]))
+					copy(handCopy, deal.PlayerCards[i])
+					playerHands[i] = handCopy
+				}
+			}
+
+			trickStartedEvent := &GameEvent{
+				Type: EventTrickStarted,
+				Data: map[string]interface{}{
+					"trick":        deal.CurrentTrick,
+					"leader":       deal.CurrentTrick.Leader,
+					"current_turn": deal.CurrentTrick.CurrentTurn,
+					"player_hands": playerHands,
+				},
+				Timestamp: time.Now(),
+			}
+			events = append(events, trickStartedEvent)
+		}
+	}
+
+	return events
+}
+
+// checkPostActionStateTransitions checks for state transitions that should happen after player actions
+// Handles trick ending and deal ending
+func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 	events := make([]*GameEvent, 0)
 
 	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
@@ -789,22 +894,23 @@ func (ge *GameEngine) checkStateTransitions() []*GameEvent {
 			// Set the new trick but leave it in TrickStatusWaiting
 			deal.CurrentTrick = nextTrick
 		}
-	} else if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
-		// Start the new trick
-		err := deal.CurrentTrick.StartTrick()
-		if err == nil {
-			trickStartedEvent := &GameEvent{
-				Type: EventTrickStarted,
-				Data: map[string]interface{}{
-					"trick":        deal.CurrentTrick,
-					"leader":       deal.CurrentTrick.Leader,
-					"current_turn": deal.CurrentTrick.CurrentTurn,
-				},
-				Timestamp: time.Now(),
-			}
-			events = append(events, trickStartedEvent)
-		}
 	}
+
+	return events
+}
+
+// checkStateTransitions checks for and handles automatic state transitions (legacy method)
+// Now delegates to pre-action and post-action methods for backward compatibility
+func (ge *GameEngine) checkStateTransitions() []*GameEvent {
+	events := make([]*GameEvent, 0)
+
+	// Check pre-action transitions first
+	preEvents := ge.checkPreActionStateTransitions()
+	events = append(events, preEvents...)
+
+	// Then check post-action transitions
+	postEvents := ge.checkPostActionStateTransitions()
+	events = append(events, postEvents...)
 
 	return events
 }
@@ -940,11 +1046,87 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 		return nil, nil
 	}
 
+	// 记录处理前的状态和贡牌情况
+	previousStatus := deal.TributePhase.Status
+	previousTributeCards := make(map[int]*Card)
+	for giver, card := range deal.TributePhase.TributeCards {
+		previousTributeCards[giver] = card
+	}
+
 	// 获取 TributeManager 并处理
 	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
 	action, err := tm.ProcessTributePhaseAction(deal.TributePhase, deal.PlayerCards)
 	if err != nil {
 		return nil, err
+	}
+
+	// 检测状态变化并触发相应事件
+	if previousStatus == TributeStatusWaiting && deal.TributePhase.Status == TributeStatusSelecting {
+		// 双下场景：贡牌池已创建
+		var contributors []map[string]interface{}
+		selectionOrder := []int{deal.TributePhase.SelectingPlayer}
+
+		// 根据贡牌映射找出贡献者
+		for giver := range deal.TributePhase.TributeMap {
+			if deal.TributePhase.TributeMap[giver] == -1 {
+				// 贡献到池子的玩家
+				if tributeCard := deal.TributePhase.TributeCards[giver]; tributeCard != nil {
+					contributors = append(contributors, map[string]interface{}{
+						"player_seat": giver,
+						"card":        tributeCard,
+					})
+				}
+			}
+		}
+
+		// 确定选择顺序（第二名是第一名的队友）
+		if len(selectionOrder) > 0 {
+			secondPlace := (selectionOrder[0] + 2) % 4 // 队友
+			selectionOrder = append(selectionOrder, secondPlace)
+		}
+
+		// 触发贡牌池创建事件
+		poolEvent := &GameEvent{
+			Type: EventTributePoolCreated,
+			Data: map[string]interface{}{
+				"description":      fmt.Sprintf("双下贡牌池已创建，包含%d张贡牌", len(contributors)),
+				"contributors":     contributors,
+				"selection_order":  selectionOrder,
+				"pool_cards":       deal.TributePhase.PoolCards,
+				"selecting_player": deal.TributePhase.SelectingPlayer,
+			},
+			Timestamp: time.Now(),
+		}
+		ge.emitEvent(poolEvent)
+	}
+
+	// 检测上贡卡牌是否刚刚被确定（适用于所有场景）
+	for giver, receiver := range deal.TributePhase.TributeMap {
+		if receiver != -1 { // 不是贡献到池子的情况
+			// 检查是否有新的贡牌被确定（从nil变为非nil）
+			currentCard := deal.TributePhase.TributeCards[giver]
+			previousCard := previousTributeCards[giver]
+
+			if currentCard != nil && previousCard == nil {
+				// 触发上贡完成事件
+				givenEvent := &GameEvent{
+					Type: EventTributeGiven,
+					Data: map[string]interface{}{
+						// 保留现有字段格式
+						"giver":    giver,
+						"receiver": receiver,
+						"card":     currentCard,
+
+						// 新增字段
+						"tribute_type":     "normal",
+						"is_auto_selected": true,
+						"selection_reason": "除红桃Trump外最大牌",
+					},
+					Timestamp: time.Now(),
+				}
+				ge.emitEvent(givenEvent)
+			}
+		}
 	}
 
 	// 如果贡牌阶段完成，更新状态并发送事件
@@ -994,10 +1176,41 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 		return err
 	}
 
-	// 发送选择事件
+	// 收集增强的选择事件数据
+	var selectedCard *Card
+	for _, card := range deal.TributePhase.PoolCards {
+		if card.GetID() == cardID {
+			selectedCard = card
+			break
+		}
+	}
+
+	// 获取当前池中剩余的卡牌
+	remainingOptions := make([]*Card, len(deal.TributePhase.PoolCards))
+	copy(remainingOptions, deal.TributePhase.PoolCards)
+
+	// 确定选择顺序
+	selectionOrder := 1 // 默认为第一次选择
+	if deal.TributePhase.SelectingPlayer != deal.TributePhase.TributeMap[deal.TributePhase.SelectingPlayer] {
+		// 如果选择者不是第一名，说明是第二次选择
+		selectionOrder = 2
+	}
+
+	// 发送增强的选择事件
 	ge.emitEvent(&GameEvent{
-		Type:       EventTributeSelected,
-		Data:       map[string]interface{}{"action": "select", "player": playerID, "cardID": cardID},
+		Type: EventTributeSelected,
+		Data: map[string]interface{}{
+			// 保留现有字段
+			"action": "select",
+			"player": playerID,
+			"cardID": cardID,
+
+			// 新增字段
+			"selected_card":     selectedCard,
+			"remaining_options": remainingOptions,
+			"selection_order":   selectionOrder,
+			"is_timeout":        false, // 正常选择，非超时
+		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerID,
 	})
@@ -1027,10 +1240,42 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 		return err
 	}
 
-	// 发送还贡事件
+	// 收集增强的还贡事件数据
+	var returnCard *Card
+	for _, card := range deal.PlayerCards[playerID] {
+		if card.GetID() == cardID {
+			returnCard = card
+			break
+		}
+	}
+
+	// 找到还贡的目标玩家和原来收到的贡牌
+	var targetPlayer int = -1
+	var originalTribute *Card
+	for giver, receiver := range deal.TributePhase.TributeMap {
+		if receiver == playerID && receiver != -1 {
+			targetPlayer = giver
+			originalTribute = deal.TributePhase.TributeCards[giver]
+			break
+		}
+	}
+
+	// 发送增强的还贡事件
 	ge.emitEvent(&GameEvent{
-		Type:       EventReturnTribute,
-		Data:       map[string]interface{}{"action": "return", "player": playerID, "cardID": cardID},
+		Type: EventReturnTribute,
+		Data: map[string]interface{}{
+			// 保留现有字段
+			"action": "return",
+			"player": playerID,
+			"cardID": cardID,
+
+			// 新增字段
+			"return_card":      returnCard,
+			"target_player":    targetPlayer,
+			"original_tribute": originalTribute,
+			"is_auto_selected": false, // 正常选择，非自动
+			"selection_reason": "玩家手动选择",
+		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerID,
 	})

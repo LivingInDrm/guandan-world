@@ -42,8 +42,12 @@ func (mso *MatchSimulatorObserver) OnGameEvent(event *GameEvent) {
 		mso.handleCardsDealt(event)
 	case EventTributePhase:
 		mso.handleTributePhase(event)
+	case EventTributeRulesSet:
+		mso.handleTributeRulesSet(event)
 	case EventTributeImmunity:
 		mso.handleTributeImmunity(event)
+	case EventTributePoolCreated:
+		mso.handleTributePoolCreated(event)
 	case EventTributeStarted:
 		mso.handleTributeStarted(event)
 	case EventTributeGiven:
@@ -86,54 +90,228 @@ func (mso *MatchSimulatorObserver) handleCardsDealt(event *GameEvent) {
 }
 
 func (mso *MatchSimulatorObserver) handleTributePhase(event *GameEvent) {
-	mso.log("Event: Tribute Phase")
+	mso.log("=== 进贡阶段开始 ===")
+	mso.log("准备进行上贡、抗贡检查和还贡流程")
+	mso.log("==================")
 }
 
-func (mso *MatchSimulatorObserver) handleTributeImmunity(event *GameEvent) {
-	mso.log("Event: Tribute Immunity triggered - No tribute required this deal")
-}
+func (mso *MatchSimulatorObserver) handleTributeRulesSet(event *GameEvent) {
+	mso.log("=== 上贡规则确定 ===")
 
-func (mso *MatchSimulatorObserver) handleTributeStarted(event *GameEvent) {
-	mso.log("Event: Tribute Started - Tribute phase begins")
-}
-
-func (mso *MatchSimulatorObserver) handleTributeGiven(event *GameEvent) {
 	if data, ok := event.Data.(map[string]interface{}); ok {
-		if giver, ok := data["giver"].(int); ok {
-			if receiver, ok := data["receiver"].(int); ok {
-				if card, ok := data["card"].(*Card); ok {
-					mso.log(fmt.Sprintf("Event: Tribute Given - Player %d gives %s to Player %d",
-						giver, card.ToShortString(), receiver))
+		if lastResult, ok := data["last_result"].(*DealResult); ok {
+			mso.log(fmt.Sprintf("上局结果：%v, 胜利类型：%v", lastResult.Rankings, lastResult.VictoryType))
+		}
+
+		if tributeRules, ok := data["tribute_rules"].(map[string]interface{}); ok {
+			if description, ok := tributeRules["description"].(string); ok {
+				mso.log(fmt.Sprintf("上贡规则：%s", description))
+			}
+
+			if isDoubleDown, ok := tributeRules["is_double_down"].(bool); ok {
+				if isDoubleDown {
+					mso.log("类型：双下上贡（贡牌池模式）")
+				} else {
+					mso.log("类型：直接上贡模式")
 				}
 			}
 		}
 	}
+
+	mso.log("====================")
+}
+
+func (mso *MatchSimulatorObserver) handleTributeImmunity(event *GameEvent) {
+	mso.log("=== 抗贡检查 ===")
+
+	if data, ok := event.Data.(map[string]interface{}); ok {
+		if immunityReason, ok := data["immunity_reason"].(map[string]interface{}); ok {
+			// 输出详细抗贡信息
+			if description, ok := immunityReason["description"].(string); ok {
+				mso.log(fmt.Sprintf("抗贡结果：%s", description))
+			}
+
+			// 输出大王持有者详情
+			if holders, ok := immunityReason["big_joker_holders"].([]map[string]interface{}); ok {
+				if len(holders) > 0 {
+					mso.log("大王持有者详情：")
+					for _, holder := range holders {
+						if playerSeat, ok := holder["player_seat"].(int); ok {
+							if count, ok := holder["big_joker_count"].(int); ok {
+								mso.log(fmt.Sprintf("  Player %d: %d张大王", playerSeat, count))
+							}
+						}
+					}
+				}
+			}
+
+			if totalCount, ok := immunityReason["big_joker_count"].(int); ok {
+				if totalCount >= 2 {
+					mso.log("结果：触发抗贡，本局跳过上贡阶段")
+				} else {
+					mso.log("结果：大王数量不足，正常进行上贡")
+				}
+			}
+		}
+	}
+
+	mso.log("================")
+}
+
+func (mso *MatchSimulatorObserver) handleTributePoolCreated(event *GameEvent) {
+	mso.log("=== 双下贡牌池创建 ===")
+
+	if data, ok := event.Data.(map[string]interface{}); ok {
+		if description, ok := data["description"].(string); ok {
+			mso.log(description)
+		}
+
+		if contributors, ok := data["contributors"].([]map[string]interface{}); ok {
+			mso.log("贡献详情：")
+			for _, contributor := range contributors {
+				if playerSeat, ok := contributor["player_seat"].(int); ok {
+					if card, ok := contributor["card"].(*Card); ok {
+						mso.log(fmt.Sprintf("  Player %d 贡献：%s", playerSeat, card.ToShortString()))
+					}
+				}
+			}
+		}
+
+		if selectionOrder, ok := data["selection_order"].([]int); ok {
+			if len(selectionOrder) > 0 {
+				orderStr := fmt.Sprintf("Player %d", selectionOrder[0])
+				for i := 1; i < len(selectionOrder); i++ {
+					orderStr += fmt.Sprintf(" -> Player %d", selectionOrder[i])
+				}
+				mso.log(fmt.Sprintf("选择顺序：%s", orderStr))
+			}
+		}
+
+		if poolCards, ok := data["pool_cards"].([]*Card); ok {
+			var cardStrs []string
+			for _, card := range poolCards {
+				cardStrs = append(cardStrs, card.ToShortString())
+			}
+			mso.log(fmt.Sprintf("池中牌张：[%s]", strings.Join(cardStrs, ", ")))
+		}
+	}
+
+	mso.log("=====================")
+}
+
+func (mso *MatchSimulatorObserver) handleTributeStarted(event *GameEvent) {
+	mso.log("=== 上贡执行开始 ===")
+	mso.log("开始执行具体的上贡流程")
+	mso.log("===================")
+}
+
+func (mso *MatchSimulatorObserver) handleTributeGiven(event *GameEvent) {
+	mso.log("=== 上贡完成 ===")
+
+	if data, ok := event.Data.(map[string]interface{}); ok {
+		if giver, ok := data["giver"].(int); ok {
+			if receiver, ok := data["receiver"].(int); ok {
+				if card, ok := data["card"].(*Card); ok {
+					mso.log(fmt.Sprintf("Player %d 上贡给 Player %d：%s",
+						giver, receiver, card.ToShortString()))
+				}
+			}
+		}
+
+		if tributeType, ok := data["tribute_type"].(string); ok {
+			typeText := "普通上贡"
+			if tributeType == "double_down_pool" {
+				typeText = "双下池贡献"
+			}
+			mso.log(fmt.Sprintf("上贡类型：%s", typeText))
+		}
+
+		if isAutoSelected, ok := data["is_auto_selected"].(bool); ok {
+			if isAutoSelected {
+				if reason, ok := data["selection_reason"].(string); ok {
+					mso.log(fmt.Sprintf("选择方式：自动选择（%s）", reason))
+				}
+			} else {
+				mso.log("选择方式：玩家手动选择")
+			}
+		}
+	}
+
+	mso.log("================")
 }
 
 func (mso *MatchSimulatorObserver) handleTributeSelected(event *GameEvent) {
+	mso.log("=== 双下选牌 ===")
+
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		if player, ok := data["player"].(int); ok {
-			if cardID, ok := data["cardID"].(string); ok {
-				mso.log(fmt.Sprintf("Event: Tribute Selected - Player %d selected card %s (Double-down selection)",
-					player, cardID))
+			if selectedCard, ok := data["selected_card"].(*Card); ok {
+				if selectionOrder, ok := data["selection_order"].(int); ok {
+					orderText := "第一次选择"
+					if selectionOrder == 2 {
+						orderText = "第二次选择"
+					}
+					mso.log(fmt.Sprintf("Player %d (%s) 选择：%s",
+						player, orderText, selectedCard.ToShortString()))
+				}
 			}
 		}
+
+		if remainingOptions, ok := data["remaining_options"].([]*Card); ok {
+			if len(remainingOptions) > 0 {
+				var cardStrs []string
+				for _, card := range remainingOptions {
+					cardStrs = append(cardStrs, card.ToShortString())
+				}
+				mso.log(fmt.Sprintf("剩余选项：[%s]", strings.Join(cardStrs, ", ")))
+			} else {
+				mso.log("所有贡牌已选择完毕")
+			}
+		}
+
+		if isTimeout, ok := data["is_timeout"].(bool); ok && isTimeout {
+			mso.log("注意：此次选择为超时自动选择")
+		}
 	}
+
+	mso.log("================")
 }
 
 func (mso *MatchSimulatorObserver) handleReturnTribute(event *GameEvent) {
+	mso.log("=== 还贡阶段 ===")
+
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		if returner, ok := data["player"].(int); ok {
-			if cardID, ok := data["cardID"].(string); ok {
-				mso.log(fmt.Sprintf("Event: Return Tribute - Player %d returns card %s",
-					returner, cardID))
+			if returnCard, ok := data["return_card"].(*Card); ok {
+				if targetPlayer, ok := data["target_player"].(int); ok {
+					mso.log(fmt.Sprintf("Player %d 还贡给 Player %d：%s",
+						returner, targetPlayer, returnCard.ToShortString()))
+				}
+			}
+		}
+
+		if originalTribute, ok := data["original_tribute"].(*Card); ok {
+			mso.log(fmt.Sprintf("原收到贡牌：%s", originalTribute.ToShortString()))
+		}
+
+		if isAutoSelected, ok := data["is_auto_selected"].(bool); ok {
+			if isAutoSelected {
+				if reason, ok := data["selection_reason"].(string); ok {
+					mso.log(fmt.Sprintf("选择方式：自动选择（%s）", reason))
+				}
+			} else {
+				mso.log("选择方式：玩家手动选择")
 			}
 		}
 	}
+
+	mso.log("================")
 }
 
 func (mso *MatchSimulatorObserver) handleTributeCompleted(event *GameEvent) {
-	mso.log("Event: Tribute Completed")
+	mso.log("=== 进贡阶段完成 ===")
+	mso.log("所有上贡和还贡流程已完成，游戏阶段即将开始")
+	mso.log("===================")
 }
 
 func (mso *MatchSimulatorObserver) handleTrickStarted(event *GameEvent) {
@@ -141,10 +319,26 @@ func (mso *MatchSimulatorObserver) handleTrickStarted(event *GameEvent) {
 		if leader, ok := data["leader"].(int); ok {
 			mso.log(fmt.Sprintf("Event: New Trick Started, Leader: Player %d", leader))
 
-			// 注意：不能在事件处理器中调用引擎方法，会导致死锁
-			// 手牌信息应该通过其他方式获取或在事件数据中提供
+			// 输出每个玩家的手牌信息（从事件数据中获取，避免死锁）
 			if mso.verbose {
-				mso.log(fmt.Sprintf("New Trick Started (Leader: Player %d) - Hand details omitted to avoid deadlock", leader))
+				if playerHands, ok := data["player_hands"].(map[int][]*Card); ok {
+					mso.log("=== Player Hands at Trick Start ===")
+					for playerSeat := 0; playerSeat < 4; playerSeat++ {
+						if cards, exists := playerHands[playerSeat]; exists {
+							var cardStrs []string
+							for _, card := range cards {
+								cardStrs = append(cardStrs, card.ToShortString())
+							}
+							mso.log(fmt.Sprintf("Player %d (%d cards): [%s]",
+								playerSeat, len(cards), strings.Join(cardStrs, ",")))
+						} else {
+							mso.log(fmt.Sprintf("Player %d: No cards", playerSeat))
+						}
+					}
+					mso.log("====================================")
+				} else {
+					mso.log(fmt.Sprintf("New Trick Started (Leader: Player %d) - Hand details not available", leader))
+				}
 			}
 		}
 	}

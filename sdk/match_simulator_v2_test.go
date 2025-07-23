@@ -176,34 +176,15 @@ func BenchmarkMatchSimulatorV2(b *testing.B) {
 	}
 }
 
-// TestArchitectureComparison 架构对比测试
-func TestArchitectureComparison(t *testing.T) {
-	t.Log("Testing old architecture...")
-	startTime := time.Now()
-	err := RunMatchSimulation(false)
-	oldDuration := time.Since(startTime)
-	if err != nil {
-		t.Logf("Old architecture failed: %v", err)
-	} else {
-		t.Logf("Old architecture completed in: %v", oldDuration)
-	}
-
+// TestNewArchitecture 测试新架构模拟器
+func TestNewArchitecture(t *testing.T) {
 	t.Log("Testing new architecture...")
-	startTime = time.Now()
-	err = RunMatchSimulationV2(false)
-	newDuration := time.Since(startTime)
+	startTime := time.Now()
+	err := RunMatchSimulationV2(false)
+	duration := time.Since(startTime)
 	if err != nil {
 		t.Errorf("New architecture failed: %v", err)
 	} else {
-		t.Logf("New architecture completed in: %v", newDuration)
-	}
-
-	if oldDuration > 0 && newDuration > 0 {
-		improvement := float64(oldDuration-newDuration) / float64(oldDuration) * 100
-		if improvement > 0 {
-			t.Logf("New architecture is %.1f%% faster", improvement)
-		} else {
-			t.Logf("Old architecture is %.1f%% faster", -improvement)
-		}
+		t.Logf("New architecture completed in: %v", duration)
 	}
 }
