@@ -955,8 +955,8 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 			return nil, fmt.Errorf("apply tribute failed: %w", err)
 		}
 
-		// 发送完成事件（在启动游戏阶段之前，以确保日志顺序正确）
-		ge.sendEvent(&GameEvent{
+		// 发送完成事件（同步发送以确保日志顺序正确）
+		ge.emitEvent(&GameEvent{
 			Type:      EventTributeCompleted,
 			Data:      deal.TributePhase,
 			Timestamp: time.Now(),
@@ -995,7 +995,7 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 	}
 
 	// 发送选择事件
-	ge.sendEvent(&GameEvent{
+	ge.emitEvent(&GameEvent{
 		Type:       EventTributeSelected,
 		Data:       map[string]interface{}{"action": "select", "player": playerID, "cardID": cardID},
 		Timestamp:  time.Now(),
@@ -1028,7 +1028,7 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 	}
 
 	// 发送还贡事件
-	ge.sendEvent(&GameEvent{
+	ge.emitEvent(&GameEvent{
 		Type:       EventReturnTribute,
 		Data:       map[string]interface{}{"action": "return", "player": playerID, "cardID": cardID},
 		Timestamp:  time.Now(),
@@ -1061,7 +1061,7 @@ func (ge *GameEngine) SkipTributeAction() error {
 	}
 
 	// 发送超时事件
-	ge.sendEvent(&GameEvent{
+	ge.emitEvent(&GameEvent{
 		Type:      EventPlayerTimeout,
 		Data:      map[string]interface{}{"action": "tribute_timeout", "phase": deal.TributePhase.Status},
 		Timestamp: time.Now(),
