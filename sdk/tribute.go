@@ -75,31 +75,6 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 	return tributePhase, nil
 }
 
-// CheckTributeImmunity 检查免贡条件
-func (tm *TributeManager) CheckTributeImmunity(lastResult *DealResult, playerHands [4][]*Card) bool {
-	if lastResult == nil {
-		return false
-	}
-
-	// 无论哪种胜利类型，抗贡逻辑都是一样的：
-	// 落败队伍如果合计拥有2个BJ（大王），就触发抗贡
-
-	// 获取输掉的队伍编号
-	losingTeam := 1 - lastResult.WinningTeam
-
-	// 统计输掉队伍所有玩家的大王数量
-	bigJokerCount := 0
-	for playerSeat := 0; playerSeat < 4; playerSeat++ {
-		// 检查该玩家是否属于输掉的队伍
-		if playerSeat%2 == losingTeam {
-			bigJokerCount += tm.countBigJokers(playerHands[playerSeat])
-		}
-	}
-
-	// 如果输掉的队伍合计拥有2个或以上大王，触发抗贡
-	return bigJokerCount >= 2
-}
-
 // GetTributeImmunityDetails 获取详细的抗贡信息
 // 返回是否免贡以及详细的原因说明
 func (tm *TributeManager) GetTributeImmunityDetails(lastResult *DealResult, playerHands [4][]*Card) (bool, map[string]interface{}) {
@@ -160,37 +135,6 @@ func (tm *TributeManager) countBigJokers(hand []*Card) int {
 	return count
 }
 
-// ProcessTribute processes the complete tribute phase with player hands
-func (tm *TributeManager) ProcessTribute(tributePhase *TributePhase, playerHands [4][]*Card) error {
-	if tributePhase == nil {
-		return nil // No tribute phase
-	}
-
-	switch tributePhase.Status {
-	case TributeStatusWaiting:
-		return tm.startTributePhase(tributePhase, playerHands)
-	case TributeStatusSelecting:
-		// Selection is handled by external calls to SelectTribute
-		return nil
-	case TributeStatusReturning:
-		// For normal tribute, we need to select tribute cards first if not already done
-		if len(tributePhase.TributeCards) == 0 {
-			for giver := range tributePhase.TributeMap {
-				if tributePhase.TributeMap[giver] != -1 {
-					// 自动选取除红桃Trump外最大的一张牌
-					tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[giver])
-					if tributeCard != nil {
-						tributePhase.TributeCards[giver] = tributeCard
-					}
-				}
-			}
-		}
-		return tm.processReturnCards(tributePhase, playerHands)
-	default:
-		return nil // Already finished
-	}
-}
-
 // startTributePhase starts the tribute phase by determining tribute cards
 func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHands [4][]*Card) error {
 	// Check if this is a double down scenario
@@ -217,7 +161,7 @@ func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHa
 			}
 		}
 
-		tributePhase.SetPoolCards(poolCards)
+		tributePhase.setPoolCards(poolCards)
 		tributePhase.Status = TributeStatusSelecting
 	} else {
 		// Normal tribute: automatically select highest cards (excluding heart trump)
@@ -441,24 +385,8 @@ func (tm *TributeManager) DetermineTributeRequirements(lastResult *DealResult) (
 	return tributeMap, isDoubleDown, nil
 }
 
-// Start starts the tribute phase
-func (tp *TributePhase) Start() error {
-	switch tp.Status {
-	case TributeStatusSelecting:
-		// For double down, we need to create the pool from losing players' cards
-		// This would be done by the Deal when it has access to player hands
-		return nil
-	case TributeStatusReturning:
-		// For normal tribute, players automatically give their highest cards
-		// This would be handled by the Deal when it has access to player hands
-		return nil
-	default:
-		return nil
-	}
-}
-
-// SelectTribute handles tribute selection from pool (double down scenario)
-func (tp *TributePhase) SelectTribute(playerSeat int, card *Card) error {
+// selectTribute handles tribute selection from pool (double down scenario)
+func (tp *TributePhase) selectTribute(playerSeat int, card *Card) error {
 	if tp.Status != TributeStatusSelecting {
 		return fmt.Errorf("not in selecting status: %s", tp.Status)
 	}
@@ -541,8 +469,8 @@ func (tp *TributePhase) getCardKey(card *Card) string {
 	return fmt.Sprintf("%d_%s", card.Number, card.Color)
 }
 
-// HandleTimeout handles timeout during tribute selection
-func (tp *TributePhase) HandleTimeout() error {
+// handleTimeout handles timeout during tribute selection
+func (tp *TributePhase) handleTimeout() error {
 	if tp.Status != TributeStatusSelecting {
 		return errors.New("not in selecting status")
 	}
@@ -559,23 +487,17 @@ func (tp *TributePhase) HandleTimeout() error {
 		}
 	}
 
-	return tp.SelectTribute(tp.SelectingPlayer, highestCard)
+	return tp.selectTribute(tp.SelectingPlayer, highestCard)
 }
 
-// FinishTribute finishes the tribute phase
-func (tp *TributePhase) FinishTribute() error {
-	tp.Status = TributeStatusFinished
-	return nil
-}
-
-// SetPoolCards sets the pool cards for double down scenario
-func (tp *TributePhase) SetPoolCards(cards []*Card) {
+// setPoolCards sets the pool cards for double down scenario
+func (tp *TributePhase) setPoolCards(cards []*Card) {
 	tp.PoolCards = make([]*Card, len(cards))
 	copy(tp.PoolCards, cards)
 }
 
-// AddReturnCard adds a return card from receiver to giver
-func (tp *TributePhase) AddReturnCard(receiver int, card *Card) {
+// addReturnCard adds a return card from receiver to giver
+func (tp *TributePhase) addReturnCard(receiver int, card *Card) {
 	tp.ReturnCards[receiver] = card
 }
 
@@ -598,9 +520,34 @@ func (tm *TributeManager) ProcessTributePhaseAction(phase *TributePhase, playerC
 	}
 
 	// Process the tribute phase based on current status
-	err := tm.ProcessTribute(phase, playerCards)
-	if err != nil {
-		return nil, fmt.Errorf("process tribute failed: %w", err)
+	switch phase.Status {
+	case TributeStatusWaiting:
+		err := tm.startTributePhase(phase, playerCards)
+		if err != nil {
+			return nil, fmt.Errorf("start tribute phase failed: %w", err)
+		}
+	case TributeStatusSelecting:
+		// Selection is handled by external calls to SelectTribute
+		// No processing needed here
+	case TributeStatusReturning:
+		// For normal tribute, we need to select tribute cards first if not already done
+		if len(phase.TributeCards) == 0 {
+			for giver := range phase.TributeMap {
+				if phase.TributeMap[giver] != -1 {
+					// 自动选取除红桃Trump外最大的一张牌
+					tributeCard := tm.getHighestCardExcludingHeartTrump(playerCards[giver])
+					if tributeCard != nil {
+						phase.TributeCards[giver] = tributeCard
+					}
+				}
+			}
+		}
+		err := tm.processReturnCards(phase, playerCards)
+		if err != nil {
+			return nil, fmt.Errorf("process return cards failed: %w", err)
+		}
+	default:
+		// Already finished, no processing needed
 	}
 
 	// Generate action based on current status
@@ -670,7 +617,7 @@ func (tm *TributeManager) SubmitSelection(phase *TributePhase, playerID int, car
 	}
 
 	// Execute selection
-	return phase.SelectTribute(playerID, selectedCard)
+	return phase.selectTribute(playerID, selectedCard)
 }
 
 // SubmitReturn handles return tribute submission
@@ -710,7 +657,7 @@ func (tm *TributeManager) SubmitReturn(phase *TributePhase, playerID int, cardID
 	}
 
 	// Record the return
-	phase.AddReturnCard(playerID, selectedCard)
+	phase.addReturnCard(playerID, selectedCard)
 
 	// Check if all returns are complete
 	allReturned := true
@@ -739,7 +686,7 @@ func (tm *TributeManager) HandleTimeoutAction(phase *TributePhase, playerCards [
 	switch phase.Status {
 	case TributeStatusSelecting:
 		// Handle selection timeout
-		return phase.HandleTimeout()
+		return phase.handleTimeout()
 
 	case TributeStatusReturning:
 		// Find player who needs to return and auto-select lowest card
@@ -749,7 +696,7 @@ func (tm *TributeManager) HandleTimeoutAction(phase *TributePhase, playerCards [
 					// Get lowest card for auto-return
 					lowestCard := tm.getLowestCard(playerCards[receiver])
 					if lowestCard != nil {
-						phase.AddReturnCard(receiver, lowestCard)
+						phase.addReturnCard(receiver, lowestCard)
 					}
 					break
 				}

@@ -85,7 +85,7 @@ func TestProcessTributePhase_Immunity(t *testing.T) {
 
 	// Check immunity
 	tm := NewTributeManager(2)
-	isImmune := tm.CheckTributeImmunity(lastResult, deal.PlayerCards)
+	isImmune, _ := tm.GetTributeImmunityDetails(lastResult, deal.PlayerCards)
 	if !isImmune {
 		t.Errorf("Should be immune when rank 3 and rank 4 have 2 big jokers total")
 	}

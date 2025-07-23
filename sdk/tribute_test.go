@@ -269,7 +269,7 @@ func TestCheckTributeImmunity(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tm.CheckTributeImmunity(tt.lastResult, tt.playerHands)
+			result, _ := tm.GetTributeImmunityDetails(tt.lastResult, tt.playerHands)
 			if result != tt.expectedResult {
 				t.Errorf("Expected %v, got %v", tt.expectedResult, result)
 			}
@@ -384,14 +384,14 @@ func TestTributeProcessComplete(t *testing.T) {
 	tm := NewTributeManager(7)
 
 	// 检查免贡（应该不免贡，因为rank4只有1张大王）
-	isImmune := tm.CheckTributeImmunity(lastResult, playerHands)
+	isImmune, _ := tm.GetTributeImmunityDetails(lastResult, playerHands)
 	if isImmune {
 		t.Errorf("期望不免贡，但实际免贡了")
 	}
 
 	// 处理上贡 - 可能需要多次调用来完成整个流程
 	for i := 0; i < 10; i++ { // 最多尝试10次避免无限循环
-		err = tm.ProcessTribute(tributePhase, playerHands)
+		_, err = tm.ProcessTributePhaseAction(tributePhase, playerHands)
 		if err != nil {
 			t.Fatalf("处理上贡失败: %v", err)
 		}
@@ -405,7 +405,7 @@ func TestTributeProcessComplete(t *testing.T) {
 						// 选择最小的牌作为还贡
 						if len(playerHands[receiver]) > 0 {
 							returnCard := playerHands[receiver][0] // 选择第一张牌
-							tributePhase.AddReturnCard(receiver, returnCard)
+							tributePhase.addReturnCard(receiver, returnCard)
 						}
 					}
 				}

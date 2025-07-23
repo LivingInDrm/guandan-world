@@ -54,7 +54,9 @@ func (d *Deal) StartDeal() error {
 	// If there's a tribute phase, check for immunity first
 	if d.TributePhase != nil {
 		// Check if tribute should be skipped due to immunity
-		if d.checkTributeImmunity() {
+		tributeManager := NewTributeManager(d.Level)
+		isImmune, _ := tributeManager.GetTributeImmunityDetails(d.LastResult, d.PlayerCards)
+		if isImmune {
 			// Skip tribute phase due to immunity
 			d.TributePhase.Status = TributeStatusFinished
 			d.TributePhase.IsImmune = true
@@ -207,35 +209,6 @@ func (d *Deal) PassTurn(playerSeat int) error {
 	return nil
 }
 
-// SelectTribute handles tribute selection during tribute phase
-func (d *Deal) SelectTribute(playerSeat int, card *Card) error {
-	if d.Status != DealStatusTribute {
-		return fmt.Errorf("deal is not in tribute status: %s", d.Status)
-	}
-
-	if d.TributePhase == nil {
-		return errors.New("no active tribute phase")
-	}
-
-	err := d.TributePhase.SelectTribute(playerSeat, card)
-	if err != nil {
-		return fmt.Errorf("failed to select tribute: %w", err)
-	}
-
-	// Check if tribute phase is finished
-	if d.TributePhase.Status == TributeStatusFinished {
-		// Note: Tribute effects are applied by GameEngine, not here
-		// Start first trick
-		err = d.startFirstTrick()
-		if err != nil {
-			return fmt.Errorf("failed to start first trick: %w", err)
-		}
-		d.Status = DealStatusPlaying
-	}
-
-	return nil
-}
-
 // ProcessTimeouts processes any pending timeouts and returns resulting events
 func (d *Deal) ProcessTimeouts() []*GameEvent {
 	events := make([]*GameEvent, 0)
@@ -245,7 +218,7 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 	if d.Status == DealStatusTribute && d.TributePhase != nil {
 		if d.TributePhase.Status == TributeStatusSelecting && now.After(d.TributePhase.SelectTimeout) {
 			// Auto-select tribute on timeout
-			err := d.TributePhase.HandleTimeout()
+			err := d.TributePhase.handleTimeout()
 			if err == nil {
 				event := &GameEvent{
 					Type: EventPlayerTimeout,
@@ -373,7 +346,8 @@ func (d *Deal) startTributePhase() error {
 		return errors.New("no tribute phase to start")
 	}
 
-	return d.TributePhase.Start()
+	// No special start logic needed, tribute phase is ready to use
+	return nil
 }
 
 // StartPlayingPhase 开始游戏阶段（公开方法，用于贡牌阶段结束后启动游戏）
@@ -600,17 +574,6 @@ func (d *Deal) CalculateResult(match *Match) (*DealResult, error) {
 
 	calculator := NewDealResultCalculator(d.Level)
 	return calculator.CalculateDealResult(d, match)
-}
-
-// checkTributeImmunity checks if tribute should be skipped due to immunity
-func (d *Deal) checkTributeImmunity() bool {
-	if d.TributePhase == nil || d.LastResult == nil {
-		return false
-	}
-
-	// Use the existing TributeManager to check immunity
-	tributeManager := NewTributeManager(d.Level)
-	return tributeManager.CheckTributeImmunity(d.LastResult, d.PlayerCards)
 }
 
 // determineFirstPlayer determines who plays first in the deal
