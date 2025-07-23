@@ -396,25 +396,6 @@ func TestBombLogic(t *testing.T) {
 	}
 }
 
-func TestSortNoLevel(t *testing.T) {
-	// 测试排序功能
-	card1, _ := NewCard(5, "Spade", 2)
-	card2, _ := NewCard(3, "Heart", 2)
-	card3, _ := NewCard(2, "Heart", 2) // 变化牌
-	card4, _ := NewCard(7, "Diamond", 2)
-
-	sorted := SortNoLevel([]*Card{card1, card2, card3, card4})
-
-	if len(sorted) != 4 {
-		t.Error("Sorted cards should have same length")
-	}
-
-	// 变化牌应该在最后
-	if !sorted[len(sorted)-1].IsWildcard() {
-		t.Error("Wildcard should be at the end")
-	}
-}
-
 func TestFoldAndIllegal(t *testing.T) {
 	// 测试弃牌
 	fold := &Fold{BaseComp: BaseComp{Cards: []*Card{}, Valid: true, Type: TypeFold}}

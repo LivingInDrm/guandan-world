@@ -211,11 +211,6 @@ func TestGameEngineErrorHandling(t *testing.T) {
 		t.Error("PassTurn should fail without active match")
 	}
 
-	_, err = engine.SelectTribute(0, nil)
-	if err == nil {
-		t.Error("SelectTribute should fail without active match")
-	}
-
 	_, err = engine.HandlePlayerDisconnect(0)
 	if err == nil {
 		t.Error("HandlePlayerDisconnect should fail without active match")

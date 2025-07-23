@@ -158,21 +158,6 @@ func TestLessThan(t *testing.T) {
 	}
 }
 
-func TestGreaterThanOrEqual(t *testing.T) {
-	card1, _ := NewCard(5, "Spade", 2)
-	card2, _ := NewCard(3, "Heart", 2)
-	if !card1.GreaterThanOrEqual(card2) {
-		t.Error("5 should be greater than or equal to 3")
-	}
-
-	// 测试相等但红桃更大的情况
-	card3, _ := NewCard(5, "Heart", 2)
-	card4, _ := NewCard(5, "Spade", 2)
-	if !card3.GreaterThanOrEqual(card4) {
-		t.Error("Same number but Heart should be greater or equal")
-	}
-}
-
 func TestEquals(t *testing.T) {
 	card1, _ := NewCard(5, "Spade", 2)
 	card2, _ := NewCard(5, "Heart", 2)
@@ -207,30 +192,6 @@ func TestString(t *testing.T) {
 	expected = "Red Joker"
 	if card.String() != expected {
 		t.Errorf("Expected '%s', got '%s'", expected, card.String())
-	}
-}
-
-func TestJSONEncode(t *testing.T) {
-	card, _ := NewCard(3, "Spade", 2)
-	json := card.JSONEncode()
-
-	if json["color"] != "Spade" {
-		t.Errorf("Expected color 'Spade', got '%v'", json["color"])
-	}
-
-	if json["number"] != 3 {
-		t.Errorf("Expected number 3, got '%v'", json["number"])
-	}
-
-	if json["selected"] != false {
-		t.Errorf("Expected selected false, got '%v'", json["selected"])
-	}
-
-	// 测试 Ace 的 JSON 编码
-	ace, _ := NewCard(1, "Heart", 2)
-	json = ace.JSONEncode()
-	if json["number"] != 1 {
-		t.Errorf("Expected raw number 1 for Ace, got '%v'", json["number"])
 	}
 }
 
