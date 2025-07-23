@@ -83,6 +83,21 @@ func (mso *MatchSimulatorObserver) handleMatchStarted(event *GameEvent) {
 
 func (mso *MatchSimulatorObserver) handleDealStarted(event *GameEvent) {
 	mso.log("Event: Deal Started")
+
+	// 显示所有玩家的手牌信息
+	if deal, ok := event.Data.(*Deal); ok && deal != nil {
+		mso.log("=== 发牌完成，玩家手牌 ===")
+		for playerSeat := 0; playerSeat < 4; playerSeat++ {
+			cards := deal.PlayerCards[playerSeat]
+			var cardStrs []string
+			for _, card := range cards {
+				cardStrs = append(cardStrs, card.ToShortString())
+			}
+			mso.log(fmt.Sprintf("Player %d (%d cards): [%s]",
+				playerSeat, len(cards), strings.Join(cardStrs, ",")))
+		}
+		mso.log("===========================")
+	}
 }
 
 func (mso *MatchSimulatorObserver) handleCardsDealt(event *GameEvent) {

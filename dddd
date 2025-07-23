@@ -1,0 +1,18 @@
+=== RUN   TestMatchSimulatorV2WithRun
+
+========== Match Summary ==========
+Total Deals: 6
+Duration: 15.081792ms
+Winner: Team 0
+Final Levels: Team 0: Level 14, Team 1: Level 2
+Total Tricks: 150
+Player Statistics:
+  Player 0: 0 cards played, 0 tricks won
+  Player 1: 0 cards played, 0 tricks won
+  Player 2: 0 cards played, 0 tricks won
+  Player 3: 0 cards played, 0 tricks won
+===================================
+    match_simulator_v2_test.go:61: MatchSimulatorV2 simulation test completed
+--- PASS: TestMatchSimulatorV2WithRun (0.02s)
+PASS
+ok  	guandan-world/simulator	(cached)
