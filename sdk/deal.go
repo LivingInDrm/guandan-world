@@ -499,22 +499,40 @@ func (d *Deal) isTrickFinished() bool {
 		return false
 	}
 
-	// Trick is finished when all players have played or passed,
-	// and we're back to the leader or all others have passed
 	playCount := len(d.CurrentTrick.Plays)
+
+	// Need at least 4 plays for a trick to be finished
 	if playCount < 4 {
 		return false
 	}
 
-	// Check if last 3 plays were all passes (everyone passed after leader)
+	// Case 1: Last 3 plays were all passes (everyone passed after leader)
 	passCount := 0
 	for i := playCount - 3; i < playCount; i++ {
 		if d.CurrentTrick.Plays[i].IsPass {
 			passCount++
 		}
 	}
+	if passCount == 3 {
+		return true
+	}
 
-	return passCount == 3
+	// Case 2: Current turn is back to the current leading player and everyone has played
+	// This means a complete round has happened and it's back to the leader
+	if d.CurrentTrick.CurrentTurn == d.CurrentTrick.Leader && playCount >= 4 {
+		// Check if all 4 players have played at least once
+		playersPlayed := make(map[int]bool)
+		for _, play := range d.CurrentTrick.Plays {
+			playersPlayed[play.PlayerSeat] = true
+		}
+
+		// If all 4 players have played and we're back to the leader, trick is finished
+		if len(playersPlayed) == 4 {
+			return true
+		}
+	}
+
+	return false
 }
 
 // finishCurrentTrick finishes the current trick and sets it up for GameEngine to handle
@@ -593,7 +611,7 @@ func (d *Deal) checkTributeImmunity() bool {
 	if d.TributePhase == nil || d.LastResult == nil {
 		return false
 	}
-	
+
 	// Use the existing TributeManager to check immunity
 	tributeManager := NewTributeManager(d.Level)
 	return tributeManager.CheckTributeImmunity(d.LastResult, d.PlayerCards)
