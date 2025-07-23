@@ -98,7 +98,8 @@ func TestSimpleAutoPlayAlgorithm(t *testing.T) {
 			&Card{Number: 14, Color: "Diamond", Level: level},
 		}
 
-		cards := algorithm.SelectCardsToPlay(hand, nil, true)
+		trickInfo := &TrickInfo{IsLeader: true, LeadComp: nil}
+		cards := algorithm.SelectCardsToPlay(hand, trickInfo)
 		if cards == nil {
 			t.Error("Expected cards to play, got nil")
 		} else if len(cards) != 2 {

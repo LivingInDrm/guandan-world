@@ -50,7 +50,7 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 		// Rank3 和 Rank4 各上交 1 张贡牌，放入贡牌池
 		// Rank1 优先从贡牌池中挑选其一；Rank2 获得剩下的一张贡牌
 		tributePhase.Status = TributeStatusWaiting // 初始状态应该是 Waiting
-		tributePhase.SelectingPlayer = rank1 // Rank1 先选
+		tributePhase.SelectingPlayer = rank1       // Rank1 先选
 		tributePhase.SelectTimeout = time.Now().Add(30 * time.Second)
 
 		tributePhase.TributeMap[rank3] = -1 // -1 表示贡献到池子
@@ -83,7 +83,7 @@ func (tm *TributeManager) CheckTributeImmunity(lastResult *DealResult, playerHan
 
 	// 无论哪种胜利类型，抗贡逻辑都是一样的：
 	// 落败队伍如果合计拥有2个BJ（大王），就触发抗贡
-	
+
 	// 获取输掉的队伍编号
 	losingTeam := 1 - lastResult.WinningTeam
 
@@ -186,7 +186,6 @@ func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHa
 	return nil
 }
 
-
 // processReturnCards processes the return cards phase
 func (tm *TributeManager) processReturnCards(tributePhase *TributePhase, playerHands [4][]*Card) error {
 	// Check if all return cards have been submitted
@@ -205,7 +204,7 @@ func (tm *TributeManager) processReturnCards(tributePhase *TributePhase, playerH
 	if allReturned {
 		tributePhase.Status = TributeStatusFinished
 	}
-	
+
 	return nil
 }
 
@@ -275,7 +274,6 @@ func (tm *TributeManager) getHighestCardExcludingHeartTrump(hand []*Card) *Card 
 
 	return highest
 }
-
 
 // getLowestCard returns the lowest card from a hand
 func (tm *TributeManager) getLowestCard(hand []*Card) *Card {
@@ -475,10 +473,10 @@ func (tm *TributeManager) ProcessTributePhaseAction(phase *TributePhase, playerC
 		// Double down selection scenario
 		if phase.SelectingPlayer >= 0 && len(phase.PoolCards) > 0 {
 			return &TributeAction{
-				Type:         TributeActionSelect,
-				PlayerID:     phase.SelectingPlayer,
-				Options:      phase.PoolCards,
-				Timeout:      30 * time.Second,
+				Type:     TributeActionSelect,
+				PlayerID: phase.SelectingPlayer,
+				Options:  phase.PoolCards,
+				Timeout:  30 * time.Second,
 			}, nil
 		}
 
@@ -641,10 +639,10 @@ func (tm *TributeManager) GetTributeStatusInfo(phase *TributePhase, playerCards 
 	case TributeStatusSelecting:
 		if phase.SelectingPlayer >= 0 && len(phase.PoolCards) > 0 {
 			pendingActions = append(pendingActions, &TributeAction{
-				Type:         TributeActionSelect,
-				PlayerID:     phase.SelectingPlayer,
-				Options:      phase.PoolCards,
-				Timeout:      30 * time.Second,
+				Type:     TributeActionSelect,
+				PlayerID: phase.SelectingPlayer,
+				Options:  phase.PoolCards,
+				Timeout:  30 * time.Second,
 			})
 		}
 
@@ -668,6 +666,7 @@ func (tm *TributeManager) GetTributeStatusInfo(phase *TributePhase, playerCards 
 		Phase:          phase.Status,
 		TributeCards:   phase.TributeCards,
 		ReturnCards:    phase.ReturnCards,
+		TributeMap:     phase.TributeMap,
 		PendingActions: pendingActions,
 		IsImmune:       false, // This would need to be tracked separately
 	}

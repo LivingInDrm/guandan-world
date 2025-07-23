@@ -16,11 +16,10 @@ type AutoPlayAlgorithm interface {
 	// SelectCardsToPlay 选择要出的牌
 	// 参数:
 	//   hand: 手牌
-	//   currentTrick: 当前轮次信息
-	//   isLeader: 是否为首出
+	//   trickInfo: 当前轮次信息 (包含是否为首出和领先牌组合)
 	// 返回值:
 	//   []*Card: 要出的牌，如果返回nil表示过牌
-	SelectCardsToPlay(hand []*Card, currentTrick *Trick, isLeader bool) []*Card
+	SelectCardsToPlay(hand []*Card, trickInfo *TrickInfo) []*Card
 
 	// SelectTributeCard 选择要进贡的牌
 	// 参数:
@@ -52,13 +51,13 @@ func NewSimpleAutoPlayAlgorithm(level int) *SimpleAutoPlayAlgorithm {
 }
 
 // SelectCardsToPlay 实现自动出牌逻辑
-func (s *SimpleAutoPlayAlgorithm) SelectCardsToPlay(hand []*Card, currentTrick *Trick, isLeader bool) []*Card {
-	if isLeader {
+func (s *SimpleAutoPlayAlgorithm) SelectCardsToPlay(hand []*Card, trickInfo *TrickInfo) []*Card {
+	if trickInfo == nil || trickInfo.IsLeader {
 		// 首出：出张数尽可能多的合法非炸弹牌
 		return s.selectLeaderPlay(hand)
 	} else {
 		// 跟牌：如果能压过则出牌，否则过牌
-		return s.selectFollowPlay(hand, currentTrick)
+		return s.selectFollowPlay(hand, trickInfo)
 	}
 }
 
@@ -92,30 +91,30 @@ func (s *SimpleAutoPlayAlgorithm) selectLeaderPlay(hand []*Card) []*Card {
 }
 
 // selectFollowPlay 跟牌选牌逻辑
-func (s *SimpleAutoPlayAlgorithm) selectFollowPlay(hand []*Card, currentTrick *Trick) []*Card {
-	if currentTrick == nil || currentTrick.LeadComp == nil {
+func (s *SimpleAutoPlayAlgorithm) selectFollowPlay(hand []*Card, trickInfo *TrickInfo) []*Card {
+	if trickInfo == nil || trickInfo.LeadComp == nil {
 		return nil
 	}
 
-	leadType := currentTrick.LeadComp.GetType()
-	leadCards := currentTrick.LeadComp.GetCards()
+	leadType := trickInfo.LeadComp.GetType()
+	leadCards := trickInfo.LeadComp.GetCards()
 
 	// 根据领出的牌型寻找能压过的牌
 	switch leadType {
 	case TypeSingle:
 		return s.findBeatingSingle(hand, leadCards[0])
 	case TypePair:
-		return s.findBeatingPair(hand, currentTrick.LeadComp)
+		return s.findBeatingPair(hand, trickInfo.LeadComp)
 	case TypeTriple:
-		return s.findBeatingTriple(hand, currentTrick.LeadComp)
+		return s.findBeatingTriple(hand, trickInfo.LeadComp)
 	case TypeStraight:
-		return s.findBeatingStraight(hand, currentTrick.LeadComp)
+		return s.findBeatingStraight(hand, trickInfo.LeadComp)
 	case TypeFullHouse:
-		return s.findBeatingFullHouse(hand, currentTrick.LeadComp)
+		return s.findBeatingFullHouse(hand, trickInfo.LeadComp)
 	case TypePlate:
-		return s.findBeatingPlate(hand, currentTrick.LeadComp)
+		return s.findBeatingPlate(hand, trickInfo.LeadComp)
 	case TypeTube:
-		return s.findBeatingTube(hand, currentTrick.LeadComp)
+		return s.findBeatingTube(hand, trickInfo.LeadComp)
 	default:
 		// 对于炸弹类型，暂时不跟
 		return nil
@@ -486,79 +485,91 @@ func (ms *MatchSimulator) SimulateMatch() error {
 
 // processDeal 处理一局游戏
 func (ms *MatchSimulator) processDeal() error {
-	gameState := ms.engine.GetGameState()
-	if gameState.CurrentMatch == nil || gameState.CurrentMatch.CurrentDeal == nil {
+	// 使用新接口获取deal状态
+	dealStatus := ms.engine.GetCurrentDealStatus()
+
+	if dealStatus == DealStatusWaiting {
 		return fmt.Errorf("no active deal")
 	}
 
-	deal := gameState.CurrentMatch.CurrentDeal
-
 	// 处理贡牌阶段
-	if deal.Status == DealStatusTribute {
+	if dealStatus == DealStatusTribute {
 		if err := ms.processTributePhase(); err != nil {
 			return fmt.Errorf("failed to process tribute: %w", err)
 		}
 
 		// 立即重新获取状态，因为processTributePhase可能已经更新了deal状态
-		gameState = ms.engine.GetGameState()
-		if gameState.CurrentMatch == nil || gameState.CurrentMatch.CurrentDeal == nil {
+		dealStatus = ms.engine.GetCurrentDealStatus()
+		if dealStatus == DealStatusWaiting {
 			return nil // Deal已结束
 		}
-		deal = gameState.CurrentMatch.CurrentDeal
 
 		// 如果贡牌阶段已完成，立即打印贡牌详情
-		if deal.TributePhase != nil && deal.TributePhase.Status == TributeStatusFinished && !deal.TributePhase.IsImmune {
-			ms.logTributeDetails(deal.TributePhase)
-			ms.logPlayerHands("After Tribute", deal)
+		tributeStatus := ms.engine.GetTributeStatus()
+		if tributeStatus != nil && tributeStatus.Phase == TributeStatusFinished && !tributeStatus.IsImmune {
+			ms.logTributeDetailsFromStatus(tributeStatus)
+			ms.logPlayerHandsFromEngine("After Tribute")
 		}
-	} else if deal.TributePhase != nil && deal.TributePhase.IsImmune {
-		// 处理免贡的情况 - 贡牌阶段被跳过
-		ms.log("Tribute phase skipped due to immunity")
+	} else {
+		// 检查是否有免贡的情况
+		tributeStatus := ms.engine.GetTributeStatus()
+		if tributeStatus != nil && tributeStatus.IsImmune {
+			ms.log("Tribute phase skipped due to immunity")
+		}
 	}
 
-	// 等待deal状态变为playing（贡牌阶段结束后）- 简化逻辑
-	// 重新获取最新状态
-	gameState = ms.engine.GetGameState()
-	if gameState.CurrentMatch == nil || gameState.CurrentMatch.CurrentDeal == nil {
+	// 等待deal状态变为playing（贡牌阶段结束后）
+	dealStatus = ms.engine.GetCurrentDealStatus()
+	if dealStatus == DealStatusWaiting {
 		return nil // Deal已结束
 	}
-	deal = gameState.CurrentMatch.CurrentDeal
 
-	if deal.Status != DealStatusPlaying {
-		ms.log(fmt.Sprintf("Deal status is %v instead of playing, skipping this deal", deal.Status))
+	if dealStatus != DealStatusPlaying {
+		ms.log(fmt.Sprintf("Deal status is %v instead of playing, skipping this deal", dealStatus))
 		return nil // 跳过这个deal而不是报错
 	}
+
+	// 在游戏开始前输出初始手牌
+	ms.logPlayerHandsFromEngine("Deal Started - Initial Hands")
 
 	// 游戏主循环（添加安全计数器）
 	maxTricks := 200 // 增加每局最大轮数限制，确保玩家能出完所有牌
 	trickCounter := 0
-	for deal.Status == DealStatusPlaying && trickCounter < maxTricks {
+	for dealStatus == DealStatusPlaying && trickCounter < maxTricks {
 		trickCounter++
 
-		// 检查是否有活跃的trick
-		if deal.CurrentTrick == nil {
+		// 获取当前轮次信息
+		turnInfo := ms.engine.GetCurrentTurnInfo()
+		if turnInfo == nil || !turnInfo.HasActiveTrick {
 			ms.log("Warning: No current trick in playing state")
 			break
 		}
 
 		// 获取当前轮到谁出牌
-		currentPlayer := deal.CurrentTrick.CurrentTurn
+		currentPlayer := turnInfo.CurrentPlayer
 
 		// 获取玩家视图
 		playerView := ms.engine.GetPlayerView(currentPlayer)
 		playerHand := playerView.PlayerCards
 
 		// 判断是否为首出
-		isLeader := deal.CurrentTrick.LeadComp == nil
+		isLeader := turnInfo.IsLeader
 
 		// 如果是trick的第一次出牌（首出），输出所有玩家手牌
-		if isLeader && len(deal.CurrentTrick.Plays) == 0 {
-			ms.logPlayerHands(fmt.Sprintf("New Trick Started (Leader: Player %d)", currentPlayer), deal)
+		if isLeader && turnInfo.IsNewTrick {
+			ms.logPlayerHandsFromEngine(fmt.Sprintf("New Trick Started (Leader: Player %d)", currentPlayer))
 		}
 
 		// 使用自动算法选择出牌
 		algorithm := ms.players[currentPlayer].AutoPlayAlgorithm
-		selectedCards := algorithm.SelectCardsToPlay(playerHand, deal.CurrentTrick, isLeader)
+
+		// 构造TrickInfo - 从turnInfo获取必要信息
+		trickInfo := &TrickInfo{
+			IsLeader: isLeader,
+			LeadComp: turnInfo.LeadComp, // 使用turnInfo中的领先牌组合
+		}
+
+		selectedCards := algorithm.SelectCardsToPlay(playerHand, trickInfo)
 
 		// 执行出牌或过牌
 		if selectedCards != nil && len(selectedCards) > 0 {
@@ -608,17 +619,16 @@ func (ms *MatchSimulator) processDeal() error {
 		}
 
 		// 检查游戏状态更新
-		gameState = ms.engine.GetGameState()
-		if gameState.CurrentMatch.CurrentDeal == nil {
+		dealStatus = ms.engine.GetCurrentDealStatus()
+		if dealStatus == DealStatusWaiting {
 			break // Deal已结束
 		}
-		deal = gameState.CurrentMatch.CurrentDeal
 
 		ms.trickCount++
 	}
 
 	if trickCounter >= maxTricks {
-		ms.log(fmt.Sprintf("WARNING: Deal terminated after %d tricks (safety limit). Deal status: %v", trickCounter, deal.Status))
+		ms.log(fmt.Sprintf("WARNING: Deal terminated after %d tricks (safety limit). Deal status: %v", trickCounter, dealStatus))
 	}
 
 	return nil
@@ -728,11 +738,8 @@ func (ms *MatchSimulator) handleMatchStarted(event *GameEvent) {
 
 func (ms *MatchSimulator) handleDealStarted(event *GameEvent) {
 	ms.log("Event: Deal Started")
-	// 输出发牌后每个玩家的初始手牌
-	if deal, ok := event.Data.(*Deal); ok {
-		ms.logPlayerHands("Deal Started", deal)
-
-	}
+	// 注意：不能在事件处理期间调用引擎方法，会导致死锁
+	// 手牌信息将在deal处理过程中的适当时机输出
 }
 
 func (ms *MatchSimulator) handleCardsDealt(event *GameEvent) {
@@ -884,21 +891,21 @@ func (ms *MatchSimulator) formatPlayerHands(deal *Deal) string {
 
 // logTeamStatus 输出当前队伍情况和等级
 func (ms *MatchSimulator) logTeamStatus() {
-	gameState := ms.engine.GetGameState()
-	if gameState.CurrentMatch == nil {
+	matchDetails := ms.engine.GetMatchDetails()
+	if matchDetails == nil {
 		return
 	}
 
-	match := gameState.CurrentMatch
 	ms.log(fmt.Sprintf("=== Team Status Before Deal %d ===", ms.currentDealNum))
-	ms.log(fmt.Sprintf("Team 0 (Players 0,2): Level %d", match.TeamLevels[0]))
-	ms.log(fmt.Sprintf("Team 1 (Players 1,3): Level %d", match.TeamLevels[1]))
+	ms.log(fmt.Sprintf("Team 0 (Players 0,2): Level %d", matchDetails.TeamLevels[0]))
+	ms.log(fmt.Sprintf("Team 1 (Players 1,3): Level %d", matchDetails.TeamLevels[1]))
 
 	// 显示玩家名称
 	ms.log("Players:")
-	for i := 0; i < 4; i++ {
-		teamNum := i % 2
-		ms.log(fmt.Sprintf("  Player %d (%s) - Team %d", i, match.Players[i].Username, teamNum))
+	for _, player := range matchDetails.Players {
+		if player != nil {
+			ms.log(fmt.Sprintf("  Player %d (%s) - Team %d", player.Seat, player.Username, player.TeamNum))
+		}
 	}
 }
 
@@ -951,20 +958,23 @@ func (ms *MatchSimulator) logPlayerHands(context string, deal *Deal) {
 // printMatchSummary 打印比赛总结
 func (ms *MatchSimulator) printMatchSummary() {
 	gameState := ms.engine.GetGameState()
-	match := gameState.CurrentMatch
+	matchDetails := ms.engine.GetMatchDetails()
 
 	fmt.Println("\n========== Match Summary ==========")
 	fmt.Printf("Total Deals: %d\n", ms.dealCount)
 	fmt.Printf("Total Tricks: %d\n", ms.trickCount)
 
-	if match != nil {
-		fmt.Printf("Winner: Team %d\n", match.Winner)
-		fmt.Printf("Final Levels: Team 0: Level %d, Team 1: Level %d\n",
-			match.TeamLevels[0],
-			match.TeamLevels[1])
+	if gameState.CurrentMatch != nil {
+		fmt.Printf("Winner: Team %d\n", gameState.CurrentMatch.Winner)
 
-		if match.EndTime != nil {
-			duration := match.EndTime.Sub(match.StartTime)
+		if matchDetails != nil {
+			fmt.Printf("Final Levels: Team 0: Level %d, Team 1: Level %d\n",
+				matchDetails.TeamLevels[0],
+				matchDetails.TeamLevels[1])
+		}
+
+		if gameState.CurrentMatch.EndTime != nil {
+			duration := gameState.CurrentMatch.EndTime.Sub(gameState.CurrentMatch.StartTime)
 			fmt.Printf("Duration: %v\n", duration)
 		}
 	}
@@ -994,4 +1004,67 @@ func RunVerboseDemo() error {
 
 	fmt.Println("\n✅ 模拟完成!")
 	return nil
+}
+
+// logTributeDetailsFromStatus 从TributeStatusInfo输出贡牌阶段的详细信息
+func (ms *MatchSimulator) logTributeDetailsFromStatus(tributeStatus *TributeStatusInfo) {
+	if tributeStatus == nil {
+		return
+	}
+
+	ms.log("=== Tribute Details ===")
+
+	// 输出贡牌映射关系
+	if len(tributeStatus.TributeMap) > 0 {
+		ms.log("Tribute Map (Giver -> Receiver):")
+		for giver, receiver := range tributeStatus.TributeMap {
+			ms.log(fmt.Sprintf("  Player %d -> Player %d", giver, receiver))
+		}
+	}
+
+	// 输出具体的贡牌
+	if len(tributeStatus.TributeCards) > 0 {
+		for giver, card := range tributeStatus.TributeCards {
+			receiver := tributeStatus.TributeMap[giver]
+			ms.log(fmt.Sprintf("Tribute Cards: Player %d gave %s to Player %d", giver, card.ToShortString(), receiver))
+		}
+	}
+
+	// 输出还贡牌
+	if len(tributeStatus.ReturnCards) > 0 {
+		for returner, card := range tributeStatus.ReturnCards {
+			ms.log(fmt.Sprintf("Return Cards: Player %d returned %s", returner, card.ToShortString()))
+		}
+	}
+
+	// 如果有抗贡（免贡）
+	if tributeStatus.IsImmune {
+		ms.log("Tribute was skipped (Immunity)")
+	}
+}
+
+// logPlayerHandsFromEngine 使用引擎接口获取并输出所有玩家的手牌
+func (ms *MatchSimulator) logPlayerHandsFromEngine(context string) {
+	if ms.verbose {
+		var result []string
+
+		for playerSeat := 0; playerSeat < 4; playerSeat++ {
+			playerView := ms.engine.GetPlayerView(playerSeat)
+			if playerView != nil {
+				playerCards := playerView.PlayerCards
+				var cardStrs []string
+
+				// 将每张牌转换为简化格式
+				for _, card := range playerCards {
+					cardStrs = append(cardStrs, card.ToShortString())
+				}
+
+				result = append(result, fmt.Sprintf("Player %d (%d cards): [%s]",
+					playerSeat, len(playerCards), strings.Join(cardStrs, ",")))
+			}
+		}
+
+		ms.log(fmt.Sprintf("%s - Player Hands:", context))
+		ms.log(strings.Join(result, "\n"))
+	}
 }

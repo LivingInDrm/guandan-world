@@ -306,6 +306,35 @@ type GameEngineInterface interface {
 	//   - 启用托管时，系统将自动为该玩家做决策
 	//   - 可用于处理长时间未操作的玩家
 	SetPlayerAutoPlay(playerSeat int, enabled bool) error
+
+	// 新增状态查询接口
+
+	// GetCurrentDealStatus 获取当前牌局状态
+	// 返回值:
+	//   DealStatus: 当前牌局的状态（waiting/dealing/tribute/playing/finished）
+	// 功能说明:
+	//   - 提供当前牌局状态的快速查询
+	//   - 替代直接访问deal.Status的需求
+	//   - 如果没有活跃牌局，返回DealStatusWaiting
+	GetCurrentDealStatus() DealStatus
+
+	// GetCurrentTurnInfo 获取当前轮次信息
+	// 返回值:
+	//   *TurnInfo: 当前轮次的详细信息，如果没有活跃轮次返回nil
+	// 功能说明:
+	//   - 提供当前轮次的完整信息
+	//   - 包括当前玩家、是否为首出、是否为新trick等
+	//   - 替代直接访问deal.CurrentTrick的需求
+	GetCurrentTurnInfo() *TurnInfo
+
+	// GetMatchDetails 获取比赛详细信息
+	// 返回值:
+	//   *MatchDetails: 比赛的详细信息，如果没有活跃比赛返回nil
+	// 功能说明:
+	//   - 提供比赛级别的信息
+	//   - 包括队伍等级、玩家信息等
+	//   - 替代直接访问match对象的需求
+	GetMatchDetails() *MatchDetails
 }
 
 // NewGameEngine creates a new game engine instance
@@ -1059,6 +1088,76 @@ func (ge *GameEngine) GetTributeStatus() *TributeStatusInfo {
 	// 调用 TributeManager 获取状态信息
 	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
 	return tm.GetTributeStatusInfo(deal.TributePhase, deal.PlayerCards)
+}
+
+// GetCurrentDealStatus 获取当前牌局状态
+func (ge *GameEngine) GetCurrentDealStatus() DealStatus {
+	ge.mutex.RLock()
+	defer ge.mutex.RUnlock()
+
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return DealStatusWaiting
+	}
+
+	return ge.currentMatch.CurrentDeal.Status
+}
+
+// GetCurrentTurnInfo 获取当前轮次信息
+func (ge *GameEngine) GetCurrentTurnInfo() *TurnInfo {
+	ge.mutex.RLock()
+	defer ge.mutex.RUnlock()
+
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return nil
+	}
+
+	deal := ge.currentMatch.CurrentDeal
+	if deal.CurrentTrick == nil {
+		return &TurnInfo{
+			CurrentPlayer:  -1,
+			IsLeader:       false,
+			IsNewTrick:     false,
+			HasActiveTrick: false,
+			LeadComp:       nil,
+		}
+	}
+
+	trick := deal.CurrentTrick
+	return &TurnInfo{
+		CurrentPlayer:  trick.CurrentTurn,
+		IsLeader:       trick.LeadComp == nil,
+		IsNewTrick:     len(trick.Plays) == 0,
+		HasActiveTrick: true,
+		LeadComp:       trick.LeadComp,
+	}
+}
+
+// GetMatchDetails 获取比赛详细信息
+func (ge *GameEngine) GetMatchDetails() *MatchDetails {
+	ge.mutex.RLock()
+	defer ge.mutex.RUnlock()
+
+	if ge.currentMatch == nil {
+		return nil
+	}
+
+	match := ge.currentMatch
+	players := make([]*PlayerInfo, 4)
+
+	for i := 0; i < 4; i++ {
+		if match.Players[i] != nil {
+			players[i] = &PlayerInfo{
+				Seat:     match.Players[i].Seat,
+				Username: match.Players[i].Username,
+				TeamNum:  i % 2, // 座位号0,2为team0；座位号1,3为team1
+			}
+		}
+	}
+
+	return &MatchDetails{
+		TeamLevels: match.TeamLevels,
+		Players:    players,
+	}
 }
 
 // generateID generates a unique ID for the game engine

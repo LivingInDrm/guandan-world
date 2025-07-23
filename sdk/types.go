@@ -65,7 +65,7 @@ type Deal struct {
 	Rankings     []int         `json:"rankings"`     // Order of players finishing (seat numbers)
 	StartTime    time.Time     `json:"start_time"`
 	EndTime      *time.Time    `json:"end_time,omitempty"`
-	LastResult   *DealResult   `json:"-"`             // Previous deal result (not serialized)
+	LastResult   *DealResult   `json:"-"` // Previous deal result (not serialized)
 }
 
 // Trick represents a single trick (one round of card plays)
@@ -136,8 +136,41 @@ type TributeStatusInfo struct {
 	Phase          TributeStatus    `json:"phase"`
 	TributeCards   map[int]*Card    `json:"tribute_cards"`   // Already determined tribute cards
 	ReturnCards    map[int]*Card    `json:"return_cards"`    // Already determined return cards
+	TributeMap     map[int]int      `json:"tribute_map"`     // Tribute mapping: giver -> receiver
 	PendingActions []*TributeAction `json:"pending_actions"` // Actions waiting for player input
 	IsImmune       bool             `json:"is_immune"`       // Whether tribute was skipped due to immunity
 }
 
 // Methods for Match and Deal are implemented in their respective files
+
+// TurnInfo provides information about the current turn state
+// 提供当前轮次状态信息，替代直接访问deal.CurrentTrick的需求
+type TurnInfo struct {
+	CurrentPlayer  int      `json:"current_player"`   // 当前轮到哪个玩家 (座位号0-3)
+	IsLeader       bool     `json:"is_leader"`        // 当前玩家是否为首出
+	IsNewTrick     bool     `json:"is_new_trick"`     // 是否为新trick的第一次出牌
+	HasActiveTrick bool     `json:"has_active_trick"` // 是否有活跃的trick
+	LeadComp       CardComp `json:"lead_comp"`        // 当前领先的牌组合 (如果有的话)
+}
+
+// MatchDetails provides comprehensive match information
+// 提供完整的比赛信息，替代直接访问match对象的需求
+type MatchDetails struct {
+	TeamLevels [2]int        `json:"team_levels"` // 两队当前等级 [team0, team1]
+	Players    []*PlayerInfo `json:"players"`     // 所有玩家信息
+}
+
+// PlayerInfo provides player information with team assignment
+// 提供玩家信息包括队伍分配
+type PlayerInfo struct {
+	Seat     int    `json:"seat"`     // 座位号 (0-3)
+	Username string `json:"username"` // 玩家用户名
+	TeamNum  int    `json:"team_num"` // 队伍编号 (0 或 1)
+}
+
+// TrickInfo provides trick context for AutoPlayAlgorithm
+// 为自动出牌算法提供trick上下文信息，避免直接传递Trick对象
+type TrickInfo struct {
+	IsLeader bool     `json:"is_leader"`           // 是否为首出
+	LeadComp CardComp `json:"lead_comp,omitempty"` // 当前领先的牌组合 (如果不是首出)
+}
