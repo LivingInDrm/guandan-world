@@ -256,45 +256,6 @@ func (t *Trick) finishTrick() error {
 	return nil
 }
 
-// GetTrickSummary returns a summary of the trick for logging/debugging
-func (t *Trick) GetTrickSummary() map[string]interface{} {
-	summary := map[string]interface{}{
-		"id":           t.ID,
-		"status":       t.Status,
-		"leader":       t.Leader,
-		"winner":       t.Winner,
-		"current_turn": t.CurrentTurn,
-		"play_count":   len(t.Plays),
-		"start_time":   t.StartTime,
-	}
-
-	if t.LeadComp != nil {
-		summary["lead_combination"] = t.LeadComp.String()
-		summary["lead_combination_type"] = t.LeadComp.GetType().String()
-	}
-
-	// Add play summary
-	plays := make([]map[string]interface{}, len(t.Plays))
-	for i, play := range t.Plays {
-		playInfo := map[string]interface{}{
-			"player_seat": play.PlayerSeat,
-			"is_pass":     play.IsPass,
-			"timestamp":   play.Timestamp,
-		}
-
-		if !play.IsPass && play.Comp != nil {
-			playInfo["combination"] = play.Comp.String()
-			playInfo["combination_type"] = play.Comp.GetType().String()
-			playInfo["card_count"] = len(play.Cards)
-		}
-
-		plays[i] = playInfo
-	}
-	summary["plays"] = plays
-
-	return summary
-}
-
 // generateTrickID generates a unique ID for a trick
 func generateTrickID() string {
 	return fmt.Sprintf("trick_%d", time.Now().UnixNano())

@@ -124,16 +124,6 @@ func (c *Card) LessThan(other *Card) bool {
 	return false
 }
 
-// GreaterThanOrEqual 大于比较
-func (c *Card) GreaterThanOrEqual(other *Card) bool {
-	if c.GreaterThan(other) {
-		return true
-	} else if c.Equals(other) && c.Color == "Heart" && other.Color != "Heart" {
-		return true
-	}
-	return false
-}
-
 // Equals 判断相等
 func (c *Card) Equals(other *Card) bool {
 	return c.Number == other.Number
@@ -192,15 +182,6 @@ func (c *Card) ToShortString() string {
 	}
 
 	return numberStr + suitStr
-}
-
-// JSONEncode 转换为 JSON 格式
-func (c *Card) JSONEncode() map[string]interface{} {
-	return map[string]interface{}{
-		"color":    c.Color,
-		"number":   c.RawNumber,
-		"selected": false,
-	}
 }
 
 // 辅助函数：检查字符串是否在切片中

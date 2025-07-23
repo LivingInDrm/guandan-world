@@ -24,29 +24,29 @@ func (pv *PlayValidator) ValidatePlay(playerSeat int, cards []*Card, playerCards
 	if len(cards) == 0 {
 		return errors.New("cannot play empty cards")
 	}
-	
+
 	// Validate it's the player's turn
 	if currentTrick != nil && currentTrick.CurrentTurn != playerSeat {
 		return fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, currentTrick.CurrentTurn)
 	}
-	
+
 	// Validate cards are from player's hand
 	err := pv.validatePlayerOwnsCards(cards, playerCards)
 	if err != nil {
 		return fmt.Errorf("invalid card ownership: %w", err)
 	}
-	
+
 	// Create and validate card combination
 	var prevComp CardComp
 	if currentTrick != nil {
 		prevComp = currentTrick.LeadComp
 	}
-	
+
 	comp := FromCardList(cards, prevComp)
 	if !comp.IsValid() {
 		return errors.New("invalid card combination")
 	}
-	
+
 	// If this is not the first play in the trick, validate against lead combination
 	if currentTrick != nil && currentTrick.LeadComp != nil {
 		err = pv.validateAgainstLeadCombination(comp, currentTrick.LeadComp)
@@ -54,7 +54,7 @@ func (pv *PlayValidator) ValidatePlay(playerSeat int, cards []*Card, playerCards
 			return fmt.Errorf("cannot beat lead combination: %w", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -64,16 +64,16 @@ func (pv *PlayValidator) ValidatePass(playerSeat int, currentTrick *Trick) error
 	if currentTrick == nil {
 		return errors.New("no active trick")
 	}
-	
+
 	if currentTrick.CurrentTurn != playerSeat {
 		return fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, currentTrick.CurrentTurn)
 	}
-	
+
 	// Cannot pass if no one has played yet (must play as leader)
 	if currentTrick.LeadComp == nil {
 		return errors.New("cannot pass as trick leader - must play cards")
 	}
-	
+
 	return nil
 }
 
@@ -82,35 +82,16 @@ func (pv *PlayValidator) ValidateTurn(playerSeat int, currentTrick *Trick) error
 	if currentTrick == nil {
 		return errors.New("no active trick")
 	}
-	
+
 	if currentTrick.Status != TrickStatusPlaying {
 		return fmt.Errorf("trick is not in playing status: %s", currentTrick.Status)
 	}
-	
+
 	if currentTrick.CurrentTurn != playerSeat {
 		return fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, currentTrick.CurrentTurn)
 	}
-	
-	return nil
-}
 
-// ValidateCardCombination validates if a set of cards forms a valid combination
-func (pv *PlayValidator) ValidateCardCombination(cards []*Card) (CardComp, error) {
-	if len(cards) == 0 {
-		return nil, errors.New("cannot validate empty cards")
-	}
-	
-	// Set level for all cards to ensure proper wildcard detection
-	for _, card := range cards {
-		card.Level = pv.level
-	}
-	
-	comp := FromCardList(cards, nil)
-	if !comp.IsValid() {
-		return nil, fmt.Errorf("invalid card combination: %s", comp.GetType().String())
-	}
-	
-	return comp, nil
+	return nil
 }
 
 // ValidateGameState validates the current game state for play actions
@@ -118,15 +99,15 @@ func (pv *PlayValidator) ValidateGameState(deal *Deal) error {
 	if deal == nil {
 		return errors.New("no active deal")
 	}
-	
+
 	if deal.Status != DealStatusPlaying {
 		return fmt.Errorf("deal is not in playing status: %s", deal.Status)
 	}
-	
+
 	if deal.CurrentTrick == nil {
 		return errors.New("no active trick in deal")
 	}
-	
+
 	return nil
 }
 
@@ -134,19 +115,19 @@ func (pv *PlayValidator) ValidateGameState(deal *Deal) error {
 func (pv *PlayValidator) validatePlayerOwnsCards(playedCards []*Card, playerCards []*Card) error {
 	// Create a map of player's cards for efficient lookup
 	playerCardMap := make(map[string]int) // card string -> count
-	
+
 	for _, card := range playerCards {
 		cardKey := pv.getCardKey(card)
 		playerCardMap[cardKey]++
 	}
-	
+
 	// Check if player has all the played cards
 	playedCardMap := make(map[string]int)
 	for _, card := range playedCards {
 		cardKey := pv.getCardKey(card)
 		playedCardMap[cardKey]++
 	}
-	
+
 	// Validate each played card
 	for cardKey, playedCount := range playedCardMap {
 		ownedCount, exists := playerCardMap[cardKey]
@@ -154,11 +135,11 @@ func (pv *PlayValidator) validatePlayerOwnsCards(playedCards []*Card, playerCard
 			return fmt.Errorf("player does not own card: %s", cardKey)
 		}
 		if playedCount > ownedCount {
-			return fmt.Errorf("player does not have enough of card %s: need %d, have %d", 
+			return fmt.Errorf("player does not have enough of card %s: need %d, have %d",
 				cardKey, playedCount, ownedCount)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -168,18 +149,18 @@ func (pv *PlayValidator) validateAgainstLeadCombination(comp CardComp, leadComp 
 	if comp.IsBomb() {
 		return nil
 	}
-	
+
 	// Must be same type unless it's a bomb
 	if comp.GetType() != leadComp.GetType() {
-		return fmt.Errorf("combination type %s cannot beat lead type %s", 
+		return fmt.Errorf("combination type %s cannot beat lead type %s",
 			comp.GetType().String(), leadComp.GetType().String())
 	}
-	
+
 	// Must be greater than current lead
 	if !comp.GreaterThan(leadComp) {
 		return errors.New("combination is not greater than current lead")
 	}
-	
+
 	return nil
 }
 
@@ -205,16 +186,16 @@ func (tv *TributeValidator) ValidateTributeSelection(playerSeat int, card *Card,
 	if tributePhase == nil {
 		return errors.New("no active tribute phase")
 	}
-	
+
 	if tributePhase.Status != TributeStatusSelecting {
 		return fmt.Errorf("tribute phase is not in selecting status: %s", tributePhase.Status)
 	}
-	
+
 	if tributePhase.SelectingPlayer != playerSeat {
-		return fmt.Errorf("player %d is not the selecting player, expected %d", 
+		return fmt.Errorf("player %d is not the selecting player, expected %d",
 			playerSeat, tributePhase.SelectingPlayer)
 	}
-	
+
 	// Validate card is in pool (for double-down situation)
 	if len(tributePhase.PoolCards) > 0 {
 		cardFound := false
@@ -235,7 +216,7 @@ func (tv *TributeValidator) ValidateTributeSelection(playerSeat int, card *Card,
 			return fmt.Errorf("invalid tribute card selection: %w", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -244,102 +225,15 @@ func (tv *TributeValidator) ValidateTributeTimeout(tributePhase *TributePhase) e
 	if tributePhase == nil {
 		return errors.New("no active tribute phase")
 	}
-	
+
 	if tributePhase.Status != TributeStatusSelecting {
 		return errors.New("tribute phase is not in selecting status")
 	}
-	
+
 	// Check if timeout has been reached
 	if time.Now().Before(tributePhase.SelectTimeout) {
 		return errors.New("tribute selection timeout not reached yet")
 	}
-	
+
 	return nil
-}
-
-// GameFlowValidator handles overall game flow validation
-type GameFlowValidator struct {
-	level int
-}
-
-// NewGameFlowValidator creates a new game flow validator
-func NewGameFlowValidator(level int) *GameFlowValidator {
-	return &GameFlowValidator{
-		level: level,
-	}
-}
-
-// ValidatePlayerAction validates any player action in the current game state
-func (gfv *GameFlowValidator) ValidatePlayerAction(action string, playerSeat int, data interface{}, gameState *GameState) error {
-	if gameState == nil || gameState.CurrentMatch == nil {
-		return errors.New("no active game")
-	}
-	
-	match := gameState.CurrentMatch
-	if match.Status != MatchStatusPlaying {
-		return fmt.Errorf("match is not in playing status: %s", match.Status)
-	}
-	
-	if match.CurrentDeal == nil {
-		return errors.New("no active deal")
-	}
-	
-	deal := match.CurrentDeal
-	
-	switch action {
-	case "play_cards":
-		cards, ok := data.([]*Card)
-		if !ok {
-			return errors.New("invalid data type for play_cards action")
-		}
-		
-		pv := NewPlayValidator(deal.Level)
-		return pv.ValidatePlay(playerSeat, cards, deal.PlayerCards[playerSeat], deal.CurrentTrick)
-		
-	case "pass":
-		pv := NewPlayValidator(deal.Level)
-		return pv.ValidatePass(playerSeat, deal.CurrentTrick)
-		
-	case "select_tribute":
-		card, ok := data.(*Card)
-		if !ok {
-			return errors.New("invalid data type for select_tribute action")
-		}
-		
-		tv := NewTributeValidator(deal.Level)
-		return tv.ValidateTributeSelection(playerSeat, card, deal.TributePhase, deal.PlayerCards[playerSeat])
-		
-	default:
-		return fmt.Errorf("unknown action type: %s", action)
-	}
-}
-
-// ValidatePlayerTimeout validates if a player action has timed out
-func (gfv *GameFlowValidator) ValidatePlayerTimeout(playerSeat int, gameState *GameState) error {
-	if gameState == nil || gameState.CurrentMatch == nil || gameState.CurrentMatch.CurrentDeal == nil {
-		return errors.New("no active game state")
-	}
-	
-	deal := gameState.CurrentMatch.CurrentDeal
-	
-	// Check tribute phase timeout
-	if deal.Status == DealStatusTribute && deal.TributePhase != nil {
-		tv := NewTributeValidator(deal.Level)
-		return tv.ValidateTributeTimeout(deal.TributePhase)
-	}
-	
-	// Check trick timeout
-	if deal.Status == DealStatusPlaying && deal.CurrentTrick != nil {
-		if deal.CurrentTrick.CurrentTurn != playerSeat {
-			return fmt.Errorf("player %d is not the current player", playerSeat)
-		}
-		
-		if time.Now().Before(deal.CurrentTrick.TurnTimeout) {
-			return errors.New("player timeout not reached yet")
-		}
-		
-		return nil
-	}
-	
-	return errors.New("no timeout situation found")
 }

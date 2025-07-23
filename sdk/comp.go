@@ -250,50 +250,6 @@ func (b *BaseComp) String() string {
 	return fmt.Sprintf("%v: %v", b.Type, b.Cards)
 }
 
-// SortNoLevel 排序时将级别牌放在合适位置
-func SortNoLevel(cards []*Card) []*Card {
-	if len(cards) == 0 {
-		return cards
-	}
-
-	// 首先按照正常规则排序
-	sortedCards := sortCards(cards)
-
-	// 统计变化牌数量
-	numWildcards := countWildcards(sortedCards)
-
-	if numWildcards == 0 {
-		// 检查最后一张牌是否为级别牌
-		lastCard := sortedCards[len(sortedCards)-1]
-		if lastCard.Level != lastCard.Number {
-			return sortedCards
-		}
-		// 如果最后一张是级别牌，则需要重新排序
-	}
-
-	// 将非变化牌重新排序
-	wildcards := []*Card{}
-	normalCards := getNormalCards(sortedCards)
-
-	for _, card := range sortedCards {
-		if card.IsWildcard() {
-			wildcards = append(wildcards, card)
-		}
-	}
-
-	// 按数字值排序正常牌
-	sort.Slice(normalCards, func(i, j int) bool {
-		return normalCards[i].Number < normalCards[j].Number
-	})
-
-	// 合并结果
-	result := make([]*Card, 0, len(cards))
-	result = append(result, normalCards...)
-	result = append(result, wildcards...)
-
-	return result
-}
-
 // FromCardList 从牌列表生成牌组
 func FromCardList(cards []*Card, prev CardComp) CardComp {
 	if len(cards) == 0 {
@@ -704,8 +660,8 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 		return failWithSortedCards(cards)
 	}
 
-	// 排序卡片，将level卡片放在适当位置
-	sortedCards := SortNoLevel(cards)
+	// 排序卡片
+	sortedCards := sortCards(cards)
 
 	// 统计变化牌数量
 	numWildcards := countWildcards(sortedCards)
@@ -1101,8 +1057,8 @@ func tubeSatisfy(cards []*Card) (bool, []*Card) {
 		return failWithSortedCards(cards)
 	}
 
-	// 使用sort_no_level排序
-	sortedCards := SortNoLevel(cards)
+	// 排序卡片
+	sortedCards := sortCards(cards)
 	wildcardCount := countWildcards(sortedCards)
 
 	// 获取牌的数字
