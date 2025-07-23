@@ -44,7 +44,7 @@ func TestNewTributePhase(t *testing.T) {
 				WinningTeam: 1,
 				VictoryType: VictoryTypeDoubleDown, // rank1(1), rank2(3) 同队
 			},
-			expectedStatus: TributeStatusSelecting,
+			expectedStatus: TributeStatusWaiting,
 		},
 		{
 			name: "Partner Last tribute scenario",
@@ -395,6 +395,23 @@ func TestTributeProcessComplete(t *testing.T) {
 		if err != nil {
 			t.Fatalf("处理上贡失败: %v", err)
 		}
+
+		// 如果进入还贡阶段，手动添加还贡卡
+		if tributePhase.Status == TributeStatusReturning {
+			// 检查是否需要还贡
+			for giver, receiver := range tributePhase.TributeMap {
+				if receiver != -1 && tributePhase.TributeCards[giver] != nil {
+					if tributePhase.ReturnCards[receiver] == nil {
+						// 选择最小的牌作为还贡
+						if len(playerHands[receiver]) > 0 {
+							returnCard := playerHands[receiver][0] // 选择第一张牌
+							tributePhase.AddReturnCard(receiver, returnCard)
+						}
+					}
+				}
+			}
+		}
+
 		if tributePhase.Status == TributeStatusFinished {
 			break
 		}

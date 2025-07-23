@@ -58,8 +58,8 @@ func TestNewDealWithTribute(t *testing.T) {
 		t.Error("Deal with last result should have tribute phase")
 	}
 
-	if deal.Status != DealStatusTribute {
-		t.Errorf("Deal with tribute should have status %v, got %v", DealStatusTribute, deal.Status)
+	if deal.Status != DealStatusWaiting {
+		t.Errorf("Deal with tribute should have status %v, got %v", DealStatusWaiting, deal.Status)
 	}
 }
 

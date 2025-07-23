@@ -263,10 +263,56 @@ func (tm *TributeManager) ApplyTributeToHands(tributePhase *TributePhase, player
 		return nil
 	}
 
+	// Handle double down scenario specially
+	if tributePhase.SelectionResults != nil && len(tributePhase.SelectionResults) > 0 {
+		return tm.applyDoubleDownTributeToHands(tributePhase, playerHands)
+	}
+
+	// Handle normal tribute scenario
+	return tm.applyNormalTributeToHands(tributePhase, playerHands)
+}
+
+// applyDoubleDownTributeToHands handles tribute application for double down scenario
+func (tm *TributeManager) applyDoubleDownTributeToHands(tributePhase *TributePhase, playerHands *[4][]*Card) error {
+	// Step 1: Apply original tribute transfers (from pool contributors to selectors)
+	for receiver, originalGiver := range tributePhase.SelectionResults {
+		tributeCard := tributePhase.TributeCards[originalGiver]
+		if tributeCard == nil {
+			continue
+		}
+
+		// Remove tribute card from original giver
+		playerHands[originalGiver] = tm.removeCardFromHand(playerHands[originalGiver], tributeCard)
+
+		// Add tribute card to receiver (selector)
+		playerHands[receiver] = append(playerHands[receiver], tributeCard)
+	}
+
+	// Step 2: Apply return tribute (if any)
+	for giver, receiver := range tributePhase.TributeMap {
+		if returnCard := tributePhase.ReturnCards[receiver]; returnCard != nil {
+			// Remove return card from receiver
+			playerHands[receiver] = tm.removeCardFromHand(playerHands[receiver], returnCard)
+
+			// Add return card to original giver
+			playerHands[giver] = append(playerHands[giver], returnCard)
+		}
+	}
+
+	// Re-sort all hands
+	for player := 0; player < 4; player++ {
+		playerHands[player] = sortCards(playerHands[player])
+	}
+
+	return nil
+}
+
+// applyNormalTributeToHands handles tribute application for normal (non-double down) scenario
+func (tm *TributeManager) applyNormalTributeToHands(tributePhase *TributePhase, playerHands *[4][]*Card) error {
 	// Apply tribute card exchanges
 	for giver, receiver := range tributePhase.TributeMap {
 		if receiver == -1 {
-			continue // Skip pool contributors in double down
+			continue // Skip pool contributors (should not happen in normal scenario)
 		}
 
 		tributeCard := tributePhase.TributeCards[giver]
@@ -423,11 +469,20 @@ func (tp *TributePhase) SelectTribute(playerSeat int, card *Card) error {
 
 	// Validate card is in pool
 	found := false
+	var originalGiver int = -1
 	for i, poolCard := range tp.PoolCards {
 		if tp.cardsEqual(card, poolCard) {
 			// Remove card from pool
 			tp.PoolCards = append(tp.PoolCards[:i], tp.PoolCards[i+1:]...)
 			found = true
+
+			// Find the original giver of this card
+			for giver, tributeCard := range tp.TributeCards {
+				if tp.TributeMap[giver] == -1 && tp.cardsEqual(tributeCard, card) {
+					originalGiver = giver
+					break
+				}
+			}
 			break
 		}
 	}
@@ -436,8 +491,17 @@ func (tp *TributePhase) SelectTribute(playerSeat int, card *Card) error {
 		return errors.New("card not found in tribute pool")
 	}
 
-	// Record the selection - the card goes to the selecting player
-	tp.TributeCards[tp.SelectingPlayer] = card
+	if originalGiver == -1 {
+		return errors.New("could not find original giver for selected card")
+	}
+
+	// Initialize selection tracking if needed
+	if tp.SelectionResults == nil {
+		tp.SelectionResults = make(map[int]int) // receiver -> original_giver
+	}
+
+	// Record who selected which original giver's card
+	tp.SelectionResults[playerSeat] = originalGiver
 
 	// Move to next selector or finish
 	if len(tp.PoolCards) > 0 {
@@ -446,12 +510,35 @@ func (tp *TributePhase) SelectTribute(playerSeat int, card *Card) error {
 		tp.SelectingPlayer = secondPlace
 		tp.SelectTimeout = time.Now().Add(30 * time.Second)
 	} else {
-		// Selection finished, move to return phase
+		// Selection finished, build return tribute relationships
+		tp.buildReturnTributeRelationships()
+
+		// Move to return phase
 		tp.Status = TributeStatusReturning
 		tp.SelectingPlayer = -1
 	}
 
 	return nil
+}
+
+// buildReturnTributeRelationships builds the return tribute relationships after selection is complete
+func (tp *TributePhase) buildReturnTributeRelationships() {
+	// Clear the original pool mappings and rebuild with actual return relationships
+	newTributeMap := make(map[int]int)
+
+	// For each selection result, establish return tribute relationship
+	for receiver, originalGiver := range tp.SelectionResults {
+		// The original giver should return tribute to the receiver
+		newTributeMap[originalGiver] = receiver
+	}
+
+	// Update the tribute map with the new return relationships
+	tp.TributeMap = newTributeMap
+}
+
+// getCardKey returns a unique key for a card
+func (tp *TributePhase) getCardKey(card *Card) string {
+	return fmt.Sprintf("%d_%s", card.Number, card.Color)
 }
 
 // HandleTimeout handles timeout during tribute selection

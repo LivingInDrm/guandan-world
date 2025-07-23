@@ -1169,14 +1169,7 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 		return errors.New("not in tribute phase")
 	}
 
-	// 调用 TributeManager 处理选择
-	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
-	err := tm.SubmitSelection(deal.TributePhase, playerID, cardID)
-	if err != nil {
-		return err
-	}
-
-	// 收集增强的选择事件数据
+	// 收集选择事件数据（在处理之前，避免卡牌被移除）
 	var selectedCard *Card
 	for _, card := range deal.TributePhase.PoolCards {
 		if card.GetID() == cardID {
@@ -1185,14 +1178,25 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 		}
 	}
 
-	// 获取当前池中剩余的卡牌
+	// 获取当前池中的卡牌（作为选择前的选项）
+	optionsBeforeSelection := make([]*Card, len(deal.TributePhase.PoolCards))
+	copy(optionsBeforeSelection, deal.TributePhase.PoolCards)
+
+	// 调用 TributeManager 处理选择
+	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
+	err := tm.SubmitSelection(deal.TributePhase, playerID, cardID)
+	if err != nil {
+		return err
+	}
+
+	// 获取处理后池中剩余的卡牌
 	remainingOptions := make([]*Card, len(deal.TributePhase.PoolCards))
 	copy(remainingOptions, deal.TributePhase.PoolCards)
 
 	// 确定选择顺序
 	selectionOrder := 1 // 默认为第一次选择
-	if deal.TributePhase.SelectingPlayer != deal.TributePhase.TributeMap[deal.TributePhase.SelectingPlayer] {
-		// 如果选择者不是第一名，说明是第二次选择
+	if len(optionsBeforeSelection) == 1 {
+		// 如果这是最后一张牌，说明是第二次选择
 		selectionOrder = 2
 	}
 

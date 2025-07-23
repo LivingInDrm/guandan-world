@@ -93,14 +93,15 @@ type PlayAction struct {
 
 // TributePhase represents the tribute phase of a deal
 type TributePhase struct {
-	Status          TributeStatus `json:"status"`
-	TributeMap      map[int]int   `json:"tribute_map"`      // giver -> receiver
-	TributeCards    map[int]*Card `json:"tribute_cards"`    // giver -> card
-	ReturnCards     map[int]*Card `json:"return_cards"`     // receiver -> card
-	PoolCards       []*Card       `json:"pool_cards"`       // Cards in tribute pool (for double-down)
-	SelectingPlayer int           `json:"selecting_player"` // Player selecting from pool (-1 if none)
-	SelectTimeout   time.Time     `json:"select_timeout"`   // When selection times out
-	IsImmune        bool          `json:"is_immune"`        // Whether tribute was skipped due to immunity
+	Status           TributeStatus `json:"status"`
+	TributeMap       map[int]int   `json:"tribute_map"`       // giver -> receiver
+	TributeCards     map[int]*Card `json:"tribute_cards"`     // giver -> card
+	ReturnCards      map[int]*Card `json:"return_cards"`      // receiver -> card
+	PoolCards        []*Card       `json:"pool_cards"`        // Cards in tribute pool (for double-down)
+	SelectingPlayer  int           `json:"selecting_player"`  // Player selecting from pool (-1 if none)
+	SelectTimeout    time.Time     `json:"select_timeout"`    // When selection times out
+	IsImmune         bool          `json:"is_immune"`         // Whether tribute was skipped due to immunity
+	SelectionResults map[int]int   `json:"selection_results"` // receiver -> original_giver (for double-down tracking)
 }
 
 // TributeStatus represents the status of tribute phase
