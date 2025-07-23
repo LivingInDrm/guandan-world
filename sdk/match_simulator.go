@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -506,6 +505,15 @@ func (ms *MatchSimulator) processDeal() error {
 			return nil // Deal已结束
 		}
 		deal = gameState.CurrentMatch.CurrentDeal
+
+		// 如果贡牌阶段已完成，立即打印贡牌详情
+		if deal.TributePhase != nil && deal.TributePhase.Status == TributeStatusFinished && !deal.TributePhase.IsImmune {
+			ms.logTributeDetails(deal.TributePhase)
+			ms.logPlayerHands("After Tribute", deal)
+		}
+	} else if deal.TributePhase != nil && deal.TributePhase.IsImmune {
+		// 处理免贡的情况 - 贡牌阶段被跳过
+		ms.log("Tribute phase skipped due to immunity")
 	}
 
 	// 等待deal状态变为playing（贡牌阶段结束后）- 简化逻辑
@@ -522,7 +530,7 @@ func (ms *MatchSimulator) processDeal() error {
 	}
 
 	// 游戏主循环（添加安全计数器）
-	maxTricks := 50 // 减少每局最大轮数限制
+	maxTricks := 200 // 增加每局最大轮数限制，确保玩家能出完所有牌
 	trickCounter := 0
 	for deal.Status == DealStatusPlaying && trickCounter < maxTricks {
 		trickCounter++
@@ -609,13 +617,17 @@ func (ms *MatchSimulator) processDeal() error {
 		ms.trickCount++
 	}
 
+	if trickCounter >= maxTricks {
+		ms.log(fmt.Sprintf("WARNING: Deal terminated after %d tricks (safety limit). Deal status: %v", trickCounter, deal.Status))
+	}
+
 	return nil
 }
 
 // processTributePhase 处理贡牌阶段
 func (ms *MatchSimulator) processTributePhase() error {
 	// 添加安全计数器防止无限循环
-	maxTributeActions := 5 // 减少最大循环次数
+	maxTributeActions := 10 // 增加最大循环次数，确保完成整个流程
 	actionsProcessed := 0
 
 	for actionsProcessed < maxTributeActions {
@@ -629,24 +641,22 @@ func (ms *MatchSimulator) processTributePhase() error {
 			return nil
 		}
 
-		// 如果没有待处理的动作，贡牌阶段完成
+		// 如果没有待处理的动作，检查贡牌阶段是否真正完成
 		if action == nil {
-			ms.log("Tribute phase completed")
-
-			// 强制检查并确保Deal状态正确设置为playing
+			// 获取当前状态以确认贡牌阶段是否完成
 			gameState := ms.engine.GetGameState()
 			if gameState.CurrentMatch != nil && gameState.CurrentMatch.CurrentDeal != nil {
 				deal := gameState.CurrentMatch.CurrentDeal
-				if deal.Status == DealStatusTribute {
-					ms.log("Warning: Deal still in tribute status, forcing to playing status")
-					// 使用已有的公开方法来设置状态
-					if err := deal.StartPlayingPhase(); err != nil {
-						ms.log(fmt.Sprintf("Failed to start playing phase: %v", err))
-					} else {
-						ms.log("Successfully forced playing phase start")
-					}
+				if deal.Status == DealStatusPlaying {
+					ms.log("Tribute phase completed and game phase started")
+					break
+				} else if deal.TributePhase != nil && deal.TributePhase.Status == TributeStatusFinished {
+					// 贡牌阶段标记为完成但 Deal 状态还没更新，再调用一次 ProcessTributePhase
+					ms.log("Tribute phase finished, triggering state transition")
+					continue
 				}
 			}
+			ms.log("No tribute action available")
 			break
 		}
 
@@ -778,18 +788,7 @@ func (ms *MatchSimulator) handleReturnTribute(event *GameEvent) {
 
 func (ms *MatchSimulator) handleTributeCompleted(event *GameEvent) {
 	ms.log("Event: Tribute Completed")
-
-	// 输出贡牌阶段的详细信息
-	if tributePhase, ok := event.Data.(*TributePhase); ok {
-		ms.logTributeDetails(tributePhase)
-	}
-
-	// 输出贡牌完成后每个玩家的手牌
-	// 从游戏状态获取当前deal（注意：在事件处理器中应该是安全的）
-	gameState := ms.engine.GetGameState()
-	if gameState.CurrentMatch != nil && gameState.CurrentMatch.CurrentDeal != nil {
-		ms.logPlayerHands("After Tribute", gameState.CurrentMatch.CurrentDeal)
-	}
+	// 贡牌详情已经在processDeal中打印，这里不再重复打印
 }
 
 func (ms *MatchSimulator) handleTrickStarted(event *GameEvent) {
@@ -813,7 +812,7 @@ func (ms *MatchSimulator) handlePlayerPlayed(event *GameEvent) {
 		}
 
 		ms.log(fmt.Sprintf("Event: Player %d played %d cards: [%s]",
-			playerSeat, len(cards), strings.Join(cardStrs, ", ")))
+			playerSeat, len(cards), strings.Join(cardStrs, ",")))
 	}
 }
 
@@ -855,7 +854,7 @@ func (ms *MatchSimulator) handleMatchEnded(event *GameEvent) {
 func (ms *MatchSimulator) log(message string) {
 	ms.eventLog = append(ms.eventLog, message)
 	if ms.verbose {
-		log.Println(message)
+		fmt.Println(message)
 	}
 }
 
@@ -877,7 +876,7 @@ func (ms *MatchSimulator) formatPlayerHands(deal *Deal) string {
 		}
 
 		result = append(result, fmt.Sprintf("Player %d (%d cards): [%s]",
-			playerSeat, len(playerCards), strings.Join(cardStrs, ", ")))
+			playerSeat, len(playerCards), strings.Join(cardStrs, ",")))
 	}
 
 	return strings.Join(result, "\n")
@@ -921,18 +920,16 @@ func (ms *MatchSimulator) logTributeDetails(tributePhase *TributePhase) {
 
 	// 输出具体的贡牌
 	if len(tributePhase.TributeCards) > 0 {
-		ms.log("Tribute Cards:")
 		for giver, card := range tributePhase.TributeCards {
 			receiver := tributePhase.TributeMap[giver]
-			ms.log(fmt.Sprintf("  Player %d gave %s to Player %d", giver, card.ToShortString(), receiver))
+			ms.log(fmt.Sprintf("Tribute Cards: Player %d gave %s to Player %d", giver, card.ToShortString(), receiver))
 		}
 	}
 
 	// 输出还贡牌
 	if len(tributePhase.ReturnCards) > 0 {
-		ms.log("Return Cards:")
 		for returner, card := range tributePhase.ReturnCards {
-			ms.log(fmt.Sprintf("  Player %d returned %s", returner, card.ToShortString()))
+			ms.log(fmt.Sprintf("Return Cards: Player %d returned %s", returner, card.ToShortString()))
 		}
 	}
 

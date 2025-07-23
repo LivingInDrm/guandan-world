@@ -65,6 +65,7 @@ type Deal struct {
 	Rankings     []int         `json:"rankings"`     // Order of players finishing (seat numbers)
 	StartTime    time.Time     `json:"start_time"`
 	EndTime      *time.Time    `json:"end_time,omitempty"`
+	LastResult   *DealResult   `json:"-"`             // Previous deal result (not serialized)
 }
 
 // Trick represents a single trick (one round of card plays)
@@ -99,6 +100,7 @@ type TributePhase struct {
 	PoolCards       []*Card       `json:"pool_cards"`       // Cards in tribute pool (for double-down)
 	SelectingPlayer int           `json:"selecting_player"` // Player selecting from pool (-1 if none)
 	SelectTimeout   time.Time     `json:"select_timeout"`   // When selection times out
+	IsImmune        bool          `json:"is_immune"`        // Whether tribute was skipped due to immunity
 }
 
 // TributeStatus represents the status of tribute phase

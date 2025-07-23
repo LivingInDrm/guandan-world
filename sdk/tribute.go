@@ -49,7 +49,7 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 		// Double Down: rank1, rank2 同队
 		// Rank3 和 Rank4 各上交 1 张贡牌，放入贡牌池
 		// Rank1 优先从贡牌池中挑选其一；Rank2 获得剩下的一张贡牌
-		tributePhase.Status = TributeStatusSelecting
+		tributePhase.Status = TributeStatusWaiting // 初始状态应该是 Waiting
 		tributePhase.SelectingPlayer = rank1 // Rank1 先选
 		tributePhase.SelectTimeout = time.Now().Add(30 * time.Second)
 
@@ -81,31 +81,23 @@ func (tm *TributeManager) CheckTributeImmunity(lastResult *DealResult, playerHan
 		return false
 	}
 
-	rankings := lastResult.Rankings
-	if len(rankings) < 4 {
-		return false
+	// 无论哪种胜利类型，抗贡逻辑都是一样的：
+	// 落败队伍如果合计拥有2个BJ（大王），就触发抗贡
+	
+	// 获取输掉的队伍编号
+	losingTeam := 1 - lastResult.WinningTeam
+
+	// 统计输掉队伍所有玩家的大王数量
+	bigJokerCount := 0
+	for playerSeat := 0; playerSeat < 4; playerSeat++ {
+		// 检查该玩家是否属于输掉的队伍
+		if playerSeat%2 == losingTeam {
+			bigJokerCount += tm.countBigJokers(playerHands[playerSeat])
+		}
 	}
 
-	rank3 := rankings[2]
-	rank4 := rankings[3]
-
-	switch lastResult.VictoryType {
-	case VictoryTypeDoubleDown:
-		// Double Down：若 Rank3 和 Rank4 合计持有 两张 Big Joker，则触发免贡
-		bigJokerCount := tm.countBigJokers(playerHands[rank3]) + tm.countBigJokers(playerHands[rank4])
-		return bigJokerCount >= 2
-
-	case VictoryTypeSingleLast:
-		// Single Last：若 Rank4 单独持有 两张 Big Joker，则触发免贡
-		return tm.countBigJokers(playerHands[rank4]) >= 2
-
-	case VictoryTypePartnerLast:
-		// Partner Last：若 Rank3 单独持有 两张 Big Joker，则触发免贡
-		return tm.countBigJokers(playerHands[rank3]) >= 2
-
-	default:
-		return false
-	}
+	// 如果输掉的队伍合计拥有2个或以上大王，触发抗贡
+	return bigJokerCount >= 2
 }
 
 // countBigJokers 统计手牌中大王的数量
@@ -197,19 +189,23 @@ func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHa
 
 // processReturnCards processes the return cards phase
 func (tm *TributeManager) processReturnCards(tributePhase *TributePhase, playerHands [4][]*Card) error {
-	// For each tribute card received, receiver chooses a card to return
-	// For simulation, we use the lowest card
+	// Check if all return cards have been submitted
+	allReturned := true
 	for giver, receiver := range tributePhase.TributeMap {
 		if receiver != -1 && tributePhase.TributeCards[giver] != nil {
-			// Find lowest card from receiver to return
-			lowestCard := tm.getLowestCard(playerHands[receiver])
-			if lowestCard != nil {
-				tributePhase.AddReturnCard(receiver, lowestCard)
+			// Check if return card is missing
+			if tributePhase.ReturnCards[receiver] == nil {
+				allReturned = false
+				break
 			}
 		}
 	}
 
-	tributePhase.Status = TributeStatusFinished
+	// Only finish the phase if all returns are complete
+	if allReturned {
+		tributePhase.Status = TributeStatusFinished
+	}
+	
 	return nil
 }
 

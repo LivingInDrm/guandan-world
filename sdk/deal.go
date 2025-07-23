@@ -21,6 +21,7 @@ func NewDeal(level int, lastResult *DealResult) (*Deal, error) {
 		Rankings:     make([]int, 0),
 		StartTime:    time.Now(),
 		TrickHistory: make([]*Trick, 0),
+		LastResult:   lastResult,
 	}
 
 	// Initialize tribute phase if needed
@@ -50,13 +51,27 @@ func (d *Deal) StartDeal() error {
 
 	d.Status = DealStatusDealing
 
-	// If there's a tribute phase, start it
+	// If there's a tribute phase, check for immunity first
 	if d.TributePhase != nil {
-		err = d.startTributePhase()
-		if err != nil {
-			return fmt.Errorf("failed to start tribute phase: %w", err)
+		// Check if tribute should be skipped due to immunity
+		if d.checkTributeImmunity() {
+			// Skip tribute phase due to immunity
+			d.TributePhase.Status = TributeStatusFinished
+			d.TributePhase.IsImmune = true
+			// Start playing directly
+			err = d.startFirstTrick()
+			if err != nil {
+				return fmt.Errorf("failed to start first trick: %w", err)
+			}
+			d.Status = DealStatusPlaying
+		} else {
+			// Normal tribute phase
+			err = d.startTributePhase()
+			if err != nil {
+				return fmt.Errorf("failed to start tribute phase: %w", err)
+			}
+			d.Status = DealStatusTribute
 		}
-		d.Status = DealStatusTribute
 	} else {
 		// No tribute phase, start playing directly
 		err = d.startFirstTrick()
@@ -571,6 +586,17 @@ func (d *Deal) CalculateResult(match *Match) (*DealResult, error) {
 
 	calculator := NewDealResultCalculator(d.Level)
 	return calculator.CalculateDealResult(d, match)
+}
+
+// checkTributeImmunity checks if tribute should be skipped due to immunity
+func (d *Deal) checkTributeImmunity() bool {
+	if d.TributePhase == nil || d.LastResult == nil {
+		return false
+	}
+	
+	// Use the existing TributeManager to check immunity
+	tributeManager := NewTributeManager(d.Level)
+	return tributeManager.CheckTributeImmunity(d.LastResult, d.PlayerCards)
 }
 
 // determineFirstPlayer determines who plays first in the deal

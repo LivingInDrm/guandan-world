@@ -393,6 +393,18 @@ func (ge *GameEngine) StartDeal() error {
 	}
 	ge.emitEvent(event)
 
+	// Check if tribute phase was skipped due to immunity
+	if ge.currentMatch.CurrentDeal.TributePhase != nil && 
+		ge.currentMatch.CurrentDeal.TributePhase.IsImmune {
+		// Emit immunity event
+		immunityEvent := &GameEvent{
+			Type:      EventTributeImmunity,
+			Data:      ge.currentMatch.CurrentDeal.TributePhase,
+			Timestamp: time.Now(),
+		}
+		ge.emitEvent(immunityEvent)
+	}
+
 	return nil
 }
 
@@ -982,18 +994,18 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 			return nil, fmt.Errorf("apply tribute failed: %w", err)
 		}
 
-		// 启动游戏阶段（包括创建第一个trick和设置状态）
-		err = deal.StartPlayingPhase()
-		if err != nil {
-			return nil, fmt.Errorf("failed to start playing phase: %w", err)
-		}
-
-		// 发送完成事件
+		// 发送完成事件（在启动游戏阶段之前，以确保日志顺序正确）
 		ge.sendEvent(&GameEvent{
 			Type:      EventTributeCompleted,
 			Data:      deal.TributePhase,
 			Timestamp: time.Now(),
 		})
+
+		// 启动游戏阶段（包括创建第一个trick和设置状态）
+		err = deal.StartPlayingPhase()
+		if err != nil {
+			return nil, fmt.Errorf("failed to start playing phase: %w", err)
+		}
 	}
 
 	return action, nil
