@@ -3,7 +3,6 @@ package sdk
 import (
 	"errors"
 	"fmt"
-	"time"
 )
 
 // PlayValidator handles all play validation logic
@@ -167,73 +166,4 @@ func (pv *PlayValidator) validateAgainstLeadCombination(comp CardComp, leadComp 
 // getCardKey creates a unique key for a card for comparison
 func (pv *PlayValidator) getCardKey(card *Card) string {
 	return fmt.Sprintf("%d_%s", card.Number, card.Color)
-}
-
-// TributeValidator handles tribute phase validation
-type TributeValidator struct {
-	level int
-}
-
-// NewTributeValidator creates a new tribute validator
-func NewTributeValidator(level int) *TributeValidator {
-	return &TributeValidator{
-		level: level,
-	}
-}
-
-// ValidateTributeSelection validates a tribute card selection
-func (tv *TributeValidator) ValidateTributeSelection(playerSeat int, card *Card, tributePhase *TributePhase, playerCards []*Card) error {
-	if tributePhase == nil {
-		return errors.New("no active tribute phase")
-	}
-
-	if tributePhase.Status != TributeStatusSelecting {
-		return fmt.Errorf("tribute phase is not in selecting status: %s", tributePhase.Status)
-	}
-
-	if tributePhase.SelectingPlayer != playerSeat {
-		return fmt.Errorf("player %d is not the selecting player, expected %d",
-			playerSeat, tributePhase.SelectingPlayer)
-	}
-
-	// Validate card is in pool (for double-down situation)
-	if len(tributePhase.PoolCards) > 0 {
-		cardFound := false
-		for _, poolCard := range tributePhase.PoolCards {
-			if pv := NewPlayValidator(tv.level); pv.getCardKey(card) == pv.getCardKey(poolCard) {
-				cardFound = true
-				break
-			}
-		}
-		if !cardFound {
-			return errors.New("selected card is not in tribute pool")
-		}
-	} else {
-		// Validate card is from player's hand
-		pv := NewPlayValidator(tv.level)
-		err := pv.validatePlayerOwnsCards([]*Card{card}, playerCards)
-		if err != nil {
-			return fmt.Errorf("invalid tribute card selection: %w", err)
-		}
-	}
-
-	return nil
-}
-
-// ValidateTributeTimeout validates tribute selection timeout
-func (tv *TributeValidator) ValidateTributeTimeout(tributePhase *TributePhase) error {
-	if tributePhase == nil {
-		return errors.New("no active tribute phase")
-	}
-
-	if tributePhase.Status != TributeStatusSelecting {
-		return errors.New("tribute phase is not in selecting status")
-	}
-
-	// Check if timeout has been reached
-	if time.Now().Before(tributePhase.SelectTimeout) {
-		return errors.New("tribute selection timeout not reached yet")
-	}
-
-	return nil
 }

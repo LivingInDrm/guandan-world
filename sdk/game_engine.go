@@ -213,21 +213,6 @@ type GameEngineInterface interface {
 	//   - 包含待执行的动作列表
 	GetTributeStatus() *TributeStatusInfo
 
-	// SelectTribute 进贡阶段选择要进贡的牌（已废弃，请使用新的贡牌接口）
-	// 参数:
-	//   playerSeat: 玩家座位号(0-3)
-	//   card: 要进贡的牌
-	// 返回值:
-	//   *GameEvent: 进贡成功时返回的游戏事件
-	//   error: 如果不在进贡阶段或进贡牌无效，返回错误
-	// 功能说明:
-	//   - 验证当前是否在进贡阶段
-	//   - 验证玩家是否需要进贡
-	//   - 验证进贡牌的合法性（通常需要进贡最大的牌）
-	//   - 处理进贡和回贡逻辑
-	//   - 触发进贡阶段事件
-	SelectTribute(playerSeat int, card *Card) (*GameEvent, error)
-
 	// 状态查询
 
 	// GetGameState 获取当前完整的游戏状态
@@ -394,7 +379,7 @@ func (ge *GameEngine) StartDeal() error {
 	ge.emitEvent(event)
 
 	// Check if tribute phase was skipped due to immunity
-	if ge.currentMatch.CurrentDeal.TributePhase != nil && 
+	if ge.currentMatch.CurrentDeal.TributePhase != nil &&
 		ge.currentMatch.CurrentDeal.TributePhase.IsImmune {
 		// Emit immunity event
 		immunityEvent := &GameEvent{
@@ -488,59 +473,6 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 		Data: map[string]interface{}{
 			"player_seat": playerSeat,
 			"deal_state":  deal,
-		},
-		Timestamp:  time.Now(),
-		PlayerSeat: playerSeat,
-	}
-	ge.emitEvent(event)
-
-	// Check for automatic state transitions
-	events := ge.checkStateTransitions()
-	for _, evt := range events {
-		ge.emitEvent(evt)
-	}
-
-	return event, nil
-}
-
-// SelectTribute handles tribute selection during tribute phase
-func (ge *GameEngine) SelectTribute(playerSeat int, card *Card) (*GameEvent, error) {
-	ge.mutex.Lock()
-	defer ge.mutex.Unlock()
-
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return nil, errors.New("no active deal")
-	}
-
-	// Validate player seat range
-	if playerSeat < 0 || playerSeat >= 4 {
-		return nil, fmt.Errorf("invalid player seat: %d", playerSeat)
-	}
-
-	deal := ge.currentMatch.CurrentDeal
-
-	// Use validator to validate the tribute selection
-	validator := NewTributeValidator(deal.Level)
-	err := validator.ValidateTributeSelection(playerSeat, card, deal.TributePhase, deal.PlayerCards[playerSeat])
-	if err != nil {
-		return nil, fmt.Errorf("invalid tribute selection: %w", err)
-	}
-
-	// Execute the tribute selection
-	err = deal.SelectTribute(playerSeat, card)
-	if err != nil {
-		return nil, fmt.Errorf("failed to select tribute: %w", err)
-	}
-
-	ge.updatedAt = time.Now()
-
-	// Create tribute selection event
-	event := &GameEvent{
-		Type: EventTributePhase,
-		Data: map[string]interface{}{
-			"player_seat":   playerSeat,
-			"card":          card,
-			"tribute_phase": deal.TributePhase,
 		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerSeat,
