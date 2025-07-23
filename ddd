@@ -1,1 +1,3020 @@
-?   	guandan-world	[no test files]
+=== RUN   TestMatchSimulatorV2Verbose
+Match started with 4 players
+Event: Match Started
+Event: Deal Started
+=== Deal deal_1753289642313377000 Started ===
+当前Deal Level: 2
+队伍0 Level: 2 (玩家 0,2)
+队伍1 Level: 2 (玩家 1,3)
+=======================
+=== 发牌完成，玩家手牌 ===
+Player 0 (27 cards): [3S,4D,4C,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC,AS,AH,2C,2D,2S,BJ]
+Player 1 (27 cards): [3D,4S,5D,5S,5H,5H,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC,KS,KH,AC,AD,2D,SJ,BJ]
+Player 2 (27 cards): [3D,3C,3C,3H,3H,4C,4H,5D,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH,JH,QS,KD,2C]
+Player 3 (27 cards): [3S,4D,4S,4H,5C,5S,7D,7C,7D,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS,AS,AD,AH,2S,2H,2H,SJ]
+===========================
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (27 cards): [3S,4D,4C,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC,AS,AH,2C,2D,2S,BJ]
+Player 1 (27 cards): [3D,4S,5D,5S,5H,5H,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC,KS,KH,AC,AD,2D,SJ,BJ]
+Player 2 (27 cards): [3D,3C,3C,3H,3H,4C,4H,5D,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH,JH,QS,KD,2C]
+Player 3 (27 cards): [3S,4D,4S,4H,5C,5S,7D,7C,7D,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS,AS,AD,AH,2S,2H,2H,SJ]
+====================================
+Event: Player 0 played 1 cards: [3S]
+Event: Player 1 played 1 cards: [4S]
+Event: Player 2 played 1 cards: [5D]
+Event: Player 3 played 1 cards: [7D]
+Event: Player 0 played 1 cards: [BJ]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (25 cards): [2S,4D,4C,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC,AS,AH,2C,2D]
+Player 1 (26 cards): [3D,BJ,5D,5S,5H,5H,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC,KS,KH,AC,AD,2D,SJ]
+Player 2 (26 cards): [3D,3C,3C,3H,3H,4C,4H,2C,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH,JH,QS,KD]
+Player 3 (26 cards): [3S,4D,4S,4H,5C,5S,7D,7C,SJ,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS,AS,AD,AH,2S,2H,2H]
+====================================
+Event: Player 0 played 1 cards: [4C]
+Event: Player 1 played 1 cards: [BJ]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (24 cards): [2S,4D,2D,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC,AS,AH,2C]
+Player 1 (25 cards): [3D,SJ,5D,5S,5H,5H,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC,KS,KH,AC,AD,2D]
+Player 2 (26 cards): [3D,3C,3C,3H,3H,4C,4H,2C,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH,JH,QS,KD]
+Player 3 (26 cards): [3S,4D,4S,4H,5C,5S,7D,7C,SJ,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS,AS,AD,AH,2S,2H,2H]
+====================================
+Event: Player 1 played 1 cards: [3D]
+Event: Player 2 played 1 cards: [4C]
+Event: Player 3 played 1 cards: [5C]
+Event: Player 0 played 1 cards: [2S]
+Event: Player 1 played 1 cards: [SJ]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2C,4D,2D,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC,AS,AH]
+Player 1 (23 cards): [2D,AD,5D,5S,5H,5H,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC,KS,KH,AC]
+Player 2 (25 cards): [3D,3C,3C,3H,3H,KD,4H,2C,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH,JH,QS]
+Player 3 (25 cards): [3S,4D,4S,4H,2H,5S,7D,7C,SJ,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS,AS,AD,AH,2S,2H]
+====================================
+Event: Player 1 played 1 cards: [5H]
+Event: Player 2 played 1 cards: [KD]
+Event: Player 3 played 1 cards: [2H]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2C,4D,2D,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC,AS,AH]
+Player 1 (22 cards): [2D,AD,5D,5S,5H,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC,KS,KH]
+Player 2 (24 cards): [3D,3C,3C,3H,3H,QS,4H,2C,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH,JH]
+Player 3 (24 cards): [3S,4D,4S,4H,2H,5S,7D,7C,SJ,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS,AS,AD,AH,2S]
+====================================
+Event: Player 3 played 1 cards: [3S]
+Event: Player 0 played 1 cards: [2C]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [SJ]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (22 cards): [AH,4D,2D,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC,AS]
+Player 1 (22 cards): [2D,AD,5D,5S,5H,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC,KS,KH]
+Player 2 (24 cards): [3D,3C,3C,3H,3H,QS,4H,2C,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH,JH]
+Player 3 (22 cards): [2S,4D,4S,4H,2H,5S,7D,7C,AH,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS,AS,AD]
+====================================
+Event: Player 3 played 1 cards: [4H]
+Event: Player 0 played 1 cards: [AH]
+Event: Player 1 played 1 cards: [2D]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [AS,4D,2D,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC]
+Player 1 (21 cards): [KH,AD,5D,5S,5H,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC,KS]
+Player 2 (24 cards): [3D,3C,3C,3H,3H,QS,4H,2C,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH,JH]
+Player 3 (21 cards): [2S,4D,4S,AD,2H,5S,7D,7C,AH,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS,AS]
+====================================
+Event: Player 1 played 1 cards: [5H]
+Event: Player 2 played 1 cards: [QS]
+Event: Player 3 played 1 cards: [2S]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [AS,4D,2D,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH,AC]
+Player 1 (20 cards): [KH,AD,5D,5S,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC]
+Player 2 (23 cards): [3D,3C,3C,3H,3H,JH,4H,2C,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD,JH]
+Player 3 (20 cards): [AS,4D,4S,AD,2H,5S,7D,7C,AH,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC,JS]
+====================================
+Event: Player 3 played 1 cards: [4S]
+Event: Player 0 played 1 cards: [AS]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [2C]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [AC,4D,2D,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC,KH]
+Player 1 (20 cards): [KH,AD,5D,5S,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC]
+Player 2 (22 cards): [3D,3C,3C,3H,3H,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC,JD]
+Player 3 (19 cards): [AS,4D,JS,AD,2H,5S,7D,7C,AH,7H,8S,9D,10S,10C,10S,10D,10H,10H,JC]
+====================================
+Event: Player 2 played 1 cards: [3H]
+Event: Player 3 played 1 cards: [AS]
+Event: Player 0 played 1 cards: [2D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (19 cards): [AC,4D,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS,KC]
+Player 1 (20 cards): [KH,AD,5D,5S,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD,KC]
+Player 2 (21 cards): [3D,3C,3C,3H,JD,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC]
+Player 3 (18 cards): [JC,4D,JS,AD,2H,5S,7D,7C,AH,7H,8S,9D,10S,10C,10S,10D,10H,10H]
+====================================
+Event: Player 0 played 1 cards: [4D]
+Event: Player 1 played 1 cards: [KH]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [AD]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (18 cards): [AC,KC,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH,KS]
+Player 1 (19 cards): [KC,AD,5D,5S,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD]
+Player 2 (21 cards): [3D,3C,3C,3H,JD,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC]
+Player 3 (17 cards): [JC,4D,JS,10H,2H,5S,7D,7C,AH,7H,8S,9D,10S,10C,10S,10D,10H]
+====================================
+Event: Player 3 played 1 cards: [4D]
+Event: Player 0 played 1 cards: [AC]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [2H]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [KS,KC,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS,QH]
+Player 1 (19 cards): [KC,AD,5D,5S,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH,KD]
+Player 2 (21 cards): [3D,3C,3C,3H,JD,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC]
+Player 3 (15 cards): [JC,10H,JS,10H,10D,5S,7D,7C,AH,7H,8S,9D,10S,10C,10S]
+====================================
+Event: Player 3 played 1 cards: [5S]
+Event: Player 0 played 1 cards: [KS]
+Event: Player 1 played 1 cards: [AD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (16 cards): [QH,KC,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS]
+Player 1 (18 cards): [KC,KD,5D,5S,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC,QH]
+Player 2 (21 cards): [3D,3C,3C,3H,JD,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H,JC]
+Player 3 (14 cards): [JC,10H,JS,10H,10D,10S,7D,7C,AH,7H,8S,9D,10S,10C]
+====================================
+Event: Player 1 played 1 cards: [5S]
+Event: Player 2 played 1 cards: [JD]
+Event: Player 3 played 1 cards: [AH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (16 cards): [QH,KC,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC,QS]
+Player 1 (17 cards): [KC,KD,5D,QH,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD,QC]
+Player 2 (20 cards): [3D,3C,3C,3H,JC,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H]
+Player 3 (13 cards): [JC,10H,JS,10H,10D,10S,7D,7C,10C,7H,8S,9D,10S]
+====================================
+Event: Player 3 played 1 cards: [7H]
+Event: Player 0 played 1 cards: [QH]
+Event: Player 1 played 1 cards: [KC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (15 cards): [QS,KC,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD,QC]
+Player 1 (16 cards): [QC,KD,5D,QH,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C,JD,QD]
+Player 2 (20 cards): [3D,3C,3C,3H,JC,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S,9H]
+Player 3 (12 cards): [JC,10H,JS,10H,10D,10S,7D,7C,10C,10S,8S,9D]
+====================================
+Event: Player 1 played 1 cards: [5D]
+Event: Player 2 played 1 cards: [JC]
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [QS]
+Event: Player 1 played 1 cards: [KD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (14 cards): [QC,KC,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS,QD]
+Player 1 (14 cards): [QC,JD,QD,QH,KS,AC,6S,6C,6H,7C,7H,9C,9H,10C]
+Player 2 (19 cards): [3D,3C,3C,3H,9H,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H,9S]
+Player 3 (12 cards): [JC,10H,JS,10H,10D,10S,7D,7C,10C,10S,8S,9D]
+====================================
+Event: Player 1 played 1 cards: [6H]
+Event: Player 2 played 1 cards: [9H]
+Event: Player 3 played 1 cards: [JC]
+Event: Player 0 played 1 cards: [QC]
+Event: Player 1 played 1 cards: [KS]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (13 cards): [QD,KC,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D,JS]
+Player 1 (12 cards): [QC,JD,QD,QH,9H,AC,6S,6C,10C,7C,7H,9C]
+Player 2 (18 cards): [3D,3C,3C,3H,9S,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D,8H]
+Player 3 (11 cards): [9D,10H,JS,10H,10D,10S,7D,7C,10C,10S,8S]
+====================================
+Event: Player 1 played 1 cards: [6C]
+Event: Player 2 played 1 cards: [9S]
+Event: Player 3 played 1 cards: [10H]
+Event: Player 0 played 1 cards: [QD]
+Event: Player 1 played 1 cards: [AC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (12 cards): [JS,KC,KH,5C,6C,6H,7S,8H,9S,9C,9D,10D]
+Player 1 (10 cards): [QC,JD,QD,QH,9H,7H,6S,9C,10C,7C]
+Player 2 (17 cards): [3D,3C,3C,3H,8H,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D,8D]
+Player 3 (10 cards): [9D,10H,JS,8S,10D,10S,7D,7C,10C,10S]
+====================================
+Event: Player 1 played 1 cards: [6S]
+Event: Player 2 played 1 cards: [8H]
+Event: Player 3 played 1 cards: [9D]
+Event: Player 0 played 1 cards: [JS]
+Event: Player 1 played 1 cards: [QC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [KC]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (10 cards): [10D,9D,KH,5C,6C,6H,7S,8H,9S,9C]
+Player 1 (8 cards): [10C,JD,QD,QH,9H,7H,7C,9C]
+Player 2 (16 cards): [3D,3C,3C,3H,8D,JH,4H,JH,6D,6S,6D,7S,8C,8C,8S,8D]
+Player 3 (9 cards): [10S,10H,JS,8S,10D,10S,7D,7C,10C]
+====================================
+Event: Player 0 played 1 cards: [5C]
+Event: Player 1 played 1 cards: [10C]
+Event: Player 2 played 1 cards: [JH]
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [KH]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (8 cards): [10D,9D,9S,9C,6C,6H,7S,8H]
+Player 1 (7 cards): [9C,JD,QD,QH,9H,7H,7C]
+Player 2 (15 cards): [3D,3C,3C,3H,8D,JH,4H,8D,6D,6S,6D,7S,8C,8C,8S]
+Player 3 (9 cards): [10S,10H,JS,8S,10D,10S,7D,7C,10C]
+====================================
+Event: Player 0 played 1 cards: [6H]
+Event: Player 1 played 1 cards: [9C]
+Event: Player 2 played 1 cards: [JH]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [QD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [10D,9D,9S,9C,6C,8H,7S]
+Player 1 (5 cards): [7C,JD,7H,QH,9H]
+Player 2 (14 cards): [3D,3C,3C,3H,8D,8S,4H,8D,6D,6S,6D,7S,8C,8C]
+Player 3 (9 cards): [10S,10H,JS,8S,10D,10S,7D,7C,10C]
+====================================
+Event: Player 1 played 1 cards: [7H]
+Event: Player 2 played 1 cards: [8D]
+Event: Player 3 played 1 cards: [10S]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [JD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [10D,9D,9S,9C,6C,8H,7S]
+Player 1 (3 cards): [7C,QH,9H]
+Player 2 (13 cards): [3D,3C,3C,3H,8D,8S,4H,8C,6D,6S,6D,7S,8C]
+Player 3 (8 cards): [10S,10H,JS,8S,10D,10C,7D,7C]
+====================================
+Event: Player 1 played 1 cards: [7C]
+Event: Player 2 played 1 cards: [8D]
+Event: Player 3 played 1 cards: [10S]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [QH]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [10D,9D,9S,9C,6C,8H,7S]
+Player 1 (1 cards): [9H]
+Player 2 (12 cards): [3D,3C,3C,3H,8C,8S,4H,8C,6D,6S,6D,7S]
+Player 3 (7 cards): [7C,10H,JS,8S,10D,10C,7D]
+====================================
+Event: Player 1 played 1 cards: [9H]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10H]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [10D,9D,9S,9C,6C,8H,7S]
+Player 1 (0 cards): []
+Player 2 (12 cards): [3D,3C,3C,3H,8C,8S,4H,8C,6D,6S,6D,7S]
+Player 3 (6 cards): [7C,7D,JS,8S,10D,10C]
+====================================
+Event: Player 3 played 1 cards: [7D]
+Event: Player 0 played 1 cards: [10D]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [JS]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (6 cards): [7S,9D,9S,9C,6C,8H]
+Player 1 (0 cards): []
+Player 2 (12 cards): [3D,3C,3C,3H,8C,8S,4H,8C,6D,6S,6D,7S]
+Player 3 (4 cards): [7C,10C,10D,8S]
+====================================
+Event: Player 3 played 1 cards: [7C]
+Event: Player 0 played 1 cards: [9D]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10C]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (5 cards): [7S,8H,9S,9C,6C]
+Player 1 (0 cards): []
+Player 2 (12 cards): [3D,3C,3C,3H,8C,8S,4H,8C,6D,6S,6D,7S]
+Player 3 (2 cards): [8S,10D]
+====================================
+Event: Player 3 played 1 cards: [8S]
+Event: Player 0 played 1 cards: [9S]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10D]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [7S,8H,6C,9C]
+Player 1 (0 cards): []
+Player 2 (12 cards): [3D,3C,3C,3H,8C,8S,4H,8C,6D,6S,6D,7S]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [6C]
+Event: Player 2 played 1 cards: [8C]
+Event: Player 0 played 1 cards: [9C]
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (2 cards): [7S,8H]
+Player 1 (0 cards): []
+Player 2 (11 cards): [3D,3C,3C,3H,8C,8S,4H,7S,6D,6S,6D]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [7S]
+Event: Player 2 played 1 cards: [8C]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (1 cards): [8H]
+Player 1 (0 cards): []
+Player 2 (10 cards): [3D,3C,3C,3H,6D,8S,4H,7S,6D,6S]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [3H]
+Event: Player 0 played 1 cards: [8H]
+Event: Deal Ended, Rankings: [1 3 0 2], Victory Type: double_down
+Event: Deal Started
+=== Deal deal_1753289642315709000 Started ===
+当前Deal Level: 5
+队伍0 Level: 2 (玩家 0,2)
+队伍1 Level: 5 (玩家 1,3)
+=======================
+=== 发牌完成，玩家手牌 ===
+Player 0 (27 cards): [2C,2D,2H,3D,3S,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD,QD,QD,QC,AS,5C,5D,5D,SJ,BJ]
+Player 1 (27 cards): [2S,2S,3C,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH,AD,AH,5C,5H]
+Player 2 (27 cards): [2D,2H,3H,3H,6C,6C,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH,AC,AH,5S,5H,BJ]
+Player 3 (27 cards): [2C,3S,3C,4D,4H,4H,7C,7S,7C,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD,AD,AS,AC,5S,SJ]
+===========================
+=== 上贡规则确定 ===
+上局结果：[1 3 0 2], 胜利类型：double_down
+上贡规则：双下：Player0和Player2上贡到池，Player1优先选择
+类型：双下上贡（贡牌池模式）
+====================
+=== 抗贡检查 ===
+抗贡结果：败方队伍(Team 0)持有2张大王，触发抗贡
+大王持有者详情：
+  Player 0: 1张大王
+  Player 2: 1张大王
+结果：触发抗贡，本局跳过上贡阶段
+================
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (27 cards): [2C,2D,2H,3D,3S,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD,QD,QD,QC,AS,5C,5D,5D,SJ,BJ]
+Player 1 (27 cards): [2S,2S,3C,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH,AD,AH,5C,5H]
+Player 2 (27 cards): [2D,2H,3H,3H,6C,6C,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH,AC,AH,5S,5H,BJ]
+Player 3 (27 cards): [2C,3S,3C,4D,4H,4H,7C,7S,7C,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD,AD,AS,AC,5S,SJ]
+====================================
+Event: Player 0 played 1 cards: [2H]
+Event: Player 1 played 1 cards: [3C]
+Event: Player 2 played 1 cards: [6C]
+Event: Player 3 played 1 cards: [7C]
+Event: Player 0 played 1 cards: [BJ]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (25 cards): [2C,2D,SJ,3D,3S,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD,QD,QD,QC,AS,5C,5D,5D]
+Player 1 (26 cards): [2S,2S,5H,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH,AD,AH,5C]
+Player 2 (26 cards): [2D,2H,3H,3H,6C,BJ,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH,AC,AH,5S,5H]
+Player 3 (26 cards): [2C,3S,3C,4D,4H,4H,7C,7S,SJ,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD,AD,AS,AC,5S]
+====================================
+Event: Player 0 played 1 cards: [2D]
+Event: Player 1 played 1 cards: [5H]
+Event: Player 2 played 1 cards: [BJ]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (24 cards): [2C,5D,SJ,3D,3S,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD,QD,QD,QC,AS,5C,5D]
+Player 1 (25 cards): [2S,2S,5C,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH,AD,AH]
+Player 2 (25 cards): [2D,2H,3H,3H,6C,5H,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH,AC,AH,5S]
+Player 3 (26 cards): [2C,3S,3C,4D,4H,4H,7C,7S,SJ,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD,AD,AS,AC,5S]
+====================================
+Event: Player 2 played 1 cards: [2H]
+Event: Player 3 played 1 cards: [3S]
+Event: Player 0 played 1 cards: [5D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [SJ]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2C,5D,SJ,3D,3S,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD,QD,QD,QC,AS,5C]
+Player 1 (25 cards): [2S,2S,5C,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH,AD,AH]
+Player 2 (24 cards): [2D,5S,3H,3H,6C,5H,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH,AC,AH]
+Player 3 (24 cards): [2C,5S,3C,4D,4H,4H,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD,AD,AS]
+====================================
+Event: Player 3 played 1 cards: [2C]
+Event: Player 0 played 1 cards: [5D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (22 cards): [2C,5C,SJ,3D,3S,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD,QD,QD,QC,AS]
+Player 1 (25 cards): [2S,2S,5C,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH,AD,AH]
+Player 2 (24 cards): [2D,5S,3H,3H,6C,5H,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH,AC,AH]
+Player 3 (23 cards): [AS,5S,3C,4D,4H,4H,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD,AD]
+====================================
+Event: Player 0 played 1 cards: [2C]
+Event: Player 1 played 1 cards: [5C]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [SJ]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [AS,5C,QC,3D,3S,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD,QD,QD]
+Player 1 (24 cards): [2S,2S,AH,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH,AD]
+Player 2 (24 cards): [2D,5S,3H,3H,6C,5H,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH,AC,AH]
+Player 3 (23 cards): [AS,5S,3C,4D,4H,4H,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD,AD]
+====================================
+Event: Player 0 played 1 cards: [3S]
+Event: Player 1 played 1 cards: [AH]
+Event: Player 2 played 1 cards: [5S]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (19 cards): [AS,5C,QC,3D,QD,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD,QD]
+Player 1 (23 cards): [2S,2S,AD,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH]
+Player 2 (23 cards): [2D,AH,3H,3H,6C,5H,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH,AC]
+Player 3 (23 cards): [AS,5S,3C,4D,4H,4H,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD,AD]
+====================================
+Event: Player 2 played 1 cards: [2D]
+Event: Player 3 played 1 cards: [AS]
+Event: Player 0 played 1 cards: [5C]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (18 cards): [AS,QD,QC,3D,QD,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S,JD]
+Player 1 (23 cards): [2S,2S,AD,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH,KH]
+Player 2 (22 cards): [AC,AH,3H,3H,6C,5H,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS,QH]
+Player 3 (22 cards): [AD,5S,3C,4D,4H,4H,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD]
+====================================
+Event: Player 0 played 1 cards: [3D]
+Event: Player 1 played 1 cards: [AD]
+Event: Player 2 played 1 cards: [5H]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [AS,QD,QC,JD,QD,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S]
+Player 1 (22 cards): [2S,2S,KH,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH]
+Player 2 (21 cards): [AC,AH,3H,3H,6C,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS,QS]
+Player 3 (22 cards): [AD,5S,3C,4D,4H,4H,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS,KD]
+====================================
+Event: Player 2 played 1 cards: [3H]
+Event: Player 3 played 1 cards: [AD]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [AS,QD,QC,JD,QD,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C,10S]
+Player 1 (22 cards): [2S,2S,KH,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH]
+Player 2 (20 cards): [AC,AH,3H,QS,6C,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS]
+Player 3 (21 cards): [KD,5S,3C,4D,4H,4H,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH,KC,KS]
+====================================
+Event: Player 3 played 1 cards: [3C]
+Event: Player 0 played 1 cards: [AS]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [5S]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (16 cards): [10S,QD,QC,JD,QD,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C,10C]
+Player 1 (22 cards): [2S,2S,KH,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD,KH]
+Player 2 (20 cards): [AC,AH,3H,QS,6C,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH,QS]
+Player 3 (19 cards): [KD,KC,KS,4D,4H,4H,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH,QH]
+====================================
+Event: Player 3 played 1 cards: [4H]
+Event: Player 0 played 1 cards: [10S]
+Event: Player 1 played 1 cards: [KH]
+Event: Player 2 played 1 cards: [AC]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (15 cards): [10C,QD,QC,JD,QD,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C]
+Player 1 (21 cards): [2S,2S,KH,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD]
+Player 2 (19 cards): [QS,AH,3H,QS,6C,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS,JD,JH]
+Player 3 (18 cards): [KD,KC,KS,4D,4H,QH,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC,JH]
+====================================
+Event: Player 2 played 1 cards: [3H]
+Event: Player 3 played 1 cards: [KD]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [AH]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (15 cards): [10C,QD,QC,JD,QD,4S,4C,4D,6D,6H,7H,8D,8D,8H,9C]
+Player 1 (21 cards): [2S,2S,KH,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS,KD]
+Player 2 (17 cards): [QS,JD,JH,QS,6C,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC,JS]
+Player 3 (17 cards): [JH,KC,KS,4D,4H,QH,7C,7S,AC,8S,8C,8H,9S,10C,10S,10H,JC]
+====================================
+Event: Player 2 played 1 cards: [6C]
+Event: Player 3 played 1 cards: [JH]
+Event: Player 0 played 1 cards: [QD]
+Event: Player 1 played 1 cards: [KH]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [AC]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (14 cards): [10C,QD,QC,JD,9C,4S,4C,4D,6D,6H,7H,8D,8D,8H]
+Player 1 (20 cards): [2S,2S,KD,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC,KS]
+Player 2 (16 cards): [QS,JD,JH,QS,JS,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC]
+Player 3 (15 cards): [JC,KC,KS,4D,4H,QH,7C,7S,10H,8S,8C,8H,9S,10C,10S]
+====================================
+Event: Player 3 played 1 cards: [4H]
+Event: Player 0 played 1 cards: [10C]
+Event: Player 1 played 1 cards: [KD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (13 cards): [8H,QD,QC,JD,9C,4S,4C,4D,6D,6H,7H,8D,8D]
+Player 1 (19 cards): [2S,2S,KS,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC,KC]
+Player 2 (16 cards): [QS,JD,JH,QS,JS,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H,JC]
+Player 3 (14 cards): [JC,KC,KS,4D,10S,QH,7C,7S,10H,8S,8C,8H,9S,10C]
+====================================
+Event: Player 1 played 1 cards: [2S]
+Event: Player 2 played 1 cards: [QS]
+Event: Player 3 played 1 cards: [KC]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (13 cards): [8H,QD,QC,JD,9C,4S,4C,4D,6D,6H,7H,8D,8D]
+Player 1 (18 cards): [2S,KC,KS,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS,QC]
+Player 2 (15 cards): [QS,JD,JH,JC,JS,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H]
+Player 3 (13 cards): [JC,10C,KS,4D,10S,QH,7C,7S,10H,8S,8C,8H,9S]
+====================================
+Event: Player 3 played 1 cards: [4D]
+Event: Player 0 played 1 cards: [8H]
+Event: Player 1 played 1 cards: [KC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (12 cards): [8D,QD,QC,JD,9C,4S,4C,4D,6D,6H,7H,8D]
+Player 1 (17 cards): [2S,QC,KS,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D,JS]
+Player 2 (15 cards): [QS,JD,JH,JC,JS,QH,7D,7D,7H,8C,9D,9D,9H,10D,10H]
+Player 3 (12 cards): [JC,10C,KS,9S,10S,QH,7C,7S,10H,8S,8C,8H]
+====================================
+Event: Player 1 played 1 cards: [2S]
+Event: Player 2 played 1 cards: [QS]
+Event: Player 3 played 1 cards: [KS]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (12 cards): [8D,QD,QC,JD,9C,4S,4C,4D,6D,6H,7H,8D]
+Player 1 (16 cards): [JS,QC,KS,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C,9H,10D]
+Player 2 (14 cards): [10H,JD,JH,JC,JS,QH,7D,7D,7H,8C,9D,9D,9H,10D]
+Player 3 (11 cards): [JC,10C,8H,9S,10S,QH,7C,7S,10H,8S,8C]
+====================================
+Event: Player 3 played 1 cards: [7S]
+Event: Player 0 played 1 cards: [8D]
+Event: Player 1 played 1 cards: [JS]
+Event: Player 2 played 1 cards: [QH]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [KS]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (11 cards): [8D,QD,QC,JD,9C,4S,4C,4D,6D,6H,7H]
+Player 1 (14 cards): [10D,QC,9H,3D,4C,4S,6S,6S,6D,6H,7S,8S,9S,9C]
+Player 2 (13 cards): [10H,JD,JH,JC,JS,10D,7D,7D,7H,8C,9D,9D,9H]
+Player 3 (10 cards): [JC,10C,8H,9S,10S,QH,7C,8C,10H,8S]
+====================================
+Event: Player 1 played 1 cards: [3D]
+Event: Player 2 played 1 cards: [10H]
+Event: Player 3 played 1 cards: [JC]
+Event: Player 0 played 1 cards: [QD]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (10 cards): [8D,7H,QC,JD,9C,4S,4C,4D,6D,6H]
+Player 1 (13 cards): [10D,QC,9H,9C,4C,4S,6S,6S,6D,6H,7S,8S,9S]
+Player 2 (12 cards): [9H,JD,JH,JC,JS,10D,7D,7D,7H,8C,9D,9D]
+Player 3 (9 cards): [8S,10C,8H,9S,10S,QH,7C,8C,10H]
+====================================
+Event: Player 0 played 1 cards: [4D]
+Event: Player 1 played 1 cards: [10D]
+Event: Player 2 played 1 cards: [JD]
+Event: Player 3 played 1 cards: [QH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (9 cards): [8D,7H,QC,JD,9C,4S,4C,6H,6D]
+Player 1 (12 cards): [9S,QC,9H,9C,4C,4S,6S,6S,6D,6H,7S,8S]
+Player 2 (11 cards): [9H,9D,JH,JC,JS,10D,7D,7D,7H,8C,9D]
+Player 3 (8 cards): [8S,10C,8H,9S,10S,10H,7C,8C]
+====================================
+Event: Player 3 played 1 cards: [7C]
+Event: Player 0 played 1 cards: [8D]
+Event: Player 1 played 1 cards: [9S]
+Event: Player 2 played 1 cards: [JH]
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [QC]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [6D,7H,6H,JD,9C,4S,4C]
+Player 1 (11 cards): [8S,QC,9H,9C,4C,4S,6S,6S,6D,6H,7S]
+Player 2 (10 cards): [9H,9D,9D,JC,JS,10D,7D,7D,7H,8C]
+Player 3 (7 cards): [8S,10C,8H,9S,10S,10H,8C]
+====================================
+Event: Player 0 played 1 cards: [4C]
+Event: Player 1 played 1 cards: [8S]
+Event: Player 2 played 1 cards: [9H]
+Event: Player 3 played 1 cards: [10C]
+Event: Player 0 played 1 cards: [JD]
+Event: Player 1 played 1 cards: [QC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (5 cards): [6D,7H,6H,4S,9C]
+Player 1 (9 cards): [7S,6H,9H,9C,4C,4S,6S,6S,6D]
+Player 2 (9 cards): [8C,9D,9D,JC,JS,10D,7D,7D,7H]
+Player 3 (6 cards): [8S,8C,8H,9S,10S,10H]
+====================================
+Event: Player 1 played 1 cards: [4S]
+Event: Player 2 played 1 cards: [8C]
+Event: Player 3 played 1 cards: [9S]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [JC]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (5 cards): [6D,7H,6H,4S,9C]
+Player 1 (8 cards): [7S,6H,9H,9C,4C,6D,6S,6S]
+Player 2 (7 cards): [7H,9D,9D,7D,JS,10D,7D]
+Player 3 (5 cards): [8S,8C,8H,10H,10S]
+====================================
+Event: Player 2 played 1 cards: [7D]
+Event: Player 3 played 1 cards: [8S]
+Event: Player 0 played 1 cards: [9C]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [JS]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [6D,7H,6H,4S]
+Player 1 (8 cards): [7S,6H,9H,9C,4C,6D,6S,6S]
+Player 2 (5 cards): [7H,9D,9D,7D,10D]
+Player 3 (4 cards): [10S,8C,8H,10H]
+====================================
+Event: Player 2 played 1 cards: [7D]
+Event: Player 3 played 1 cards: [10S]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [6D,7H,6H,4S]
+Player 1 (8 cards): [7S,6H,9H,9C,4C,6D,6S,6S]
+Player 2 (4 cards): [7H,9D,9D,10D]
+Player 3 (3 cards): [10H,8C,8H]
+====================================
+Event: Player 3 played 1 cards: [8H]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [9H]
+Event: Player 2 played 1 cards: [10D]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [6D,7H,6H,4S]
+Player 1 (7 cards): [7S,6H,6S,9C,4C,6D,6S]
+Player 2 (3 cards): [7H,9D,9D]
+Player 3 (2 cards): [10H,8C]
+====================================
+Event: Player 2 played 1 cards: [7H]
+Event: Player 3 played 1 cards: [10H]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [6D,7H,6H,4S]
+Player 1 (7 cards): [7S,6H,6S,9C,4C,6D,6S]
+Player 2 (2 cards): [9D,9D]
+Player 3 (1 cards): [8C]
+====================================
+Event: Player 3 played 1 cards: [8C]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [9C]
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [6D,7H,6H,4S]
+Player 1 (6 cards): [7S,6H,6S,6S,4C,6D]
+Player 2 (2 cards): [9D,9D]
+Player 3 (0 cards): []
+====================================
+Event: Player 1 played 1 cards: [4C]
+Event: Player 2 played 1 cards: [9D]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [6D,7H,6H,4S]
+Player 1 (5 cards): [7S,6H,6S,6S,6D]
+Player 2 (1 cards): [9D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [9D]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [6D,7H,6H,4S]
+Player 1 (5 cards): [7S,6H,6S,6S,6D]
+Player 2 (0 cards): []
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [4S]
+Event: Player 1 played 1 cards: [7S]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (3 cards): [6D,7H,6H]
+Player 1 (4 cards): [6D,6H,6S,6S]
+Player 2 (0 cards): []
+Player 3 (0 cards): []
+====================================
+Event: Player 1 played 1 cards: [6S]
+Event: Player 0 played 1 cards: [7H]
+Event: Player 1 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (2 cards): [6D,6H]
+Player 1 (3 cards): [6D,6H,6S]
+Player 2 (0 cards): []
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [6H]
+Event: Player 1 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (1 cards): [6D]
+Player 1 (3 cards): [6D,6H,6S]
+Player 2 (0 cards): []
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [6D]
+Event: Deal Ended, Rankings: [3 2 0 1], Victory Type: partner_last
+Event: Deal Started
+=== Deal deal_1753289642316852000 Started ===
+当前Deal Level: 6
+队伍0 Level: 2 (玩家 0,2)
+队伍1 Level: 6 (玩家 1,3)
+=======================
+=== 发牌完成，玩家手牌 ===
+Player 0 (27 cards): [2C,2S,3C,3C,4D,4D,4C,4H,5D,5C,5S,7C,7D,8D,8H,9C,9C,10H,JD,JC,JD,QS,QH,KS,KH,AH,6H]
+Player 1 (27 cards): [2D,2H,3H,7D,7S,7H,7H,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC,KD,KS,KH,AD,6S,6S,6H,BJ,BJ]
+Player 2 (27 cards): [2S,2D,2H,3H,4S,4C,4S,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS,JC,KC,AC,AS,AD,AH,SJ]
+Player 3 (27 cards): [2C,3S,3D,3S,3D,5H,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QC,QC,QD,KD,AS,AC,6D,6C,6C,6D,SJ]
+===========================
+=== 上贡规则确定 ===
+上局结果：[3 2 0 1], 胜利类型：partner_last
+上贡规则：对下：Player0上贡给Player3
+类型：直接上贡模式
+====================
+=== 上贡完成 ===
+Player 0 上贡给 Player 3：AH
+上贡类型：普通上贡
+选择方式：自动选择（除红桃Trump外最大牌）
+================
+=== 还贡阶段 ===
+Player 3 还贡给 Player 0：2C
+原收到贡牌：AH
+选择方式：玩家手动选择
+================
+=== 进贡阶段完成 ===
+所有上贡和还贡流程已完成，游戏阶段即将开始
+===================
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (27 cards): [2C,2S,2C,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD,QS,QH,KS,KH,6H]
+Player 1 (27 cards): [2D,2H,3H,7D,7S,7H,7H,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC,KD,KS,KH,AD,6S,6S,6H,BJ,BJ]
+Player 2 (27 cards): [2S,2D,2H,3H,4S,4C,4S,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS,JC,KC,AC,AS,AD,AH,SJ]
+Player 3 (27 cards): [3S,3D,3S,3D,5H,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC,KD,AS,AC,AH,6D,6C,6C,6D,SJ]
+====================================
+Event: Player 0 played 1 cards: [2C]
+Event: Player 1 played 1 cards: [3H]
+Event: Player 2 played 1 cards: [4S]
+Event: Player 3 played 1 cards: [5H]
+Event: Player 0 played 1 cards: [6H]
+Event: Player 1 played 1 cards: [BJ]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (25 cards): [2C,2S,KH,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD,QS,QH,KS]
+Player 1 (25 cards): [2D,2H,BJ,7D,7S,7H,7H,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC,KD,KS,KH,AD,6S,6S,6H]
+Player 2 (26 cards): [2S,2D,2H,3H,4S,4C,SJ,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS,JC,KC,AC,AS,AD,AH]
+Player 3 (26 cards): [3S,3D,3S,3D,SJ,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC,KD,AS,AC,AH,6D,6C,6C,6D]
+====================================
+Event: Player 1 played 1 cards: [2H]
+Event: Player 2 played 1 cards: [3H]
+Event: Player 3 played 1 cards: [SJ]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [BJ]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (25 cards): [2C,2S,KH,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD,QS,QH,KS]
+Player 1 (23 cards): [2D,6H,6S,7D,7S,7H,7H,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC,KD,KS,KH,AD,6S]
+Player 2 (25 cards): [2S,2D,2H,AH,4S,4C,SJ,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS,JC,KC,AC,AS,AD]
+Player 3 (25 cards): [3S,3D,3S,3D,6D,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC,KD,AS,AC,AH,6D,6C,6C]
+====================================
+Event: Player 1 played 1 cards: [2D]
+Event: Player 2 played 1 cards: [AH]
+Event: Player 3 played 1 cards: [6D]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [SJ]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (25 cards): [2C,2S,KH,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD,QS,QH,KS]
+Player 1 (22 cards): [6S,6H,6S,7D,7S,7H,7H,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC,KD,KS,KH,AD]
+Player 2 (23 cards): [2S,2D,2H,AD,4S,4C,AS,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS,JC,KC,AC]
+Player 3 (24 cards): [3S,3D,3S,3D,6D,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC,KD,AS,AC,AH,6C,6C]
+====================================
+Event: Player 2 played 1 cards: [2H]
+Event: Player 3 played 1 cards: [3S]
+Event: Player 0 played 1 cards: [KH]
+Event: Player 1 played 1 cards: [6S]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (24 cards): [2C,2S,KS,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD,QS,QH]
+Player 1 (21 cards): [6S,6H,AD,7D,7S,7H,7H,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC,KD,KS,KH]
+Player 2 (22 cards): [2S,2D,AC,AD,4S,4C,AS,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS,JC,KC]
+Player 3 (23 cards): [3S,3D,6C,3D,6D,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC,KD,AS,AC,AH,6C]
+====================================
+Event: Player 1 played 1 cards: [7H]
+Event: Player 2 played 1 cards: [AC]
+Event: Player 3 played 1 cards: [6C]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (24 cards): [2C,2S,KS,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD,QS,QH]
+Player 1 (20 cards): [6S,6H,AD,7D,7S,7H,KH,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC,KD,KS]
+Player 2 (21 cards): [2S,2D,KC,AD,4S,4C,AS,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS,JC]
+Player 3 (22 cards): [3S,3D,6C,3D,6D,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC,KD,AS,AC,AH]
+====================================
+Event: Player 3 played 1 cards: [3D]
+Event: Player 0 played 1 cards: [KS]
+Event: Player 1 played 1 cards: [6S]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2C,2S,QH,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD,QS]
+Player 1 (19 cards): [KS,6H,AD,7D,7S,7H,KH,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC,KD]
+Player 2 (21 cards): [2S,2D,KC,AD,4S,4C,AS,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS,JC]
+Player 3 (21 cards): [3S,3D,6C,AH,6D,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC,KD,AS,AC]
+====================================
+Event: Player 1 played 1 cards: [7H]
+Event: Player 2 played 1 cards: [KC]
+Event: Player 3 played 1 cards: [6C]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2C,2S,QH,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD,QS]
+Player 1 (18 cards): [KS,6H,AD,7D,7S,KD,KH,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH,KC]
+Player 2 (20 cards): [2S,2D,JC,AD,4S,4C,AS,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H,JS]
+Player 3 (20 cards): [3S,3D,AC,AH,6D,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC,KD,AS]
+====================================
+Event: Player 3 played 1 cards: [3D]
+Event: Player 0 played 1 cards: [QH]
+Event: Player 1 played 1 cards: [KS]
+Event: Player 2 played 1 cards: [AD]
+Event: Player 3 played 1 cards: [6D]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (22 cards): [2C,2S,QS,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD,JD]
+Player 1 (17 cards): [KC,6H,AD,7D,7S,KD,KH,8H,9D,9D,9S,10C,10D,JH,QD,QS,QH]
+Player 2 (19 cards): [2S,2D,JC,JS,4S,4C,AS,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C,10H]
+Player 3 (18 cards): [3S,AS,AC,AH,KD,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC,QC]
+====================================
+Event: Player 3 played 1 cards: [3S]
+Event: Player 0 played 1 cards: [QS]
+Event: Player 1 played 1 cards: [KC]
+Event: Player 2 played 1 cards: [AS]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [6H]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [2C,2S,JD,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD]
+Player 1 (15 cards): [QH,QS,AD,7D,7S,KD,KH,8H,9D,9D,9S,10C,10D,JH,QD]
+Player 2 (18 cards): [2S,2D,JC,JS,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S,10C]
+Player 3 (17 cards): [QC,AS,AC,AH,KD,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD,QC]
+====================================
+Event: Player 1 played 1 cards: [7S]
+Event: Player 2 played 1 cards: [JC]
+Event: Player 3 played 1 cards: [QC]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [AD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [2C,2S,JD,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD]
+Player 1 (13 cards): [QH,QS,JH,7D,QD,KD,KH,8H,9D,9D,9S,10C,10D]
+Player 2 (17 cards): [2S,2D,10C,JS,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D,8C,8S,10S]
+Player 3 (16 cards): [QC,AS,AC,AH,KD,7C,8S,8C,9S,9H,9H,10S,10D,JS,JH,QD]
+====================================
+Event: Player 1 played 1 cards: [7D]
+Event: Player 2 played 1 cards: [10C]
+Event: Player 3 played 1 cards: [QC]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [KD]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [AS]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [2C,2S,JD,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC,JD]
+Player 1 (11 cards): [QH,QS,JH,10D,QD,10C,KH,8H,9D,9D,9S]
+Player 2 (16 cards): [2S,2D,10S,JS,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D,8C,8S]
+Player 3 (14 cards): [QD,JH,AC,AH,KD,7C,8S,8C,9S,9H,9H,10S,10D,JS]
+====================================
+Event: Player 3 played 1 cards: [7C]
+Event: Player 0 played 1 cards: [JD]
+Event: Player 1 played 1 cards: [QH]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [AC]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [2C,2S,JD,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H,JC]
+Player 1 (10 cards): [9S,QS,JH,10D,QD,10C,KH,8H,9D,9D]
+Player 2 (16 cards): [2S,2D,10S,JS,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D,8C,8S]
+Player 3 (12 cards): [QD,JH,10D,AH,KD,JS,8S,8C,9S,9H,9H,10S]
+====================================
+Event: Player 3 played 1 cards: [8C]
+Event: Player 0 played 1 cards: [JD]
+Event: Player 1 played 1 cards: [QS]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [AH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (19 cards): [2C,2S,JC,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C,10H]
+Player 1 (9 cards): [9S,9D,JH,10D,QD,10C,KH,8H,9D]
+Player 2 (16 cards): [2S,2D,10S,JS,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D,8C,8S]
+Player 3 (10 cards): [QD,JH,10D,9H,KD,JS,8S,10S,9S,9H]
+====================================
+Event: Player 3 played 1 cards: [8S]
+Event: Player 0 played 1 cards: [JC]
+Event: Player 1 played 1 cards: [QD]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [KD]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (18 cards): [2C,2S,10H,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C,9C]
+Player 1 (8 cards): [9S,9D,JH,10D,9D,10C,KH,8H]
+Player 2 (16 cards): [2S,2D,10S,JS,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D,8C,8S]
+Player 3 (8 cards): [QD,JH,10D,9H,9S,JS,9H,10S]
+====================================
+Event: Player 3 played 1 cards: [9H]
+Event: Player 0 played 1 cards: [10H]
+Event: Player 1 played 1 cards: [JH]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [QD]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [KH]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [2C,2S,9C,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C]
+Player 1 (6 cards): [9S,9D,8H,10D,9D,10C]
+Player 2 (16 cards): [2S,2D,10S,JS,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D,8C,8S]
+Player 3 (6 cards): [10S,JH,10D,9H,9S,JS]
+====================================
+Event: Player 1 played 1 cards: [8H]
+Event: Player 2 played 1 cards: [10S]
+Event: Player 3 played 1 cards: [JH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [2C,2S,9C,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C]
+Player 1 (5 cards): [9S,9D,10C,10D,9D]
+Player 2 (15 cards): [2S,2D,8S,JS,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D,8C]
+Player 3 (5 cards): [10S,JS,10D,9H,9S]
+====================================
+Event: Player 3 played 1 cards: [9S]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [10C]
+Event: Player 2 played 1 cards: [JS]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [2C,2S,9C,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C]
+Player 1 (4 cards): [9S,9D,9D,10D]
+Player 2 (14 cards): [2S,2D,8S,8C,4S,4C,10H,4H,5S,5C,5D,5H,7S,8D]
+Player 3 (4 cards): [10S,JS,10D,9H]
+====================================
+Event: Player 2 played 1 cards: [2D]
+Event: Player 3 played 1 cards: [10S]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [2C,2S,9C,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C]
+Player 1 (4 cards): [9S,9D,9D,10D]
+Player 2 (13 cards): [2S,8D,8S,8C,4S,4C,10H,4H,5S,5C,5D,5H,7S]
+Player 3 (3 cards): [9H,JS,10D]
+====================================
+Event: Player 3 played 1 cards: [9H]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [10D]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [JS]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [2C,2S,9C,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C]
+Player 1 (3 cards): [9S,9D,9D]
+Player 2 (13 cards): [2S,8D,8S,8C,4S,4C,10H,4H,5S,5C,5D,5H,7S]
+Player 3 (1 cards): [10D]
+====================================
+Event: Player 3 played 1 cards: [10D]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [2C,2S,9C,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H,9C]
+Player 1 (3 cards): [9S,9D,9D]
+Player 2 (13 cards): [2S,8D,8S,8C,4S,4C,10H,4H,5S,5C,5D,5H,7S]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [2S]
+Event: Player 1 played 1 cards: [9S]
+Event: Player 2 played 1 cards: [10H]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (16 cards): [2C,9C,9C,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D,8H]
+Player 1 (2 cards): [9D,9D]
+Player 2 (12 cards): [2S,8D,8S,8C,4S,4C,7S,4H,5S,5C,5D,5H]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [2S]
+Event: Player 0 played 1 cards: [9C]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (15 cards): [2C,9C,8H,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C,8D]
+Player 1 (2 cards): [9D,9D]
+Player 2 (11 cards): [5H,8D,8S,8C,4S,4C,7S,4H,5S,5C,5D]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [2C]
+Event: Player 1 played 1 cards: [9D]
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (14 cards): [8D,9C,8H,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C]
+Player 1 (1 cards): [9D]
+Player 2 (11 cards): [5H,8D,8S,8C,4S,4C,7S,4H,5S,5C,5D]
+Player 3 (0 cards): []
+====================================
+Event: Player 1 played 1 cards: [9D]
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (14 cards): [8D,9C,8H,3C,3C,4D,4D,4C,4H,5D,5C,5S,7D,7C]
+Player 1 (0 cards): []
+Player 2 (11 cards): [5H,8D,8S,8C,4S,4C,7S,4H,5S,5C,5D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [4H]
+Event: Player 0 played 1 cards: [8D]
+Event: Player 2 passed
+Event: Player 0 played 1 cards: [9C]
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (12 cards): [7C,7D,8H,3C,3C,4D,4D,4C,4H,5D,5C,5S]
+Player 1 (0 cards): []
+Player 2 (10 cards): [5H,8D,8S,8C,4S,4C,7S,5D,5S,5C]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [3C]
+Event: Player 2 played 1 cards: [5H]
+Event: Player 0 played 1 cards: [7C]
+Event: Player 2 played 1 cards: [8D]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (10 cards): [5C,7D,8H,3C,5S,4D,4D,4C,4H,5D]
+Player 1 (0 cards): []
+Player 2 (8 cards): [5C,5S,8S,8C,4S,4C,7S,5D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [4C]
+Event: Player 0 played 1 cards: [5C]
+Event: Player 2 played 1 cards: [8S]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (9 cards): [5D,7D,8H,3C,5S,4D,4D,4C,4H]
+Player 1 (0 cards): []
+Player 2 (6 cards): [5C,5S,7S,8C,4S,5D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [4S]
+Event: Player 0 played 1 cards: [5D]
+Event: Player 2 played 1 cards: [7S]
+Event: Player 0 played 1 cards: [8H]
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [4H,7D,4C,3C,5S,4D,4D]
+Player 1 (0 cards): []
+Player 2 (4 cards): [5C,5S,5D,8C]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [3C]
+Event: Player 2 played 1 cards: [5C]
+Event: Player 0 played 1 cards: [7D]
+Event: Player 2 played 1 cards: [8C]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (5 cards): [4H,4D,4C,4D,5S]
+Player 1 (0 cards): []
+Player 2 (2 cards): [5D,5S]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [5S]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (5 cards): [4H,4D,4C,4D,5S]
+Player 1 (0 cards): []
+Player 2 (1 cards): [5D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [5D]
+Event: Deal Ended, Rankings: [3 1 2 0], Victory Type: double_down
+Event: Deal Started
+=== Deal deal_1753289642318274000 Started ===
+当前Deal Level: 9
+队伍0 Level: 2 (玩家 0,2)
+队伍1 Level: 9 (玩家 1,3)
+=======================
+=== 发牌完成，玩家手牌 ===
+Player 0 (27 cards): [2C,3S,3H,3H,4C,7S,7C,7S,8D,10S,10H,JC,JD,JS,QS,QH,KS,KH,AC,AD,9C,9S,9S,9H,SJ,SJ,BJ]
+Player 1 (27 cards): [2S,2C,2H,3S,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD,AS,9C,9D]
+Player 2 (27 cards): [2S,4H,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC,QH,AD,AH,9H]
+Player 3 (27 cards): [2D,2D,2H,4C,4D,4D,5D,5S,6C,6H,7C,7H,8S,8C,8D,10D,10S,JH,JH,QS,KD,KH,AS,AC,AH,9D,BJ]
+===========================
+=== 上贡规则确定 ===
+上局结果：[3 1 2 0], 胜利类型：double_down
+上贡规则：双下：Player2和Player0上贡到池，Player3优先选择
+类型：双下上贡（贡牌池模式）
+====================
+=== 双下贡牌池创建 ===
+双下贡牌池已创建，包含2张贡牌
+贡献详情：
+  Player 2 贡献：AD
+  Player 0 贡献：BJ
+选择顺序：Player 3 -> Player 1
+池中牌张：[AD, BJ]
+=====================
+=== 双下选牌 ===
+Player 3 (第一次选择) 选择：BJ
+剩余选项：[AD]
+================
+=== 双下选牌 ===
+Player 1 (第二次选择) 选择：AD
+所有贡牌已选择完毕
+================
+=== 还贡阶段 ===
+Player 3 还贡给 Player 0：2H
+原收到贡牌：BJ
+选择方式：玩家手动选择
+================
+=== 还贡阶段 ===
+Player 1 还贡给 Player 2：2H
+原收到贡牌：AD
+选择方式：玩家手动选择
+================
+=== 进贡阶段完成 ===
+所有上贡和还贡流程已完成，游戏阶段即将开始
+===================
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (27 cards): [2C,2H,3S,3H,3H,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH,AD,AC,9C,9S,9S,9H,SJ,SJ]
+Player 1 (27 cards): [2C,2S,3S,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD,AD,AS,9C,9D]
+Player 2 (27 cards): [2S,2H,4H,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC,QH,AH,9H]
+Player 3 (27 cards): [2D,2D,4C,4D,4D,5D,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS,KD,KH,AS,AC,AH,9D,BJ,BJ]
+====================================
+Event: Player 0 played 1 cards: [2H]
+Event: Player 1 played 1 cards: [3S]
+Event: Player 2 played 1 cards: [4H]
+Event: Player 3 played 1 cards: [5D]
+Event: Player 0 played 1 cards: [SJ]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [BJ]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (25 cards): [2C,SJ,3S,3H,3H,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH,AD,AC,9C,9S,9S,9H]
+Player 1 (26 cards): [2C,2S,9D,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD,AD,AS,9C]
+Player 2 (26 cards): [2S,2H,9H,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC,QH,AH]
+Player 3 (25 cards): [2D,2D,4C,4D,4D,BJ,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS,KD,KH,AS,AC,AH,9D]
+====================================
+Event: Player 3 played 1 cards: [2D]
+Event: Player 0 played 1 cards: [SJ]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [BJ]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (24 cards): [2C,9H,3S,3H,3H,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH,AD,AC,9C,9S,9S]
+Player 1 (26 cards): [2C,2S,9D,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD,AD,AS,9C]
+Player 2 (26 cards): [2S,2H,9H,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC,QH,AH]
+Player 3 (23 cards): [2D,9D,4C,4D,4D,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS,KD,KH,AS,AC]
+====================================
+Event: Player 3 played 1 cards: [2D]
+Event: Player 0 played 1 cards: [9H]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2C,9S,3S,3H,3H,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH,AD,AC,9C,9S]
+Player 1 (26 cards): [2C,2S,9D,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD,AD,AS,9C]
+Player 2 (26 cards): [2S,2H,9H,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC,QH,AH]
+Player 3 (22 cards): [AC,9D,4C,4D,4D,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS,KD,KH,AS]
+====================================
+Event: Player 0 played 1 cards: [2C]
+Event: Player 1 played 1 cards: [9D]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (22 cards): [9S,9S,3S,3H,3H,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH,AD,AC,9C]
+Player 1 (25 cards): [2C,2S,9C,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD,AD,AS]
+Player 2 (26 cards): [2S,2H,9H,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC,QH,AH]
+Player 3 (22 cards): [AC,9D,4C,4D,4D,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS,KD,KH,AS]
+====================================
+Event: Player 1 played 1 cards: [2S]
+Event: Player 2 played 1 cards: [9H]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (22 cards): [9S,9S,3S,3H,3H,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH,AD,AC,9C]
+Player 1 (24 cards): [2C,AS,9C,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD,AD]
+Player 2 (25 cards): [2S,2H,AH,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC,QH]
+Player 3 (22 cards): [AC,9D,4C,4D,4D,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS,KD,KH,AS]
+====================================
+Event: Player 2 played 1 cards: [2H]
+Event: Player 3 played 1 cards: [AC]
+Event: Player 0 played 1 cards: [9S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [9S,9C,3S,3H,3H,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH,AD,AC]
+Player 1 (24 cards): [2C,AS,9C,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD,AD]
+Player 2 (24 cards): [2S,QH,AH,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC]
+Player 3 (21 cards): [AS,9D,4C,4D,4D,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS,KD,KH]
+====================================
+Event: Player 0 played 1 cards: [3H]
+Event: Player 1 played 1 cards: [AS]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [9D]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [9S,9C,3S,3H,AC,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH,AD]
+Player 1 (23 cards): [2C,AD,9C,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD]
+Player 2 (24 cards): [2S,QH,AH,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC]
+Player 3 (20 cards): [AS,KH,4C,4D,4D,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS,KD]
+====================================
+Event: Player 3 played 1 cards: [4D]
+Event: Player 0 played 1 cards: [9S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (19 cards): [AD,9C,3S,3H,AC,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH,KS,KH]
+Player 1 (23 cards): [2C,AD,9C,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS,KD]
+Player 2 (24 cards): [2S,QH,AH,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC]
+Player 3 (19 cards): [AS,KH,4C,4D,KD,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS]
+====================================
+Event: Player 0 played 1 cards: [3H]
+Event: Player 1 played 1 cards: [AD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [9C]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [AD,KS,3S,KH,AC,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS,QH]
+Player 1 (22 cards): [2C,KD,9C,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC,KC,KS]
+Player 2 (24 cards): [2S,QH,AH,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC,QC]
+Player 3 (19 cards): [AS,KH,4C,4D,KD,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS]
+====================================
+Event: Player 0 played 1 cards: [3S]
+Event: Player 1 played 1 cards: [KD]
+Event: Player 2 played 1 cards: [AH]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [9C]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (16 cards): [AD,KS,QH,KH,AC,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS]
+Player 1 (20 cards): [2C,KS,KC,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD,KC]
+Player 2 (23 cards): [2S,QH,QC,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS,QC]
+Player 3 (19 cards): [AS,KH,4C,4D,KD,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH,QS]
+====================================
+Event: Player 1 played 1 cards: [2C]
+Event: Player 2 played 1 cards: [QH]
+Event: Player 3 played 1 cards: [AS]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (16 cards): [AD,KS,QH,KH,AC,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC,QS]
+Player 1 (19 cards): [KC,KS,KC,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD]
+Player 2 (22 cards): [2S,QC,QC,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS]
+Player 3 (18 cards): [QS,KH,4C,4D,KD,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH,JH]
+====================================
+Event: Player 3 played 1 cards: [4D]
+Event: Player 0 played 1 cards: [AD]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (15 cards): [QS,KS,QH,KH,AC,4C,7S,7C,7S,8D,10S,10H,JD,JS,JC]
+Player 1 (19 cards): [KC,KS,KC,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD,QD]
+Player 2 (22 cards): [2S,QC,QC,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS]
+Player 3 (17 cards): [QS,KH,4C,JH,KD,AH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D,JH]
+====================================
+Event: Player 0 played 1 cards: [4C]
+Event: Player 1 played 1 cards: [KC]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [AH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (14 cards): [QS,KS,QH,KH,AC,JC,7S,7C,7S,8D,10S,10H,JD,JS]
+Player 1 (18 cards): [KC,KS,QD,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC,QD]
+Player 2 (22 cards): [2S,QC,QC,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS]
+Player 3 (16 cards): [QS,KH,4C,JH,KD,JH,5S,6C,6H,7C,7H,8S,8C,8D,10S,10D]
+====================================
+Event: Player 3 played 1 cards: [4C]
+Event: Player 0 played 1 cards: [QS]
+Event: Player 1 played 1 cards: [KC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [AC]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (12 cards): [JS,KS,QH,KH,JD,JC,7S,7C,7S,8D,10S,10H]
+Player 1 (17 cards): [QD,KS,QD,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H,JC]
+Player 2 (22 cards): [2S,QC,QC,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS]
+Player 3 (15 cards): [QS,KH,10D,JH,KD,JH,5S,6C,6H,7C,7H,8S,8C,8D,10S]
+====================================
+Event: Player 0 played 1 cards: [7S]
+Event: Player 1 played 1 cards: [QD]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [KH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (11 cards): [JS,KS,QH,KH,JD,JC,7S,7C,10H,8D,10S]
+Player 1 (16 cards): [QD,KS,JC,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D,10H]
+Player 2 (22 cards): [2S,QC,QC,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS]
+Player 3 (14 cards): [QS,10S,10D,JH,KD,JH,5S,6C,6H,7C,7H,8S,8C,8D]
+====================================
+Event: Player 3 played 1 cards: [5S]
+Event: Player 0 played 1 cards: [JS]
+Event: Player 1 played 1 cards: [QD]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [KD]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (10 cards): [10S,KS,QH,KH,JD,JC,7S,7C,10H,8D]
+Player 1 (15 cards): [10H,KS,JC,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S,10D]
+Player 2 (22 cards): [2S,QC,QC,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS]
+Player 3 (12 cards): [QS,10S,10D,JH,8C,JH,8D,6C,6H,7C,7H,8S]
+====================================
+Event: Player 3 played 1 cards: [6H]
+Event: Player 0 played 1 cards: [10S]
+Event: Player 1 played 1 cards: [KS]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (9 cards): [8D,KS,QH,KH,JD,JC,7S,7C,10H]
+Player 1 (14 cards): [10H,10D,JC,3C,3D,3C,3D,4S,4S,4H,5D,6S,6H,8S]
+Player 2 (22 cards): [2S,QC,QC,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD,JS]
+Player 3 (11 cards): [QS,10S,10D,JH,8C,JH,8D,6C,8S,7C,7H]
+====================================
+Event: Player 1 played 1 cards: [3D]
+Event: Player 2 played 1 cards: [QC]
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [KS]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (8 cards): [8D,10H,QH,KH,JD,JC,7S,7C]
+Player 1 (13 cards): [10H,10D,JC,3C,3D,3C,8S,4S,4S,4H,5D,6S,6H]
+Player 2 (21 cards): [2S,QC,JS,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C,JD]
+Player 3 (11 cards): [QS,10S,10D,JH,8C,JH,8D,6C,8S,7C,7H]
+====================================
+Event: Player 0 played 1 cards: [7C]
+Event: Player 1 played 1 cards: [10H]
+Event: Player 2 played 1 cards: [QC]
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [KH]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (6 cards): [8D,10H,QH,7S,JD,JC]
+Player 1 (12 cards): [6H,10D,JC,3C,3D,3C,8S,4S,4S,4H,5D,6S]
+Player 2 (20 cards): [2S,JD,JS,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C,10C]
+Player 3 (11 cards): [QS,10S,10D,JH,8C,JH,8D,6C,8S,7C,7H]
+====================================
+Event: Player 0 played 1 cards: [7S]
+Event: Player 1 played 1 cards: [10D]
+Event: Player 2 played 1 cards: [JD]
+Event: Player 3 played 1 cards: [QS]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (5 cards): [8D,10H,QH,JC,JD]
+Player 1 (11 cards): [6H,6S,JC,3C,3D,3C,8S,4S,4S,4H,5D]
+Player 2 (19 cards): [2S,10C,JS,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C]
+Player 3 (10 cards): [7H,10S,10D,JH,8C,JH,8D,6C,8S,7C]
+====================================
+Event: Player 3 played 1 cards: [6C]
+Event: Player 0 played 1 cards: [8D]
+Event: Player 1 played 1 cards: [JC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [QH]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (3 cards): [JD,10H,JC]
+Player 1 (10 cards): [6H,6S,5D,3C,3D,3C,8S,4S,4S,4H]
+Player 2 (19 cards): [2S,10C,JS,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H,10C]
+Player 3 (9 cards): [7H,10S,10D,JH,8C,JH,8D,7C,8S]
+====================================
+Event: Player 0 played 1 cards: [10H]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [JS]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (2 cards): [JD,JC]
+Player 1 (10 cards): [6H,6S,5D,3C,3D,3C,8S,4S,4S,4H]
+Player 2 (18 cards): [2S,10C,10C,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H,8H]
+Player 3 (9 cards): [7H,10S,10D,JH,8C,JH,8D,7C,8S]
+====================================
+Event: Player 2 played 1 cards: [2S]
+Event: Player 3 played 1 cards: [7H]
+Event: Player 0 played 1 cards: [JD]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (1 cards): [JC]
+Player 1 (10 cards): [6H,6S,5D,3C,3D,3C,8S,4S,4S,4H]
+Player 2 (17 cards): [8H,10C,10C,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H]
+Player 3 (8 cards): [8S,10S,10D,JH,8C,JH,8D,7C]
+====================================
+Event: Player 0 played 1 cards: [JC]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (10 cards): [6H,6S,5D,3C,3D,3C,8S,4S,4S,4H]
+Player 2 (17 cards): [8H,10C,10C,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C,8H]
+Player 3 (8 cards): [8S,10S,10D,JH,8C,JH,8D,7C]
+====================================
+Event: Player 1 played 1 cards: [3C]
+Event: Player 2 played 1 cards: [8H]
+Event: Player 3 played 1 cards: [10S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [JH]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (9 cards): [6H,6S,5D,3C,3D,4H,8S,4S,4S]
+Player 2 (16 cards): [8H,10C,10C,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H,8C]
+Player 3 (6 cards): [8S,7C,10D,JH,8C,8D]
+====================================
+Event: Player 3 played 1 cards: [7C]
+Event: Player 1 played 1 cards: [8S]
+Event: Player 2 played 1 cards: [10C]
+Event: Player 3 played 1 cards: [JH]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (8 cards): [6H,6S,5D,3C,3D,4H,4S,4S]
+Player 2 (15 cards): [8H,10C,8C,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D,7H]
+Player 3 (4 cards): [8S,8D,10D,8C]
+====================================
+Event: Player 3 played 1 cards: [8C]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [10C]
+Event: Player 3 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (8 cards): [6H,6S,5D,3C,3D,4H,4S,4S]
+Player 2 (14 cards): [8H,7H,8C,5S,5C,5C,5H,5H,6D,6S,6C,6D,7D,7D]
+Player 3 (3 cards): [8S,8D,10D]
+====================================
+Event: Player 2 played 1 cards: [5H]
+Event: Player 3 played 1 cards: [8S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (8 cards): [6H,6S,5D,3C,3D,4H,4S,4S]
+Player 2 (13 cards): [8H,7H,8C,5S,5C,5C,5H,7D,6D,6S,6C,6D,7D]
+Player 3 (1 cards): [8D]
+====================================
+Event: Player 3 played 1 cards: [8D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (8 cards): [6H,6S,5D,3C,3D,4H,4S,4S]
+Player 2 (13 cards): [8H,7H,8C,5S,5C,5C,5H,7D,6D,6S,6C,6D,7D]
+Player 3 (0 cards): []
+====================================
+Event: Player 1 played 1 cards: [3D]
+Event: Player 2 played 1 cards: [8H]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (7 cards): [6H,6S,5D,3C,4S,4H,4S]
+Player 2 (12 cards): [7D,7H,8C,5S,5C,5C,5H,7D,6D,6S,6C,6D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [5H]
+Event: Player 1 played 1 cards: [6H]
+Event: Player 2 played 1 cards: [7D]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [8C]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (6 cards): [4S,6S,5D,3C,4S,4H]
+Player 2 (9 cards): [7D,7H,6S,5S,5C,5C,6D,6C,6D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [5C]
+Event: Player 1 played 1 cards: [6S]
+Event: Player 2 played 1 cards: [7D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (5 cards): [4S,4H,5D,3C,4S]
+Player 2 (7 cards): [6C,7H,6S,5S,5C,6D,6D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [5C]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [6C]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [7H]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (5 cards): [4S,4H,5D,3C,4S]
+Player 2 (4 cards): [6D,6D,6S,5S]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [5S]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [6D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (5 cards): [4S,4H,5D,3C,4S]
+Player 2 (2 cards): [6D,6S]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [6S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (5 cards): [4S,4H,5D,3C,4S]
+Player 2 (1 cards): [6D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [6D]
+Event: Deal Ended, Rankings: [0 3 2 1], Victory Type: single_last
+Event: Deal Started
+=== Deal deal_1753289642319473000 Started ===
+当前Deal Level: 9
+队伍0 Level: 4 (玩家 0,2)
+队伍1 Level: 9 (玩家 1,3)
+=======================
+=== 发牌完成，玩家手牌 ===
+Player 0 (27 cards): [2C,2H,3C,3H,4S,4H,5S,6C,6D,7D,7S,8C,8D,10S,10S,10C,10H,JS,QD,QS,QD,QH,KS,AC,AH,9S,9D]
+Player 1 (27 cards): [2C,2D,2H,3H,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JC,JD,KS,KC,KC,KH,AD,AD,9D,9S,9H,SJ,BJ]
+Player 2 (27 cards): [2S,2D,3D,3C,4D,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS,QC,KD,AS,AS,AH,SJ,BJ]
+Player 3 (27 cards): [2S,3S,3S,3D,5D,5D,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH,KD,KH,AC,9C,9C,9H]
+===========================
+=== 上贡规则确定 ===
+上局结果：[0 3 2 1], 胜利类型：single_last
+上贡规则：单下：Player1上贡给Player0
+类型：直接上贡模式
+====================
+=== 上贡完成 ===
+Player 1 上贡给 Player 0：BJ
+上贡类型：普通上贡
+选择方式：自动选择（除红桃Trump外最大牌）
+================
+=== 还贡阶段 ===
+Player 0 还贡给 Player 1：2H
+原收到贡牌：BJ
+选择方式：玩家手动选择
+================
+=== 进贡阶段完成 ===
+所有上贡和还贡流程已完成，游戏阶段即将开始
+===================
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (27 cards): [2C,3C,3H,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD,QH,KS,AC,AH,9S,9D,BJ]
+Player 1 (27 cards): [2D,2C,2H,2H,3H,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC,KH,AD,AD,9D,9S,9H,SJ]
+Player 2 (27 cards): [2S,2D,3D,3C,4D,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS,QC,KD,AS,AS,AH,SJ,BJ]
+Player 3 (27 cards): [2S,3S,3S,3D,5D,5D,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH,KD,KH,AC,9C,9C,9H]
+====================================
+Event: Player 0 played 1 cards: [2C]
+Event: Player 1 played 1 cards: [3H]
+Event: Player 2 played 1 cards: [4D]
+Event: Player 3 played 1 cards: [5D]
+Event: Player 0 played 1 cards: [BJ]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (25 cards): [9D,3C,3H,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD,QH,KS,AC,AH,9S]
+Player 1 (26 cards): [2D,2C,2H,2H,SJ,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC,KH,AD,AD,9D,9S,9H]
+Player 2 (26 cards): [2S,2D,3D,3C,BJ,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS,QC,KD,AS,AS,AH,SJ]
+Player 3 (26 cards): [2S,3S,3S,3D,5D,9H,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH,KD,KH,AC,9C,9C]
+====================================
+Event: Player 0 played 1 cards: [3H]
+Event: Player 1 played 1 cards: [SJ]
+Event: Player 2 played 1 cards: [BJ]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (24 cards): [9D,3C,9S,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD,QH,KS,AC,AH]
+Player 1 (25 cards): [2D,2C,2H,2H,9H,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC,KH,AD,AD,9D,9S]
+Player 2 (25 cards): [2S,2D,3D,3C,SJ,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS,QC,KD,AS,AS,AH]
+Player 3 (26 cards): [2S,3S,3S,3D,5D,9H,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH,KD,KH,AC,9C,9C]
+====================================
+Event: Player 2 played 1 cards: [2D]
+Event: Player 3 played 1 cards: [3S]
+Event: Player 0 played 1 cards: [9D]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [SJ]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [AH,3C,9S,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD,QH,KS,AC]
+Player 1 (25 cards): [2D,2C,2H,2H,9H,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC,KH,AD,AD,9D,9S]
+Player 2 (23 cards): [2S,AH,3D,3C,AS,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS,QC,KD,AS]
+Player 3 (25 cards): [2S,3S,9C,3D,5D,9H,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH,KD,KH,AC,9C]
+====================================
+Event: Player 2 played 1 cards: [2S]
+Event: Player 3 played 1 cards: [3S]
+Event: Player 0 played 1 cards: [AH]
+Event: Player 1 played 1 cards: [9H]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (22 cards): [AC,3C,9S,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD,QH,KS]
+Player 1 (24 cards): [2D,2C,2H,2H,9S,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC,KH,AD,AD,9D]
+Player 2 (22 cards): [AS,AH,3D,3C,AS,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS,QC,KD]
+Player 3 (24 cards): [2S,9C,9C,3D,5D,9H,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH,KD,KH,AC]
+====================================
+Event: Player 1 played 1 cards: [2H]
+Event: Player 2 played 1 cards: [AS]
+Event: Player 3 played 1 cards: [9C]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (22 cards): [AC,3C,9S,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD,QH,KS]
+Player 1 (23 cards): [2D,2C,2H,9D,9S,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC,KH,AD,AD]
+Player 2 (21 cards): [AS,AH,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS,QC]
+Player 3 (23 cards): [2S,9C,AC,3D,5D,9H,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH,KD,KH]
+====================================
+Event: Player 3 played 1 cards: [2S]
+Event: Player 0 played 1 cards: [AC]
+Event: Player 1 played 1 cards: [9D]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [KS,3C,9S,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD,QH]
+Player 1 (22 cards): [2D,2C,2H,AD,9S,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC,KH,AD]
+Player 2 (21 cards): [AS,AH,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS,QC]
+Player 3 (22 cards): [KH,9C,AC,3D,5D,9H,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH,KD]
+====================================
+Event: Player 1 played 1 cards: [2H]
+Event: Player 2 played 1 cards: [AS]
+Event: Player 3 played 1 cards: [9C]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [KS,3C,9S,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD,QH]
+Player 1 (21 cards): [2D,2C,AD,AD,9S,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC,KH]
+Player 2 (20 cards): [QC,AH,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS]
+Player 3 (21 cards): [KH,KD,AC,3D,5D,9H,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH,QC,QH]
+====================================
+Event: Player 3 played 1 cards: [3D]
+Event: Player 0 played 1 cards: [KS]
+Event: Player 1 played 1 cards: [AD]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [9H]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [QH,3C,9S,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS,QD,QD]
+Player 1 (20 cards): [2D,2C,AD,KH,9S,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC,KC]
+Player 2 (20 cards): [QC,AH,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS]
+Player 3 (19 cards): [KH,KD,AC,QH,5D,QC,5S,5H,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH,JH]
+====================================
+Event: Player 3 played 1 cards: [5H]
+Event: Player 0 played 1 cards: [QH]
+Event: Player 1 played 1 cards: [AD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [9S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (18 cards): [QD,3C,QD,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS,QS]
+Player 1 (19 cards): [2D,2C,KC,KH,9S,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC,KS,KC]
+Player 2 (20 cards): [QC,AH,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS,QS]
+Player 3 (18 cards): [KH,KD,AC,QH,5D,QC,5S,JH,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH]
+====================================
+Event: Player 0 played 1 cards: [3C]
+Event: Player 1 played 1 cards: [KC]
+Event: Player 2 played 1 cards: [AH]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [9S]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [QD,QS,QD,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS]
+Player 1 (17 cards): [2D,2C,KC,KH,KS,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD,JC]
+Player 2 (19 cards): [QC,QS,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD,JS]
+Player 3 (18 cards): [KH,KD,AC,QH,5D,QC,5S,JH,6S,6S,7C,7S,7D,8S,8H,10C,10D,JH]
+====================================
+Event: Player 1 played 1 cards: [2C]
+Event: Player 2 played 1 cards: [QC]
+Event: Player 3 played 1 cards: [KH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [QD,QS,QD,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H,JS]
+Player 1 (16 cards): [2D,JC,KC,KH,KS,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H,JD]
+Player 2 (18 cards): [JS,QS,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD]
+Player 3 (17 cards): [JH,KD,AC,QH,5D,QC,5S,JH,6S,6S,7C,7S,7D,8S,8H,10C,10D]
+====================================
+Event: Player 3 played 1 cards: [5S]
+Event: Player 0 played 1 cards: [QD]
+Event: Player 1 played 1 cards: [KC]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [AC]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (16 cards): [QD,QS,JS,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C,10H]
+Player 1 (15 cards): [2D,JC,JD,KH,KS,4C,4D,4C,5C,5C,7C,7H,8D,10D,10H]
+Player 2 (18 cards): [JS,QS,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD]
+Player 3 (15 cards): [JH,KD,10C,QH,5D,QC,10D,JH,6S,6S,7C,7S,7D,8S,8H]
+====================================
+Event: Player 3 played 1 cards: [5D]
+Event: Player 0 played 1 cards: [QD]
+Event: Player 1 played 1 cards: [KH]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (15 cards): [10H,QS,JS,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C]
+Player 1 (14 cards): [2D,JC,JD,10H,KS,4C,4D,4C,5C,5C,7C,7H,8D,10D]
+Player 2 (18 cards): [JS,QS,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC,JD]
+Player 3 (14 cards): [JH,KD,10C,QH,8H,QC,10D,JH,6S,6S,7C,7S,7D,8S]
+====================================
+Event: Player 1 played 1 cards: [2D]
+Event: Player 2 played 1 cards: [JS]
+Event: Player 3 played 1 cards: [KD]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (15 cards): [10H,QS,JS,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S,10C]
+Player 1 (13 cards): [10D,JC,JD,10H,KS,4C,4D,4C,5C,5C,7C,7H,8D]
+Player 2 (17 cards): [JD,QS,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H,JC]
+Player 3 (13 cards): [JH,8S,10C,QH,8H,QC,10D,JH,6S,6S,7C,7S,7D]
+====================================
+Event: Player 3 played 1 cards: [6S]
+Event: Player 0 played 1 cards: [10H]
+Event: Player 1 played 1 cards: [JC]
+Event: Player 2 played 1 cards: [QS]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [KS]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (14 cards): [10C,QS,JS,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S]
+Player 1 (11 cards): [10D,8D,JD,10H,7H,4C,4D,4C,5C,5C,7C]
+Player 2 (16 cards): [JD,JC,3D,3C,KD,4S,4H,5H,6C,6D,6H,6H,7H,8S,8C,8H]
+Player 3 (12 cards): [JH,8S,10C,QH,8H,QC,10D,JH,6S,7D,7C,7S]
+====================================
+Event: Player 1 played 1 cards: [4C]
+Event: Player 2 played 1 cards: [JD]
+Event: Player 3 played 1 cards: [QH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [KD]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (14 cards): [10C,QS,JS,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S,10S]
+Player 1 (10 cards): [10D,8D,JD,10H,7H,4C,4D,7C,5C,5C]
+Player 2 (14 cards): [8H,JC,3D,3C,8C,4S,4H,5H,6C,6D,6H,6H,7H,8S]
+Player 3 (11 cards): [JH,8S,10C,7S,8H,QC,10D,JH,6S,7D,7C]
+====================================
+Event: Player 2 played 1 cards: [3C]
+Event: Player 3 played 1 cards: [JH]
+Event: Player 0 played 1 cards: [QS]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (13 cards): [10C,10S,JS,4S,4H,5S,6C,6D,7S,7D,8D,8C,10S]
+Player 1 (10 cards): [10D,8D,JD,10H,7H,4C,4D,7C,5C,5C]
+Player 2 (13 cards): [8H,JC,3D,8S,8C,4S,4H,5H,6C,6D,6H,6H,7H]
+Player 3 (10 cards): [JH,8S,10C,7S,8H,QC,10D,7C,6S,7D]
+====================================
+Event: Player 0 played 1 cards: [4H]
+Event: Player 1 played 1 cards: [10D]
+Event: Player 2 played 1 cards: [JC]
+Event: Player 3 played 1 cards: [QC]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (12 cards): [10C,10S,JS,4S,10S,5S,6C,6D,7S,7D,8D,8C]
+Player 1 (9 cards): [5C,8D,JD,10H,7H,4C,4D,7C,5C]
+Player 2 (12 cards): [8H,7H,3D,8S,8C,4S,4H,5H,6C,6D,6H,6H]
+Player 3 (9 cards): [JH,8S,10C,7S,8H,7D,10D,7C,6S]
+====================================
+Event: Player 3 played 1 cards: [6S]
+Event: Player 0 played 1 cards: [10C]
+Event: Player 1 played 1 cards: [JD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (11 cards): [8C,10S,JS,4S,10S,5S,6C,6D,7S,7D,8D]
+Player 1 (8 cards): [5C,8D,5C,10H,7H,4C,4D,7C]
+Player 2 (12 cards): [8H,7H,3D,8S,8C,4S,4H,5H,6C,6D,6H,6H]
+Player 3 (8 cards): [JH,8S,10C,7S,8H,7D,10D,7C]
+====================================
+Event: Player 1 played 1 cards: [4D]
+Event: Player 2 played 1 cards: [8H]
+Event: Player 3 played 1 cards: [JH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (11 cards): [8C,10S,JS,4S,10S,5S,6C,6D,7S,7D,8D]
+Player 1 (7 cards): [5C,8D,5C,10H,7H,4C,7C]
+Player 2 (11 cards): [6H,7H,3D,8S,8C,4S,4H,5H,6C,6D,6H]
+Player 3 (7 cards): [7C,8S,10C,7S,8H,7D,10D]
+====================================
+Event: Player 3 played 1 cards: [7D]
+Event: Player 0 played 1 cards: [8C]
+Event: Player 1 played 1 cards: [10H]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [JS]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (9 cards): [8D,10S,7D,4S,10S,5S,6C,6D,7S]
+Player 1 (6 cards): [5C,8D,5C,7C,7H,4C]
+Player 2 (11 cards): [6H,7H,3D,8S,8C,4S,4H,5H,6C,6D,6H]
+Player 3 (6 cards): [7C,8S,10C,7S,8H,10D]
+====================================
+Event: Player 0 played 1 cards: [4S]
+Event: Player 1 played 1 cards: [5C]
+Event: Player 2 played 1 cards: [6H]
+Event: Player 3 played 1 cards: [7C]
+Event: Player 0 played 1 cards: [8D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10D]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [6D,10S,7D,7S,10S,5S,6C]
+Player 1 (5 cards): [5C,8D,4C,7C,7H]
+Player 2 (10 cards): [6H,7H,3D,8S,8C,4S,4H,5H,6C,6D]
+Player 3 (4 cards): [8H,8S,10C,7S]
+====================================
+Event: Player 3 played 1 cards: [7S]
+Event: Player 0 played 1 cards: [10S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (6 cards): [6D,10S,7D,7S,6C,5S]
+Player 1 (5 cards): [5C,8D,4C,7C,7H]
+Player 2 (10 cards): [6H,7H,3D,8S,8C,4S,4H,5H,6C,6D]
+Player 3 (3 cards): [8H,8S,10C]
+====================================
+Event: Player 0 played 1 cards: [5S]
+Event: Player 1 played 1 cards: [8D]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10C]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (5 cards): [6D,10S,7D,7S,6C]
+Player 1 (4 cards): [5C,7H,4C,7C]
+Player 2 (10 cards): [6H,7H,3D,8S,8C,4S,4H,5H,6C,6D]
+Player 3 (2 cards): [8H,8S]
+====================================
+Event: Player 3 played 1 cards: [8S]
+Event: Player 0 played 1 cards: [10S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [6D,6C,7D,7S]
+Player 1 (4 cards): [5C,7H,4C,7C]
+Player 2 (10 cards): [6H,7H,3D,8S,8C,4S,4H,5H,6C,6D]
+Player 3 (1 cards): [8H]
+====================================
+Event: Player 0 played 1 cards: [6C]
+Event: Player 1 played 1 cards: [7H]
+Event: Player 2 played 1 cards: [8S]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (3 cards): [6D,7S,7D]
+Player 1 (3 cards): [5C,7C,4C]
+Player 2 (9 cards): [6H,7H,3D,6D,8C,4S,4H,5H,6C]
+Player 3 (1 cards): [8H]
+====================================
+Event: Player 2 played 1 cards: [3D]
+Event: Player 3 played 1 cards: [8H]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (3 cards): [6D,7S,7D]
+Player 1 (3 cards): [5C,7C,4C]
+Player 2 (8 cards): [6H,7H,6C,6D,8C,4S,4H,5H]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [6D]
+Event: Player 1 played 1 cards: [7C]
+Event: Player 2 played 1 cards: [8C]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (2 cards): [7D,7S]
+Player 1 (2 cards): [5C,4C]
+Player 2 (7 cards): [6H,7H,6C,6D,5H,4S,4H]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [4H]
+Event: Player 0 played 1 cards: [7D]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (1 cards): [7S]
+Player 1 (2 cards): [5C,4C]
+Player 2 (6 cards): [6H,7H,6C,6D,5H,4S]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [7S]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (2 cards): [5C,4C]
+Player 2 (6 cards): [6H,7H,6C,6D,5H,4S]
+Player 3 (0 cards): []
+====================================
+Event: Player 1 played 1 cards: [4C]
+Event: Player 2 played 1 cards: [6H]
+Event: Player 1 passed
+Event: Player 2 played 1 cards: [7H]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 1 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (0 cards): []
+Player 1 (1 cards): [5C]
+Player 2 (4 cards): [4S,5H,6C,6D]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [4S]
+Event: Player 1 played 1 cards: [5C]
+Event: Deal Ended, Rankings: [3 0 1 2], Victory Type: single_last
+Event: Deal Started
+=== Deal deal_1753289642320554000 Started ===
+当前Deal Level: 11
+队伍0 Level: 4 (玩家 0,2)
+队伍1 Level: 11 (玩家 1,3)
+=======================
+=== 发牌完成，玩家手牌 ===
+Player 0 (27 cards): [2D,2H,2H,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H,QS,KD,KC,AC,JH,BJ]
+Player 1 (27 cards): [2C,2S,3C,3D,3S,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD,AS,JC,JS,JC,JD,JH,SJ,SJ,BJ]
+Player 2 (27 cards): [2D,3C,3H,4D,4C,4C,4H,5S,5C,5C,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS,KH,KH,AD,AH,AH,JS]
+Player 3 (27 cards): [2C,2S,3D,3H,4S,5D,5D,6C,6H,7D,7H,8C,8H,9C,9H,10C,10S,10D,10H,QC,QD,QC,QH,KD,AC,AS,JD]
+===========================
+=== 上贡规则确定 ===
+上局结果：[3 0 1 2], 胜利类型：single_last
+上贡规则：单下：Player2上贡给Player3
+类型：直接上贡模式
+====================
+=== 上贡完成 ===
+Player 2 上贡给 Player 3：JS
+上贡类型：普通上贡
+选择方式：自动选择（除红桃Trump外最大牌）
+================
+=== 还贡阶段 ===
+Player 3 还贡给 Player 2：2S
+原收到贡牌：JS
+选择方式：玩家手动选择
+================
+=== 进贡阶段完成 ===
+所有上贡和还贡流程已完成，游戏阶段即将开始
+===================
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (27 cards): [2D,2H,2H,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H,QS,KD,KC,AC,JH,BJ]
+Player 1 (27 cards): [2C,2S,3C,3D,3S,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD,AS,JC,JS,JC,JD,JH,SJ,SJ,BJ]
+Player 2 (27 cards): [2D,2S,3C,3H,4D,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS,KH,KH,AD,AH,AH]
+Player 3 (27 cards): [2C,3D,3H,4S,5D,5D,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC,QH,KD,AC,AS,JS,JD]
+====================================
+Event: Player 0 played 1 cards: [2H]
+Event: Player 1 played 1 cards: [3C]
+Event: Player 2 played 1 cards: [4D]
+Event: Player 3 played 1 cards: [5D]
+Event: Player 0 played 1 cards: [BJ]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (25 cards): [2D,2H,JH,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H,QS,KD,KC,AC]
+Player 1 (26 cards): [2C,2S,BJ,3D,3S,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD,AS,JC,JS,JC,JD,JH,SJ,SJ]
+Player 2 (26 cards): [2D,2S,3C,3H,AH,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS,KH,KH,AD,AH]
+Player 3 (26 cards): [2C,3D,3H,4S,5D,JD,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC,QH,KD,AC,AS,JS]
+====================================
+Event: Player 0 played 1 cards: [2H]
+Event: Player 1 played 1 cards: [BJ]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (24 cards): [2D,AC,JH,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H,QS,KD,KC]
+Player 1 (25 cards): [2C,2S,SJ,3D,3S,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD,AS,JC,JS,JC,JD,JH,SJ]
+Player 2 (26 cards): [2D,2S,3C,3H,AH,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS,KH,KH,AD,AH]
+Player 3 (26 cards): [2C,3D,3H,4S,5D,JD,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC,QH,KD,AC,AS,JS]
+====================================
+Event: Player 1 played 1 cards: [2S]
+Event: Player 2 played 1 cards: [3C]
+Event: Player 3 played 1 cards: [4S]
+Event: Player 0 played 1 cards: [AC]
+Event: Player 1 played 1 cards: [SJ]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2D,KC,JH,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H,QS,KD]
+Player 1 (23 cards): [2C,SJ,JH,3D,3S,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD,AS,JC,JS,JC,JD]
+Player 2 (25 cards): [2D,2S,AH,3H,AH,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS,KH,KH,AD]
+Player 3 (25 cards): [2C,3D,3H,JS,5D,JD,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC,QH,KD,AC,AS]
+====================================
+Event: Player 1 played 1 cards: [2C]
+Event: Player 2 played 1 cards: [AH]
+Event: Player 3 played 1 cards: [JS]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [SJ]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2D,KC,JH,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H,QS,KD]
+Player 1 (21 cards): [JD,JC,JH,3D,3S,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD,AS,JC,JS]
+Player 2 (24 cards): [2D,2S,AH,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS,KH,KH]
+Player 3 (24 cards): [2C,3D,3H,AS,5D,JD,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC,QH,KD,AC]
+====================================
+Event: Player 1 played 1 cards: [3S]
+Event: Player 2 played 1 cards: [AH]
+Event: Player 3 played 1 cards: [JD]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (23 cards): [2D,KC,JH,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H,QS,KD]
+Player 1 (20 cards): [JD,JC,JH,3D,JS,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD,AS,JC]
+Player 2 (23 cards): [2D,2S,KH,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS,KH]
+Player 3 (23 cards): [2C,3D,3H,AS,5D,AC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC,QH,KD]
+====================================
+Event: Player 3 played 1 cards: [2C]
+Event: Player 0 played 1 cards: [KC]
+Event: Player 1 played 1 cards: [JD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (22 cards): [2D,KD,JH,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H,QS]
+Player 1 (19 cards): [JC,JC,JH,3D,JS,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD,AS]
+Player 2 (23 cards): [2D,2S,KH,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS,KH]
+Player 3 (22 cards): [KD,3D,3H,AS,5D,AC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC,QH]
+====================================
+Event: Player 1 played 1 cards: [3D]
+Event: Player 2 played 1 cards: [KH]
+Event: Player 3 played 1 cards: [AS]
+Event: Player 0 played 1 cards: [JH]
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (21 cards): [2D,KD,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D,9H]
+Player 1 (18 cards): [JC,JC,JH,AS,JS,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC,AD]
+Player 2 (22 cards): [2D,2S,KH,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS]
+Player 3 (21 cards): [KD,3D,3H,QH,5D,AC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC]
+====================================
+Event: Player 0 played 1 cards: [2D]
+Event: Player 1 played 1 cards: [JC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [9H,KD,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D]
+Player 1 (17 cards): [JC,AD,JH,AS,JS,5S,6D,6S,6S,7H,8C,8D,9D,10S,QH,KS,KC]
+Player 2 (22 cards): [2D,2S,KH,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS,KS]
+Player 3 (21 cards): [KD,3D,3H,QH,5D,AC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD,QC]
+====================================
+Event: Player 1 played 1 cards: [5S]
+Event: Player 2 played 1 cards: [KH]
+Event: Player 3 played 1 cards: [AC]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [JC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [9H,KD,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D]
+Player 1 (15 cards): [KS,AD,JH,AS,JS,KC,6D,6S,6S,7H,8C,8D,9D,10S,QH]
+Player 2 (21 cards): [2D,2S,KS,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD,QS]
+Player 3 (20 cards): [KD,3D,3H,QH,5D,QC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD]
+====================================
+Event: Player 1 played 1 cards: [6S]
+Event: Player 2 played 1 cards: [KS]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [AD]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [9H,KD,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D]
+Player 1 (13 cards): [KS,10S,JH,AS,JS,KC,6D,6S,QH,7H,8C,8D,9D]
+Player 2 (20 cards): [2D,2S,QS,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H,QD]
+Player 3 (20 cards): [KD,3D,3H,QH,5D,QC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC,QD]
+====================================
+Event: Player 1 played 1 cards: [6S]
+Event: Player 2 played 1 cards: [QS]
+Event: Player 3 played 1 cards: [KD]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [JH]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (20 cards): [9H,KD,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C,9D]
+Player 1 (11 cards): [KS,10S,8D,AS,JS,KC,6D,9D,QH,7H,8C]
+Player 2 (19 cards): [2D,2S,QD,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D,10H]
+Player 3 (19 cards): [QD,3D,3H,QH,5D,QC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC]
+====================================
+Event: Player 1 played 1 cards: [6D]
+Event: Player 2 played 1 cards: [QD]
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [KD]
+Event: Player 1 played 1 cards: [AS]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (19 cards): [9H,9D,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C]
+Player 1 (9 cards): [KS,10S,8D,7H,JS,KC,8C,9D,QH]
+Player 2 (18 cards): [2D,2S,10H,3H,AD,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S,10C,10D]
+Player 3 (19 cards): [QD,3D,3H,QH,5D,QC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H,QC]
+====================================
+Event: Player 1 played 1 cards: [7H]
+Event: Player 2 played 1 cards: [10H]
+Event: Player 3 played 1 cards: [QD]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [KS]
+Event: Player 2 played 1 cards: [AD]
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [JS]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (19 cards): [9H,9D,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C]
+Player 1 (6 cards): [9D,10S,8D,QH,8C,KC]
+Player 2 (16 cards): [2D,2S,10D,3H,10C,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C,9S]
+Player 3 (18 cards): [QC,3D,3H,QH,5D,QC,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S,10H]
+====================================
+Event: Player 1 played 1 cards: [8C]
+Event: Player 2 played 1 cards: [10D]
+Event: Player 3 played 1 cards: [QC]
+Event: Player 0 passed
+Event: Player 1 played 1 cards: [KC]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (19 cards): [9H,9D,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C]
+Player 1 (4 cards): [9D,10S,8D,QH]
+Player 2 (15 cards): [2D,2S,9S,3H,10C,4C,4C,4H,5C,5C,5S,6D,6H,7D,7C]
+Player 3 (17 cards): [QC,3D,3H,QH,5D,10H,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C,10S]
+====================================
+Event: Player 1 played 1 cards: [8D]
+Event: Player 2 played 1 cards: [9S]
+Event: Player 3 played 1 cards: [QC]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (19 cards): [9H,9D,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S,9C]
+Player 1 (3 cards): [9D,10S,QH]
+Player 2 (14 cards): [2D,2S,7C,3H,10C,4C,4C,4H,5C,5C,5S,6D,6H,7D]
+Player 3 (16 cards): [10S,3D,3H,QH,5D,10H,6C,6H,7D,7H,8C,8H,9C,9H,10D,10C]
+====================================
+Event: Player 3 played 1 cards: [3H]
+Event: Player 0 played 1 cards: [9H]
+Event: Player 1 played 1 cards: [10S]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [QH]
+Event: Player 0 passed
+Event: Player 1 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (18 cards): [9C,9D,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H,9S]
+Player 1 (2 cards): [9D,QH]
+Player 2 (14 cards): [2D,2S,7C,3H,10C,4C,4C,4H,5C,5C,5S,6D,6H,7D]
+Player 3 (14 cards): [10S,3D,10C,10D,5D,10H,6C,6H,7D,7H,8C,8H,9C,9H]
+====================================
+Event: Player 3 played 1 cards: [3D]
+Event: Player 0 played 1 cards: [9C]
+Event: Player 1 played 1 cards: [QH]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 1
+Event: New Trick Started, Leader: Player 1
+=== Player Hands at Trick Start ===
+Player 0 (17 cards): [9S,9D,QS,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S,8H]
+Player 1 (1 cards): [9D]
+Player 2 (14 cards): [2D,2S,7C,3H,10C,4C,4C,4H,5C,5C,5S,6D,6H,7D]
+Player 3 (13 cards): [10S,9H,10C,10D,5D,10H,6C,6H,7D,7H,8C,8H,9C]
+====================================
+Event: Player 1 played 1 cards: [9D]
+Event: Player 2 played 1 cards: [10C]
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [QS]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (16 cards): [9S,9D,8H,3S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D,8S]
+Player 1 (0 cards): []
+Player 2 (13 cards): [2D,2S,7C,3H,7D,4C,4C,4H,5C,5C,5S,6D,6H]
+Player 3 (13 cards): [10S,9H,10C,10D,5D,10H,6C,6H,7D,7H,8C,8H,9C]
+====================================
+Event: Player 0 played 1 cards: [3S]
+Event: Player 2 played 1 cards: [7C]
+Event: Player 3 played 1 cards: [10S]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (15 cards): [9S,9D,8H,8S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S,8D]
+Player 1 (0 cards): []
+Player 2 (12 cards): [2D,2S,6H,3H,7D,4C,4C,4H,5C,5C,5S,6D]
+Player 3 (12 cards): [9C,9H,10C,10D,5D,10H,6C,6H,7D,7H,8C,8H]
+====================================
+Event: Player 3 played 1 cards: [5D]
+Event: Player 0 played 1 cards: [9S]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10C]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (14 cards): [8D,9D,8H,8S,4S,4D,4H,5H,5H,6C,7S,7C,7S,8S]
+Player 1 (0 cards): []
+Player 2 (12 cards): [2D,2S,6H,3H,7D,4C,4C,4H,5C,5C,5S,6D]
+Player 3 (10 cards): [9C,9H,8C,10D,8H,10H,6C,6H,7D,7H]
+====================================
+Event: Player 3 played 1 cards: [6H]
+Event: Player 0 played 1 cards: [8D]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [9C]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10D]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (13 cards): [8S,9D,8H,8S,4S,4D,4H,5H,5H,6C,7S,7C,7S]
+Player 1 (0 cards): []
+Player 2 (12 cards): [2D,2S,6H,3H,7D,4C,4C,4H,5C,5C,5S,6D]
+Player 3 (7 cards): [7D,9H,8C,7H,8H,10H,6C]
+====================================
+Event: Player 3 played 1 cards: [6C]
+Event: Player 0 played 1 cards: [8S]
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [9H]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 played 1 cards: [10H]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (12 cards): [8S,9D,8H,7S,4S,4D,4H,5H,5H,6C,7S,7C]
+Player 1 (0 cards): []
+Player 2 (12 cards): [2D,2S,6H,3H,7D,4C,4C,4H,5C,5C,5S,6D]
+Player 3 (4 cards): [7D,8H,8C,7H]
+====================================
+Event: Player 3 played 1 cards: [7H]
+Event: Player 0 played 1 cards: [8S]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 played 1 cards: [9D]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (10 cards): [7C,7S,8H,7S,4S,4D,4H,5H,5H,6C]
+Player 1 (0 cards): []
+Player 2 (12 cards): [2D,2S,6H,3H,7D,4C,4C,4H,5C,5C,5S,6D]
+Player 3 (3 cards): [7D,8H,8C]
+====================================
+Event: Player 0 played 1 cards: [4H]
+Event: Player 2 played 1 cards: [6H]
+Event: Player 3 played 1 cards: [7D]
+Event: Player 0 played 1 cards: [8H]
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (8 cards): [7C,7S,5H,7S,4S,4D,6C,5H]
+Player 1 (0 cards): []
+Player 2 (11 cards): [2D,2S,6D,3H,7D,4C,4C,4H,5C,5C,5S]
+Player 3 (2 cards): [8C,8H]
+====================================
+Event: Player 0 played 1 cards: [4D]
+Event: Player 2 played 1 cards: [6D]
+Event: Player 3 played 1 cards: [8C]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 3 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 3
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [7C,7S,5H,7S,4S,5H,6C]
+Player 1 (0 cards): []
+Player 2 (10 cards): [2D,2S,5S,3H,7D,4C,4C,4H,5C,5C]
+Player 3 (1 cards): [8H]
+====================================
+Event: Player 3 played 1 cards: [8H]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 3
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (7 cards): [7C,7S,5H,7S,4S,5H,6C]
+Player 1 (0 cards): []
+Player 2 (10 cards): [2D,2S,5S,3H,7D,4C,4C,4H,5C,5C]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [4S]
+Event: Player 2 played 1 cards: [5S]
+Event: Player 0 played 1 cards: [7C]
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (5 cards): [5H,7S,5H,7S,6C]
+Player 1 (0 cards): []
+Player 2 (9 cards): [2D,2S,5C,3H,7D,4C,4C,4H,5C]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [5H]
+Event: Player 2 played 1 cards: [7D]
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Trick Ended, Winner: Player 2
+Event: New Trick Started, Leader: Player 2
+=== Player Hands at Trick Start ===
+Player 0 (4 cards): [5H,7S,6C,7S]
+Player 1 (0 cards): []
+Player 2 (8 cards): [2D,2S,5C,3H,5C,4C,4C,4H]
+Player 3 (0 cards): []
+====================================
+Event: Player 2 played 1 cards: [2S]
+Event: Player 0 played 1 cards: [5H]
+Event: Player 2 passed
+Event: Player 0 played 1 cards: [7S]
+Event: Player 2 passed
+Event: Player 0 passed
+Event: Player 2 passed
+Event: Trick Ended, Winner: Player 0
+Event: New Trick Started, Leader: Player 0
+=== Player Hands at Trick Start ===
+Player 0 (2 cards): [7S,6C]
+Player 1 (0 cards): []
+Player 2 (7 cards): [2D,4H,5C,3H,5C,4C,4C]
+Player 3 (0 cards): []
+====================================
+Event: Player 0 played 1 cards: [6C]
+Event: Player 2 passed
+Event: Player 0 played 1 cards: [7S]
+Event: Deal Ended, Rankings: [1 3 0 2], Victory Type: double_down
+Event: Match Ended, Winner: Team 1
+
+========== Match Summary ==========
+Total Deals: 6
+Duration: 16.366709ms
+Winner: Team 1
+Final Levels: Team 0: Level 4, Team 1: Level 14
+Total Tricks: 150
+Player Statistics:
+  Player 0: 0 cards played, 0 tricks won
+  Player 1: 0 cards played, 0 tricks won
+  Player 2: 0 cards played, 0 tricks won
+  Player 3: 0 cards played, 0 tricks won
+===================================
+    match_simulator_v2_test.go:44: Generated 3002 events
+--- PASS: TestMatchSimulatorV2Verbose (0.02s)
+PASS
+ok  	guandan-world/simulator	0.467s

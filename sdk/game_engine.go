@@ -403,8 +403,13 @@ func (ge *GameEngine) StartDeal() error {
 
 	// Emit deal started event
 	event := &GameEvent{
-		Type:      EventDealStarted,
-		Data:      ge.currentMatch.CurrentDeal,
+		Type: EventDealStarted,
+		Data: map[string]interface{}{
+			"deal":        ge.currentMatch.CurrentDeal,
+			"deal_level":  ge.currentMatch.CurrentDeal.Level,
+			"team0_level": ge.currentMatch.TeamLevels[0],
+			"team1_level": ge.currentMatch.TeamLevels[1],
+		},
 		Timestamp: time.Now(),
 	}
 	ge.emitEvent(event)

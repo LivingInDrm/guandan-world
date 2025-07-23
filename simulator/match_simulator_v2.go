@@ -1,14 +1,17 @@
-package sdk
+package simulator
 
 import (
 	"fmt"
 	"time"
+
+	"guandan-world/ai"
+	"guandan-world/sdk"
 )
 
 // MatchSimulatorV2 重构后的比赛模拟器
 // 新架构：专注于输入提供和事件观察，游戏循环由SDK内部处理
 type MatchSimulatorV2 struct {
-	driver        *GameDriver              // 游戏驱动器
+	driver        *sdk.GameDriver          // 游戏驱动器
 	inputProvider *SimulatingInputProvider // 模拟输入提供者
 	observer      *MatchSimulatorObserver  // 事件观察者
 	verbose       bool                     // 是否详细输出
@@ -18,10 +21,10 @@ type MatchSimulatorV2 struct {
 // NewMatchSimulatorV2 创建新的比赛模拟器V2
 func NewMatchSimulatorV2(verbose bool) *MatchSimulatorV2 {
 	// 创建游戏引擎
-	engine := NewGameEngine()
+	engine := sdk.NewGameEngine()
 
 	// 创建游戏驱动器
-	driver := NewGameDriver(engine, DefaultGameDriverConfig())
+	driver := sdk.NewGameDriver(engine, sdk.DefaultGameDriverConfig())
 
 	// 创建模拟输入提供者
 	inputProvider := NewSimulatingInputProvider()
@@ -78,11 +81,11 @@ func (ms *MatchSimulatorV2) SimulateMatch() error {
 }
 
 // createPlayers 创建4个玩家
-func (ms *MatchSimulatorV2) createPlayers() []Player {
-	players := make([]Player, 4)
+func (ms *MatchSimulatorV2) createPlayers() []sdk.Player {
+	players := make([]sdk.Player, 4)
 
 	for i := 0; i < 4; i++ {
-		players[i] = Player{
+		players[i] = sdk.Player{
 			ID:       fmt.Sprintf("player_%d", i),
 			Username: fmt.Sprintf("Player %d", i+1),
 			Seat:     i,
@@ -96,17 +99,17 @@ func (ms *MatchSimulatorV2) createPlayers() []Player {
 
 // setupPlayerAlgorithms 设置玩家算法
 func (ms *MatchSimulatorV2) setupPlayerAlgorithms() error {
-	algorithms := make([]AutoPlayAlgorithm, 4)
+	algorithms := make([]ai.AutoPlayAlgorithm, 4)
 
 	for i := 0; i < 4; i++ {
-		algorithms[i] = NewSimpleAutoPlayAlgorithm(2) // 从2级开始
+		algorithms[i] = ai.NewSimpleAutoPlayAlgorithm(2) // 从2级开始
 	}
 
 	return ms.inputProvider.BatchSetAlgorithms(algorithms)
 }
 
 // printMatchSummary 打印比赛总结
-func (ms *MatchSimulatorV2) printMatchSummary(result *GameDriverResult) {
+func (ms *MatchSimulatorV2) printMatchSummary(result *sdk.GameDriverResult) {
 	fmt.Println("\n========== Match Summary ==========")
 	fmt.Printf("Total Deals: %d\n", result.DealCount)
 	fmt.Printf("Duration: %v\n", result.Duration)
@@ -155,27 +158,27 @@ func (ms *MatchSimulatorV2) SetVerbose(verbose bool) {
 }
 
 // GetDriver 获取游戏驱动器（用于高级用法）
-func (ms *MatchSimulatorV2) GetDriver() *GameDriver {
+func (ms *MatchSimulatorV2) GetDriver() *sdk.GameDriver {
 	return ms.driver
 }
 
 // GetEngine 获取游戏引擎（用于高级用法）
-func (ms *MatchSimulatorV2) GetEngine() GameEngineInterface {
+func (ms *MatchSimulatorV2) GetEngine() sdk.GameEngineInterface {
 	return ms.driver.GetEngine()
 }
 
 // SetPlayerAlgorithm 设置特定玩家的算法
-func (ms *MatchSimulatorV2) SetPlayerAlgorithm(playerSeat int, algorithm AutoPlayAlgorithm) {
+func (ms *MatchSimulatorV2) SetPlayerAlgorithm(playerSeat int, algorithm ai.AutoPlayAlgorithm) {
 	ms.inputProvider.SetPlayerAlgorithm(playerSeat, algorithm)
 }
 
 // AddObserver 添加额外的事件观察者
-func (ms *MatchSimulatorV2) AddObserver(observer EventObserver) {
+func (ms *MatchSimulatorV2) AddObserver(observer sdk.EventObserver) {
 	ms.driver.AddObserver(observer)
 }
 
 // RemoveObserver 移除事件观察者
-func (ms *MatchSimulatorV2) RemoveObserver(observer EventObserver) {
+func (ms *MatchSimulatorV2) RemoveObserver(observer sdk.EventObserver) {
 	ms.driver.RemoveObserver(observer)
 }
 

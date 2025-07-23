@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"guandan-world/sdk"
+	"guandan-world/simulator"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// 创建模拟器（使用新架构）
-	sim := sdk.NewMatchSimulatorV2(verbose)
+	sim := simulator.NewMatchSimulatorV2(verbose)
 
 	fmt.Println("开始模拟掼蛋牌局...")
 	startTime := time.Now()

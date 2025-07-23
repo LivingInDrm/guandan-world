@@ -1,20 +1,22 @@
-package sdk
+package simulator
 
 import (
 	"fmt"
 	"strings"
+
+	"guandan-world/sdk"
 )
 
 // MatchSimulatorObserver 比赛模拟器事件观察者
 // 负责观察游戏事件并输出日志信息
 type MatchSimulatorObserver struct {
-	engine  GameEngineInterface // 引擎引用，用于查询状态
-	verbose bool                // 是否详细输出
-	logger  func(string)        // 日志输出函数
+	engine  sdk.GameEngineInterface // 引擎引用，用于查询状态
+	verbose bool                    // 是否详细输出
+	logger  func(string)            // 日志输出函数
 }
 
 // NewMatchSimulatorObserver 创建新的观察者
-func NewMatchSimulatorObserver(engine GameEngineInterface, verbose bool, logger func(string)) *MatchSimulatorObserver {
+func NewMatchSimulatorObserver(engine sdk.GameEngineInterface, verbose bool, logger func(string)) *MatchSimulatorObserver {
 	if logger == nil {
 		// 默认日志函数
 		logger = func(message string) {
@@ -32,43 +34,43 @@ func NewMatchSimulatorObserver(engine GameEngineInterface, verbose bool, logger 
 }
 
 // OnGameEvent 实现EventObserver接口
-func (mso *MatchSimulatorObserver) OnGameEvent(event *GameEvent) {
+func (mso *MatchSimulatorObserver) OnGameEvent(event *sdk.GameEvent) {
 	switch event.Type {
-	case EventMatchStarted:
+	case sdk.EventMatchStarted:
 		mso.handleMatchStarted(event)
-	case EventDealStarted:
+	case sdk.EventDealStarted:
 		mso.handleDealStarted(event)
-	case EventCardsDealt:
+	case sdk.EventCardsDealt:
 		mso.handleCardsDealt(event)
-	case EventTributePhase:
+	case sdk.EventTributePhase:
 		mso.handleTributePhase(event)
-	case EventTributeRulesSet:
+	case sdk.EventTributeRulesSet:
 		mso.handleTributeRulesSet(event)
-	case EventTributeImmunity:
+	case sdk.EventTributeImmunity:
 		mso.handleTributeImmunity(event)
-	case EventTributePoolCreated:
+	case sdk.EventTributePoolCreated:
 		mso.handleTributePoolCreated(event)
-	case EventTributeStarted:
+	case sdk.EventTributeStarted:
 		mso.handleTributeStarted(event)
-	case EventTributeGiven:
+	case sdk.EventTributeGiven:
 		mso.handleTributeGiven(event)
-	case EventTributeSelected:
+	case sdk.EventTributeSelected:
 		mso.handleTributeSelected(event)
-	case EventReturnTribute:
+	case sdk.EventReturnTribute:
 		mso.handleReturnTribute(event)
-	case EventTributeCompleted:
+	case sdk.EventTributeCompleted:
 		mso.handleTributeCompleted(event)
-	case EventTrickStarted:
+	case sdk.EventTrickStarted:
 		mso.handleTrickStarted(event)
-	case EventPlayerPlayed:
+	case sdk.EventPlayerPlayed:
 		mso.handlePlayerPlayed(event)
-	case EventPlayerPassed:
+	case sdk.EventPlayerPassed:
 		mso.handlePlayerPassed(event)
-	case EventTrickEnded:
+	case sdk.EventTrickEnded:
 		mso.handleTrickEnded(event)
-	case EventDealEnded:
+	case sdk.EventDealEnded:
 		mso.handleDealEnded(event)
-	case EventMatchEnded:
+	case sdk.EventMatchEnded:
 		mso.handleMatchEnded(event)
 	default:
 		// 忽略未知事件类型
@@ -77,44 +79,59 @@ func (mso *MatchSimulatorObserver) OnGameEvent(event *GameEvent) {
 
 // 事件处理方法（从原MatchSimulator移植过来）
 
-func (mso *MatchSimulatorObserver) handleMatchStarted(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleMatchStarted(event *sdk.GameEvent) {
 	mso.log("Event: Match Started")
 }
 
-func (mso *MatchSimulatorObserver) handleDealStarted(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleDealStarted(event *sdk.GameEvent) {
 	mso.log("Event: Deal Started")
 
-	// 显示所有玩家的手牌信息
-	if deal, ok := event.Data.(*Deal); ok && deal != nil {
-		mso.log("=== 发牌完成，玩家手牌 ===")
-		for playerSeat := 0; playerSeat < 4; playerSeat++ {
-			cards := deal.PlayerCards[playerSeat]
-			var cardStrs []string
-			for _, card := range cards {
-				cardStrs = append(cardStrs, card.ToShortString())
+	// 从事件数据中提取level信息
+	if eventData, ok := event.Data.(map[string]interface{}); ok {
+		dealLevel := eventData["deal_level"].(int)
+		team0Level := eventData["team0_level"].(int)
+		team1Level := eventData["team1_level"].(int)
+		deal := eventData["deal"].(*sdk.Deal)
+
+		// 记录level信息
+		mso.log(fmt.Sprintf("=== Deal %s Started ===", deal.ID))
+		mso.log(fmt.Sprintf("当前Deal Level: %d", dealLevel))
+		mso.log(fmt.Sprintf("队伍0 Level: %d (玩家 0,2)", team0Level))
+		mso.log(fmt.Sprintf("队伍1 Level: %d (玩家 1,3)", team1Level))
+		mso.log("=======================")
+
+		// 显示所有玩家的手牌信息
+		if deal != nil {
+			mso.log("=== 发牌完成，玩家手牌 ===")
+			for playerSeat := 0; playerSeat < 4; playerSeat++ {
+				cards := deal.PlayerCards[playerSeat]
+				var cardStrs []string
+				for _, card := range cards {
+					cardStrs = append(cardStrs, card.ToShortString())
+				}
+				mso.log(fmt.Sprintf("Player %d (%d cards): [%s]",
+					playerSeat, len(cards), strings.Join(cardStrs, ",")))
 			}
-			mso.log(fmt.Sprintf("Player %d (%d cards): [%s]",
-				playerSeat, len(cards), strings.Join(cardStrs, ",")))
+			mso.log("===========================")
 		}
-		mso.log("===========================")
 	}
 }
 
-func (mso *MatchSimulatorObserver) handleCardsDealt(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleCardsDealt(event *sdk.GameEvent) {
 	mso.log("Event: Cards Dealt")
 }
 
-func (mso *MatchSimulatorObserver) handleTributePhase(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTributePhase(event *sdk.GameEvent) {
 	mso.log("=== 进贡阶段开始 ===")
 	mso.log("准备进行上贡、抗贡检查和还贡流程")
 	mso.log("==================")
 }
 
-func (mso *MatchSimulatorObserver) handleTributeRulesSet(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTributeRulesSet(event *sdk.GameEvent) {
 	mso.log("=== 上贡规则确定 ===")
 
 	if data, ok := event.Data.(map[string]interface{}); ok {
-		if lastResult, ok := data["last_result"].(*DealResult); ok {
+		if lastResult, ok := data["last_result"].(*sdk.DealResult); ok {
 			mso.log(fmt.Sprintf("上局结果：%v, 胜利类型：%v", lastResult.Rankings, lastResult.VictoryType))
 		}
 
@@ -136,7 +153,7 @@ func (mso *MatchSimulatorObserver) handleTributeRulesSet(event *GameEvent) {
 	mso.log("====================")
 }
 
-func (mso *MatchSimulatorObserver) handleTributeImmunity(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTributeImmunity(event *sdk.GameEvent) {
 	mso.log("=== 抗贡检查 ===")
 
 	if data, ok := event.Data.(map[string]interface{}); ok {
@@ -173,7 +190,7 @@ func (mso *MatchSimulatorObserver) handleTributeImmunity(event *GameEvent) {
 	mso.log("================")
 }
 
-func (mso *MatchSimulatorObserver) handleTributePoolCreated(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTributePoolCreated(event *sdk.GameEvent) {
 	mso.log("=== 双下贡牌池创建 ===")
 
 	if data, ok := event.Data.(map[string]interface{}); ok {
@@ -185,7 +202,7 @@ func (mso *MatchSimulatorObserver) handleTributePoolCreated(event *GameEvent) {
 			mso.log("贡献详情：")
 			for _, contributor := range contributors {
 				if playerSeat, ok := contributor["player_seat"].(int); ok {
-					if card, ok := contributor["card"].(*Card); ok {
+					if card, ok := contributor["card"].(*sdk.Card); ok {
 						mso.log(fmt.Sprintf("  Player %d 贡献：%s", playerSeat, card.ToShortString()))
 					}
 				}
@@ -202,7 +219,7 @@ func (mso *MatchSimulatorObserver) handleTributePoolCreated(event *GameEvent) {
 			}
 		}
 
-		if poolCards, ok := data["pool_cards"].([]*Card); ok {
+		if poolCards, ok := data["pool_cards"].([]*sdk.Card); ok {
 			var cardStrs []string
 			for _, card := range poolCards {
 				cardStrs = append(cardStrs, card.ToShortString())
@@ -214,19 +231,19 @@ func (mso *MatchSimulatorObserver) handleTributePoolCreated(event *GameEvent) {
 	mso.log("=====================")
 }
 
-func (mso *MatchSimulatorObserver) handleTributeStarted(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTributeStarted(event *sdk.GameEvent) {
 	mso.log("=== 上贡执行开始 ===")
 	mso.log("开始执行具体的上贡流程")
 	mso.log("===================")
 }
 
-func (mso *MatchSimulatorObserver) handleTributeGiven(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTributeGiven(event *sdk.GameEvent) {
 	mso.log("=== 上贡完成 ===")
 
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		if giver, ok := data["giver"].(int); ok {
 			if receiver, ok := data["receiver"].(int); ok {
-				if card, ok := data["card"].(*Card); ok {
+				if card, ok := data["card"].(*sdk.Card); ok {
 					mso.log(fmt.Sprintf("Player %d 上贡给 Player %d：%s",
 						giver, receiver, card.ToShortString()))
 				}
@@ -255,12 +272,12 @@ func (mso *MatchSimulatorObserver) handleTributeGiven(event *GameEvent) {
 	mso.log("================")
 }
 
-func (mso *MatchSimulatorObserver) handleTributeSelected(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTributeSelected(event *sdk.GameEvent) {
 	mso.log("=== 双下选牌 ===")
 
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		if player, ok := data["player"].(int); ok {
-			if selectedCard, ok := data["selected_card"].(*Card); ok {
+			if selectedCard, ok := data["selected_card"].(*sdk.Card); ok && selectedCard != nil {
 				if selectionOrder, ok := data["selection_order"].(int); ok {
 					orderText := "第一次选择"
 					if selectionOrder == 2 {
@@ -272,11 +289,13 @@ func (mso *MatchSimulatorObserver) handleTributeSelected(event *GameEvent) {
 			}
 		}
 
-		if remainingOptions, ok := data["remaining_options"].([]*Card); ok {
+		if remainingOptions, ok := data["remaining_options"].([]*sdk.Card); ok {
 			if len(remainingOptions) > 0 {
 				var cardStrs []string
 				for _, card := range remainingOptions {
-					cardStrs = append(cardStrs, card.ToShortString())
+					if card != nil {
+						cardStrs = append(cardStrs, card.ToShortString())
+					}
 				}
 				mso.log(fmt.Sprintf("剩余选项：[%s]", strings.Join(cardStrs, ", ")))
 			} else {
@@ -292,12 +311,12 @@ func (mso *MatchSimulatorObserver) handleTributeSelected(event *GameEvent) {
 	mso.log("================")
 }
 
-func (mso *MatchSimulatorObserver) handleReturnTribute(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleReturnTribute(event *sdk.GameEvent) {
 	mso.log("=== 还贡阶段 ===")
 
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		if returner, ok := data["player"].(int); ok {
-			if returnCard, ok := data["return_card"].(*Card); ok {
+			if returnCard, ok := data["return_card"].(*sdk.Card); ok {
 				if targetPlayer, ok := data["target_player"].(int); ok {
 					mso.log(fmt.Sprintf("Player %d 还贡给 Player %d：%s",
 						returner, targetPlayer, returnCard.ToShortString()))
@@ -305,7 +324,7 @@ func (mso *MatchSimulatorObserver) handleReturnTribute(event *GameEvent) {
 			}
 		}
 
-		if originalTribute, ok := data["original_tribute"].(*Card); ok {
+		if originalTribute, ok := data["original_tribute"].(*sdk.Card); ok {
 			mso.log(fmt.Sprintf("原收到贡牌：%s", originalTribute.ToShortString()))
 		}
 
@@ -323,20 +342,20 @@ func (mso *MatchSimulatorObserver) handleReturnTribute(event *GameEvent) {
 	mso.log("================")
 }
 
-func (mso *MatchSimulatorObserver) handleTributeCompleted(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTributeCompleted(event *sdk.GameEvent) {
 	mso.log("=== 进贡阶段完成 ===")
 	mso.log("所有上贡和还贡流程已完成，游戏阶段即将开始")
 	mso.log("===================")
 }
 
-func (mso *MatchSimulatorObserver) handleTrickStarted(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTrickStarted(event *sdk.GameEvent) {
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		if leader, ok := data["leader"].(int); ok {
 			mso.log(fmt.Sprintf("Event: New Trick Started, Leader: Player %d", leader))
 
 			// 输出每个玩家的手牌信息（从事件数据中获取，避免死锁）
 			if mso.verbose {
-				if playerHands, ok := data["player_hands"].(map[int][]*Card); ok {
+				if playerHands, ok := data["player_hands"].(map[int][]*sdk.Card); ok {
 					mso.log("=== Player Hands at Trick Start ===")
 					for playerSeat := 0; playerSeat < 4; playerSeat++ {
 						if cards, exists := playerHands[playerSeat]; exists {
@@ -359,10 +378,10 @@ func (mso *MatchSimulatorObserver) handleTrickStarted(event *GameEvent) {
 	}
 }
 
-func (mso *MatchSimulatorObserver) handlePlayerPlayed(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handlePlayerPlayed(event *sdk.GameEvent) {
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		playerSeat := data["player_seat"].(int)
-		cards := data["cards"].([]*Card)
+		cards := data["cards"].([]*sdk.Card)
 
 		// 将出牌转换为简化格式
 		var cardStrs []string
@@ -375,14 +394,14 @@ func (mso *MatchSimulatorObserver) handlePlayerPlayed(event *GameEvent) {
 	}
 }
 
-func (mso *MatchSimulatorObserver) handlePlayerPassed(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handlePlayerPassed(event *sdk.GameEvent) {
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		playerSeat := data["player_seat"].(int)
 		mso.log(fmt.Sprintf("Event: Player %d passed", playerSeat))
 	}
 }
 
-func (mso *MatchSimulatorObserver) handleTrickEnded(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleTrickEnded(event *sdk.GameEvent) {
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		if winner, ok := data["winner"].(int); ok {
 			mso.log(fmt.Sprintf("Event: Trick Ended, Winner: Player %d", winner))
@@ -390,16 +409,16 @@ func (mso *MatchSimulatorObserver) handleTrickEnded(event *GameEvent) {
 	}
 }
 
-func (mso *MatchSimulatorObserver) handleDealEnded(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleDealEnded(event *sdk.GameEvent) {
 	if data, ok := event.Data.(map[string]interface{}); ok {
-		if result, ok := data["result"].(*DealResult); ok {
+		if result, ok := data["result"].(*sdk.DealResult); ok {
 			mso.log(fmt.Sprintf("Event: Deal Ended, Rankings: %v, Victory Type: %v",
 				result.Rankings, result.VictoryType))
 		}
 	}
 }
 
-func (mso *MatchSimulatorObserver) handleMatchEnded(event *GameEvent) {
+func (mso *MatchSimulatorObserver) handleMatchEnded(event *sdk.GameEvent) {
 	if data, ok := event.Data.(map[string]interface{}); ok {
 		if winner, ok := data["winner"].(int); ok {
 			mso.log(fmt.Sprintf("Event: Match Ended, Winner: Team %d", winner))
