@@ -22,6 +22,7 @@ type ComparisonTestData struct {
 
 // ComparisonTestCase 表示单个比较测试用例
 type ComparisonTestCase struct {
+	TestID                int      `json:"test_id"` // 测试编号，用于快速定位
 	ComparisonType        string   `json:"comparison_type"`
 	CompType              string   `json:"comp_type"`
 	WildcardCount         int      `json:"wildcard_count,omitempty"`
@@ -37,6 +38,11 @@ type ComparisonTestCase struct {
 type CompData struct {
 	Cards [][]interface{} `json:"cards"`
 	Type  string          `json:"type"`
+}
+
+// GetDebugCommand 返回快速定位该测试用例的命令
+func (tc *ComparisonTestCase) GetDebugCommand() string {
+	return fmt.Sprintf("jq '.comparisons[%d]' comparison_test_data.json", tc.TestID)
 }
 
 // TestComparisonBatch 批量测试牌组比较功能
@@ -71,8 +77,8 @@ func TestComparisonBatch(t *testing.T) {
 	interTypeStats := make(map[string]int)
 
 	// 遍历所有测试用例
-	for i, testCase := range testData.Comparisons {
-		t.Run(fmt.Sprintf("Comparison_%d_%s_%s", i+1, testCase.ComparisonType, testCase.CompType), func(t *testing.T) {
+	for _, testCase := range testData.Comparisons {
+		t.Run(fmt.Sprintf("TestID_%d_%s_%s", testCase.TestID, testCase.ComparisonType, testCase.CompType), func(t *testing.T) {
 			// 创建第一个牌组
 			comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
 			comp1 := FromCardList(comp1Cards, nil)
@@ -98,14 +104,15 @@ func TestComparisonBatch(t *testing.T) {
 
 			if success {
 				passCount++
-				t.Logf("✓ 比较成功: %s vs %s", formatCompForLog(comp1), formatCompForLog(comp2))
+				t.Logf("✓ [TestID:%d] 比较成功: %s vs %s", testCase.TestID, formatCompForLog(comp1), formatCompForLog(comp2))
 			} else {
 				failCount++
-				t.Logf("✗ 比较失败:")
-				t.Logf("  Comp1: %s", formatCompForLog(comp1))
-				t.Logf("  Comp2: %s", formatCompForLog(comp2))
-				t.Logf("  期望: comp1>comp2=%v, comp2>comp1=%v", testCase.Comp1GreaterThanComp2, testCase.Comp2GreaterThanComp1)
-				t.Logf("  实际: comp1>comp2=%v, comp2>comp1=%v", actualComp1Greater, actualComp2Greater)
+				t.Errorf("🚨 [TestID:%d] 比较失败:", testCase.TestID)
+				t.Errorf("📍 快速定位: %s", testCase.GetDebugCommand())
+				t.Errorf("  Comp1: %s", formatCompForLog(comp1))
+				t.Errorf("  Comp2: %s", formatCompForLog(comp2))
+				t.Errorf("  期望: comp1>comp2=%v, comp2>comp1=%v", testCase.Comp1GreaterThanComp2, testCase.Comp2GreaterThanComp1)
+				t.Errorf("  实际: comp1>comp2=%v, comp2>comp1=%v", actualComp1Greater, actualComp2Greater)
 			}
 
 			// 统计各类型结果
@@ -191,7 +198,7 @@ func TestComparisonByType(t *testing.T) {
 			passCount := 0
 			failCount := 0
 
-			for i, testCase := range cases {
+			for _, testCase := range cases {
 				// 创建牌组
 				comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
 				comp1 := FromCardList(comp1Cards, nil)
@@ -209,7 +216,8 @@ func TestComparisonByType(t *testing.T) {
 					passCount++
 				} else {
 					failCount++
-					t.Errorf("用例 %d 失败:", i+1)
+					t.Errorf("🚨 [TestID:%d] %s类型测试失败:", testCase.TestID, compType)
+					t.Errorf("📍 快速定位: %s", testCase.GetDebugCommand())
 					t.Errorf("  Comp1: %s", formatCompForLog(comp1))
 					t.Errorf("  Comp2: %s", formatCompForLog(comp2))
 					t.Errorf("  期望: comp1>comp2=%v, comp2>comp1=%v", testCase.Comp1GreaterThanComp2, testCase.Comp2GreaterThanComp1)
@@ -244,12 +252,12 @@ func TestInterTypeComparison(t *testing.T) {
 	failCount := 0
 
 	// 只测试不同类型之间的比较
-	for i, testCase := range testData.Comparisons {
+	for _, testCase := range testData.Comparisons {
 		if testCase.ComparisonType != "inter_type" {
 			continue
 		}
 
-		t.Run(fmt.Sprintf("InterType_%d", i+1), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestID_%d_InterType", testCase.TestID), func(t *testing.T) {
 			// 创建牌组
 			comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
 			comp1 := FromCardList(comp1Cards, nil)
@@ -265,10 +273,11 @@ func TestInterTypeComparison(t *testing.T) {
 			if actualComp1Greater == testCase.Comp1GreaterThanComp2 &&
 				actualComp2Greater == testCase.Comp2GreaterThanComp1 {
 				passCount++
-				t.Logf("✓ %s vs %s", formatCompForLog(comp1), formatCompForLog(comp2))
+				t.Logf("✓ [TestID:%d] %s vs %s", testCase.TestID, formatCompForLog(comp1), formatCompForLog(comp2))
 			} else {
 				failCount++
-				t.Errorf("✗ 不同类型比较失败:")
+				t.Errorf("🚨 [TestID:%d] 不同类型比较失败:", testCase.TestID)
+				t.Errorf("📍 快速定位: %s", testCase.GetDebugCommand())
 				t.Errorf("  Comp1: %s", formatCompForLog(comp1))
 				t.Errorf("  Comp2: %s", formatCompForLog(comp2))
 				t.Errorf("  期望: comp1>comp2=%v, comp2>comp1=%v", testCase.Comp1GreaterThanComp2, testCase.Comp2GreaterThanComp1)
@@ -326,16 +335,25 @@ func TestComparisonSpecific(t *testing.T) {
 		t.Fatalf("无法解析测试数据: %v", err)
 	}
 
-	// 测试前几个用例
-	testCases := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9} // 测试前10个用例
+	// 测试特定的test_id用例
+	specificTestIDs := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9} // 测试前10个test_id
 
-	for _, caseIndex := range testCases {
-		if caseIndex >= len(testData.Comparisons) {
+	for _, targetTestID := range specificTestIDs {
+		// 根据test_id查找对应的测试用例
+		var testCase *ComparisonTestCase
+		for i := range testData.Comparisons {
+			if testData.Comparisons[i].TestID == targetTestID {
+				testCase = &testData.Comparisons[i]
+				break
+			}
+		}
+
+		if testCase == nil {
+			t.Logf("TestID %d 未找到，跳过", targetTestID)
 			continue
 		}
 
-		testCase := testData.Comparisons[caseIndex]
-		t.Run(fmt.Sprintf("SpecificCase_%d", caseIndex+1), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestID_%d_Specific", testCase.TestID), func(t *testing.T) {
 			// 创建牌组
 			comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
 			comp1 := FromCardList(comp1Cards, nil)
@@ -348,7 +366,8 @@ func TestComparisonSpecific(t *testing.T) {
 			actualComp2Greater := comp2.GreaterThan(comp1)
 
 			// 详细输出
-			t.Logf("测试用例 %d (%s):", caseIndex+1, testCase.ComparisonType)
+			t.Logf("🔍 [TestID:%d] 详细测试 (%s):", testCase.TestID, testCase.ComparisonType)
+			t.Logf("📍 快速定位: %s", testCase.GetDebugCommand())
 			t.Logf("  Comp1: %s", formatCompForLog(comp1))
 			t.Logf("  Comp2: %s", formatCompForLog(comp2))
 			t.Logf("  期望: comp1>comp2=%v, comp2>comp1=%v", testCase.Comp1GreaterThanComp2, testCase.Comp2GreaterThanComp1)
@@ -356,10 +375,12 @@ func TestComparisonSpecific(t *testing.T) {
 
 			// 验证结果
 			if actualComp1Greater != testCase.Comp1GreaterThanComp2 {
-				t.Errorf("comp1 > comp2 比较失败: 期望 %v, 实际 %v", testCase.Comp1GreaterThanComp2, actualComp1Greater)
+				t.Errorf("🚨 [TestID:%d] comp1 > comp2 比较失败: 期望 %v, 实际 %v", testCase.TestID, testCase.Comp1GreaterThanComp2, actualComp1Greater)
+				t.Errorf("📍 快速定位: %s", testCase.GetDebugCommand())
 			}
 			if actualComp2Greater != testCase.Comp2GreaterThanComp1 {
-				t.Errorf("comp2 > comp1 比较失败: 期望 %v, 实际 %v", testCase.Comp2GreaterThanComp1, actualComp2Greater)
+				t.Errorf("🚨 [TestID:%d] comp2 > comp1 比较失败: 期望 %v, 实际 %v", testCase.TestID, testCase.Comp2GreaterThanComp1, actualComp2Greater)
+				t.Errorf("📍 快速定位: %s", testCase.GetDebugCommand())
 			}
 		})
 	}
