@@ -385,3 +385,112 @@ func TestComparisonSpecific(t *testing.T) {
 		})
 	}
 }
+
+// TestAnalyzeFailedCasesWildcardDistribution 分析失败用例的wildcard分布
+func TestAnalyzeFailedCasesWildcardDistribution(t *testing.T) {
+	// 读取测试数据文件
+	testDataPath := filepath.Join("..", "test-data", "comparison_test_data.json")
+	data, err := os.ReadFile(testDataPath)
+	if err != nil {
+		t.Fatalf("无法读取测试数据文件: %v", err)
+	}
+
+	// 解析 JSON 数据
+	var testData ComparisonTestData
+	if err := json.Unmarshal(data, &testData); err != nil {
+		t.Fatalf("无法解析测试数据: %v", err)
+	}
+
+	// 统计失败用例的wildcard分布
+	wildcardDistribution := make(map[string]map[int]int) // compType -> wildcardCount -> failureCount
+	totalFailures := make(map[string]int)               // compType -> totalFailures
+	
+	t.Logf("=== 开始分析失败用例的Wildcard分布 ===")
+
+	failureCount := 0
+	for _, testCase := range testData.Comparisons {
+		// 创建牌组
+		comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
+		comp1 := FromCardList(comp1Cards, nil)
+
+		comp2Cards := convertJSONToCards(testCase.Comp2.Cards, testData.Level)
+		comp2 := FromCardList(comp2Cards, nil)
+
+		// 执行比较
+		actualComp1Greater := comp1.GreaterThan(comp2)
+		actualComp2Greater := comp2.GreaterThan(comp1)
+
+		// 检查是否失败
+		isFailed := (actualComp1Greater != testCase.Comp1GreaterThanComp2) ||
+			(actualComp2Greater != testCase.Comp2GreaterThanComp1)
+
+		if isFailed {
+			failureCount++
+			
+			// 分析两个牌组的wildcard数量
+			comp1Type := comp1.GetType().String()
+			comp2Type := comp2.GetType().String()
+			
+			comp1WildcardCount := countWildcards(comp1Cards)
+			comp2WildcardCount := countWildcards(comp2Cards)
+
+			// 初始化map
+			if wildcardDistribution[comp1Type] == nil {
+				wildcardDistribution[comp1Type] = make(map[int]int)
+			}
+			if wildcardDistribution[comp2Type] == nil {
+				wildcardDistribution[comp2Type] = make(map[int]int)
+			}
+
+			// 记录失败情况
+			wildcardDistribution[comp1Type][comp1WildcardCount]++
+			wildcardDistribution[comp2Type][comp2WildcardCount]++
+			
+			totalFailures[comp1Type]++
+			totalFailures[comp2Type]++
+
+			if failureCount <= 10 { // 只显示前10个失败用例的详细信息
+				t.Logf("失败用例 [TestID:%d] %s:", testCase.TestID, testCase.ComparisonType)
+				t.Logf("  Comp1: %s (wildcards: %d) - %s", comp1Type, comp1WildcardCount, formatCompForLog(comp1))
+				t.Logf("  Comp2: %s (wildcards: %d) - %s", comp2Type, comp2WildcardCount, formatCompForLog(comp2))
+			}
+		}
+	}
+
+	t.Logf("总共发现 %d 个失败用例", failureCount)
+
+	// 输出统计结果
+	t.Logf("=== Wildcard分布统计 ===")
+	
+	// 按牌型排序输出
+	for compType, distribution := range wildcardDistribution {
+		t.Logf("%s类型 - 总失败次数: %d", compType, totalFailures[compType])
+		
+		for wildcardCount := 0; wildcardCount <= 5; wildcardCount++ {
+			if failures, exists := distribution[wildcardCount]; exists {
+				percentage := float64(failures) / float64(totalFailures[compType]) * 100
+				t.Logf("  %d个wildcard: %d次失败 (%.1f%%)", wildcardCount, failures, percentage)
+			}
+		}
+	}
+
+	// 总体wildcard分布
+	t.Logf("=== 总体Wildcard分布 ===")
+	totalWildcardCount := make(map[int]int)
+	totalAllFailures := 0
+	
+	for _, distribution := range wildcardDistribution {
+		for wildcardCount, failures := range distribution {
+			totalWildcardCount[wildcardCount] += failures
+			totalAllFailures += failures
+		}
+	}
+	
+	for wildcardCount := 0; wildcardCount <= 5; wildcardCount++ {
+		if failures, exists := totalWildcardCount[wildcardCount]; exists {
+			percentage := float64(failures) / float64(totalAllFailures) * 100
+			t.Logf("%d个wildcard: %d次失败 (%.1f%%)", wildcardCount, failures, percentage)
+		}
+	}
+}
+
