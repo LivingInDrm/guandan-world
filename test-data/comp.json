@@ -196,7 +196,7 @@
             },
             {
               "cards": [[1, "Spade"], [1, "Club"], [5, "Heart"], [5, "Heart"], [2, "Heart"], [2, "Diamond"]],
-              "type": "Plate"
+              "type": "Tube"
             },
             {
               "cards": [[6, "Spade"], [7, "Club"], [8, "Heart"], [9, "Heart"], [10, "Heart"]],

@@ -1022,6 +1022,29 @@ func straightSatisfy(cards []*Card) (bool, []*Card) {
 				return true, newOrder
 			}
 
+			// J-Q-K + 两个变化牌 (填入10和A，构成10-J-Q-K-A)
+			if actualNumbers[0] == 11 && actualNumbers[1] == 12 && actualNumbers[2] == 13 {
+				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
+				wildcardIndex := 0
+				for _, card := range sortedCards {
+					if card.IsWildcard() {
+						if wildcardIndex == 0 {
+							newOrder[0] = card // 第一个变化牌作为10
+						} else {
+							newOrder[4] = card // 第二个变化牌作为A
+						}
+						wildcardIndex++
+					} else if card.RawNumber == 11 { // J
+						newOrder[1] = card
+					} else if card.RawNumber == 12 { // Q
+						newOrder[2] = card
+					} else if card.RawNumber == 13 { // K
+						newOrder[3] = card
+					}
+				}
+				return true, newOrder
+			}
+
 			firstThree := computeRelativeDiffs(actualNumbers, 3)
 
 			// i, i+1, i+2, wild, wild
@@ -1234,6 +1257,11 @@ func plateSatisfy(cards []*Card) (bool, []*Card) {
 			if card1Num == 13 && card2Num == 1 {
 				return true, append(triple1.Cards, triple2.Cards...)
 			}
+
+			// A-K的特殊情况：A(1)-K(13) (连续性排序后的情况)
+			if card1Num == 1 && card2Num == 13 {
+				return true, append(triple1.Cards, triple2.Cards...)
+			}
 		}
 		return failWithSortedCards(sortedCards)
 	}
@@ -1313,7 +1341,61 @@ func (p *Plate) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherPlate := other.(*Plate)
-	return p.Cards[0].ConsecutiveGreaterThan(otherPlate.Cards[0])
+
+	// 使用getPlateComparisonKey来正确比较钢板大小
+	myKey := getPlateComparisonKey(p.Cards)
+	otherKey := getPlateComparisonKey(otherPlate.Cards)
+
+	return myKey > otherKey
+}
+
+// getPlateComparisonKey 获取钢板的比较键值
+func getPlateComparisonKey(cards []*Card) int {
+	if len(cards) != PLATE_CARD_COUNT {
+		return 0
+	}
+
+	// 钢板结构：两个三张的连续牌型
+	// cards已经通过plateSatisfy重构，前3张为第一个三张，后3张为第二个三张
+	firstTriple := cards[:3]
+	secondTriple := cards[3:]
+
+	// 获取两个三张的主牌
+	firstCard := firstTriple[0]
+	secondCard := secondTriple[0]
+
+	// 检查A-2钢板的特殊情况（最小的钢板）
+	if isA2Plate(firstCard, secondCard) {
+		return 1 // A-2钢板是最小的钢板
+	}
+
+	// 检查K-A（A-K）钢板的特殊情况（最大的钢板）
+	if isAKPlate(firstCard, secondCard) {
+		return 15 // K-A（A-K）钢板是最大的钢板
+	}
+
+	// 对于普通钢板，使用第一张牌的Number作为比较键值
+	return firstCard.Number
+}
+
+// isA2Plate 检查是否为A-2钢板
+func isA2Plate(card1, card2 *Card) bool {
+	// 检查是否为A-2组合（不管顺序）
+	num1 := card1.RawNumber
+	num2 := card2.RawNumber
+
+	// A-2或2-A的组合
+	return (num1 == 1 && num2 == 2) || (num1 == 2 && num2 == 1)
+}
+
+// isAKPlate 检查是否为A-K钢板
+func isAKPlate(card1, card2 *Card) bool {
+	// 检查是否为A-K组合（不管顺序）
+	num1 := card1.RawNumber
+	num2 := card2.RawNumber
+
+	// A-K或K-A的组合
+	return (num1 == 1 && num2 == 13) || (num1 == 13 && num2 == 1)
 }
 
 func (p *Plate) IsBomb() bool {
@@ -1419,6 +1501,23 @@ func tubeSatisfy(cards []*Card) (bool, []*Card) {
 	if wildcardCount == 2 {
 		firstFour := computeRelativeDiffs(cardNumbers, 4)
 
+		// A-K循环连续性的特殊情况：A(1)-A(1)-K(13)-K(13) + 两个变化牌
+		// 构成A-K-A钢管或类似的循环连续结构
+		actualNumbers := []int{}
+		for _, num := range cardNumbers {
+			if num != -1 {
+				actualNumbers = append(actualNumbers, num)
+			}
+		}
+		if len(actualNumbers) == 4 {
+			uniqueActual := removeDuplicates(actualNumbers)
+			if len(uniqueActual) == 2 &&
+				((uniqueActual[0] == 1 && uniqueActual[1] == 13) || (uniqueActual[0] == 13 && uniqueActual[1] == 1)) {
+				// A-K循环钢管：AA + KK + 两个变化牌
+				return true, sortedCards
+			}
+		}
+
 		// i, i, i+1, i+1, wild wild
 		if matchesPattern(firstFour, TUBE_PATTERN_0011) {
 			if sortedCards[3].Number < 14 { // i+1 smaller than Ace
@@ -1474,7 +1573,104 @@ func (t *Tube) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherTube := other.(*Tube)
-	return t.Cards[0].ConsecutiveGreaterThan(otherTube.Cards[0])
+
+	// 使用getTubeComparisonKey来正确比较钢管大小
+	myKey := getTubeComparisonKey(t.Cards)
+	otherKey := getTubeComparisonKey(otherTube.Cards)
+
+	return myKey > otherKey
+}
+
+// getTubeComparisonKey 获取钢管的比较键值
+func getTubeComparisonKey(cards []*Card) int {
+	if len(cards) != TUBE_CARD_COUNT {
+		return 0
+	}
+
+	// 钢管结构：三个连续对子
+	// cards已经通过tubeSatisfy重构，按照连续对子的结构排列
+
+	// 提取所有非变化牌的RawNumber，用于确定钢管的基础数值
+	uniqueNumbers := make(map[int]bool)
+	for _, card := range cards {
+		if !card.IsWildcard() {
+			uniqueNumbers[card.RawNumber] = true
+		}
+	}
+
+	// 将唯一数字转换为切片并排序
+	numbers := make([]int, 0, len(uniqueNumbers))
+	for num := range uniqueNumbers {
+		numbers = append(numbers, num)
+	}
+
+	if len(numbers) == 0 {
+		// 全是变化牌的情况，使用第一张牌的Number
+		return cards[0].Number
+	}
+
+	// 检查A-2钢管的特殊情况（最小的钢管）
+	if isA2Tube(numbers) {
+		return 1 // A-2钢管是最小的钢管
+	}
+
+	// 检查K-A（A-K）钢管的特殊情况（最大的钢管）
+	if isAKTube(numbers) {
+		return 15 // K-A（A-K）钢管是最大的钢管
+	}
+
+	// 对于普通钢管，使用最小的RawNumber对应的Number作为比较键值
+	minRawNumber := numbers[0]
+	for _, num := range numbers {
+		if num < minRawNumber {
+			minRawNumber = num
+		}
+	}
+
+	// 将RawNumber转换为Number用于比较
+	for _, card := range cards {
+		if !card.IsWildcard() && card.RawNumber == minRawNumber {
+			return card.Number
+		}
+	}
+
+	return 0
+}
+
+// isA2Tube 检查是否为A-2钢管
+func isA2Tube(numbers []int) bool {
+	// 对于钢管，检查是否包含A(1)和2
+	hasA := false
+	has2 := false
+
+	for _, num := range numbers {
+		if num == 1 {
+			hasA = true
+		}
+		if num == 2 {
+			has2 = true
+		}
+	}
+
+	return hasA && has2
+}
+
+// isAKTube 检查是否为A-K钢管
+func isAKTube(numbers []int) bool {
+	// 对于钢管，检查是否包含A(1)和K(13)
+	hasA := false
+	hasK := false
+
+	for _, num := range numbers {
+		if num == 1 {
+			hasA = true
+		}
+		if num == 13 {
+			hasK = true
+		}
+	}
+
+	return hasA && hasK
 }
 
 func (t *Tube) IsBomb() bool {
