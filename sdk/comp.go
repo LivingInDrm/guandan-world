@@ -327,12 +327,20 @@ func FromCardList(cards []*Card, prev CardComp) CardComp {
 		if comp := NewNaiveBomb(cards); comp.IsValid() {
 			return comp
 		}
-		if comp := NewFullHouse(cards); comp.IsValid() {
-			return comp
+		// 优先级处理：如果前一个牌组不是顺子，优先尝试葫芦
+		if prev == nil || prev.GetType() != TypeStraight {
+			if comp := NewFullHouse(cards); comp.IsValid() {
+				return comp
+			}
 		}
 		if comp := NewStraight(cards); comp.IsValid() {
 			return comp
 		}
+
+		if comp := NewFullHouse(cards); comp.IsValid() {
+			return comp
+		}
+
 		return &IllegalComp{BaseComp: BaseComp{Cards: cards, Valid: false, Type: TypeIllegal}}
 
 	case 6:
@@ -341,7 +349,7 @@ func FromCardList(cards []*Card, prev CardComp) CardComp {
 			return comp
 		}
 
-		// 优先级处理：根据Python实现，如果前一个牌组不是钢板，优先尝试钢管
+		// 优先级处理：如果前一个牌组不是钢板，优先尝试钢管
 		if prev == nil || prev.GetType() != TypePlate {
 			if comp := NewTube(cards); comp.IsValid() {
 				return comp
