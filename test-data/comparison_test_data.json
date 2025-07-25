@@ -12140,7 +12140,7 @@
         "cards": [[3,"Club"],[2,"Diamond"],[2,"Heart"],[3,"Spade"],[3,"Diamond"],[2,"Club"]],
         "type": "Plate"
       },
-      "comp1_greater_than_comp2": false,
+      "comp1_greater_than_comp2": true,
       "comp2_greater_than_comp1": false
     },
     {
@@ -12172,7 +12172,7 @@
         "type": "Plate",
         "wildcard_count": 2
       },
-      "comp1_greater_than_comp2": false,
+      "comp1_greater_than_comp2": true,
       "comp2_greater_than_comp1": false
     },
     {

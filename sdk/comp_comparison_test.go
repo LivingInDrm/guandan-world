@@ -79,17 +79,24 @@ func TestComparisonBatch(t *testing.T) {
 	// 遍历所有测试用例
 	for _, testCase := range testData.Comparisons {
 		t.Run(fmt.Sprintf("TestID_%d_%s_%s", testCase.TestID, testCase.ComparisonType, testCase.CompType), func(t *testing.T) {
-			// 创建第一个牌组
-			comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
-			comp1 := FromCardList(comp1Cards, nil)
-
-			// 创建第二个牌组
+			// 创建第二个牌组（被比较方）
+			// 根据测试数据中的type创建指定类型的牌组
 			comp2Cards := convertJSONToCards(testCase.Comp2.Cards, testData.Level)
-			comp2 := FromCardList(comp2Cards, nil)
+			comp2 := CreateCompByType(comp2Cards, testCase.Comp2.Type)
+			
+			// 对comp2进行normalize，将万能牌替换为具体的牌
+			normalizedComp2 := NormalizeComp(comp2)
+
+			// 创建第一个牌组（主动比较方）
+			// 使用FromCardList，传入normalizedComp2作为prev参数
+			// 这样comp1会优先尝试与comp2相同的类型
+			comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
+			comp1 := FromCardList(comp1Cards, normalizedComp2)
 
 			// 执行比较
-			actualComp1Greater := comp1.GreaterThan(comp2)
-			actualComp2Greater := comp2.GreaterThan(comp1)
+			// comp1可能包含万能牌，normalizedComp2已经没有万能牌
+			actualComp1Greater := comp1.GreaterThan(normalizedComp2)
+			actualComp2Greater := normalizedComp2.GreaterThan(comp1)
 
 			// 验证结果
 			success := true
@@ -104,13 +111,14 @@ func TestComparisonBatch(t *testing.T) {
 
 			if success {
 				passCount++
-				t.Logf("✓ [TestID:%d] 比较成功: %s vs %s", testCase.TestID, formatCompForLog(comp1), formatCompForLog(comp2))
+				t.Logf("✓ [TestID:%d] 比较成功: %s vs %s", testCase.TestID, formatCompForLog(comp1), formatCompForLog(normalizedComp2))
 			} else {
 				failCount++
 				t.Errorf("🚨 [TestID:%d] 比较失败:", testCase.TestID)
 				t.Errorf("📍 快速定位: %s", testCase.GetDebugCommand())
 				t.Errorf("  Comp1: %s", formatCompForLog(comp1))
-				t.Errorf("  Comp2: %s", formatCompForLog(comp2))
+				t.Errorf("  Comp2 (original): %s", formatCompForLog(comp2))
+				t.Errorf("  Comp2 (normalized): %s", formatCompForLog(normalizedComp2))
 				t.Errorf("  期望: comp1>comp2=%v, comp2>comp1=%v", testCase.Comp1GreaterThanComp2, testCase.Comp2GreaterThanComp1)
 				t.Errorf("  实际: comp1>comp2=%v, comp2>comp1=%v", actualComp1Greater, actualComp2Greater)
 			}
@@ -303,6 +311,10 @@ func convertJSONToCards(cardDataList [][]interface{}, level int) []*Card {
 
 // formatCompForLog 格式化牌组用于日志输出
 func formatCompForLog(comp CardComp) string {
+	if comp == nil {
+		return "nil"
+	}
+	
 	cards := comp.GetCards()
 	if len(cards) == 0 {
 		return fmt.Sprintf("%s: Empty", comp.GetType().String())
@@ -310,6 +322,10 @@ func formatCompForLog(comp CardComp) string {
 
 	var cardStrs []string
 	for _, card := range cards {
+		if card == nil {
+			cardStrs = append(cardStrs, "nil")
+			continue
+		}
 		if card.Color == "Joker" {
 			cardStrs = append(cardStrs, fmt.Sprintf("%s", card.Name))
 		} else {

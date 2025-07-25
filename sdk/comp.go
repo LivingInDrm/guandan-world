@@ -1780,9 +1780,12 @@ func getTubeComparisonKey(cards []*Card) int {
 
 // isA2Tube 检查是否为A-2钢管
 func isA2Tube(numbers []int) bool {
-	// 对于钢管，检查是否包含A(1)和2
+	// 对于钢管，检查是否包含A(1)、2、3，但不包含K(13)
+	// A-2-3是最小的钢管
 	hasA := false
 	has2 := false
+	has3 := false
+	hasK := false
 
 	for _, num := range numbers {
 		if num == 1 {
@@ -1791,16 +1794,26 @@ func isA2Tube(numbers []int) bool {
 		if num == 2 {
 			has2 = true
 		}
+		if num == 3 {
+			has3 = true
+		}
+		if num == 13 {
+			hasK = true
+		}
 	}
 
-	return hasA && has2
+	// A-2-3钢管：必须有A、2、3，且不能有K
+	return hasA && has2 && has3 && !hasK
 }
 
 // isAKTube 检查是否为A-K钢管
 func isAKTube(numbers []int) bool {
-	// 对于钢管，检查是否包含A(1)和K(13)
+	// 对于钢管，检查是否包含A(1)、K(13)、Q(12)或2
+	// Q-K-A 或 A-K-2 都是最大的钢管
 	hasA := false
 	hasK := false
+	hasQ := false
+	has2 := false
 
 	for _, num := range numbers {
 		if num == 1 {
@@ -1809,9 +1822,16 @@ func isAKTube(numbers []int) bool {
 		if num == 13 {
 			hasK = true
 		}
+		if num == 12 {
+			hasQ = true
+		}
+		if num == 2 {
+			has2 = true
+		}
 	}
 
-	return hasA && hasK
+	// Q-K-A 或 A-K-2 钢管
+	return hasA && hasK && (hasQ || has2)
 }
 
 func (t *Tube) IsBomb() bool {
@@ -2337,9 +2357,11 @@ func normalizeStraightFlush(cards []*Card) []*Card {
 	for i, card := range result {
 		// 保留原始的RawNumber，只改变花色
 		result[i] = &Card{
+			Number:    card.Number,
 			RawNumber: card.RawNumber,
 			Color:     mostCommonColor,
 			Level:     card.Level,
+			Name:      card.Name,
 		}
 	}
 	
@@ -2429,6 +2451,15 @@ func normalizeTube(cards []*Card) []*Card {
 				targetNum = maxPair + 1
 				if targetNum > 13 {
 					targetNum = minPair - 1
+				}
+			} else if minPair == 1 && maxPair == 13 {
+				// A-K 特殊情况，缺中间的2
+				targetNum = 2
+			} else {
+				// 其他情况，默认使用较大值+1
+				targetNum = maxPair + 1
+				if targetNum > 13 {
+					targetNum = 1 // 循环到A
 				}
 			}
 			
