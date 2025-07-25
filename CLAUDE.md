@@ -34,7 +34,7 @@ go build -v ./...           # Build backend
 ```bash
 cd frontend
 npm install                 # Install dependencies
-npm run dev                 # Start dev server
+npm run dev                 # Start dev server (http://localhost:5173)
 npm run build               # Production build
 npm run lint                # Run linter
 npm run preview             # Preview production build
@@ -51,6 +51,7 @@ go test ./... -cover        # With coverage
 
 ### Match Simulation
 ```bash
+# From project root
 go run simulate_match.go    # Verbose mode
 go run simulate_match.go -q # Quiet mode
 ```
@@ -80,6 +81,8 @@ go run simulate_match.go -q # Quiet mode
 - **comp.go**: Card combination validation (pairs, straights, etc.)
 - **tribute.go**: Special card exchange phase between deals
 - **validator.go**: Move validation logic
+- **dealer.go**: Card dealing logic
+- **result.go**: Game result calculation
 
 ### Game Flow
 1. **Match**: Complete game session (multiple deals)
@@ -87,10 +90,19 @@ go run simulate_match.go -q # Quiet mode
 3. **Trick**: Single play sequence where each player plays cards
 4. **Events**: State changes trigger events (EventMatchStarted, EventPlayerPlayed, etc.)
 
+### Event System
+The SDK uses an event-driven architecture with these key events:
+- Match lifecycle: EventMatchStarted, EventMatchEnded
+- Deal lifecycle: EventDealStarted, EventCardsDealt, EventDealEnded
+- Tribute phase: EventTributePhase, EventTributeGiven, EventReturnTribute
+- Playing phase: EventTrickStarted, EventPlayerPlayed, EventPlayerPassed
+- Special cases: EventPlayerTimeout, EventPlayerDisconnect, EventPlayerReconnect
+
 ### Data Models
 - Game state uses event-driven updates
 - Clear state transitions: Waiting → Playing → Finished
 - No database integration yet - game state managed in memory
+- Card rankings vary by current level (2-A)
 
 ### Testing Strategy
 - SDK has comprehensive test coverage (17 test files)
@@ -104,3 +116,4 @@ go run simulate_match.go -q # Quiet mode
 - Database schema not yet implemented
 - Authentication system planned but not implemented
 - The codebase follows clean architecture principles
+- Card special rules: Red heart cards of current level can act as wildcards

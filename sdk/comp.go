@@ -258,12 +258,13 @@ func getMaxCardRawNumber(cards []*Card) int {
 
 // BaseComp 基础牌组结构
 type BaseComp struct {
-	Cards []*Card
-	Valid bool
-	Type  CompType
+	Cards           []*Card  // 原始牌组（包含万能牌）
+	NormalizedCards []*Card  // 规范化牌组（万能牌已替换为具体牌）
+	Valid           bool
+	Type            CompType
 }
 
-// GetCards 获取牌组中的牌
+// GetCards 获取牌组中的原始牌（包含万能牌）
 func (b *BaseComp) GetCards() []*Card {
 	return b.Cards
 }
@@ -438,17 +439,46 @@ type Pair struct {
 
 func NewPair(cards []*Card) *Pair {
 	valid := false
+	sortedCards := sortCards(cards)
+	var normalizedCards []*Card
+	
 	if len(cards) == 2 {
 		levelCond0 := cards[0].IsWildcard() && cards[1].Color != "Joker"
 		levelCond1 := cards[1].IsWildcard() && cards[0].Color != "Joker"
 		valid = cards[0].Equals(cards[1]) || levelCond0 || levelCond1
+		
+		// 如果有效，创建规范化牌组
+		if valid {
+			normalizedCards = cloneCards(sortedCards)
+			// 找到非万能牌作为基准
+			var baseCard *Card
+			for _, card := range normalizedCards {
+				if !card.IsWildcard() {
+					baseCard = card
+					break
+				}
+			}
+			// 将所有万能牌替换为基准牌
+			if baseCard != nil {
+				for i, card := range normalizedCards {
+					if card.IsWildcard() {
+						normalizedCards[i] = createReplacementCard(
+							baseCard.Number,
+							baseCard.Color,
+							card.Level,
+						)
+					}
+				}
+			}
+		}
 	}
 
 	return &Pair{
 		BaseComp: BaseComp{
-			Cards: sortCards(cards),
-			Valid: valid,
-			Type:  TypePair,
+			Cards:           sortedCards,
+			NormalizedCards: normalizedCards,
+			Valid:           valid,
+			Type:            TypePair,
 		},
 	}
 }
@@ -458,7 +488,16 @@ func (p *Pair) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherPair := other.(*Pair)
-	return p.Cards[0].GreaterThan(otherPair.Cards[0])
+	// 使用规范化牌组进行比较
+	myCards := p.NormalizedCards
+	if myCards == nil {
+		myCards = p.Cards
+	}
+	otherCards := otherPair.NormalizedCards
+	if otherCards == nil {
+		otherCards = otherPair.Cards
+	}
+	return myCards[0].GreaterThan(otherCards[0])
 }
 
 func (p *Pair) IsBomb() bool {
@@ -473,6 +512,7 @@ type Triple struct {
 func NewTriple(cards []*Card) *Triple {
 	valid := false
 	sortedCards := sortCards(cards)
+	var normalizedCards []*Card
 
 	if len(cards) == 3 {
 		// 如果有王，则非法
@@ -489,11 +529,27 @@ func NewTriple(cards []*Card) *Triple {
 				}
 			}
 
-			// 如果有变化牌，调整其数值
+			// 如果有效，创建规范化牌组
 			if valid {
-				for i := 1; i < len(sortedCards); i++ {
-					if sortedCards[i].IsWildcard() {
-						sortedCards[i].Number = baseCard.Number
+				normalizedCards = cloneCards(sortedCards)
+				// 找到非万能牌作为基准
+				var baseNormalCard *Card
+				for _, card := range normalizedCards {
+					if !card.IsWildcard() {
+						baseNormalCard = card
+						break
+					}
+				}
+				// 将所有万能牌替换为基准牌
+				if baseNormalCard != nil {
+					for i, card := range normalizedCards {
+						if card.IsWildcard() {
+							normalizedCards[i] = createReplacementCard(
+								baseNormalCard.Number,
+								baseNormalCard.Color,
+								card.Level,
+							)
+						}
 					}
 				}
 			}
@@ -502,9 +558,10 @@ func NewTriple(cards []*Card) *Triple {
 
 	return &Triple{
 		BaseComp: BaseComp{
-			Cards: sortedCards,
-			Valid: valid,
-			Type:  TypeTriple,
+			Cards:           sortedCards,
+			NormalizedCards: normalizedCards,
+			Valid:           valid,
+			Type:            TypeTriple,
 		},
 	}
 }
@@ -514,7 +571,16 @@ func (t *Triple) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherTriple := other.(*Triple)
-	return t.Cards[0].GreaterThan(otherTriple.Cards[0])
+	// 使用规范化牌组进行比较
+	myCards := t.NormalizedCards
+	if myCards == nil {
+		myCards = t.Cards
+	}
+	otherCards := otherTriple.NormalizedCards
+	if otherCards == nil {
+		otherCards = otherTriple.Cards
+	}
+	return myCards[0].GreaterThan(otherCards[0])
 }
 
 func (t *Triple) IsBomb() bool {
@@ -529,21 +595,28 @@ type FullHouse struct {
 func NewFullHouse(cards []*Card) *FullHouse {
 	valid := false
 	var sortedCards []*Card
+	var normalizedCards []*Card
 
 	if len(cards) == 5 {
 		// 使用Python的satisfy逻辑
 		var ok bool
 		ok, sortedCards = fullHouseSatisfy(cards)
 		valid = ok
+		
+		// 如果有效，创建规范化牌组
+		if valid {
+			normalizedCards = normalizeFullHouse(sortedCards)
+		}
 	} else {
 		sortedCards = sortCards(cards)
 	}
 
 	return &FullHouse{
 		BaseComp: BaseComp{
-			Cards: sortedCards,
-			Valid: valid,
-			Type:  TypeFullHouse,
+			Cards:           sortedCards,
+			NormalizedCards: normalizedCards,
+			Valid:           valid,
+			Type:            TypeFullHouse,
 		},
 	}
 }
@@ -661,7 +734,16 @@ func (f *FullHouse) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherFullHouse := other.(*FullHouse)
-	return f.Cards[0].GreaterThan(otherFullHouse.Cards[0])
+	// 使用规范化牌组进行比较（比较三张部分）
+	myCards := f.NormalizedCards
+	if myCards == nil {
+		myCards = f.Cards
+	}
+	otherCards := otherFullHouse.NormalizedCards
+	if otherCards == nil {
+		otherCards = otherFullHouse.Cards
+	}
+	return myCards[0].GreaterThan(otherCards[0])
 }
 
 func (f *FullHouse) IsBomb() bool {
@@ -676,21 +758,28 @@ type Straight struct {
 func NewStraight(cards []*Card) *Straight {
 	valid := false
 	var sortedCards []*Card
+	var normalizedCards []*Card
 
 	if len(cards) == 5 {
 		// 使用Python的satisfy逻辑
 		var ok bool
 		ok, sortedCards = straightSatisfy(cards)
 		valid = ok
+		
+		// 如果有效，创建规范化牌组
+		if valid {
+			normalizedCards = normalizeStraight(sortedCards)
+		}
 	} else {
 		sortedCards = sortCards(cards)
 	}
 
 	return &Straight{
 		BaseComp: BaseComp{
-			Cards: sortedCards,
-			Valid: valid,
-			Type:  TypeStraight,
+			Cards:           sortedCards,
+			NormalizedCards: normalizedCards,
+			Valid:           valid,
+			Type:            TypeStraight,
 		},
 	}
 }
@@ -1106,9 +1195,19 @@ func (s *Straight) GreaterThan(other CardComp) bool {
 	}
 	otherStraight := other.(*Straight)
 
+	// 使用规范化牌组进行比较
+	myCards := s.NormalizedCards
+	if myCards == nil {
+		myCards = s.Cards
+	}
+	otherCards := otherStraight.NormalizedCards
+	if otherCards == nil {
+		otherCards = otherStraight.Cards
+	}
+
 	// 使用getStraightComparisonKey来正确比较顺子大小
-	myKey := getStraightComparisonKey(s.Cards)
-	otherKey := getStraightComparisonKey(otherStraight.Cards)
+	myKey := getStraightComparisonKey(myCards)
+	otherKey := getStraightComparisonKey(otherCards)
 
 	return myKey > otherKey
 }
@@ -1205,21 +1304,28 @@ type Plate struct {
 func NewPlate(cards []*Card) *Plate {
 	valid := false
 	var sortedCards []*Card
+	var normalizedCards []*Card
 
 	if len(cards) == 6 {
 		// 使用Python的satisfy逻辑
 		var ok bool
 		ok, sortedCards = plateSatisfy(cards)
 		valid = ok
+		
+		// 如果有效，创建规范化牌组
+		if valid {
+			normalizedCards = normalizePlate(sortedCards)
+		}
 	} else {
 		sortedCards = sortCards(cards)
 	}
 
 	return &Plate{
 		BaseComp: BaseComp{
-			Cards: sortedCards,
-			Valid: valid,
-			Type:  TypePlate,
+			Cards:           sortedCards,
+			NormalizedCards: normalizedCards,
+			Valid:           valid,
+			Type:            TypePlate,
 		},
 	}
 }
@@ -1350,9 +1456,19 @@ func (p *Plate) GreaterThan(other CardComp) bool {
 	}
 	otherPlate := other.(*Plate)
 
+	// 使用规范化牌组进行比较
+	myCards := p.NormalizedCards
+	if myCards == nil {
+		myCards = p.Cards
+	}
+	otherCards := otherPlate.NormalizedCards
+	if otherCards == nil {
+		otherCards = otherPlate.Cards
+	}
+
 	// 使用getPlateComparisonKey来正确比较钢板大小
-	myKey := getPlateComparisonKey(p.Cards)
-	otherKey := getPlateComparisonKey(otherPlate.Cards)
+	myKey := getPlateComparisonKey(myCards)
+	otherKey := getPlateComparisonKey(otherCards)
 
 	return myKey > otherKey
 }
@@ -1418,21 +1534,28 @@ type Tube struct {
 func NewTube(cards []*Card) *Tube {
 	valid := false
 	var sortedCards []*Card
+	var normalizedCards []*Card
 
 	if len(cards) == 6 {
 		// 使用Python的satisfy逻辑
 		var ok bool
 		ok, sortedCards = tubeSatisfy(cards)
 		valid = ok
+		
+		// 如果有效，创建规范化牌组
+		if valid {
+			normalizedCards = normalizeTube(sortedCards)
+		}
 	} else {
 		sortedCards = sortCards(cards)
 	}
 
 	return &Tube{
 		BaseComp: BaseComp{
-			Cards: sortedCards,
-			Valid: valid,
-			Type:  TypeTube,
+			Cards:           sortedCards,
+			NormalizedCards: normalizedCards,
+			Valid:           valid,
+			Type:            TypeTube,
 		},
 	}
 }
@@ -1582,9 +1705,19 @@ func (t *Tube) GreaterThan(other CardComp) bool {
 	}
 	otherTube := other.(*Tube)
 
+	// 使用规范化牌组进行比较
+	myCards := t.NormalizedCards
+	if myCards == nil {
+		myCards = t.Cards
+	}
+	otherCards := otherTube.NormalizedCards
+	if otherCards == nil {
+		otherCards = otherTube.Cards
+	}
+
 	// 使用getTubeComparisonKey来正确比较钢管大小
-	myKey := getTubeComparisonKey(t.Cards)
-	otherKey := getTubeComparisonKey(otherTube.Cards)
+	myKey := getTubeComparisonKey(myCards)
+	otherKey := getTubeComparisonKey(otherCards)
 
 	return myKey > otherKey
 }
@@ -1601,7 +1734,7 @@ func getTubeComparisonKey(cards []*Card) int {
 	// 提取所有非变化牌的RawNumber，用于确定钢管的基础数值
 	uniqueNumbers := make(map[int]bool)
 	for _, card := range cards {
-		if !card.IsWildcard() {
+		if card != nil && !card.IsWildcard() {
 			uniqueNumbers[card.RawNumber] = true
 		}
 	}
@@ -1731,6 +1864,7 @@ type NaiveBomb struct {
 func NewNaiveBomb(cards []*Card) *NaiveBomb {
 	valid := false
 	sortedCards := sortCards(cards)
+	var normalizedCards []*Card
 
 	if len(cards) >= 4 {
 		normalCards := getNormalCards(sortedCards)
@@ -1749,13 +1883,19 @@ func NewNaiveBomb(cards []*Card) *NaiveBomb {
 		} else {
 			valid = countWildcards(sortedCards) >= 4
 		}
+		
+		// 如果有效，创建规范化牌组
+		if valid {
+			normalizedCards = normalizeNaiveBomb(sortedCards)
+		}
 	}
 
 	return &NaiveBomb{
 		BaseComp: BaseComp{
-			Cards: sortedCards,
-			Valid: valid,
-			Type:  TypeNaiveBomb,
+			Cards:           sortedCards,
+			NormalizedCards: normalizedCards,
+			Valid:           valid,
+			Type:            TypeNaiveBomb,
 		},
 	}
 }
@@ -1786,7 +1926,16 @@ func (n *NaiveBomb) GreaterThan(other CardComp) bool {
 			return false
 		} else {
 			// 张数相同，比较数值
-			return n.Cards[0].GreaterThan(otherBomb.Cards[0])
+			// 使用规范化牌组进行比较
+			myCards := n.NormalizedCards
+			if myCards == nil {
+				myCards = n.Cards
+			}
+			otherCards := otherBomb.NormalizedCards
+			if otherCards == nil {
+				otherCards = otherBomb.Cards
+			}
+			return myCards[0].GreaterThan(otherCards[0])
 		}
 	}
 
@@ -1805,6 +1954,7 @@ type StraightFlush struct {
 func NewStraightFlush(cards []*Card) *StraightFlush {
 	valid := false
 	sortedCards := make([]*Card, len(cards))
+	var normalizedCards []*Card
 
 	if len(cards) == 5 {
 		// 首先检查是否为顺子
@@ -1824,14 +1974,20 @@ func NewStraightFlush(cards []*Card) *StraightFlush {
 			valid = (wildcardCount == 0 && len(colors) == 1) ||
 				(wildcardCount == 1 && len(colors) == 1) ||
 				(wildcardCount == 2 && len(colors) == 1)
+				
+			// 如果有效，创建规范化牌组
+			if valid {
+				normalizedCards = normalizeStraightFlush(sortedCards)
+			}
 		}
 	}
 
 	return &StraightFlush{
 		BaseComp: BaseComp{
-			Cards: sortedCards,
-			Valid: valid,
-			Type:  TypeStraightFlush,
+			Cards:           sortedCards,
+			NormalizedCards: normalizedCards,
+			Valid:           valid,
+			Type:            TypeStraightFlush,
 		},
 	}
 }
@@ -1850,7 +2006,19 @@ func (s *StraightFlush) GreaterThan(other CardComp) bool {
 	// 如果对方是同花顺，比较数值
 	if other.GetType() == TypeStraightFlush {
 		otherStraightFlush := other.(*StraightFlush)
-		return s.Cards[0].GreaterThan(otherStraightFlush.Cards[0])
+		// 使用规范化牌组进行比较
+		myCards := s.NormalizedCards
+		if myCards == nil {
+			myCards = s.Cards
+		}
+		otherCards := otherStraightFlush.NormalizedCards
+		if otherCards == nil {
+			otherCards = otherStraightFlush.Cards
+		}
+		// 使用顺子的比较方式
+		myKey := getStraightComparisonKey(myCards)
+		otherKey := getStraightComparisonKey(otherCards)
+		return myKey > otherKey
 	}
 	// 如果对方是炸弹，5张以下的炸弹 < 同花顺
 	if other.GetType() == TypeNaiveBomb {
@@ -1862,4 +2030,436 @@ func (s *StraightFlush) GreaterThan(other CardComp) bool {
 
 func (s *StraightFlush) IsBomb() bool {
 	return true
+}
+
+// 万能牌替换相关工具函数
+
+// cloneCard 克隆一张牌
+func cloneCard(card *Card) *Card {
+	return &Card{
+		Number:    card.Number,
+		RawNumber: card.RawNumber,
+		Color:     card.Color,
+		Level:     card.Level,
+		Name:      card.Name,
+	}
+}
+
+// cloneCards 克隆牌组
+func cloneCards(cards []*Card) []*Card {
+	result := make([]*Card, len(cards))
+	for i, card := range cards {
+		result[i] = cloneCard(card)
+	}
+	return result
+}
+
+// createReplacementCard 创建一张替换牌
+func createReplacementCard(rawNumber int, color string, level int) *Card {
+	// 使用NewCard来正确创建牌，确保Number和RawNumber都被正确设置
+	number := rawNumber
+	if rawNumber == 1 {
+		number = 14 // Ace conversion
+	}
+	card, _ := NewCard(number, color, level)
+	return card
+}
+
+// replaceWildcardInPlace 在克隆的牌组中原地替换万能牌
+func replaceWildcardInPlace(cards []*Card, wildcardIndex int, rawNumber int, color string) {
+	if wildcardIndex >= 0 && wildcardIndex < len(cards) && cards[wildcardIndex].IsWildcard() {
+		cards[wildcardIndex] = createReplacementCard(rawNumber, color, cards[wildcardIndex].Level)
+	}
+}
+
+// findWildcardIndices 找出所有万能牌的索引
+func findWildcardIndices(cards []*Card) []int {
+	indices := []int{}
+	for i, card := range cards {
+		if card.IsWildcard() {
+			indices = append(indices, i)
+		}
+	}
+	return indices
+}
+
+// getMostCommonColor 获取牌组中最常见的花色（用于同花顺）
+func getMostCommonColor(cards []*Card) string {
+	colorCount := make(map[string]int)
+	for _, card := range cards {
+		if !card.IsWildcard() && card.Color != "Joker" {
+			colorCount[card.Color]++
+		}
+	}
+	
+	maxCount := 0
+	mostCommon := "Spade" // 默认黑桃
+	for color, count := range colorCount {
+		if count > maxCount {
+			maxCount = count
+			mostCommon = color
+		}
+	}
+	return mostCommon
+}
+
+// normalizeFullHouse 规范化葫芦牌组
+// 葫芦按照 3+2 的顺序排列，万能牌替换为使三张部分最大
+func normalizeFullHouse(cards []*Card) []*Card {
+	if len(cards) != 5 {
+		return cards
+	}
+	
+	result := cloneCards(cards)
+	// 葫芦已经按照 3+2 的顺序排列
+	// 前3张是三张，后2张是对子
+	
+	// 处理三张部分的万能牌
+	var tripleBase *Card
+	for i := 0; i < 3; i++ {
+		if !result[i].IsWildcard() {
+			tripleBase = result[i]
+			break
+		}
+	}
+	if tripleBase != nil {
+		for i := 0; i < 3; i++ {
+			if result[i].IsWildcard() {
+				result[i] = cloneCard(tripleBase)
+			}
+		}
+	}
+	
+	// 处理对子部分的万能牌
+	var pairBase *Card
+	for i := 3; i < 5; i++ {
+		if !result[i].IsWildcard() {
+			pairBase = result[i]
+			break
+		}
+	}
+	if pairBase != nil {
+		for i := 3; i < 5; i++ {
+			if result[i].IsWildcard() {
+				result[i] = cloneCard(pairBase)
+			}
+		}
+	}
+	
+	return result
+}
+
+// normalizePlate 规范化钢板牌组（连续三张）
+// 万能牌替换为使钢板最大的牌
+func normalizePlate(cards []*Card) []*Card {
+	if len(cards) != 6 {
+		return cards
+	}
+	
+	result := cloneCards(cards)
+	
+	// 钢板是按照三张为一组排列的：[AAA, BBB]
+	// 处理第一组三张
+	var firstGroupBase *Card
+	for i := 0; i < 3; i++ {
+		if !result[i].IsWildcard() {
+			firstGroupBase = result[i]
+			break
+		}
+	}
+	if firstGroupBase != nil {
+		for i := 0; i < 3; i++ {
+			if result[i].IsWildcard() {
+				result[i] = cloneCard(firstGroupBase)
+			}
+		}
+	}
+	
+	// 处理第二组三张
+	var secondGroupBase *Card
+	for i := 3; i < 6; i++ {
+		if !result[i].IsWildcard() {
+			secondGroupBase = result[i]
+			break
+		}
+	}
+	if secondGroupBase != nil {
+		for i := 3; i < 6; i++ {
+			if result[i].IsWildcard() {
+				result[i] = cloneCard(secondGroupBase)
+			}
+		}
+	}
+	
+	// 如果某组全是万能牌，需要根据另一组推断
+	if firstGroupBase == nil && secondGroupBase != nil {
+		// 第一组全是万能牌，应该是第二组-1
+		expectedRawNumber := secondGroupBase.RawNumber - 1
+		for i := 0; i < 3; i++ {
+			result[i] = createReplacementCard(expectedRawNumber, "Spade", result[i].Level)
+		}
+	} else if secondGroupBase == nil && firstGroupBase != nil {
+		// 第二组全是万能牌，应该是第一组+1
+		expectedRawNumber := firstGroupBase.RawNumber + 1
+		for i := 3; i < 6; i++ {
+			result[i] = createReplacementCard(expectedRawNumber, "Spade", result[i].Level)
+		}
+	}
+	
+	return result
+}
+
+// normalizeStraight 规范化顺子牌组
+// 万能牌替换为使顺子最大的牌
+func normalizeStraight(cards []*Card) []*Card {
+	if len(cards) != 5 {
+		return cards
+	}
+	
+	result := cloneCards(cards)
+	
+	// 找出万能牌的位置
+	wildcardIndices := []int{}
+	for i, card := range result {
+		if card.IsWildcard() {
+			wildcardIndices = append(wildcardIndices, i)
+		}
+	}
+	
+	if len(wildcardIndices) == 0 {
+		return result
+	}
+	
+	// 获取非万能牌的数字，确定顺子的范围
+	numbers := []int{}
+	for _, card := range result {
+		if !card.IsWildcard() {
+			numbers = append(numbers, card.RawNumber)
+		}
+	}
+	
+	// 顺子已经是排好序的，万能牌需要填补空缺
+	// 根据顺子的实际值来确定万能牌应该是什么
+	for _, idx := range wildcardIndices {
+		// 根据位置确定万能牌应该的值
+		if idx == 0 {
+			// 第一张，应该是第二张-1
+			if result[1].IsWildcard() {
+				// 如果第二张也是万能牌，看第三张
+				result[idx] = createReplacementCard(result[2].RawNumber-2, "Spade", result[idx].Level)
+			} else {
+				result[idx] = createReplacementCard(result[1].RawNumber-1, "Spade", result[idx].Level)
+			}
+		} else if idx == 4 {
+			// 最后一张，应该是倒数第二张+1
+			if result[3].IsWildcard() {
+				// 如果倒数第二张也是万能牌，看倒数第三张
+				result[idx] = createReplacementCard(result[2].RawNumber+2, "Spade", result[idx].Level)
+			} else {
+				result[idx] = createReplacementCard(result[3].RawNumber+1, "Spade", result[idx].Level)
+			}
+		} else {
+			// 中间的牌，根据前后推断
+			expectedValue := 0
+			if !result[idx-1].IsWildcard() {
+				expectedValue = result[idx-1].RawNumber + 1
+			} else if !result[idx+1].IsWildcard() {
+				expectedValue = result[idx+1].RawNumber - 1
+			}
+			result[idx] = createReplacementCard(expectedValue, "Spade", result[idx].Level)
+		}
+	}
+	
+	// 特殊处理A高位顺子(10-J-Q-K-A)
+	// 如果最后一张是A(RawNumber=1)，说明是A高位顺子
+	if result[4].RawNumber == 1 {
+		// A在高位顺子中相当于14
+		for _, idx := range wildcardIndices {
+			if idx == 4 {
+				result[idx] = createReplacementCard(1, "Spade", result[idx].Level) // A保持为1
+			} else {
+				// 重新计算其他位置的值：10, 11, 12, 13, 1(A)
+				positionValues := []int{10, 11, 12, 13, 1}
+				result[idx] = createReplacementCard(positionValues[idx], "Spade", result[idx].Level)
+			}
+		}
+	}
+	
+	return result
+}
+
+
+// normalizeNaiveBomb 规范化普通炸弹牌组
+// 万能牌全部替换为与其他牌相同的牌
+func normalizeNaiveBomb(cards []*Card) []*Card {
+	result := cloneCards(cards)
+	
+	// 找到非万能牌作为基准
+	var baseCard *Card
+	for _, card := range result {
+		if !card.IsWildcard() {
+			baseCard = card
+			break
+		}
+	}
+	
+	// 如果没有非万能牌（全是万能牌），则不需要替换
+	if baseCard == nil {
+		return result
+	}
+	
+	// 将所有万能牌替换为基准牌
+	for i, card := range result {
+		if card.IsWildcard() {
+			result[i] = createReplacementCard(
+				baseCard.Number,
+				baseCard.Color,
+				card.Level,
+			)
+		}
+	}
+	
+	return result
+}
+
+// normalizeStraightFlush 规范化同花顺牌组
+// 万能牌替换时需要同时满足顺子和同花色要求
+func normalizeStraightFlush(cards []*Card) []*Card {
+	if len(cards) != 5 {
+		return cards
+	}
+	
+	// 先按照顺子规则规范化
+	result := normalizeStraight(cards)
+	
+	// 然后调整花色，使所有牌同花色
+	mostCommonColor := getMostCommonColor(cards)
+	for i, card := range result {
+		// 保留原始的RawNumber，只改变花色
+		result[i] = &Card{
+			RawNumber: card.RawNumber,
+			Color:     mostCommonColor,
+			Level:     card.Level,
+		}
+	}
+	
+	return result
+}
+
+// normalizeTube 规范化钢管牌组（连续对子）
+// 万能牌替换为使钢管最大的牌
+func normalizeTube(cards []*Card) []*Card {
+	if len(cards) != 6 {
+		return cards
+	}
+	
+	result := cloneCards(cards)
+	
+	// 钢管是三个连续的对子，例如：[3,3,4,4,5,5]
+	// 找出所有非万能牌的数字，确定钢管的基础值
+	baseNumbers := []int{}
+	wildcardCount := 0
+	wildcardIndices := []int{}
+	
+	for i, card := range result {
+		if card.IsWildcard() {
+			wildcardCount++
+			wildcardIndices = append(wildcardIndices, i)
+		} else {
+			baseNumbers = append(baseNumbers, card.RawNumber)
+		}
+	}
+	
+	if wildcardCount == 0 {
+		return result
+	}
+	
+	// 统计每个数字出现的次数
+	numberCount := make(map[int]int)
+	for _, num := range baseNumbers {
+		numberCount[num]++
+	}
+	
+	// 找出已有的对子和单张
+	pairs := []int{}
+	singles := []int{}
+	for num, count := range numberCount {
+		if count >= 2 {
+			pairs = append(pairs, num)
+		} else if count == 1 {
+			singles = append(singles, num)
+		}
+	}
+	
+	// 排序以便处理
+	sort.Ints(pairs)
+	sort.Ints(singles)
+	
+	// 根据万能牌数量和现有牌的分布，确定如何替换万能牌
+	if wildcardCount == 1 {
+		// 一个万能牌：应该与某个单张组成对子
+		if len(singles) > 0 {
+			// 替换为最大的单张，使钢管尽可能大
+			targetNum := singles[len(singles)-1]
+			for _, idx := range wildcardIndices {
+				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level)
+			}
+		}
+	} else if wildcardCount == 2 {
+		// 两个万能牌
+		if len(singles) == 2 {
+			// 两个单张，每个万能牌与一个单张配对
+			// 替换为较大的单张，使钢管更大
+			targetNum := singles[1] // 第二大的单张
+			for _, idx := range wildcardIndices {
+				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level)
+			}
+		} else if len(pairs) == 2 {
+			// 已有两个对子，万能牌应该组成第三个对子
+			// 确定缺失的数字
+			minPair := pairs[0]
+			maxPair := pairs[1]
+			var targetNum int
+			
+			if maxPair - minPair == 2 {
+				// 缺中间的对子
+				targetNum = minPair + 1
+			} else if maxPair - minPair == 1 {
+				// 缺最大或最小的对子，选择最大的
+				targetNum = maxPair + 1
+				if targetNum > 13 {
+					targetNum = minPair - 1
+				}
+			}
+			
+			for _, idx := range wildcardIndices {
+				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level)
+			}
+		}
+	}
+	
+	// 处理更多万能牌的情况
+	if wildcardCount > 2 {
+		// 确定钢管的最大可能值
+		// 从最大的非万能牌开始，构建连续对子
+		maxNum := 0
+		for _, card := range result {
+			if !card.IsWildcard() && card.RawNumber > maxNum {
+				maxNum = card.RawNumber
+			}
+		}
+		
+		// 根据已有的牌构建最优的钢管
+		wildcardIdx := 0
+		for i := range result {
+			if result[i].IsWildcard() && wildcardIdx < len(wildcardIndices) {
+				// 根据位置确定应该替换的数字
+				// 这里需要更复杂的逻辑来确定最优替换
+				result[i] = createReplacementCard(maxNum, "Spade", result[i].Level)
+				wildcardIdx++
+			}
+		}
+	}
+	
+	return result
 }
