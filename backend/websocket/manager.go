@@ -30,6 +30,7 @@ const (
 	MSG_ROOM_UPDATE = "room_update"
 	MSG_GAME_EVENT  = "game_event"
 	MSG_PLAYER_VIEW = "player_view"
+	MSG_GAME_ACTION = "game_action"
 	MSG_ERROR       = "error"
 	MSG_PING        = "ping"
 	MSG_PONG        = "pong"
