@@ -16,13 +16,13 @@ import (
 type DriverService struct {
 	// Game drivers by room ID
 	drivers map[string]*sdk.GameDriver
-	
+
 	// Input providers for each room
 	providers map[string]*RoomInputProvider
-	
+
 	// WebSocket manager for real-time communication
 	wsManager WSManagerInterface
-	
+
 	// Synchronization
 	mu sync.RWMutex
 }
@@ -40,46 +40,46 @@ func NewDriverService(wsManager WSManagerInterface) *DriverService {
 func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
-	
+
 	// Validate input
 	if roomID == "" {
 		return fmt.Errorf("room ID is required")
 	}
-	
+
 	if len(players) != 4 {
 		return fmt.Errorf("exactly 4 players are required, got %d", len(players))
 	}
-	
+
 	// Check if game already exists
 	if _, exists := ds.drivers[roomID]; exists {
 		return fmt.Errorf("game already exists for room %s", roomID)
 	}
-	
+
 	// Create game engine
 	engine := sdk.NewGameEngine()
-	
+
 	// Create game driver with shorter timeouts for testing
 	config := sdk.DefaultGameDriverConfig()
-	config.PlayDecisionTimeout = 1 * time.Second  // Short timeout for tests
+	config.PlayDecisionTimeout = 1 * time.Second // Short timeout for tests
 	config.TributeTimeout = 1 * time.Second
 	driver := sdk.NewGameDriver(engine, config)
-	
+
 	// Create and set input provider for this room
 	provider := NewRoomInputProvider(roomID, ds.wsManager)
 	driver.SetInputProvider(provider)
-	
+
 	// Add WebSocket observer for real-time events
 	observer := NewWebSocketObserver(roomID, ds.wsManager)
 	driver.AddObserver(observer)
-	
+
 	// Store driver and provider
 	ds.drivers[roomID] = driver
 	ds.providers[roomID] = provider
-	
+
 	// Start the match in a goroutine
 	go func() {
 		log.Printf("Starting match for room %s with GameDriver", roomID)
-		
+
 		result, err := driver.RunMatch(players)
 		if err != nil {
 			log.Printf("Match error for room %s: %v", roomID, err)
@@ -87,7 +87,7 @@ func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player
 			ds.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
 				Type: websocket.MSG_ERROR,
 				Data: map[string]interface{}{
-					"error": err.Error(),
+					"error":   err.Error(),
 					"room_id": roomID,
 				},
 				Timestamp: time.Now(),
@@ -96,14 +96,14 @@ func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player
 			log.Printf("Match completed for room %s, winner: team %d", roomID, result.Winner)
 			// Match completed event is already sent by the observer
 		}
-		
+
 		// Clean up after match
 		ds.mu.Lock()
 		delete(ds.drivers, roomID)
 		delete(ds.providers, roomID)
 		ds.mu.Unlock()
 	}()
-	
+
 	return nil
 }
 
@@ -112,11 +112,11 @@ func (ds *DriverService) SubmitPlayDecision(roomID string, playerSeat int, decis
 	ds.mu.RLock()
 	provider, exists := ds.providers[roomID]
 	ds.mu.RUnlock()
-	
+
 	if !exists {
 		return fmt.Errorf("no active game for room %s", roomID)
 	}
-	
+
 	// Submit decision to the input provider
 	return provider.SubmitPlayDecision(playerSeat, decision)
 }
@@ -126,17 +126,17 @@ func (ds *DriverService) SubmitTributeSelection(roomID string, playerSeat int, c
 	ds.mu.RLock()
 	provider, exists := ds.providers[roomID]
 	ds.mu.RUnlock()
-	
+
 	if !exists {
 		return fmt.Errorf("no active game for room %s", roomID)
 	}
-	
+
 	// Find the card by ID
 	card, err := ds.findCardByID(provider, playerSeat, cardID)
 	if err != nil {
 		return err
 	}
-	
+
 	// Submit selection to the input provider
 	return provider.SubmitTributeSelection(playerSeat, card)
 }
@@ -146,17 +146,17 @@ func (ds *DriverService) SubmitReturnTribute(roomID string, playerSeat int, card
 	ds.mu.RLock()
 	provider, exists := ds.providers[roomID]
 	ds.mu.RUnlock()
-	
+
 	if !exists {
 		return fmt.Errorf("no active game for room %s", roomID)
 	}
-	
+
 	// Find the card by ID
 	card, err := ds.findCardByID(provider, playerSeat, cardID)
 	if err != nil {
 		return err
 	}
-	
+
 	// Submit return to the input provider
 	return provider.SubmitReturnTribute(playerSeat, card)
 }
@@ -166,38 +166,38 @@ func (ds *DriverService) GetGameStatus(roomID string) (map[string]interface{}, e
 	ds.mu.RLock()
 	driver, exists := ds.drivers[roomID]
 	ds.mu.RUnlock()
-	
+
 	if !exists {
 		return nil, fmt.Errorf("no active game for room %s", roomID)
 	}
-	
+
 	// Get engine from driver
 	engine := driver.GetEngine()
 	if engine == nil {
 		return nil, fmt.Errorf("no game engine for room %s", roomID)
 	}
-	
+
 	// Get current state
 	gameState := engine.GetGameState()
 	dealStatus := engine.GetCurrentDealStatus()
 	turnInfo := engine.GetCurrentTurnInfo()
 	matchDetails := engine.GetMatchDetails()
-	
+
 	status := map[string]interface{}{
-		"room_id": roomID,
+		"room_id":     roomID,
 		"game_status": gameState.Status,
 		"deal_status": dealStatus,
-		"timestamp": time.Now(),
+		"timestamp":   time.Now(),
 	}
-	
+
 	if turnInfo != nil {
 		status["turn_info"] = turnInfo
 	}
-	
+
 	if matchDetails != nil {
 		status["match_details"] = matchDetails
 	}
-	
+
 	return status, nil
 }
 
@@ -205,31 +205,31 @@ func (ds *DriverService) GetGameStatus(roomID string) (map[string]interface{}, e
 func (ds *DriverService) StopGame(roomID string) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
-	
+
 	_, exists := ds.drivers[roomID]
 	if !exists {
 		return fmt.Errorf("no active game for room %s", roomID)
 	}
-	
+
 	// Cancel any pending input requests
 	if provider, ok := ds.providers[roomID]; ok {
 		provider.CancelAll()
 	}
-	
+
 	// Clean up
 	delete(ds.drivers, roomID)
 	delete(ds.providers, roomID)
-	
+
 	// Notify clients
 	ds.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
 		Type: websocket.MSG_GAME_EVENT,
 		Data: map[string]interface{}{
 			"event_type": "game_stopped",
-			"room_id": roomID,
+			"room_id":    roomID,
 		},
 		Timestamp: time.Now(),
 	})
-	
+
 	log.Printf("Game stopped for room %s", roomID)
 	return nil
 }
@@ -241,14 +241,14 @@ func (ds *DriverService) findCardByID(provider *RoomInputProvider, playerSeat in
 	if options == nil {
 		return nil, fmt.Errorf("no card options available for player %d", playerSeat)
 	}
-	
+
 	// Find the card
 	for _, card := range options {
 		if card.GetID() == cardID {
 			return card, nil
 		}
 	}
-	
+
 	return nil, fmt.Errorf("card %s not found in available options", cardID)
 }
 
@@ -256,15 +256,15 @@ func (ds *DriverService) findCardByID(provider *RoomInputProvider, playerSeat in
 type RoomInputProvider struct {
 	roomID    string
 	wsManager WSManagerInterface
-	
+
 	// Channels for receiving player decisions
 	playDecisions     map[int]chan *sdk.PlayDecision
 	tributeSelections map[int]chan *sdk.Card
 	returnTributes    map[int]chan *sdk.Card
-	
+
 	// Store last options for card lookup
 	lastOptions map[int][]*sdk.Card
-	
+
 	mu sync.RWMutex
 }
 
@@ -287,41 +287,45 @@ func (rip *RoomInputProvider) RequestPlayDecision(ctx context.Context, playerSea
 	decisionChan := make(chan *sdk.PlayDecision, 1)
 	rip.playDecisions[playerSeat] = decisionChan
 	rip.mu.Unlock()
-	
+
 	defer func() {
 		rip.mu.Lock()
 		delete(rip.playDecisions, playerSeat)
 		rip.mu.Unlock()
 	}()
-	
+
 	// Send request to player via WebSocket
 	wsMessage := &websocket.WSMessage{
 		Type: websocket.MSG_GAME_ACTION,
 		Data: map[string]interface{}{
 			"action_type": "play_decision_required",
 			"player_seat": playerSeat,
-			"hand": hand,
-			"trick_info": trickInfo,
-			"timeout": 30, // seconds
+			"hand":        hand,
+			"trick_info":  trickInfo,
+			"timeout":     30, // seconds
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	// Get player ID and send message
 	if err := rip.sendToPlayer(playerSeat, wsMessage); err != nil {
 		return nil, fmt.Errorf("failed to send play request: %w", err)
 	}
-	
+
 	// If no context provided, create one with default timeout
 	if ctx == nil {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 	}
-	
+
 	// Wait for decision or timeout
 	select {
 	case decision := <-decisionChan:
+		// 添加 nil 检查防止空指针异常
+		if decision == nil {
+			return nil, fmt.Errorf("received nil decision from player %d", playerSeat)
+		}
 		return decision, nil
 	case <-ctx.Done():
 		// Timeout - return a default decision (pass if not leader, play smallest card if leader)
@@ -352,36 +356,36 @@ func (rip *RoomInputProvider) RequestTributeSelection(ctx context.Context, playe
 	selectionChan := make(chan *sdk.Card, 1)
 	rip.tributeSelections[playerSeat] = selectionChan
 	rip.mu.Unlock()
-	
+
 	defer func() {
 		rip.mu.Lock()
 		delete(rip.tributeSelections, playerSeat)
 		rip.mu.Unlock()
 	}()
-	
+
 	// Send request to player
 	wsMessage := &websocket.WSMessage{
 		Type: websocket.MSG_GAME_ACTION,
 		Data: map[string]interface{}{
 			"action_type": "tribute_selection_required",
 			"player_seat": playerSeat,
-			"options": options,
-			"timeout": 20, // seconds
+			"options":     options,
+			"timeout":     20, // seconds
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	if err := rip.sendToPlayer(playerSeat, wsMessage); err != nil {
 		return nil, fmt.Errorf("failed to send tribute selection request: %w", err)
 	}
-	
+
 	// If no context provided, create one with default timeout
 	if ctx == nil {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 	}
-	
+
 	// Wait for selection or timeout
 	select {
 	case card := <-selectionChan:
@@ -409,36 +413,36 @@ func (rip *RoomInputProvider) RequestReturnTribute(ctx context.Context, playerSe
 	returnChan := make(chan *sdk.Card, 1)
 	rip.returnTributes[playerSeat] = returnChan
 	rip.mu.Unlock()
-	
+
 	defer func() {
 		rip.mu.Lock()
 		delete(rip.returnTributes, playerSeat)
 		rip.mu.Unlock()
 	}()
-	
+
 	// Send request to player
 	wsMessage := &websocket.WSMessage{
 		Type: websocket.MSG_GAME_ACTION,
 		Data: map[string]interface{}{
 			"action_type": "return_tribute_required",
 			"player_seat": playerSeat,
-			"hand": hand,
-			"timeout": 20, // seconds
+			"hand":        hand,
+			"timeout":     20, // seconds
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	if err := rip.sendToPlayer(playerSeat, wsMessage); err != nil {
 		return nil, fmt.Errorf("failed to send return tribute request: %w", err)
 	}
-	
+
 	// If no context provided, create one with default timeout
 	if ctx == nil {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 	}
-	
+
 	// Wait for return or timeout
 	select {
 	case card := <-returnChan:
@@ -460,14 +464,19 @@ func (rip *RoomInputProvider) RequestReturnTribute(ctx context.Context, playerSe
 
 // SubmitPlayDecision submits a play decision from a player
 func (rip *RoomInputProvider) SubmitPlayDecision(playerSeat int, decision *sdk.PlayDecision) error {
+	// 添加输入验证防止空指针异常
+	if decision == nil {
+		return fmt.Errorf("decision cannot be nil for player %d", playerSeat)
+	}
+
 	rip.mu.RLock()
 	decisionChan, exists := rip.playDecisions[playerSeat]
 	rip.mu.RUnlock()
-	
+
 	if !exists {
 		return fmt.Errorf("no pending play decision for player %d", playerSeat)
 	}
-	
+
 	select {
 	case decisionChan <- decision:
 		return nil
@@ -481,11 +490,11 @@ func (rip *RoomInputProvider) SubmitTributeSelection(playerSeat int, card *sdk.C
 	rip.mu.RLock()
 	selectionChan, exists := rip.tributeSelections[playerSeat]
 	rip.mu.RUnlock()
-	
+
 	if !exists {
 		return fmt.Errorf("no pending tribute selection for player %d", playerSeat)
 	}
-	
+
 	select {
 	case selectionChan <- card:
 		return nil
@@ -499,11 +508,11 @@ func (rip *RoomInputProvider) SubmitReturnTribute(playerSeat int, card *sdk.Card
 	rip.mu.RLock()
 	returnChan, exists := rip.returnTributes[playerSeat]
 	rip.mu.RUnlock()
-	
+
 	if !exists {
 		return fmt.Errorf("no pending return tribute for player %d", playerSeat)
 	}
-	
+
 	select {
 	case returnChan <- card:
 		return nil
@@ -523,7 +532,7 @@ func (rip *RoomInputProvider) GetLastOptions(playerSeat int) []*sdk.Card {
 func (rip *RoomInputProvider) CancelAll() {
 	rip.mu.Lock()
 	defer rip.mu.Unlock()
-	
+
 	// Close all channels to unblock waiting goroutines
 	for _, ch := range rip.playDecisions {
 		close(ch)
@@ -534,7 +543,7 @@ func (rip *RoomInputProvider) CancelAll() {
 	for _, ch := range rip.returnTributes {
 		close(ch)
 	}
-	
+
 	// Clear maps
 	rip.playDecisions = make(map[int]chan *sdk.PlayDecision)
 	rip.tributeSelections = make(map[int]chan *sdk.Card)
@@ -571,22 +580,22 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 	wsMessage := &websocket.WSMessage{
 		Type: websocket.MSG_GAME_EVENT,
 		Data: map[string]interface{}{
-			"event_type": string(event.Type),
-			"event_data": event.Data,
-			"timestamp":  event.Timestamp,
+			"event_type":  string(event.Type),
+			"event_data":  event.Data,
+			"timestamp":   event.Timestamp,
 			"player_seat": event.PlayerSeat,
 		},
 		Timestamp: event.Timestamp,
 	}
-	
+
 	// Broadcast to all players in the room
 	wso.wsManager.BroadcastToRoom(wso.roomID, wsMessage)
-	
+
 	// Log significant events
 	switch event.Type {
 	case sdk.EventMatchStarted, sdk.EventMatchEnded,
-	     sdk.EventDealStarted, sdk.EventDealEnded,
-	     sdk.EventTributeCompleted:
+		sdk.EventDealStarted, sdk.EventDealEnded,
+		sdk.EventTributeCompleted:
 		log.Printf("Game event %s for room %s", event.Type, wso.roomID)
 	}
 }

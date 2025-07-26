@@ -8,9 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"guandan-world/backend/auth"
 	"guandan-world/backend/room"
+
+	"github.com/gorilla/websocket"
 )
 
 // Message type constants
@@ -19,13 +20,13 @@ const (
 	MSG_JOIN_ROOM  = "join_room"
 	MSG_LEAVE_ROOM = "leave_room"
 	MSG_START_GAME = "start_game"
-	
+
 	// Game operation messages
-	MSG_PLAY_CARDS = "play_cards"
-	MSG_PASS       = "pass"
+	MSG_PLAY_CARDS     = "play_cards"
+	MSG_PASS           = "pass"
 	MSG_TRIBUTE_SELECT = "tribute_select"
 	MSG_TRIBUTE_RETURN = "tribute_return"
-	
+
 	// Status and notification messages
 	MSG_ROOM_UPDATE = "room_update"
 	MSG_GAME_EVENT  = "game_event"
@@ -82,34 +83,35 @@ type WSConnection struct {
 	send     chan []byte
 	manager  *WSManager
 	lastPing time.Time
+	closed   bool // 添加关闭状态标志
 	mu       sync.RWMutex
 }
 
 // WSManager manages WebSocket connections and message routing
 type WSManager struct {
 	// Connection management
-	connections map[string]*WSConnection // playerID -> connection
+	connections map[string]*WSConnection            // playerID -> connection
 	rooms       map[string]map[string]*WSConnection // roomID -> playerID -> connection
-	
+
 	// Services
 	authService auth.AuthService
 	roomService room.RoomService
-	
+
 	// Channels for connection lifecycle
 	register   chan *WSConnection
 	unregister chan *WSConnection
 	broadcast  chan *BroadcastMessage
-	
+
 	// Configuration
 	upgrader websocket.Upgrader
-	
+
 	// Synchronization
 	mu sync.RWMutex
-	
+
 	// Heartbeat configuration
 	pingInterval time.Duration
 	pongTimeout  time.Duration
-	
+
 	// Message handlers
 	messageHandlers map[string]MessageHandler
 }
@@ -127,13 +129,13 @@ type MessageHandler func(conn *WSConnection, message *WSMessage) error
 // NewWSManager creates a new WebSocket manager
 func NewWSManager(authService auth.AuthService, roomService room.RoomService) *WSManager {
 	manager := &WSManager{
-		connections:     make(map[string]*WSConnection),
-		rooms:          make(map[string]map[string]*WSConnection),
-		authService:    authService,
-		roomService:    roomService,
-		register:       make(chan *WSConnection, 256),
-		unregister:     make(chan *WSConnection, 256),
-		broadcast:      make(chan *BroadcastMessage, 256),
+		connections: make(map[string]*WSConnection),
+		rooms:       make(map[string]map[string]*WSConnection),
+		authService: authService,
+		roomService: roomService,
+		register:    make(chan *WSConnection, 256),
+		unregister:  make(chan *WSConnection, 256),
+		broadcast:   make(chan *BroadcastMessage, 256),
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				// TODO: Implement proper origin checking for production
@@ -146,10 +148,10 @@ func NewWSManager(authService auth.AuthService, roomService room.RoomService) *W
 		pongTimeout:     60 * time.Second,
 		messageHandlers: make(map[string]MessageHandler),
 	}
-	
+
 	// Register default message handlers
 	manager.registerDefaultHandlers()
-	
+
 	return manager
 }
 
@@ -177,18 +179,18 @@ func (m *WSManager) Run() {
 	// Start heartbeat ticker
 	heartbeatTicker := time.NewTicker(m.pingInterval)
 	defer heartbeatTicker.Stop()
-	
+
 	for {
 		select {
 		case conn := <-m.register:
 			m.handleRegister(conn)
-			
+
 		case conn := <-m.unregister:
 			m.handleUnregister(conn)
-			
+
 		case broadcastMsg := <-m.broadcast:
 			m.handleBroadcast(broadcastMsg)
-			
+
 		case <-heartbeatTicker.C:
 			m.handleHeartbeat()
 		}
@@ -203,13 +205,13 @@ func (m *WSManager) HandleWebSocket(w http.ResponseWriter, r *http.Request, play
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return fmt.Errorf("invalid player: %w", err)
 	}
-	
+
 	// Upgrade connection
 	conn, err := m.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return fmt.Errorf("failed to upgrade connection: %w", err)
 	}
-	
+
 	// Create WSConnection
 	wsConn := &WSConnection{
 		conn:     conn,
@@ -218,14 +220,14 @@ func (m *WSManager) HandleWebSocket(w http.ResponseWriter, r *http.Request, play
 		manager:  m,
 		lastPing: time.Now(),
 	}
-	
+
 	// Register connection
 	m.register <- wsConn
-	
+
 	// Start goroutines for reading and writing
 	go wsConn.readPump()
 	go wsConn.writePump()
-	
+
 	return nil
 }
 
@@ -234,24 +236,24 @@ func (m *WSManager) handleRegister(conn *WSConnection) {
 	if conn == nil {
 		return
 	}
-	
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	
+
 	// Close existing connection if any
 	if existingConn, exists := m.connections[conn.playerID]; exists {
 		// Close send channel safely
-		select {
-		case <-existingConn.send:
-			// Channel already closed
-		default:
+		existingConn.mu.Lock()
+		if !existingConn.closed {
+			existingConn.closed = true
 			close(existingConn.send)
 		}
-		
+		existingConn.mu.Unlock()
+
 		if existingConn.conn != nil {
 			existingConn.conn.Close()
 		}
-		
+
 		// Remove from room if in one
 		if existingConn.roomID != "" {
 			if roomConns, exists := m.rooms[existingConn.roomID]; exists {
@@ -262,10 +264,10 @@ func (m *WSManager) handleRegister(conn *WSConnection) {
 			}
 		}
 	}
-	
+
 	// Register new connection
 	m.connections[conn.playerID] = conn
-	
+
 	// Check if player is in a room and add to room connections
 	if playerRoom, err := m.roomService.GetPlayerRoom(conn.playerID); err == nil {
 		conn.roomID = playerRoom.ID
@@ -274,7 +276,7 @@ func (m *WSManager) handleRegister(conn *WSConnection) {
 		}
 		m.rooms[playerRoom.ID][conn.playerID] = conn
 	}
-	
+
 	log.Printf("Player %s connected via WebSocket", conn.playerID)
 }
 
@@ -283,22 +285,22 @@ func (m *WSManager) handleUnregister(conn *WSConnection) {
 	if conn == nil {
 		return
 	}
-	
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	
+
 	// Remove from connections
 	if existingConn, exists := m.connections[conn.playerID]; exists && existingConn == conn {
 		delete(m.connections, conn.playerID)
 		// Close send channel safely
-		select {
-		case <-conn.send:
-			// Channel already closed
-		default:
+		conn.mu.Lock()
+		if !conn.closed {
+			conn.closed = true
 			close(conn.send)
 		}
+		conn.mu.Unlock()
 	}
-	
+
 	// Remove from room connections
 	if conn.roomID != "" {
 		if roomConns, exists := m.rooms[conn.roomID]; exists {
@@ -307,12 +309,12 @@ func (m *WSManager) handleUnregister(conn *WSConnection) {
 				delete(m.rooms, conn.roomID)
 			}
 		}
-		
+
 		// Notify room service about disconnection
 		// This will trigger auto-play for the disconnected player
 		m.notifyPlayerDisconnected(conn.playerID, conn.roomID)
 	}
-	
+
 	log.Printf("Player %s disconnected from WebSocket", conn.playerID)
 }
 
@@ -321,7 +323,7 @@ func (m *WSManager) handleBroadcast(broadcastMsg *BroadcastMessage) {
 	if broadcastMsg == nil {
 		return
 	}
-	
+
 	m.mu.RLock()
 	roomConns, exists := m.rooms[broadcastMsg.RoomID]
 	if !exists {
@@ -329,7 +331,7 @@ func (m *WSManager) handleBroadcast(broadcastMsg *BroadcastMessage) {
 		log.Printf("[WSManager] No connections found for room %s", broadcastMsg.RoomID)
 		return
 	}
-	
+
 	// Create a copy of connections to avoid holding lock during send
 	connections := make([]*WSConnection, 0, len(roomConns))
 	for playerID, conn := range roomConns {
@@ -338,24 +340,22 @@ func (m *WSManager) handleBroadcast(broadcastMsg *BroadcastMessage) {
 		}
 	}
 	m.mu.RUnlock()
-	
-	log.Printf("[WSManager] Broadcasting to %d connections in room %s, message type: %s", 
+
+	log.Printf("[WSManager] Broadcasting to %d connections in room %s, message type: %s",
 		len(connections), broadcastMsg.RoomID, broadcastMsg.Message.Type)
-	
+
 	// Serialize message
 	messageData, err := json.Marshal(broadcastMsg.Message)
 	if err != nil {
 		log.Printf("Failed to marshal broadcast message: %v", err)
 		return
 	}
-	
+
 	// Send to all connections
 	for _, conn := range connections {
-		if conn != nil && conn.send != nil {
-			select {
-			case conn.send <- messageData:
-			default:
-				// Connection is blocked, close it
+		if conn != nil {
+			if !conn.safeSend(messageData) {
+				// Connection is blocked or closed, unregister it
 				select {
 				case m.unregister <- conn:
 				default:
@@ -374,13 +374,13 @@ func (m *WSManager) handleHeartbeat() {
 		connections = append(connections, conn)
 	}
 	m.mu.RUnlock()
-	
+
 	now := time.Now()
 	for _, conn := range connections {
 		conn.mu.RLock()
 		lastPing := conn.lastPing
 		conn.mu.RUnlock()
-		
+
 		if now.Sub(lastPing) > m.pongTimeout {
 			// Connection is stale, close it
 			log.Printf("Closing stale connection for player %s", conn.playerID)
@@ -397,12 +397,12 @@ func (m *WSManager) BroadcastToRoom(roomID string, message *WSMessage) {
 	if message == nil || roomID == "" {
 		return
 	}
-	
+
 	broadcastMsg := &BroadcastMessage{
 		RoomID:  roomID,
 		Message: message,
 	}
-	
+
 	select {
 	case m.broadcast <- broadcastMsg:
 	default:
@@ -415,13 +415,13 @@ func (m *WSManager) BroadcastToRoomExcept(roomID string, message *WSMessage, exc
 	if message == nil || roomID == "" {
 		return
 	}
-	
+
 	broadcastMsg := &BroadcastMessage{
 		RoomID:  roomID,
 		Message: message,
 		Exclude: excludePlayerID,
 	}
-	
+
 	select {
 	case m.broadcast <- broadcastMsg:
 	default:
@@ -434,16 +434,16 @@ func (m *WSManager) SendToPlayer(playerID string, message *WSMessage) error {
 	m.mu.RLock()
 	conn, exists := m.connections[playerID]
 	m.mu.RUnlock()
-	
+
 	if !exists {
 		return fmt.Errorf("player %s not connected", playerID)
 	}
-	
+
 	messageData, err := json.Marshal(message)
 	if err != nil {
 		return fmt.Errorf("failed to marshal message: %w", err)
 	}
-	
+
 	select {
 	case conn.send <- messageData:
 		return nil
@@ -456,7 +456,7 @@ func (m *WSManager) SendToPlayer(playerID string, message *WSMessage) error {
 func (m *WSManager) GetRoomConnections(roomID string) int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	if roomConns, exists := m.rooms[roomID]; exists {
 		return len(roomConns)
 	}
@@ -467,7 +467,7 @@ func (m *WSManager) GetRoomConnections(roomID string) int {
 func (m *WSManager) IsPlayerConnected(playerID string) bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	_, exists := m.connections[playerID]
 	return exists
 }
@@ -477,7 +477,7 @@ func (m *WSManager) notifyPlayerDisconnected(playerID, roomID string) {
 	// This would typically trigger auto-play or other disconnection handling
 	// For now, we'll just log it
 	log.Printf("Player %s disconnected from room %s", playerID, roomID)
-	
+
 	// TODO: Integrate with game service to handle player disconnection
 	// This should trigger the SDK's HandlePlayerDisconnect method
 }
@@ -488,19 +488,19 @@ func (m *WSManager) handlePing(conn *WSConnection, message *WSMessage) error {
 	conn.mu.Lock()
 	conn.lastPing = time.Now()
 	conn.mu.Unlock()
-	
+
 	// Send pong response
 	pongMsg := &WSMessage{
 		Type:      MSG_PONG,
 		Data:      nil,
 		Timestamp: time.Now(),
 	}
-	
+
 	messageData, err := json.Marshal(pongMsg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal pong message: %w", err)
 	}
-	
+
 	select {
 	case conn.send <- messageData:
 		return nil
@@ -516,23 +516,23 @@ func (m *WSManager) handleJoinRoom(conn *WSConnection, message *WSMessage) error
 	if err := parseMessageData(message.Data, &joinData); err != nil {
 		return fmt.Errorf("invalid join room data: %w", err)
 	}
-	
+
 	// Validate room ID
 	if joinData.RoomID == "" {
 		return fmt.Errorf("room ID is required")
 	}
-	
+
 	// Join room through room service
 	room, err := m.roomService.JoinRoom(joinData.RoomID, conn.playerID)
 	if err != nil {
 		return fmt.Errorf("failed to join room: %w", err)
 	}
-	
+
 	// Update connection room ID
 	m.mu.Lock()
 	oldRoomID := conn.roomID
 	conn.roomID = joinData.RoomID
-	
+
 	// Remove from old room if any
 	if oldRoomID != "" && oldRoomID != joinData.RoomID {
 		if oldRoomConns, exists := m.rooms[oldRoomID]; exists {
@@ -542,27 +542,27 @@ func (m *WSManager) handleJoinRoom(conn *WSConnection, message *WSMessage) error
 			}
 		}
 	}
-	
+
 	// Add to new room
 	if _, exists := m.rooms[joinData.RoomID]; !exists {
 		m.rooms[joinData.RoomID] = make(map[string]*WSConnection)
 	}
 	m.rooms[joinData.RoomID][conn.playerID] = conn
 	m.mu.Unlock()
-	
+
 	// Broadcast room update to all room members
 	roomUpdateMsg := &WSMessage{
 		Type: MSG_ROOM_UPDATE,
 		Data: map[string]interface{}{
-			"action": "player_joined",
-			"room":   room,
+			"action":    "player_joined",
+			"room":      room,
 			"player_id": conn.playerID,
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	m.BroadcastToRoom(joinData.RoomID, roomUpdateMsg)
-	
+
 	return nil
 }
 
@@ -573,27 +573,27 @@ func (m *WSManager) handleLeaveRoom(conn *WSConnection, message *WSMessage) erro
 	if err := parseMessageData(message.Data, &leaveData); err != nil {
 		return fmt.Errorf("invalid leave room data: %w", err)
 	}
-	
+
 	// Validate room ID
 	if leaveData.RoomID == "" {
 		return fmt.Errorf("room ID is required")
 	}
-	
+
 	// Verify player is in the specified room
 	if conn.roomID != leaveData.RoomID {
 		return fmt.Errorf("player is not in the specified room")
 	}
-	
+
 	// Leave room through room service
 	room, err := m.roomService.LeaveRoom(leaveData.RoomID, conn.playerID)
 	if err != nil {
 		return fmt.Errorf("failed to leave room: %w", err)
 	}
-	
+
 	// Update connection room ID
 	m.mu.Lock()
 	conn.roomID = ""
-	
+
 	// Remove from room connections
 	if roomConns, exists := m.rooms[leaveData.RoomID]; exists {
 		delete(roomConns, conn.playerID)
@@ -602,22 +602,22 @@ func (m *WSManager) handleLeaveRoom(conn *WSConnection, message *WSMessage) erro
 		}
 	}
 	m.mu.Unlock()
-	
+
 	// Broadcast room update if room still exists
 	if room != nil {
 		roomUpdateMsg := &WSMessage{
 			Type: MSG_ROOM_UPDATE,
 			Data: map[string]interface{}{
-				"action": "player_left",
-				"room":   room,
+				"action":    "player_left",
+				"room":      room,
 				"player_id": conn.playerID,
 			},
 			Timestamp: time.Now(),
 		}
-		
+
 		m.BroadcastToRoom(leaveData.RoomID, roomUpdateMsg)
 	}
-	
+
 	return nil
 }
 
@@ -628,29 +628,29 @@ func (m *WSManager) handleStartGame(conn *WSConnection, message *WSMessage) erro
 	if err := parseMessageData(message.Data, &startData); err != nil {
 		return fmt.Errorf("invalid start game data: %w", err)
 	}
-	
+
 	// Validate room ID
 	if startData.RoomID == "" {
 		return fmt.Errorf("room ID is required")
 	}
-	
+
 	// Verify player is in the specified room
 	if conn.roomID != startData.RoomID {
 		return fmt.Errorf("player is not in the specified room")
 	}
-	
+
 	// Start game through room service
 	err := m.roomService.StartGame(startData.RoomID, conn.playerID)
 	if err != nil {
 		return fmt.Errorf("failed to start game: %w", err)
 	}
-	
+
 	// Get updated room info
 	room, err := m.roomService.GetRoom(startData.RoomID)
 	if err != nil {
 		return fmt.Errorf("failed to get room info: %w", err)
 	}
-	
+
 	// Broadcast game start to all room members
 	gameStartMsg := &WSMessage{
 		Type: MSG_ROOM_UPDATE,
@@ -660,12 +660,12 @@ func (m *WSManager) handleStartGame(conn *WSConnection, message *WSMessage) erro
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	m.BroadcastToRoom(startData.RoomID, gameStartMsg)
-	
+
 	// TODO: Initialize game engine and start the actual game
 	// This will be implemented in task 9 (游戏服务)
-	
+
 	return nil
 }
 
@@ -676,20 +676,20 @@ func (m *WSManager) handlePlayCards(conn *WSConnection, message *WSMessage) erro
 	if err := parseMessageData(message.Data, &playData); err != nil {
 		return fmt.Errorf("invalid play cards data: %w", err)
 	}
-	
+
 	// Validate player is in a room
 	if conn.roomID == "" {
 		return fmt.Errorf("player is not in a room")
 	}
-	
+
 	// Validate cards
 	if len(playData.Cards) == 0 {
 		return fmt.Errorf("no cards specified")
 	}
-	
+
 	// TODO: Forward to game service for processing
 	// This will be implemented in task 9 (游戏服务)
-	
+
 	// For now, just acknowledge the request
 	ackMsg := &WSMessage{
 		Type: "play_cards_ack",
@@ -699,9 +699,9 @@ func (m *WSManager) handlePlayCards(conn *WSConnection, message *WSMessage) erro
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	m.BroadcastToRoomExcept(conn.roomID, ackMsg, conn.playerID)
-	
+
 	return nil
 }
 
@@ -711,10 +711,10 @@ func (m *WSManager) handlePass(conn *WSConnection, message *WSMessage) error {
 	if conn.roomID == "" {
 		return fmt.Errorf("player is not in a room")
 	}
-	
+
 	// TODO: Forward to game service for processing
 	// This will be implemented in task 9 (游戏服务)
-	
+
 	// For now, just acknowledge the request
 	passMsg := &WSMessage{
 		Type: "pass_ack",
@@ -723,9 +723,9 @@ func (m *WSManager) handlePass(conn *WSConnection, message *WSMessage) error {
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	m.BroadcastToRoomExcept(conn.roomID, passMsg, conn.playerID)
-	
+
 	return nil
 }
 
@@ -736,20 +736,20 @@ func (m *WSManager) handleTributeSelect(conn *WSConnection, message *WSMessage) 
 	if err := parseMessageData(message.Data, &selectData); err != nil {
 		return fmt.Errorf("invalid tribute select data: %w", err)
 	}
-	
+
 	// Validate player is in a room
 	if conn.roomID == "" {
 		return fmt.Errorf("player is not in a room")
 	}
-	
+
 	// Validate card ID
 	if selectData.CardID == "" {
 		return fmt.Errorf("card ID is required")
 	}
-	
+
 	// TODO: Forward to game service for processing
 	// This will be implemented in task 9 (游戏服务)
-	
+
 	// For now, just acknowledge the request
 	selectMsg := &WSMessage{
 		Type: "tribute_select_ack",
@@ -759,9 +759,9 @@ func (m *WSManager) handleTributeSelect(conn *WSConnection, message *WSMessage) 
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	m.BroadcastToRoomExcept(conn.roomID, selectMsg, conn.playerID)
-	
+
 	return nil
 }
 
@@ -772,20 +772,20 @@ func (m *WSManager) handleTributeReturn(conn *WSConnection, message *WSMessage) 
 	if err := parseMessageData(message.Data, &returnData); err != nil {
 		return fmt.Errorf("invalid tribute return data: %w", err)
 	}
-	
+
 	// Validate player is in a room
 	if conn.roomID == "" {
 		return fmt.Errorf("player is not in a room")
 	}
-	
+
 	// Validate card ID
 	if returnData.CardID == "" {
 		return fmt.Errorf("card ID is required")
 	}
-	
+
 	// TODO: Forward to game service for processing
 	// This will be implemented in task 9 (游戏服务)
-	
+
 	// For now, just acknowledge the request
 	returnMsg := &WSMessage{
 		Type: "tribute_return_ack",
@@ -795,25 +795,33 @@ func (m *WSManager) handleTributeReturn(conn *WSConnection, message *WSMessage) 
 		},
 		Timestamp: time.Now(),
 	}
-	
+
 	m.BroadcastToRoomExcept(conn.roomID, returnMsg, conn.playerID)
-	
+
 	return nil
 }
 
 // readPump handles reading messages from the WebSocket connection
 func (c *WSConnection) readPump() {
 	defer func() {
-		select {
-		case c.manager.unregister <- c:
-		default:
-			// Channel might be closed, ignore
-		}
+		// 使用recover来避免向已关闭的channel发送数据时的panic
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					// Channel已关闭，忽略panic
+				}
+			}()
+			select {
+			case c.manager.unregister <- c:
+			default:
+				// Channel might be closed, ignore
+			}
+		}()
 		if c.conn != nil {
 			c.conn.Close()
 		}
 	}()
-	
+
 	// Set read deadline and pong handler
 	c.conn.SetReadDeadline(time.Now().Add(c.manager.pongTimeout))
 	c.conn.SetPongHandler(func(string) error {
@@ -823,7 +831,7 @@ func (c *WSConnection) readPump() {
 		c.conn.SetReadDeadline(time.Now().Add(c.manager.pongTimeout))
 		return nil
 	})
-	
+
 	for {
 		_, messageData, err := c.conn.ReadMessage()
 		if err != nil {
@@ -832,18 +840,18 @@ func (c *WSConnection) readPump() {
 			}
 			break
 		}
-		
+
 		// Parse message
 		var message WSMessage
 		if err := json.Unmarshal(messageData, &message); err != nil {
 			log.Printf("Failed to unmarshal message from player %s: %v", c.playerID, err)
 			continue
 		}
-		
+
 		// Set player ID and timestamp
 		message.PlayerID = c.playerID
 		message.Timestamp = time.Now()
-		
+
 		// Handle message
 		c.handleMessage(&message)
 	}
@@ -856,7 +864,7 @@ func (c *WSConnection) writePump() {
 		ticker.Stop()
 		c.conn.Close()
 	}()
-	
+
 	for {
 		select {
 		case message, ok := <-c.send:
@@ -865,12 +873,12 @@ func (c *WSConnection) writePump() {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-			
+
 			if err := c.conn.WriteMessage(websocket.TextMessage, message); err != nil {
 				log.Printf("Failed to write message to player %s: %v", c.playerID, err)
 				return
 			}
-			
+
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
@@ -880,13 +888,27 @@ func (c *WSConnection) writePump() {
 	}
 }
 
-// sendPing sends a ping message to the connection
-func (c *WSConnection) sendPing() {
+// safeSend safely sends data to the connection's send channel
+func (c *WSConnection) safeSend(data []byte) bool {
+	c.mu.RLock()
+	if c.closed {
+		c.mu.RUnlock()
+		return false
+	}
+	c.mu.RUnlock()
+
 	select {
-	case c.send <- []byte(`{"type":"ping","timestamp":"` + time.Now().Format(time.RFC3339) + `"}`):
+	case c.send <- data:
+		return true
 	default:
 		// Channel full, connection will be closed by heartbeat
+		return false
 	}
+}
+
+// sendPing sends a ping message to the connection
+func (c *WSConnection) sendPing() {
+	c.safeSend([]byte(`{"type":"ping","timestamp":"` + time.Now().Format(time.RFC3339) + `"}`))
 }
 
 // handleMessage routes messages to appropriate handlers
@@ -894,31 +916,27 @@ func (c *WSConnection) handleMessage(message *WSMessage) {
 	c.manager.mu.RLock()
 	handler, exists := c.manager.messageHandlers[message.Type]
 	c.manager.mu.RUnlock()
-	
+
 	if !exists {
 		log.Printf("Unknown message type '%s' from player %s", message.Type, c.playerID)
 		return
 	}
-	
+
 	if err := handler(c, message); err != nil {
 		log.Printf("Error handling message type '%s' from player %s: %v", message.Type, c.playerID, err)
-		
+
 		// Send error response
 		errorMsg := &WSMessage{
 			Type: "error",
 			Data: map[string]interface{}{
-				"message": err.Error(),
+				"message":       err.Error(),
 				"original_type": message.Type,
 			},
 			Timestamp: time.Now(),
 		}
-		
+
 		if messageData, marshalErr := json.Marshal(errorMsg); marshalErr == nil {
-			select {
-			case c.send <- messageData:
-			default:
-				// Channel full, ignore
-			}
+			c.safeSend(messageData)
 		}
 	}
 }
@@ -930,10 +948,10 @@ func parseMessageData(data interface{}, target interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal data: %w", err)
 	}
-	
+
 	if err := json.Unmarshal(jsonData, target); err != nil {
 		return fmt.Errorf("failed to unmarshal data: %w", err)
 	}
-	
+
 	return nil
 }
