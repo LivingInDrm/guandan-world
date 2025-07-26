@@ -524,13 +524,55 @@ func (d *Deal) finishCurrentTrick() error {
 
 	// Find next leader for the next trick
 	nextLeader := d.CurrentTrick.Winner
+	
+	// Check if the winner finished their cards and no one followed
 	if len(d.PlayerCards[nextLeader]) == 0 {
-		// Winner has no cards, find next player with cards
-		for i := 1; i < 4; i++ {
-			candidate := (d.CurrentTrick.Winner + i) % 4
-			if len(d.PlayerCards[candidate]) > 0 {
-				nextLeader = candidate
+		// Check if anyone followed (played non-pass after the winner)
+		anyoneFollowed := false
+		winnerPlayIndex := -1
+		
+		// Find when the winner played
+		for i, play := range d.CurrentTrick.Plays {
+			if play.PlayerSeat == d.CurrentTrick.Winner && !play.IsPass {
+				winnerPlayIndex = i
 				break
+			}
+		}
+		
+		// Check if anyone played (not passed) after the winner
+		if winnerPlayIndex >= 0 {
+			for i := winnerPlayIndex + 1; i < len(d.CurrentTrick.Plays); i++ {
+				if !d.CurrentTrick.Plays[i].IsPass {
+					anyoneFollowed = true
+					break
+				}
+			}
+		}
+		
+		// If no one followed, give priority to teammate
+		if !anyoneFollowed {
+			// Find teammate (0<->2, 1<->3)
+			teammate := (d.CurrentTrick.Winner + 2) % 4
+			if len(d.PlayerCards[teammate]) > 0 {
+				nextLeader = teammate
+			} else {
+				// Teammate has no cards, find next player with cards
+				for i := 1; i < 4; i++ {
+					candidate := (d.CurrentTrick.Winner + i) % 4
+					if len(d.PlayerCards[candidate]) > 0 {
+						nextLeader = candidate
+						break
+					}
+				}
+			}
+		} else {
+			// Someone followed, use default order
+			for i := 1; i < 4; i++ {
+				candidate := (d.CurrentTrick.Winner + i) % 4
+				if len(d.PlayerCards[candidate]) > 0 {
+					nextLeader = candidate
+					break
+				}
 			}
 		}
 	}
@@ -578,8 +620,49 @@ func (d *Deal) CalculateResult(match *Match) (*DealResult, error) {
 
 // determineFirstPlayer determines who plays first in the deal
 func (d *Deal) determineFirstPlayer() int {
-	// Simplified: return player 0 for now
-	// In full implementation, this would consider tribute phase results
-	// or find player with specific card (like 2 of hearts)
-	return 0
+	// First deal in match: truly random selection
+	if d.LastResult == nil {
+		return rand.Intn(4) // Random player 0-3
+	}
+
+	// Subsequent deals based on tribute results
+	if d.TributePhase != nil && d.TributePhase.Status == TributeStatusFinished {
+		// Check for immunity (anti-tribute situation)
+		if d.TributePhase.IsImmune {
+			// Anti-tribute: rank1 player starts
+			return d.LastResult.Rankings[0]
+		}
+
+		// Check victory type for tribute rules
+		switch d.LastResult.VictoryType {
+		case VictoryTypeDoubleDown:
+			// Double Down: determine who gave the bigger tribute card
+			rank3 := d.LastResult.Rankings[2]
+			rank4 := d.LastResult.Rankings[3]
+			tribute3 := d.TributePhase.TributeCards[rank3]
+			tribute4 := d.TributePhase.TributeCards[rank4]
+			
+			// Compare tribute cards to determine who starts
+			if tribute3 != nil && tribute4 != nil {
+				if tribute3.GreaterThan(tribute4) {
+					return rank3
+				} else {
+					return rank4
+				}
+			}
+			// Fallback to rank3 if tribute cards not available
+			return rank3
+			
+		case VictoryTypeSingleLast:
+			// Single Last: rank4 gives tribute, so rank4 starts
+			return d.LastResult.Rankings[3]
+			
+		case VictoryTypePartnerLast:
+			// Partner Last: rank3 gives tribute, so rank3 starts
+			return d.LastResult.Rankings[2]
+		}
+	}
+
+	// Default: rank1 player starts (covers any edge cases)
+	return d.LastResult.Rankings[0]
 }
