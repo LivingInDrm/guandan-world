@@ -102,7 +102,7 @@ func (ms *MatchSimulatorV2) setupPlayerAlgorithms() error {
 	algorithms := make([]ai.AutoPlayAlgorithm, 4)
 
 	for i := 0; i < 4; i++ {
-		algorithms[i] = ai.NewSimpleAutoPlayAlgorithm(2) // 从2级开始
+		algorithms[i] = ai.NewSmartAutoPlayAlgorithm(2) // 从2级开始 - 使用智能算法
 	}
 
 	return ms.inputProvider.BatchSetAlgorithms(algorithms)
