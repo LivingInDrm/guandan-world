@@ -40,16 +40,19 @@ func main() {
 
 	// 初始化 WebSocket 管理器
 	wsManager := websocket.NewWSManager(authService, roomService)
-	
+
 	// 初始化房间处理器
 	roomHandler := handlers.NewRoomHandler(roomService, authService)
 
 	// 初始化游戏服务（保留以备将来使用）
 	_ = game.NewGameService(wsManager)
-	
+
 	// 初始化游戏驱动服务
 	driverService := game.NewDriverService(wsManager)
 	gameDriverHandler := handlers.NewGameDriverHandler(driverService)
+
+	// 启动 WebSocket 管理器
+	go wsManager.Run()
 
 	// 注册认证路由
 	authHandler.RegisterRoutes(r)
@@ -58,7 +61,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		// 需要认证的路由
-		protected := api.Group("/", authHandler.RequireAuth())
+		protected := api.Group("/", authHandler.JWTMiddleware())
 		{
 			// 房间管理路由
 			roomRoutes := protected.Group("/rooms")
@@ -66,7 +69,7 @@ func main() {
 				roomRoutes.POST("/create", roomHandler.CreateRoom)
 				roomRoutes.POST("/join", roomHandler.JoinRoom)
 				roomRoutes.POST("/leave", roomHandler.LeaveRoom)
-				roomRoutes.GET("/", roomHandler.ListRooms)
+				roomRoutes.GET("/", roomHandler.GetRooms)
 				roomRoutes.GET("/:id", roomHandler.GetRoom)
 				roomRoutes.POST("/:id/start", roomHandler.StartGame)
 			}
@@ -86,12 +89,24 @@ func main() {
 
 	// WebSocket 路由
 	r.GET("/ws", func(c *gin.Context) {
-		// Get token from query parameter or header
+		// Get token from query parameter
 		token := c.Query("token")
 		if token == "" {
-			token = c.GetHeader("Authorization")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "token required"})
+			return
 		}
-		wsManager.HandleWebSocket(c.Writer, c.Request, token)
+		
+		// Validate token and get user
+		user, err := authService.ValidateToken(token)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			return
+		}
+		
+		// Pass user ID to WebSocket handler
+		if err := wsManager.HandleWebSocket(c.Writer, c.Request, user.ID); err != nil {
+			log.Printf("WebSocket error: %v", err)
+		}
 	})
 
 	// 健康检查接口

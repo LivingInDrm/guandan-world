@@ -326,6 +326,7 @@ func (m *WSManager) handleBroadcast(broadcastMsg *BroadcastMessage) {
 	roomConns, exists := m.rooms[broadcastMsg.RoomID]
 	if !exists {
 		m.mu.RUnlock()
+		log.Printf("[WSManager] No connections found for room %s", broadcastMsg.RoomID)
 		return
 	}
 	
@@ -337,6 +338,9 @@ func (m *WSManager) handleBroadcast(broadcastMsg *BroadcastMessage) {
 		}
 	}
 	m.mu.RUnlock()
+	
+	log.Printf("[WSManager] Broadcasting to %d connections in room %s, message type: %s", 
+		len(connections), broadcastMsg.RoomID, broadcastMsg.Message.Type)
 	
 	// Serialize message
 	messageData, err := json.Marshal(broadcastMsg.Message)
