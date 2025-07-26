@@ -193,3 +193,85 @@ func contains(slice []string, item string) bool {
 	}
 	return false
 }
+
+// ParseCardFromID 从cardID字符串解析创建Card对象
+// cardID格式：'Color_Number' (例如: "Heart_5", "Joker_15")
+// 参数:
+//
+//	cardID: 卡牌ID字符串
+//	level: 当前游戏级别，用于变化牌判断
+//
+// 返回值:
+//
+//	*Card: 解析得到的卡牌对象
+//	error: 如果解析失败，返回错误
+func ParseCardFromID(cardID string, level int) (*Card, error) {
+	if cardID == "" {
+		return nil, fmt.Errorf("empty card ID")
+	}
+
+	// 分割字符串 - 手动实现避免引入strings包
+	parts := make([]string, 0, 2)
+	lastIndex := 0
+	for i, char := range cardID {
+		if char == '_' {
+			if i > lastIndex {
+				parts = append(parts, cardID[lastIndex:i])
+			}
+			lastIndex = i + 1
+		}
+	}
+	if lastIndex < len(cardID) {
+		parts = append(parts, cardID[lastIndex:])
+	}
+
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid card ID format, expected 'Color_Number'")
+	}
+
+	color := parts[0]
+	numberStr := parts[1]
+
+	// 解析数字 - 手动实现避免引入strconv包
+	var number int
+
+	// 简单的字符串到整数转换
+	if numberStr == "1" {
+		number = 1
+	} else if numberStr == "2" {
+		number = 2
+	} else if numberStr == "3" {
+		number = 3
+	} else if numberStr == "4" {
+		number = 4
+	} else if numberStr == "5" {
+		number = 5
+	} else if numberStr == "6" {
+		number = 6
+	} else if numberStr == "7" {
+		number = 7
+	} else if numberStr == "8" {
+		number = 8
+	} else if numberStr == "9" {
+		number = 9
+	} else if numberStr == "10" {
+		number = 10
+	} else if numberStr == "11" {
+		number = 11
+	} else if numberStr == "12" {
+		number = 12
+	} else if numberStr == "13" {
+		number = 13
+	} else if numberStr == "14" {
+		number = 14
+	} else if numberStr == "15" {
+		number = 15
+	} else if numberStr == "16" {
+		number = 16
+	} else {
+		return nil, fmt.Errorf("invalid card number: %s", numberStr)
+	}
+
+	// 使用现有的NewCard函数创建卡牌
+	return NewCard(number, color, level)
+}
