@@ -97,35 +97,33 @@
   - 编写Match管理系统的单元测试
   - _需求: 需求9_
 
-- [ ] 5. 实现SDK内完全独立的断线托管和超时处理
+- [x] 5. 实现SDK内完全独立的断线托管和超时处理
   - 在SDK内实现完整的玩家状态管理，包括在线、离线、托管状态
   - 实现完全自治的超时处理和托管逻辑
   - 确保断线和超时处理完全在SDK内部自动完成
   - _需求: 需求10, 需求11_
 
-- [ ] 5.1 实现SDK内完全独立的断线托管系统
-  - 在sdk/player_manager.go中实现玩家状态管理
-  - 实现HandlePlayerDisconnect和HandlePlayerReconnect的完全自治逻辑
-  - 实现托管状态下的智能自动出牌策略
+- [x] 5.1 实现SDK内完全独立的断线托管系统
+  - GameEngine已实现HandlePlayerDisconnect和HandlePlayerReconnect方法
+  - 实现托管状态下的智能自动出牌策略（AutoPlayForPlayer方法）
   - 实现断线重连的状态恢复和事件触发
   - 编写断线托管系统的单元测试
   - _需求: 需求10_
 
-- [ ] 5.2 实现SDK内完全独立的超时处理系统
-  - 在sdk/timeout_manager.go中实现超时管理器
-  - 实现ProcessTimeouts方法的完全自治逻辑
+- [x] 5.2 实现SDK内完全独立的超时处理系统
+  - GameEngine已实现ProcessTimeouts方法的完全自治逻辑
   - 实现操作超时的自动Pass和连续超时转托管
   - 实现超时事件的自动触发（EventPlayerTimeout）
   - 编写超时处理系统的单元测试
   - _需求: 需求11_
 
-- [ ] 6. 实现后端用户认证系统
+- [x] 6. 实现后端用户认证系统
   - 创建用户注册和登录API
   - 实现JWT token生成和验证
   - 实现用户会话管理
   - _需求: 需求1_
 
-- [ ] 6.1 创建用户认证服务
+- [x] 6.1 创建用户认证服务
   - 在backend/auth/service.go中创建AuthService结构体
   - 实现用户注册逻辑，包括用户名唯一性验证
   - 实现用户登录验证和JWT token生成
@@ -133,20 +131,20 @@
   - 编写认证服务的单元测试
   - _需求: 需求1_
 
-- [ ] 6.2 创建认证API端点
+- [x] 6.2 创建认证API端点
   - 在backend/handlers/auth.go中实现注册、登录、登出的HTTP处理器
   - 实现JWT中间件用于保护需要认证的API
   - 实现错误处理和响应格式标准化
   - 编写API端点的集成测试
   - _需求: 需求1_
 
-- [ ] 7. 实现房间管理系统
+- [x] 7. 实现房间管理系统
   - 创建房间创建、加入、离开API
   - 实现房间列表查询和分页
   - 实现房间状态管理和玩家座位分配
   - _需求: 需求2, 需求3_
 
-- [ ] 7.1 创建房间管理服务
+- [x] 7.1 创建房间管理服务
   - 在backend/room/service.go中创建RoomService结构体
   - 实现房间创建、玩家加入和离开逻辑
   - 实现房间列表查询，支持状态过滤和分页
@@ -154,7 +152,7 @@
   - 编写房间服务的单元测试
   - _需求: 需求2, 需求3_
 
-- [ ] 7.2 创建房间管理API
+- [x] 7.2 创建房间管理API
   - 在backend/handlers/room.go中实现房间相关的HTTP处理器
   - 实现GET /api/rooms房间列表查询，支持分页参数
   - 实现POST /api/rooms房间创建和POST /api/rooms/:id/join加入房间
@@ -162,13 +160,13 @@
   - 编写房间API的集成测试
   - _需求: 需求2, 需求3_
 
-- [ ] 8. 实现WebSocket连接管理
+- [x] 8. 实现WebSocket连接管理
   - 创建WebSocket连接处理和消息路由
   - 实现房间内消息广播机制
   - 实现连接断开和重连处理
   - _需求: 需求4, 需求10_
 
-- [ ] 8.1 创建WebSocket管理器
+- [x] 8.1 创建WebSocket管理器
   - 在backend/websocket/manager.go中创建WSManager结构体
   - 实现WebSocket连接的注册、注销和消息路由
   - 实现房间级别的消息广播机制
@@ -176,7 +174,7 @@
   - 编写WebSocket管理器的单元测试
   - _需求: 需求4, 需求10_
 
-- [ ] 8.2 实现WebSocket消息处理
+- [x] 8.2 实现WebSocket消息处理
   - 在backend/websocket/handlers.go中实现各种消息类型的处理器
   - 实现join_room、start_game、play_cards、pass等消息处理
   - 实现消息验证和错误处理
@@ -184,13 +182,13 @@
   - 编写消息处理的集成测试
   - _需求: 需求4, 需求7_
 
-- [ ] 9. 实现纯协调的游戏服务（不含游戏逻辑）
+- [x] 9. 实现纯协调的游戏服务（不含游戏逻辑）
   - 创建完全基于SDK事件系统的游戏协调服务
   - 实现SDK事件到WebSocket消息的转换
   - 确保服务器层不包含任何游戏规则逻辑
   - _需求: 需求4, 需求6, 需求7_
 
-- [ ] 9.1 创建基于SDK事件系统的游戏协调服务
+- [x] 9.1 创建基于SDK事件系统的游戏协调服务
   - 在backend/game/service.go中创建纯协调的GameService
   - 实现SDK GameEngine的创建和事件处理器注册
   - 实现所有玩家操作的直接委托给SDK（不做任何验证或处理）
@@ -198,7 +196,7 @@
   - 编写游戏协调服务的单元测试
   - _需求: 需求4, 需求6, 需求7_
 
-- [ ] 9.2 实现基于SDK事件的状态同步
+- [x] 9.2 实现基于SDK事件的状态同步
   - 实现SDK事件的实时监听和广播机制
   - 实现基于SDK GetPlayerView的玩家视角状态过滤
   - 实现ProcessTimeouts的定时调用和超时事件处理

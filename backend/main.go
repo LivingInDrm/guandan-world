@@ -3,6 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
+
+	"guandan-world/backend/auth"
+	"guandan-world/backend/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,6 +27,13 @@ func main() {
 		}
 		c.Next()
 	})
+
+	// 初始化认证服务
+	authService := auth.NewAuthService("your-secret-key-change-in-production", 24*time.Hour)
+	authHandler := handlers.NewAuthHandler(authService)
+
+	// 注册认证路由
+	authHandler.RegisterRoutes(r)
 
 	// 健康检查接口
 	r.GET("/healthz", func(c *gin.Context) {
