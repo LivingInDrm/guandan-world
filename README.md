@@ -1,254 +1,297 @@
-# 掼蛋世界 (Guandan World)
+# 掼蛋在线游戏 (Guandan Online Game)
 
-一个基于 Go + React 的掼蛋游戏平台，支持实时多人在线对战。
+一个基于Go后端和React前端的在线掼蛋游戏平台，支持实时多人对战、WebSocket通信和完整的游戏管理系统。
 
-## 🏗️ 项目结构
+## 🎮 项目特性
+
+- **完整的掼蛋游戏逻辑**: 基于标准掼蛋规则实现
+- **实时多人对战**: WebSocket支持4人实时游戏
+- **用户认证系统**: JWT认证，安全可靠
+- **房间管理**: 创建、加入、管理游戏房间
+- **断线重连**: 自动托管和重连机制
+- **性能优化**: 消息批处理、增量更新、压缩传输
+- **监控完整**: Prometheus + Grafana + Loki监控栈
+- **容器化部署**: Docker + Docker Compose一键部署
+
+## 🏗️ 系统架构
 
 ```
-guandan-world/
-├── backend/               # Go 后端服务
-│   ├── main.go           # 主服务入口
-│   ├── Dockerfile        # 后端 Docker 配置
-│   └── go.mod            # Go 模块配置
-├── frontend/             # React 前端应用
-│   ├── src/              # 前端源码
-│   ├── Dockerfile        # 前端 Docker 配置
-│   └── package.json      # 前端依赖配置
-├── sdk/                  # 游戏核心逻辑
-│   ├── card.go           # 卡牌结构体和逻辑
-│   ├── card_test.go      # 卡牌测试用例
-│   ├── card_example.go   # 卡牌功能演示
-│   ├── comp.go           # 牌组识别和比较
-│   ├── comp_test.go      # 牌组测试用例
-│   ├── comp_example.go   # 牌组功能演示
-│   └── go.mod            # SDK 模块配置
-├── infra/                # DevOps 相关脚本
-├── .github/workflows/    # GitHub Actions 工作流
-├── docker-compose.yml    # 本地开发环境编排
-└── README.md             # 项目说明
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│     用户        │    │     Nginx       │    │     后端        │
+│   (浏览器)      │◄──►│   (反向代理)    │◄──►│   (Go服务)      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                │                       │
+                                ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│     前端        │    │     Redis       │    │   监控系统      │
+│  (React应用)    │    │    (缓存)       │    │ (Prometheus)    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ## 🚀 快速开始
 
-### 前置要求
+### 环境要求
 
-- Docker 和 Docker Compose
-- Go 1.22+
-- Node.js 18+
+- Docker 20.10+
+- Docker Compose 2.0+
+- 至少 4GB RAM
+- 至少 10GB 磁盘空间
 
-### 一键启动
+### 开发环境部署
 
 ```bash
 # 克隆项目
-git clone https://github.com/LivingInDrm/guandan-world.git
+git clone https://github.com/your-username/guandan-world.git
 cd guandan-world
 
-# 复制环境变量配置
-cp .env.example .env
+# 启动开发环境
+./deploy.sh development deploy
+```
 
-# 启动所有服务
-docker-compose up --build
+### 生产环境部署
+
+```bash
+# 配置环境变量
+cp .env.example .env.production
+# 编辑 .env.production 文件
+
+# 部署生产环境
+./deploy.sh production deploy
 ```
 
 ### 访问应用
 
-- 前端应用：http://localhost:3000
-- 后端 API：http://localhost:8080
-- 健康检查：http://localhost:8080/healthz
+- **游戏前端**: http://localhost:3000
+- **后端API**: http://localhost:8080
+- **监控面板**: http://localhost:3001 (Grafana)
+- **指标监控**: http://localhost:9090 (Prometheus)
 
-## 🧰 技术栈
+## 📁 项目结构
 
-| 组件 | 技术 | 说明 |
-|------|------|------|
-| 后端 | Go + Gin | 高性能 API 服务 |
-| 前端 | React + TypeScript + Vite | 现代前端开发 |
-| 数据库 | PostgreSQL | 用户数据存储 |
-| 缓存 | Redis | 游戏状态缓存 |
-| 容器化 | Docker + Docker Compose | 环境一致性 |
-| CI/CD | GitHub Actions | 自动化构建测试 |
-
-## 🎮 游戏核心模块
-
-### 卡牌系统 (Card)
-
-完整的掼蛋卡牌系统实现，支持：
-
-- **卡牌类型**：普通牌(2-10)、人头牌(J/Q/K/A)、大小王
-- **特殊规则**：级别牌、变化牌（红桃级别牌）
-- **比较逻辑**：牌的大小比较、顺子比较
-- **功能特性**：卡牌克隆、JSON 编码、字符串表示
-
-```go
-// 创建卡牌
-card, err := NewCard(3, "Spade", 2)  // 3 of Spade, 级别为2
-ace, err := NewCard(1, "Heart", 2)   // Ace of Heart
-joker, err := NewCard(16, "Joker", 2) // Red Joker
-
-// 比较卡牌
-if card1.GreaterThan(card2) {
-    fmt.Printf("%s 比 %s 大\n", card1.String(), card2.String())
-}
-
-// 变化牌判断
-if card.IsWildcard() {
-    fmt.Println("这是一张变化牌（红桃级别牌）")
-}
+```
+guandan-world/
+├── backend/                 # Go后端服务
+│   ├── auth/               # 用户认证
+│   ├── room/               # 房间管理
+│   ├── game/               # 游戏服务
+│   ├── websocket/          # WebSocket管理
+│   ├── handlers/           # HTTP处理器
+│   └── integration_tests/  # 集成测试
+├── frontend/               # React前端应用
+│   ├── src/
+│   │   ├── components/     # React组件
+│   │   ├── services/       # API服务
+│   │   ├── store/          # 状态管理
+│   │   └── test/           # 测试文件
+│   └── public/
+├── sdk/                    # 掼蛋游戏引擎
+│   ├── game_engine.go      # 游戏引擎
+│   ├── dealer.go           # 发牌系统
+│   ├── trick.go            # 出牌逻辑
+│   └── result.go           # 结算系统
+├── monitoring/             # 监控配置
+│   ├── prometheus.yml      # Prometheus配置
+│   ├── loki.yml           # 日志聚合配置
+│   └── grafana/           # Grafana面板
+├── nginx/                  # Nginx配置
+├── docker-compose.yml      # 开发环境配置
+├── docker-compose.production.yml  # 生产环境配置
+└── deploy.sh              # 部署脚本
 ```
 
-### 牌组系统 (Comp)
+## 🎯 功能特性
 
-完整的掼蛋牌组识别和比较系统，支持：
+### 游戏功能
 
-- **基础牌型**：单张、对子、三张、葫芦、顺子
-- **特殊牌型**：钢板（连续三张）、钢管（连续对子）、同花顺
-- **炸弹牌型**：4-8张炸弹、王炸
-- **智能识别**：自动识别牌型、处理变化牌、验证合法性
-- **大小比较**：完整的牌型优先级比较
+- ✅ **用户认证**: 注册、登录、JWT认证
+- ✅ **房间大厅**: 房间列表、创建房间、加入房间
+- ✅ **房间等待**: 玩家管理、座位分配、游戏开始
+- ✅ **游戏流程**: 发牌、上贡、出牌、结算
+- ✅ **实时通信**: WebSocket双向通信
+- ✅ **断线托管**: 自动托管、重连恢复
+- ✅ **操作控制**: 超时检测、自动操作
 
-```go
-// 自动识别牌型
-cards := []*Card{card1, card2, card3, card4, card5}
-comp := FromCardList(cards, nil)
+### 技术特性
 
-// 检查牌型
-fmt.Printf("牌型: %v, 有效: %v, 炸弹: %v\n", 
-    comp.GetType(), comp.IsValid(), comp.IsBomb())
+- ✅ **高性能**: 消息优化、批处理、压缩
+- ✅ **高可用**: 健康检查、自动重启、负载均衡
+- ✅ **可观测**: 完整监控、日志聚合、告警
+- ✅ **安全性**: HTTPS、限流、输入验证
+- ✅ **可扩展**: 微服务架构、容器化部署
 
-// 比较牌组
-if comp1.GreaterThan(comp2) {
-    fmt.Printf("%s 压过 %s\n", comp1.String(), comp2.String())
-}
+## 🧪 测试
 
-// 支持的牌型
-switch comp.GetType() {
-case TypeSingle:       // 单张
-case TypePair:         // 对子
-case TypeTriple:       // 三张
-case TypeStraight:     // 顺子
-case TypeFullHouse:    // 葫芦
-case TypePlate:        // 钢板
-case TypeTube:         // 钢管
-case TypeNaiveBomb:    // 炸弹
-case TypeJokerBomb:    // 王炸
-case TypeStraightFlush: // 同花顺
-}
-```
-
-## 🔧 开发环境
-
-### 本地开发
+### 运行所有测试
 
 ```bash
-# 启动后端服务
-cd backend
-go run main.go
+# 运行综合测试套件
+./test_e2e_comprehensive.sh
 
-# 启动前端服务
-cd frontend
-npm install
-npm run dev
+# 运行单元测试
+./test_e2e_comprehensive.sh unit
 
-# 启动数据库（可选）
-docker-compose up postgres redis
+# 运行集成测试
+./test_e2e_comprehensive.sh integration
+
+# 运行E2E测试
+./test_e2e_comprehensive.sh e2e
 ```
 
-### 运行测试
+### 后端测试
 
 ```bash
-# 后端测试
 cd backend
 go test ./...
+```
 
-# SDK 测试
-cd sdk
-go test ./...
+### 前端测试
 
-# 前端测试
+```bash
 cd frontend
 npm test
 ```
 
-### 构建部署
+## 📊 监控
+
+### 监控指标
+
+- **系统指标**: CPU、内存、磁盘、网络
+- **应用指标**: 响应时间、错误率、吞吐量
+- **业务指标**: 在线用户、活跃游戏、完成率
+
+### 监控面板
+
+访问 http://localhost:3001 查看Grafana监控面板：
+
+- 系统概览
+- 在线用户数
+- 活跃游戏数
+- API响应时间
+- WebSocket连接数
+- 错误率统计
+
+## 🔧 配置
+
+### 环境变量
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `JWT_SECRET` | - | JWT密钥（生产环境必须设置） |
+| `JWT_EXPIRY` | `24h` | JWT过期时间 |
+| `CORS_ORIGINS` | `http://localhost:3000` | 允许的跨域源 |
+| `LOG_LEVEL` | `info` | 日志级别 |
+| `REDIS_PASSWORD` | - | Redis密码 |
+
+### 部署配置
+
+详细的部署配置请参考 [DEPLOYMENT.md](DEPLOYMENT.md)
+
+## 🛠️ 开发
+
+### 本地开发
 
 ```bash
-# 构建 Docker 镜像
-docker-compose build
+# 启动后端
+cd backend
+go run main.go
 
-# 部署到生产环境
-docker-compose -f docker-compose.yml up -d
+# 启动前端
+cd frontend
+npm start
+
+# 启动Redis
+docker run -d -p 6379:6379 redis:alpine
 ```
 
-## 🎮 游戏特性
+### 代码规范
 
-- ✅ 实时多人对战
-- ✅ 完整的掼蛋规则实现
-- ✅ 用户认证系统
-- ✅ 游戏房间管理
-- ✅ 实时聊天功能
-- ✅ 游戏回放功能
-- ✅ 完整的卡牌系统
-- ✅ 智能牌型识别
-- ✅ 变化牌处理
-- ✅ 炸弹优先级判断
+- Go: 使用 `gofmt` 和 `golint`
+- TypeScript: 使用 ESLint 和 Prettier
+- 提交信息: 使用 Conventional Commits
 
-## 📚 API 文档
+## 📈 性能优化
 
-### 健康检查
+### WebSocket优化
 
-```bash
-GET /healthz
+- **消息批处理**: 50ms间隔批量发送
+- **增量更新**: 只发送状态变化
+- **消息压缩**: 大消息自动压缩
+- **连接复用**: 减少连接开销
+
+### 缓存策略
+
+- **静态资源**: 1年缓存
+- **API响应**: 适当缓存
+- **游戏状态**: 内存缓存
+- **用户会话**: Redis缓存
+
+## 🔒 安全
+
+- **HTTPS**: 生产环境强制HTTPS
+- **JWT认证**: 安全的用户认证
+- **输入验证**: 防止注入攻击
+- **限流保护**: API和WebSocket限流
+- **CORS配置**: 跨域请求控制
+
+## 📝 API文档
+
+### 认证接口
+
+```
+POST /api/auth/register  # 用户注册
+POST /api/auth/login     # 用户登录
+POST /api/auth/logout    # 用户登出
+GET  /api/auth/me        # 获取用户信息
 ```
 
-响应：
-```json
-{
-  "status": "pong"
-}
+### 房间接口
+
+```
+GET  /api/rooms          # 获取房间列表
+POST /api/rooms/create   # 创建房间
+POST /api/rooms/join     # 加入房间
+POST /api/rooms/leave    # 离开房间
+POST /api/rooms/:id/start # 开始游戏
 ```
 
-## 🧪 测试覆盖
+### WebSocket事件
 
-### 卡牌系统测试
-- ✅ 卡牌创建与验证
-- ✅ 卡牌比较逻辑
-- ✅ 变化牌判断
-- ✅ 顺子比较
-- ✅ JSON 编码
-- ✅ 克隆与相等判断
+```
+game_prepare    # 游戏准备
+game_begin      # 游戏开始
+player_turn     # 玩家回合
+card_played     # 出牌事件
+game_end        # 游戏结束
+```
 
-### 牌组系统测试
-- ✅ 各种牌型识别
-- ✅ 牌组大小比较
-- ✅ 炸弹优先级逻辑
-- ✅ 变化牌处理
-- ✅ 非法牌组验证
-- ✅ 自动牌型识别
+## 🤝 贡献
 
-## 🎯 牌型优先级
+欢迎贡献代码！请遵循以下步骤：
 
-掼蛋牌型优先级（从高到低）：
-
-1. **王炸** - 最高优先级，压过所有牌型
-2. **同花顺** - 压过除王炸外的所有牌型
-3. **6张以上炸弹** - 压过同花顺
-4. **5张炸弹** - 压过普通牌型，但小于同花顺
-5. **4张炸弹** - 压过普通牌型，但小于同花顺和5张炸弹
-6. **普通牌型** - 相同牌型间比较数值大小
-   - 葫芦、顺子、钢板、钢管、三张、对子、单张
-
-## 🤝 贡献指南
-
-1. Fork 本项目
+1. Fork 项目
 2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
 3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
+5. 打开 Pull Request
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
-## 📞 联系方式
+## 🙏 致谢
 
-- 项目链接：https://github.com/LivingInDrm/guandan-world
-- 问题反馈：https://github.com/LivingInDrm/guandan-world/issues 
+- 感谢所有贡献者
+- 感谢开源社区的支持
+- 特别感谢掼蛋游戏的发明者
+
+## 📞 联系
+
+如有问题或建议，请通过以下方式联系：
+
+- 提交 Issue
+- 发送邮件
+- 加入讨论群
+
+---
+
+**享受掼蛋游戏的乐趣！** 🎉

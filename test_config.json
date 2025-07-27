@@ -1,0 +1,175 @@
+{
+  "test_suites": {
+    "unit_tests": {
+      "backend": {
+        "sdk": {
+          "path": "sdk",
+          "command": "go test -v ./...",
+          "timeout": "30s",
+          "requirements": ["需求4", "需求5", "需求6", "需求7", "需求8", "需求9"]
+        },
+        "auth": {
+          "path": "backend/auth",
+          "command": "go test -v ./...",
+          "timeout": "10s",
+          "requirements": ["需求1"]
+        },
+        "room": {
+          "path": "backend/room",
+          "command": "go test -v ./...",
+          "timeout": "10s",
+          "requirements": ["需求2", "需求3"]
+        },
+        "game": {
+          "path": "backend/game",
+          "command": "go test -v ./...",
+          "timeout": "15s",
+          "requirements": ["需求4", "需求6", "需求7"]
+        },
+        "websocket": {
+          "path": "backend/websocket",
+          "command": "go test -v ./...",
+          "timeout": "10s",
+          "requirements": ["需求4", "需求10"]
+        },
+        "handlers": {
+          "path": "backend/handlers",
+          "command": "go test -v ./...",
+          "timeout": "10s",
+          "requirements": ["需求1", "需求2", "需求3"]
+        }
+      },
+      "frontend": {
+        "components": {
+          "path": "frontend",
+          "command": "npm run test -- --run",
+          "timeout": "60s",
+          "requirements": ["需求1", "需求2", "需求3", "需求6", "需求8"]
+        }
+      }
+    },
+    "integration_tests": {
+      "basic_api": {
+        "path": "backend",
+        "command": "go test -v ./integration_tests/basic_integration_test.go",
+        "timeout": "60s",
+        "requirements": ["需求1", "需求2", "需求3"]
+      },
+      "websocket": {
+        "path": "backend",
+        "command": "go test -v ./integration_tests/websocket_integration_test.go",
+        "timeout": "60s",
+        "requirements": ["需求4", "需求10", "需求11"]
+      },
+      "e2e_comprehensive": {
+        "path": "backend",
+        "command": "go test -v ./integration_tests/e2e_comprehensive_test.go",
+        "timeout": "120s",
+        "requirements": ["需求1", "需求2", "需求3", "需求4", "需求10", "需求11"]
+      }
+    },
+    "e2e_tests": {
+      "frontend_e2e": {
+        "path": "frontend",
+        "command": "npm run test -- --run src/test/e2e.test.tsx",
+        "timeout": "90s",
+        "requirements": ["需求1", "需求2", "需求3", "需求4", "需求10", "需求11"]
+      }
+    },
+    "performance_tests": {
+      "concurrent_users": {
+        "path": "backend",
+        "command": "go test -v -run TestConcurrent ./integration_tests/...",
+        "timeout": "180s",
+        "requirements": ["需求1", "需求2", "需求4", "需求10"]
+      },
+      "api_performance": {
+        "path": "backend",
+        "command": "go test -v -run TestBasicPerformance ./integration_tests/basic_integration_test.go",
+        "timeout": "60s",
+        "requirements": ["需求1", "需求2"]
+      }
+    },
+    "boundary_tests": {
+      "error_handling": {
+        "path": "backend",
+        "command": "go test -v -run TestBoundary ./integration_tests/...",
+        "timeout": "60s",
+        "requirements": ["需求1", "需求2", "需求3", "需求10", "需求11"]
+      },
+      "disconnection": {
+        "path": "backend",
+        "command": "go test -v -run TestRequirement10 ./integration_tests/e2e_comprehensive_test.go",
+        "timeout": "60s",
+        "requirements": ["需求10"]
+      }
+    }
+  },
+  "requirements_mapping": {
+    "需求1": {
+      "name": "用户认证系统",
+      "tests": ["auth", "basic_api", "e2e_comprehensive", "frontend_e2e", "concurrent_users", "error_handling"]
+    },
+    "需求2": {
+      "name": "房间大厅管理",
+      "tests": ["room", "handlers", "basic_api", "e2e_comprehensive", "frontend_e2e", "concurrent_users", "api_performance", "error_handling"]
+    },
+    "需求3": {
+      "name": "房间内等待管理",
+      "tests": ["room", "handlers", "basic_api", "e2e_comprehensive", "frontend_e2e", "error_handling"]
+    },
+    "需求4": {
+      "name": "游戏开始流程",
+      "tests": ["sdk", "game", "websocket", "websocket", "e2e_comprehensive", "frontend_e2e", "concurrent_users"]
+    },
+    "需求5": {
+      "name": "发牌和上贡阶段",
+      "tests": ["sdk"]
+    },
+    "需求6": {
+      "name": "出牌游戏界面",
+      "tests": ["sdk", "game", "components"]
+    },
+    "需求7": {
+      "name": "出牌操作控制",
+      "tests": ["sdk", "game"]
+    },
+    "需求8": {
+      "name": "Deal结算系统",
+      "tests": ["sdk", "components"]
+    },
+    "需求9": {
+      "name": "Match管理系统",
+      "tests": ["sdk"]
+    },
+    "需求10": {
+      "name": "用户断线和托管",
+      "tests": ["websocket", "websocket", "e2e_comprehensive", "frontend_e2e", "concurrent_users", "error_handling", "disconnection"]
+    },
+    "需求11": {
+      "name": "操作时间控制",
+      "tests": ["websocket", "e2e_comprehensive", "frontend_e2e", "error_handling"]
+    }
+  },
+  "test_environment": {
+    "backend_port": 8080,
+    "frontend_port": 3000,
+    "test_timeout": "300s",
+    "max_concurrent_tests": 4,
+    "retry_count": 2
+  },
+  "coverage_targets": {
+    "backend": {
+      "minimum": 80,
+      "target": 90
+    },
+    "frontend": {
+      "minimum": 75,
+      "target": 85
+    },
+    "integration": {
+      "minimum": 70,
+      "target": 80
+    }
+  }
+}

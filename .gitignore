@@ -1,61 +1,89 @@
-# 环境变量
-.env
-.env.local
+# 依赖文件
+node_modules/
+vendor/
 
-# Go
+# 构建输出
+dist/
+build/
 *.exe
-*.exe~
 *.dll
 *.so
 *.dylib
-vendor/
 
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool
+# 测试覆盖率
+coverage/
 *.out
 
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# 日志文件
+logs/
+*.log
 
-# Build artifacts
-backend/server
-frontend/dist/
-frontend/build/
+# 环境变量文件
+.env
+.env.local
+.env.production
+.env.development
 
-# IDE
+# IDE文件
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS generated files
+# 操作系统文件
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Docker
-.dockerignore
+# 临时文件
+tmp/
+temp/
+*.tmp
 
-# Logs
-*.log
-logs/
-
-# Database
+# 数据库文件
 *.db
 *.sqlite
 *.sqlite3
 
-# Temporary files
-tmp/
-temp/ 
+# 备份文件
+backups/
+*.backup
+
+# Docker相关
+.dockerignore
+
+# 监控数据
+data/
+prometheus-data/
+grafana-data/
+loki-data/
+
+# SSL证书
+*.pem
+*.key
+*.crt
+
+# 缓存文件
+.cache/
+*.cache
+
+# 编译文件
+*.o
+*.a
+
+# Go相关
+go.work
+go.work.sum
+
+# Node.js相关
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# React相关
+.eslintcache
+
+# 测试结果
+test-results/
+test_report_*.md

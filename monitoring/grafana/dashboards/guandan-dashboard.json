@@ -1,0 +1,241 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "掼蛋游戏监控面板",
+    "tags": ["guandan", "game", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "系统概览",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"guandan-backend\"}",
+            "legendFormat": "后端服务状态"
+          },
+          {
+            "expr": "up{job=\"nginx\"}",
+            "legendFormat": "Nginx状态"
+          },
+          {
+            "expr": "up{job=\"redis\"}",
+            "legendFormat": "Redis状态"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "在线用户数",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "guandan_online_users_total",
+            "legendFormat": "在线用户"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "用户数",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "活跃游戏数",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "guandan_active_games_total",
+            "legendFormat": "活跃游戏"
+          },
+          {
+            "expr": "guandan_waiting_rooms_total",
+            "legendFormat": "等待房间"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "数量",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "API响应时间",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"guandan-backend\"}[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"guandan-backend\"}[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "响应时间 (秒)",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "WebSocket连接数",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "guandan_websocket_connections_total",
+            "legendFormat": "WebSocket连接"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "连接数",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "错误率",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"guandan-backend\",status=~\"5..\"}[5m]) / rate(http_requests_total{job=\"guandan-backend\"}[5m]) * 100",
+            "legendFormat": "5xx错误率"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"guandan-backend\",status=~\"4..\"}[5m]) / rate(http_requests_total{job=\"guandan-backend\"}[5m]) * 100",
+            "legendFormat": "4xx错误率"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "错误率 (%)",
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 7,
+        "title": "系统资源使用",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "CPU使用率"
+          },
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+            "legendFormat": "内存使用率"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "使用率 (%)",
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 8,
+        "title": "游戏业务指标",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "increase(guandan_games_completed_total[1h])",
+            "legendFormat": "每小时完成游戏数"
+          },
+          {
+            "expr": "increase(guandan_users_registered_total[1h])",
+            "legendFormat": "每小时注册用户数"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "数量",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      },
+      {
+        "id": 9,
+        "title": "Redis性能",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "redis_connected_clients",
+            "legendFormat": "连接客户端数"
+          },
+          {
+            "expr": "rate(redis_commands_processed_total[5m])",
+            "legendFormat": "命令执行速率"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "数量/秒",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32}
+      },
+      {
+        "id": 10,
+        "title": "网络流量",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_bytes_total[5m]) * 8",
+            "legendFormat": "入站流量"
+          },
+          {
+            "expr": "rate(node_network_transmit_bytes_total[5m]) * 8",
+            "legendFormat": "出站流量"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "比特/秒",
+            "min": 0
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}
