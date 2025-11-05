@@ -39,6 +39,8 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+ddd
+dddd
 
 # 数据库文件
 *.db
@@ -87,3 +89,10 @@ pnpm-debug.log*
 # 测试结果
 test-results/
 test_report_*.md
+
+# 测试输出文件
+simulate
+guandan-simulator
+
+# 旧文件/备份文件
+old_doc.md
