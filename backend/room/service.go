@@ -278,6 +278,20 @@ func (s *roomService) LeaveRoom(roomID, playerID string) (*Room, error) {
 		}
 	}
 
+	// Check if game should end due to insufficient players
+	if room.Status == RoomStatusPlaying && room.PlayerCount < 4 {
+		// Game cannot continue with less than 4 players, close room
+		room.Status = RoomStatusClosed
+		// Remove all remaining player mappings
+		for i := 0; i < 4; i++ {
+			if room.Players[i] != nil {
+				delete(s.playerRooms, room.Players[i].ID)
+			}
+		}
+		delete(s.rooms, roomID)
+		return nil, nil // Room closed due to game ending
+	}
+
 	// Update room status
 	if room.PlayerCount < 4 && room.Status == RoomStatusReady {
 		room.Status = RoomStatusWaiting

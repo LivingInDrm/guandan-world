@@ -147,13 +147,13 @@ func (mo *MessageOptimizer) processBatch(playerID string) {
 		return
 	}
 
-	// 创建批量消息
-	batchMsg := &OptimizedMessage{
-		Type:      "batch",
-		Data:      messages,
-		Batch:     true,
-		Timestamp: time.Now(),
-	}
+	// 创建批量消息（暂时未使用，预留给将来的批处理逻辑）
+	// batchMsg := &OptimizedMessage{
+	// 	Type:      "batch",
+	// 	Data:      messages,
+	// 	Batch:     true,
+	// 	Timestamp: time.Now(),
+	// }
 
 	// 这里应该调用实际的发送逻辑
 	// 由于我们在优化器中，这里只是示例
