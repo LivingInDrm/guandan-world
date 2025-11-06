@@ -2,7 +2,6 @@ package integration_tests
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,7 +13,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
+	gorillaws "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/suite"
 
 	"guandan-world/backend/auth"
@@ -44,7 +43,7 @@ type E2ETestUser struct {
 	Username string
 	Password string
 	Token    string
-	Conn     *websocket.Conn
+	Conn     *gorillaws.Conn
 	Messages chan websocket.WSMessage
 	Events   []string
 	mutex    sync.RWMutex
@@ -504,6 +503,7 @@ func (suite *E2EComprehensiveTestSuite) TestRequirement11_OperationTimeControl()
 		// 超时是正常的，因为我们在测试超时机制
 		alice.AddEvent("超时测试完成")
 	}
+	_ = timeoutDetected // 使用变量以避免编译警告
 
 	// 11.2 验证超时机制工作
 	// 注意：由于我们的WebSocket管理器可能没有实现具体的游戏超时逻辑，
@@ -614,7 +614,7 @@ func (suite *E2EComprehensiveTestSuite) TestBoundaryConditionsAndErrorHandling()
 	q.Set("token", "invalid-token")
 	u.RawQuery = q.Encode()
 
-	_, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	_, _, err := gorillaws.DefaultDialer.Dial(u.String(), nil)
 	suite.Error(err, "使用无效token的WebSocket连接应该失败")
 
 	fmt.Println("✅ 边界情况和错误处理测试通过")
@@ -680,7 +680,7 @@ func (suite *E2EComprehensiveTestSuite) connectAllUsersWebSocket() {
 	time.Sleep(500 * time.Millisecond)
 }
 
-func (suite *E2EComprehensiveTestSuite) connectWebSocket(user *E2ETestUser) *websocket.Conn {
+func (suite *E2EComprehensiveTestSuite) connectWebSocket(user *E2ETestUser) *gorillaws.Conn {
 	wsURL := "ws" + strings.TrimPrefix(suite.server.URL, "http") + "/ws"
 	u, err := url.Parse(wsURL)
 	suite.NoError(err)
@@ -689,7 +689,7 @@ func (suite *E2EComprehensiveTestSuite) connectWebSocket(user *E2ETestUser) *web
 	q.Set("token", user.Token)
 	u.RawQuery = q.Encode()
 
-	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, _, err := gorillaws.DefaultDialer.Dial(u.String(), nil)
 	suite.NoError(err, "WebSocket连接应该建立成功")
 
 	return conn
