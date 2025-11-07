@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Card } from '../../types';
+import React, { useCallback } from 'react';
+import type { Card } from '../../types';
 
 interface PlayerHandProps {
   cards: Card[];

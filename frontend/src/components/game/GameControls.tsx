@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card } from '../../types';
+import type { Card } from '../../types';
 
 interface GameControlsProps {
   selectedCards: Card[];

@@ -1,5 +1,6 @@
 import React from 'react';
-import { GameState, PlayerStatus, Player, TrickInfo } from '../../types';
+import type { GameState, Player, TrickInfo } from '../../types';
+import { PlayerStatus } from '../../types';
 
 interface GameBoardProps {
   gameState: GameState;

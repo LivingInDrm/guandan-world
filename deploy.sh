@@ -13,10 +13,25 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置变量
-ENVIRONMENT=${1:-development}
+MODE=${1:-dev}
 PROJECT_NAME="guandan-world"
-DOCKER_COMPOSE_FILE="docker-compose.yml"
-PRODUCTION_COMPOSE_FILE="docker-compose.production.yml"
+
+# 根据模式选择配置文件
+case $MODE in
+    "dev"|"development")
+        MODE="dev"
+        DOCKER_COMPOSE_FILE="docker-compose.dev.yml"
+        ;;
+    "prod"|"production")
+        MODE="prod"
+        DOCKER_COMPOSE_FILE="docker-compose.production.yml"
+        ;;
+    *)
+        echo "错误: 未知模式 '$MODE'"
+        echo "请使用: dev 或 prod"
+        exit 1
+        ;;
+esac
 
 # 日志函数
 log_info() {
@@ -39,27 +54,32 @@ log_error() {
 show_help() {
     echo "掼蛋在线游戏部署脚本"
     echo ""
-    echo "用法: $0 [ENVIRONMENT] [COMMAND]"
+    echo "用法: $0 [MODE] [COMMAND]"
     echo ""
-    echo "环境:"
-    echo "  development  开发环境 (默认)"
-    echo "  production   生产环境"
+    echo "模式:"
+    echo "  dev          开发模式 (默认) - Docker + 热重载"
+    echo "  prod         生产模式 - 优化构建 + 监控栈"
     echo ""
     echo "命令:"
     echo "  deploy       部署应用 (默认)"
     echo "  start        启动服务"
     echo "  stop         停止服务"
     echo "  restart      重启服务"
+    echo "  rebuild      重新构建镜像"
     echo "  logs         查看日志"
     echo "  status       查看状态"
+    echo "  health       健康检查"
     echo "  clean        清理资源"
-    echo "  backup       备份数据"
-    echo "  restore      恢复数据"
+    echo "  backup       备份数据 (仅生产)"
+    echo "  restore      恢复数据 (仅生产)"
     echo ""
     echo "示例:"
-    echo "  $0 development deploy"
-    echo "  $0 production start"
-    echo "  $0 production logs backend"
+    echo "  $0 dev deploy          # 启动开发环境"
+    echo "  $0 dev logs backend    # 查看后端日志"
+    echo "  $0 prod deploy         # 部署生产环境"
+    echo "  $0 prod backup         # 备份生产数据"
+    echo ""
+    echo "重要: 所有服务都在 Docker 中运行，确保环境一致性"
 }
 
 # 检查依赖
@@ -88,25 +108,10 @@ check_dependencies() {
 
 # 设置环境变量
 setup_environment() {
-    log_info "设置 $ENVIRONMENT 环境变量..."
+    log_info "设置 $MODE 模式环境变量..."
 
-    if [ "$ENVIRONMENT" = "production" ]; then
-        DOCKER_COMPOSE_FILE="$PRODUCTION_COMPOSE_FILE"
-        
+    if [ "$MODE" = "prod" ]; then
         # 检查生产环境必需的环境变量
-        required_vars=(
-            "JWT_SECRET"
-            "REDIS_PASSWORD"
-            "GRAFANA_PASSWORD"
-        )
-
-        for var in "${required_vars[@]}"; do
-            if [ -z "${!var}" ]; then
-                log_warning "环境变量 $var 未设置，使用默认值"
-            fi
-        done
-
-        # 创建生产环境配置文件
         if [ ! -f ".env.production" ]; then
             log_info "创建生产环境配置文件..."
             cat > .env.production << EOF
@@ -116,18 +121,16 @@ JWT_EXPIRY=24h
 CORS_ORIGINS=https://yourdomain.com
 LOG_LEVEL=info
 REDIS_PASSWORD=your-redis-password
+POSTGRES_PASSWORD=your-postgres-password
 GRAFANA_PASSWORD=admin123
 REACT_APP_API_URL=https://yourdomain.com
 REACT_APP_WS_URL=wss://yourdomain.com
 EOF
-            log_warning "请编辑 .env.production 文件并设置正确的配置值"
+            log_warning "⚠️  请编辑 .env.production 文件并设置正确的配置值"
+            log_warning "生产环境必须修改所有密码和密钥！"
         fi
     else
-        # 开发环境配置
-        if [ ! -f ".env" ]; then
-            log_info "创建开发环境配置文件..."
-            cp .env.example .env
-        fi
+        log_info "开发模式使用默认配置，无需额外设置"
     fi
 
     log_success "环境变量设置完成"
@@ -135,80 +138,149 @@ EOF
 
 # 构建镜像
 build_images() {
-    log_info "构建Docker镜像..."
+    log_info "构建 $MODE 模式 Docker 镜像..."
 
-    if [ "$ENVIRONMENT" = "production" ]; then
-        # 生产环境构建
+    if [ "$MODE" = "prod" ]; then
+        # 生产环境构建（无缓存，确保最新）
         docker-compose -f $DOCKER_COMPOSE_FILE build --no-cache
     else
-        # 开发环境构建
-        docker-compose build
+        # 开发环境构建（使用缓存，加快速度）
+        docker-compose -f $DOCKER_COMPOSE_FILE build
     fi
 
     log_success "镜像构建完成"
 }
 
+# 重新构建镜像
+rebuild_images() {
+    log_info "重新构建 $MODE 模式镜像..."
+    docker-compose -f $DOCKER_COMPOSE_FILE build --no-cache
+    log_success "镜像重建完成"
+}
+
 # 部署应用
 deploy_application() {
-    log_info "部署 $ENVIRONMENT 环境应用..."
+    log_info "部署 $MODE 模式应用..."
 
     # 创建必要的目录
-    mkdir -p logs/{nginx,backend,frontend}
-    mkdir -p config
-    mkdir -p data/{redis,prometheus,grafana,loki}
+    mkdir -p logs/{backend,frontend}
+    
+    if [ "$MODE" = "prod" ]; then
+        mkdir -p logs/nginx
+        mkdir -p data/{prometheus,grafana,loki}
+        chmod -R 755 data
+    fi
 
-    # 设置权限
     chmod -R 755 logs
-    chmod -R 755 data
 
     # 启动服务
-    if [ "$ENVIRONMENT" = "production" ]; then
-        docker-compose -f $DOCKER_COMPOSE_FILE up -d
-    else
-        docker-compose up -d
+    log_info "启动 Docker 容器..."
+    docker-compose -f $DOCKER_COMPOSE_FILE up -d
+    
+    if [ $? -ne 0 ]; then
+        log_error "Docker Compose 启动失败"
+        return 1
     fi
 
     # 等待服务启动
     log_info "等待服务启动..."
-    sleep 30
+    sleep 5
+    
+    # 检查容器状态
+    check_container_status
+    
+    if [ $? -ne 0 ]; then
+        log_error "容器启动失败，请查看日志"
+        return 1
+    fi
 
     # 健康检查
     check_health
 
-    log_success "$ENVIRONMENT 环境部署完成"
+    log_success "$MODE 模式部署完成"
+}
+
+# 检查容器状态
+check_container_status() {
+    log_info "检查容器状态..."
+    
+    local failed_containers=""
+    local services="backend frontend postgres redis"
+    
+    for service in $services; do
+        local container_name=$(docker-compose -f $DOCKER_COMPOSE_FILE ps -q $service 2>/dev/null)
+        
+        if [ -z "$container_name" ]; then
+            log_warning "$service 容器未找到"
+            continue
+        fi
+        
+        local status=$(docker inspect -f '{{.State.Status}}' $container_name 2>/dev/null)
+        
+        if [ "$status" = "running" ]; then
+            log_success "$service 容器运行中"
+        else
+            log_error "$service 容器状态异常: $status"
+            failed_containers="$failed_containers $service"
+            
+            # 显示容器日志的最后几行
+            log_error "$service 容器日志（最后20行）:"
+            docker logs --tail 20 $container_name 2>&1 | sed 's/^/  /'
+        fi
+    done
+    
+    if [ -n "$failed_containers" ]; then
+        log_error "以下容器启动失败:$failed_containers"
+        log_info "查看完整日志: ./deploy.sh $MODE logs [service-name]"
+        return 1
+    fi
+    
+    return 0
 }
 
 # 健康检查
 check_health() {
     log_info "执行健康检查..."
 
-    services=("backend" "frontend")
-    
-    for service in "${services[@]}"; do
-        if [ "$service" = "backend" ]; then
-            url="http://localhost:8080/healthz"
+    # 后端健康检查
+    log_info "检查后端服务..."
+    for i in {1..10}; do
+        if curl -f -s "http://localhost:8080/healthz" > /dev/null 2>&1; then
+            log_success "后端服务健康"
+            break
         else
-            url="http://localhost:3000"
-        fi
-
-        log_info "检查 $service 服务..."
-        
-        for i in {1..10}; do
-            if curl -f -s "$url" > /dev/null; then
-                log_success "$service 服务健康"
-                break
-            else
-                if [ $i -eq 10 ]; then
-                    log_error "$service 服务健康检查失败"
-                    return 1
-                fi
-                log_info "等待 $service 服务启动... ($i/10)"
-                sleep 5
+            if [ $i -eq 10 ]; then
+                log_error "后端服务健康检查失败"
+                log_info "请查看日志: ./deploy.sh $MODE logs backend"
+                return 1
             fi
-        done
+            log_info "等待后端服务启动... ($i/10)"
+            sleep 3
+        fi
     done
 
-    log_success "所有服务健康检查通过"
+    # 前端健康检查
+    if [ "$MODE" = "dev" ]; then
+        frontend_port=5173
+    else
+        frontend_port=3000
+    fi
+
+    log_info "检查前端服务..."
+    for i in {1..10}; do
+        if curl -f -s "http://localhost:$frontend_port" > /dev/null 2>&1; then
+            log_success "前端服务健康"
+            break
+        else
+            if [ $i -eq 10 ]; then
+                log_warning "前端服务可能未就绪，请手动检查"
+                break
+            fi
+            sleep 3
+        fi
+    done
+
+    log_success "健康检查完成"
 }
 
 # 启动服务
@@ -319,25 +391,41 @@ restore_data() {
 show_deployment_info() {
     log_success "部署完成！"
     echo ""
-    echo "🎮 掼蛋在线游戏已启动"
+    echo "🎮 掼蛋在线游戏 - $MODE 模式"
     echo "================================"
-    echo "前端地址: http://localhost:3000"
-    echo "后端API: http://localhost:8080"
-    echo "WebSocket: ws://localhost:8080/ws"
     
-    if [ "$ENVIRONMENT" = "production" ]; then
+    if [ "$MODE" = "dev" ]; then
+        echo "前端地址: http://localhost:5173 (Vite Dev Server)"
+        echo "后端API: http://localhost:8080"
+        echo "WebSocket: ws://localhost:8080/ws"
+        echo ""
+        echo "✨ 开发模式特性:"
+        echo "  - 代码热重载（修改代码自动生效）"
+        echo "  - 详细的调试日志"
+        echo "  - 直接访问服务端口"
+    else
+        echo "前端地址: http://localhost:3000"
+        echo "后端API: http://localhost:8080"
+        echo "WebSocket: ws://localhost:8080/ws"
         echo ""
         echo "📊 监控面板:"
-        echo "Grafana: http://localhost:3001 (admin/admin123)"
-        echo "Prometheus: http://localhost:9090"
+        echo "  - Grafana: http://localhost:3001"
+        echo "  - Prometheus: http://localhost:9090"
     fi
     
     echo ""
     echo "📋 常用命令:"
-    echo "查看状态: $0 $ENVIRONMENT status"
-    echo "查看日志: $0 $ENVIRONMENT logs [service]"
-    echo "重启服务: $0 $ENVIRONMENT restart"
-    echo "停止服务: $0 $ENVIRONMENT stop"
+    echo "  查看日志: $0 $MODE logs [service]"
+    echo "  查看状态: $0 $MODE status"
+    echo "  重启服务: $0 $MODE restart"
+    echo "  停止服务: $0 $MODE stop"
+    
+    if [ "$MODE" = "dev" ]; then
+        echo "  重新构建: $0 $MODE rebuild"
+    fi
+    
+    echo ""
+    echo "💡 提示: 所有服务都在 Docker 中运行"
 }
 
 # 主函数
@@ -365,19 +453,33 @@ main() {
         "restart")
             restart_services
             ;;
+        "rebuild")
+            rebuild_images
+            ;;
         "logs")
             view_logs "$@"
             ;;
         "status")
             check_status
             ;;
+        "health")
+            check_health
+            ;;
         "clean")
             clean_resources
             ;;
         "backup")
+            if [ "$MODE" != "prod" ]; then
+                log_warning "备份功能仅在生产模式下可用"
+                exit 1
+            fi
             backup_data
             ;;
         "restore")
+            if [ "$MODE" != "prod" ]; then
+                log_warning "恢复功能仅在生产模式下可用"
+                exit 1
+            fi
             restore_data "$@"
             ;;
         *)

@@ -9,7 +9,9 @@ import type {
 } from '../types';
 
 // API configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+// 开发环境使用空字符串（相对路径，通过 Vite 代理）
+// 生产环境通过 VITE_API_BASE_URL 环境变量配置完整 URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 class ApiError extends Error {
   public status: number;
@@ -146,6 +148,53 @@ class ApiClient {
   async startGame(roomId: string): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/rooms/${roomId}/start`, {
       method: 'POST',
+    });
+  }
+
+  // Game APIs
+  async playCards(roomId: string, playerSeat: number, cardIds: string[]): Promise<ApiResponse<void>> {
+    return this.request<void>(`/api/game/driver/play-decision`, {
+      method: 'POST',
+      body: JSON.stringify({
+        room_id: roomId,
+        player_seat: playerSeat,
+        action: 'play',
+        card_ids: cardIds
+      }),
+    });
+  }
+
+  async pass(roomId: string, playerSeat: number): Promise<ApiResponse<void>> {
+    return this.request<void>(`/api/game/driver/play-decision`, {
+      method: 'POST',
+      body: JSON.stringify({
+        room_id: roomId,
+        player_seat: playerSeat,
+        action: 'pass',
+        card_ids: []
+      }),
+    });
+  }
+
+  async selectTribute(roomId: string, playerSeat: number, cardId: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/api/game/driver/tribute-select`, {
+      method: 'POST',
+      body: JSON.stringify({
+        room_id: roomId,
+        player_seat: playerSeat,
+        card_id: cardId
+      }),
+    });
+  }
+
+  async returnTribute(roomId: string, playerSeat: number, cardId: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/api/game/driver/tribute-return`, {
+      method: 'POST',
+      body: JSON.stringify({
+        room_id: roomId,
+        player_seat: playerSeat,
+        card_id: cardId
+      }),
     });
   }
 

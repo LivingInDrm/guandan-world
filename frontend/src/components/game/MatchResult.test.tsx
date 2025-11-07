@@ -26,9 +26,11 @@ const mockMatchResult: MatchResultType = {
 
 describe('MatchResult', () => {
   const mockOnReturnToLobby = vi.fn();
+  const mockOnPlayAgain = vi.fn();
 
   beforeEach(() => {
     mockOnReturnToLobby.mockClear();
+    mockOnPlayAgain.mockClear();
   });
 
   it('renders match result correctly', () => {
@@ -36,6 +38,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={mockMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -52,6 +55,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={mockMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -71,6 +75,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={mockMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -90,6 +95,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={mockMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -106,6 +112,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={mockMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -128,6 +135,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={mockMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -153,6 +161,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={team1WinResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -173,6 +182,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={longMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -189,6 +199,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={differentLevelsResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -204,6 +215,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={mockMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -219,6 +231,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={mockMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -253,6 +266,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={quickMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 
@@ -272,6 +286,7 @@ describe('MatchResult', () => {
       <MatchResult
         matchResult={customMatchResult}
         onReturnToLobby={mockOnReturnToLobby}
+        onPlayAgain={mockOnPlayAgain}
       />
     );
 

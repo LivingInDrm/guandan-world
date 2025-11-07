@@ -79,6 +79,7 @@ describe('TributePhase', () => {
           tributePhase={immuneTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -106,6 +107,7 @@ describe('TributePhase', () => {
           tributePhase={normalTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -133,6 +135,7 @@ describe('TributePhase', () => {
           tributePhase={doubleDownTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -163,6 +166,7 @@ describe('TributePhase', () => {
           tributePhase={selectingTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -184,6 +188,7 @@ describe('TributePhase', () => {
           tributePhase={selectingTributePhase}
           players={mockPlayers}
           currentPlayerSeat={1}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -198,6 +203,7 @@ describe('TributePhase', () => {
           tributePhase={selectingTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -220,6 +226,7 @@ describe('TributePhase', () => {
           tributePhase={selectingTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -249,6 +256,7 @@ describe('TributePhase', () => {
           tributePhase={returningTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -264,6 +272,7 @@ describe('TributePhase', () => {
           tributePhase={returningTributePhase}
           players={mockPlayers}
           currentPlayerSeat={1}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -292,6 +301,7 @@ describe('TributePhase', () => {
           tributePhase={finishedTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -328,6 +338,7 @@ describe('TributePhase', () => {
           }}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -354,6 +365,7 @@ describe('TributePhase', () => {
           }}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -382,6 +394,7 @@ describe('TributePhase', () => {
           tributePhase={waitingTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -410,6 +423,7 @@ describe('TributePhase', () => {
           tributePhase={basicTributePhase}
           players={mockPlayers}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />
@@ -443,6 +457,7 @@ describe('TributePhase', () => {
           tributePhase={tributePhase}
           players={playersWithNull}
           currentPlayerSeat={0}
+          playerHand={[]}
           onSelectTribute={mockOnSelectTribute}
           onReturnTribute={mockOnReturnTribute}
         />

@@ -1,5 +1,6 @@
 import React from 'react';
-import { DealResult as DealResultType, Player, VictoryType } from '../../types';
+import type { DealResult as DealResultType, Player } from '../../types';
+import { VictoryType } from '../../types';
 
 interface DealResultProps {
   dealResult: DealResultType;
@@ -239,7 +240,7 @@ const DealResult: React.FC<DealResultProps> = ({
             onClick={onExit}
             className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
           >
-            {isMatchFinished ? '返回大厅' : '退出房间'}
+            返回大厅
           </button>
         </div>
       </div>

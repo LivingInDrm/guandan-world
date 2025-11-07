@@ -161,7 +161,8 @@ const RoomWaiting: React.FC<RoomWaitingProps> = ({
       } else {
         // Use game service which handles both API and WebSocket
         await gameService.leaveRoom(room.id);
-        navigate('/lobby');
+        // Navigate to lobby with a flag to trigger refresh
+        navigate('/lobby', { state: { shouldRefresh: true } });
       }
     } catch (error) {
       console.error('Failed to leave room:', error);
@@ -172,7 +173,7 @@ const RoomWaiting: React.FC<RoomWaitingProps> = ({
   };
 
   const renderPlayerSeat = (seatIndex: number) => {
-    const player = room?.players[seatIndex] || null;
+    const player = room?.players?.[seatIndex] || null;
     const isEmpty = !player;
     const isCurrentUser = player?.id === user?.id;
     const isOwner = player?.id === room?.owner;
@@ -238,7 +239,7 @@ const RoomWaiting: React.FC<RoomWaitingProps> = ({
   };
 
   const getPlayerCount = () => {
-    return room?.players.filter(p => p !== null).length || 0;
+    return room?.players?.filter(p => p !== null).length || 0;
   };
 
   const isRoomOwner = () => {

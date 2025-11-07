@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import type { 
   TributePhase as TributePhaseType, 
-  TributeStatus, 
-  TributeAction, 
-  TributeActionType,
   Card, 
   Player 
 } from '../../types';
+import { TributeStatus } from '../../types';
 
 interface TributePhaseProps {
   tributePhase: TributePhaseType;
   players: (Player | null)[];
   currentPlayerSeat: number;
+  playerHand: Card[];
   onSelectTribute: (cardId: string) => void;
   onReturnTribute: (cardId: string) => void;
 }
@@ -261,7 +260,6 @@ const PoolSelection: React.FC<PoolSelectionProps> = ({
 interface ReturnTributeProps {
   tributePhase: TributePhaseType;
   currentPlayerSeat: number;
-  players: (Player | null)[];
   playerHand: Card[];
   onReturnCard: (cardId: string) => void;
 }
@@ -269,7 +267,6 @@ interface ReturnTributeProps {
 const ReturnTribute: React.FC<ReturnTributeProps> = ({
   tributePhase,
   currentPlayerSeat,
-  players,
   playerHand,
   onReturnCard
 }) => {
@@ -343,7 +340,7 @@ const TributeResultDisplay: React.FC<TributeResultDisplayProps> = ({ tributePhas
   };
 
   const renderTributeResults = () => {
-    const results: JSX.Element[] = [];
+    const results: React.ReactElement[] = [];
 
     // Show tribute cards
     Object.entries(tributePhase.tribute_cards).forEach(([giver, card]) => {
@@ -397,6 +394,7 @@ const TributePhase: React.FC<TributePhaseProps> = ({
   tributePhase,
   players,
   currentPlayerSeat,
+  playerHand,
   onSelectTribute,
   onReturnTribute
 }) => {
@@ -433,8 +431,7 @@ const TributePhase: React.FC<TributePhaseProps> = ({
           <ReturnTribute
             tributePhase={tributePhase}
             currentPlayerSeat={currentPlayerSeat}
-            players={players}
-            playerHand={[]} // This would need to be passed from parent
+            playerHand={playerHand}
             onReturnCard={onReturnTribute}
           />
         );

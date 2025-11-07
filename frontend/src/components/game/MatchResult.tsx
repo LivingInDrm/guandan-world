@@ -1,23 +1,20 @@
 import React from 'react';
-import { MatchResult as MatchResultType, Player } from '../../types';
+import type { MatchResult as MatchResultType, Player } from '../../types';
 
 interface MatchResultProps {
   matchResult: MatchResultType;
   onReturnToLobby: () => void;
+  onPlayAgain: () => void;
 }
 
 const MatchResult: React.FC<MatchResultProps> = ({
   matchResult,
-  onReturnToLobby
+  onReturnToLobby,
+  onPlayAgain
 }) => {
   // Helper function to get team for player
   const getTeamForPlayer = (playerSeat: number): number => {
     return playerSeat % 2; // Team 0: seats 0,2; Team 1: seats 1,3
-  };
-
-  // Helper function to get player by seat
-  const getPlayerBySeat = (seat: number): Player | undefined => {
-    return matchResult.players.find(p => p.seat === seat);
   };
 
   // Group players by team
@@ -192,8 +189,14 @@ const MatchResult: React.FC<MatchResultProps> = ({
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="flex justify-center">
+        {/* Action Buttons */}
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={onPlayAgain}
+            className="px-8 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-lg"
+          >
+            再来一局
+          </button>
           <button
             onClick={onReturnToLobby}
             className="px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"

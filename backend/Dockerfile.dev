@@ -1,0 +1,33 @@
+# 开发环境 Dockerfile - 支持热重载
+FROM golang:1.23-alpine
+
+# 设置环境变量允许 Go 自动下载所需工具链
+ENV GOTOOLCHAIN=auto
+
+# 安装开发工具
+RUN apk add --no-cache git
+
+# 安装 air (Go 热重载工具) - 使用较早版本避免 Go 1.25 要求
+RUN go install github.com/air-verse/air@v1.61.0
+
+WORKDIR /workspace
+
+# 复制 go.work 和所有模块的 go.mod
+COPY go.work go.work.sum* go.mod* ./
+COPY backend/go.mod backend/go.sum ./backend/
+COPY sdk/go.mod ./sdk/
+COPY ai/go.mod* ./ai/
+COPY simulator/go.mod* ./simulator/
+
+# 下载依赖
+RUN cd backend && go mod download
+
+# 工作目录将通过 docker-compose 设置
+WORKDIR /workspace/backend
+
+# 暴露端口
+EXPOSE 8080
+
+# 使用 air 运行，支持热重载
+CMD ["air", "-c", ".air.toml"]
+

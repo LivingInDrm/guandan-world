@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useRoomStore } from '../../store/roomStore';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import RoomList from './RoomList';
 import CreateRoomModal from './CreateRoomModal';
-import type { RoomInfo } from '../../types';
 
 const RoomLobby: React.FC = () => {
   const { user } = useAuthStore();
+  const location = useLocation();
+  const navigate = useNavigate();
   const {
     roomList,
     totalCount,
@@ -61,9 +63,8 @@ const RoomLobby: React.FC = () => {
       const response = await apiClient.createRoom();
       if (response.success && response.data) {
         setShowCreateModal(false);
-        // Refresh room list to show the new room
-        await loadRoomList(1);
-        setPage(1);
+        // Navigate to the game page
+        navigate(`/game/${response.data.id}`);
       } else {
         setError(response.error || '创建房间失败');
       }
@@ -80,10 +81,9 @@ const RoomLobby: React.FC = () => {
     try {
       const response = await apiClient.joinRoom(roomId);
       if (response.success) {
-        // Room join successful, the user will be redirected by the backend
-        // or we can navigate to the room waiting page
+        // Navigate to the game page
         console.log('Successfully joined room:', roomId);
-        // TODO: Navigate to room waiting page
+        navigate(`/game/${roomId}`);
       } else {
         setError(response.error || '加入房间失败');
       }
@@ -111,6 +111,16 @@ const RoomLobby: React.FC = () => {
       };
     }
   }, [user]);
+
+  // Refresh room list when returning from room page with shouldRefresh flag
+  useEffect(() => {
+    const state = location.state as { shouldRefresh?: boolean } | null;
+    if (state?.shouldRefresh) {
+      loadRoomList();
+      // Clear the state to prevent refresh on subsequent renders
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // Cleanup interval on unmount
   useEffect(() => {

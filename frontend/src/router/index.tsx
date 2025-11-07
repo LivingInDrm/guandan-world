@@ -1,10 +1,9 @@
-import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import LoginPage from '../components/auth/LoginPage';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import RoomLobby from '../components/lobby/RoomLobby';
-import RoomWaiting from '../components/room/RoomWaiting';
+import GamePage from '../components/game/GamePage';
 
 export const router = createBrowserRouter([
   {
@@ -28,10 +27,10 @@ export const router = createBrowserRouter([
         )
       },
       {
-        path: 'room/:roomId',
+        path: 'game/:roomId',
         element: (
           <ProtectedRoute>
-            <RoomWaiting />
+            <GamePage />
           </ProtectedRoute>
         )
       }

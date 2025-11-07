@@ -1,0 +1,95 @@
+# 开发环境配置 - 所有服务都在 Docker 中运行，支持热重载
+
+services:
+  # 前端开发服务
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"  # Vite dev server
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # 避免覆盖 node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8080
+      - VITE_WS_URL=ws://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - guandan-network
+    stdin_open: true
+    tty: true
+
+  # 后端开发服务
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/workspace
+      - /workspace/backend/tmp  # air 临时目录
+    working_dir: /workspace/backend
+    environment:
+      - GIN_MODE=debug
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=guandan
+      - DB_USER=guandan
+      - DB_PASSWORD=guandan_dev
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=dev-secret-key-change-in-production
+      - LOG_LEVEL=debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - guandan-network
+
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: guandan
+      POSTGRES_PASSWORD: guandan_dev
+      POSTGRES_DB: guandan
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U guandan"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - guandan-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - guandan-network
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  guandan-network:
+    driver: bridge
+

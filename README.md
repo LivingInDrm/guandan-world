@@ -32,10 +32,19 @@
 
 ### 环境要求
 
+**只需要 Docker！**
 - Docker 20.10+
 - Docker Compose 2.0+
 - 至少 4GB RAM
 - 至少 10GB 磁盘空间
+
+**无需安装：**
+- ❌ Go
+- ❌ Node.js
+- ❌ Redis
+- ❌ PostgreSQL
+
+所有服务都在 Docker 中运行，确保环境一致性！
 
 ### 开发环境部署
 
@@ -44,27 +53,44 @@
 git clone https://github.com/your-username/guandan-world.git
 cd guandan-world
 
-# 启动开发环境
-./deploy.sh development deploy
+# 启动开发环境（支持代码热重载）
+./deploy.sh dev deploy
+
+# 访问应用
+# 前端: http://localhost:5173 (Vite Dev Server)
+# 后端: http://localhost:8080
 ```
+
+**开发模式特性：**
+- ✅ 代码热重载（修改代码自动生效）
+- ✅ 本地代码挂载到容器
+- ✅ 详细的调试日志
+- ✅ 所有服务都在 Docker 中
 
 ### 生产环境部署
 
 ```bash
 # 配置环境变量
-cp .env.example .env.production
-# 编辑 .env.production 文件
+# 编辑 .env.production 文件（首次运行会自动创建）
 
 # 部署生产环境
-./deploy.sh production deploy
+./deploy.sh prod deploy
+
+# 访问应用
+# 前端: http://localhost:3000
+# 后端: http://localhost:8080
+# 监控: http://localhost:3001 (Grafana)
 ```
 
-### 访问应用
+### 访问地址
 
-- **游戏前端**: http://localhost:3000
-- **后端API**: http://localhost:8080
-- **监控面板**: http://localhost:3001 (Grafana)
-- **指标监控**: http://localhost:9090 (Prometheus)
+| 服务 | 开发模式 | 生产模式 |
+|------|---------|---------|
+| 前端 | http://localhost:5173 | http://localhost:3000 |
+| 后端 API | http://localhost:8080 | http://localhost:8080 |
+| WebSocket | ws://localhost:8080/ws | ws://localhost:8080/ws |
+| Grafana | - | http://localhost:3001 |
+| Prometheus | - | http://localhost:9090 |
 
 ## 📁 项目结构
 
@@ -182,25 +208,48 @@ npm test
 | `LOG_LEVEL` | `info` | 日志级别 |
 | `REDIS_PASSWORD` | - | Redis密码 |
 
-### 部署配置
+### 详细文档
 
-详细的部署配置请参考 [DEPLOYMENT.md](DEPLOYMENT.md)
+- [DEPLOYMENT.md](DEPLOYMENT.md) - 完整部署文档
 
 ## 🛠️ 开发
 
-### 本地开发
+### 开发工作流
 
 ```bash
-# 启动后端
-cd backend
-go run main.go
+# 1. 启动开发环境
+./deploy.sh dev deploy
 
-# 启动前端
-cd frontend
-npm start
+# 2. 修改代码（自动热重载）
+# - 后端代码: backend/*.go → Air 自动重启
+# - 前端代码: frontend/src/* → Vite HMR
 
-# 启动Redis
-docker run -d -p 6379:6379 redis:alpine
+# 3. 查看日志
+./deploy.sh dev logs backend  # 后端日志
+./deploy.sh dev logs frontend # 前端日志
+
+# 4. 重启服务
+./deploy.sh dev restart
+
+# 5. 停止服务
+./deploy.sh dev stop
+```
+
+### 常用命令
+
+```bash
+# 部署管理
+./deploy.sh dev deploy    # 首次部署
+./deploy.sh dev start      # 启动服务
+./deploy.sh dev stop       # 停止服务
+./deploy.sh dev restart    # 重启服务
+./deploy.sh dev rebuild    # 重新构建镜像
+
+# 日志和调试
+./deploy.sh dev logs       # 查看所有日志
+./deploy.sh dev logs -f    # 实时跟踪日志
+./deploy.sh dev status     # 查看服务状态
+./deploy.sh dev health     # 健康检查
 ```
 
 ### 代码规范
@@ -208,6 +257,13 @@ docker run -d -p 6379:6379 redis:alpine
 - Go: 使用 `gofmt` 和 `golint`
 - TypeScript: 使用 ESLint 和 Prettier
 - 提交信息: 使用 Conventional Commits
+
+### 为什么所有服务都在 Docker 中？
+
+✅ **环境一致性**: 开发环境 = 生产环境  
+✅ **快速上手**: 新成员只需一条命令  
+✅ **依赖隔离**: 不污染本地环境  
+✅ **问题重现**: 避免"在我机器上能运行"
 
 ## 📈 性能优化
 

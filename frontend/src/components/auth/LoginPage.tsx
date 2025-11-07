@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { apiClient } from '../../services/api';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 

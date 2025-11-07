@@ -67,8 +67,8 @@ func main() {
 			roomRoutes := protected.Group("/rooms")
 			{
 				roomRoutes.POST("/create", roomHandler.CreateRoom)
-				roomRoutes.POST("/join", roomHandler.JoinRoom)
-				roomRoutes.POST("/leave", roomHandler.LeaveRoom)
+				roomRoutes.POST("/:id/join", roomHandler.JoinRoom)
+				roomRoutes.POST("/:id/leave", roomHandler.LeaveRoom)
 				roomRoutes.GET("/", roomHandler.GetRooms)
 				roomRoutes.GET("/:id", roomHandler.GetRoom)
 				roomRoutes.POST("/:id/start", roomHandler.StartGame)
@@ -95,14 +95,14 @@ func main() {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "token required"})
 			return
 		}
-		
+
 		// Validate token and get user
 		user, err := authService.ValidateToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return
 		}
-		
+
 		// Pass user ID to WebSocket handler
 		if err := wsManager.HandleWebSocket(c.Writer, c.Request, user.ID); err != nil {
 			log.Printf("WebSocket error: %v", err)

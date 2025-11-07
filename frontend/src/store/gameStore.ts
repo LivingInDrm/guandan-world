@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { WSMessage } from '../types';
+import type { WSMessage, Card, DealResult, MatchResult, TributePhase } from '../types';
 
 interface GameState {
   isInGame: boolean;
@@ -10,6 +10,11 @@ interface GameState {
   lastMessage: WSMessage | null;
   isConnected: boolean;
   error: string | null;
+  currentPhase: string;
+  selectedCards: Card[];
+  dealResult: DealResult | null;
+  matchResult: MatchResult | null;
+  tributeInfo: TributePhase | null;
 }
 
 interface GameActions {
@@ -23,6 +28,11 @@ interface GameActions {
   setError: (error: string | null) => void;
   clearError: () => void;
   reset: () => void;
+  setCurrentPhase: (phase: string) => void;
+  setSelectedCards: (cards: Card[]) => void;
+  setDealResult: (result: DealResult | null) => void;
+  setMatchResult: (result: MatchResult | null) => void;
+  setTributeInfo: (info: TributePhase | null) => void;
 }
 
 type GameStore = GameState & GameActions;
@@ -35,7 +45,12 @@ const initialState: GameState = {
   countdown: null,
   lastMessage: null,
   isConnected: false,
-  error: null
+  error: null,
+  currentPhase: 'waiting_players',
+  selectedCards: [],
+  dealResult: null,
+  matchResult: null,
+  tributeInfo: null
 };
 
 export const useGameStore = create<GameStore>((set) => ({
@@ -59,6 +74,16 @@ export const useGameStore = create<GameStore>((set) => ({
   setError: (error: string | null) => set({ error }),
   
   clearError: () => set({ error: null }),
+  
+  setCurrentPhase: (phase: string) => set({ currentPhase: phase }),
+  
+  setSelectedCards: (cards: Card[]) => set({ selectedCards: cards }),
+  
+  setDealResult: (result: DealResult | null) => set({ dealResult: result }),
+  
+  setMatchResult: (result: MatchResult | null) => set({ matchResult: result }),
+  
+  setTributeInfo: (info: TributePhase | null) => set({ tributeInfo: info }),
   
   reset: () => set(initialState)
 }));
