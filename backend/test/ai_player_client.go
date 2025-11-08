@@ -414,6 +414,24 @@ func (c *AIPlayerClient) handlePlayDecisionRequest(data map[string]interface{}) 
 	// 使用AI算法获取决策
 	selectedCards := c.aiAlgorithm.SelectCardsToPlay(hand, trickInfo)
 
+	// 安全检查：如果是首出但算法返回空结果，强制出最小的牌
+	if isLeader && len(selectedCards) == 0 {
+		c.log("WARNING: AI algorithm returned no cards for trick leader, forcing smallest card")
+		if len(hand) > 0 {
+			// 找到最小的牌
+			smallest := hand[0]
+			for _, card := range hand[1:] {
+				if !card.GreaterThan(smallest) {
+					smallest = card
+				}
+			}
+			selectedCards = []*sdk.Card{smallest}
+		} else {
+			c.log("ERROR: No cards in hand!")
+			return
+		}
+	}
+
 	// 构建决策
 	var action string
 	var cardIDs []string

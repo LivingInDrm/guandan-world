@@ -51,6 +51,11 @@ func (algo *SmartAutoPlayAlgorithm) SelectCardsToPlay(hand []*sdk.Card, trickInf
 
 // selectBestFirstPlay 智能选择最佳首出牌型
 func (algo *SmartAutoPlayAlgorithm) selectBestFirstPlay(hand []*sdk.Card) []*sdk.Card {
+	// 确保手牌不为空
+	if len(hand) == 0 {
+		return nil
+	}
+	
 	// 1. 识别所有可能的牌组（除单牌外）
 	groups := algo.identifyAllPossibleGroups(hand)
 	
@@ -63,12 +68,35 @@ func (algo *SmartAutoPlayAlgorithm) selectBestFirstPlay(hand []*sdk.Card) []*sdk
 	// 4. 选择评分最高的牌组
 	bestGroup := algo.selectBestGroup(groups)
 	
-	// 5. 如果没有找到合适的牌组，返回最小的单牌
-	if bestGroup == nil {
-		return []*sdk.Card{algo.findSmallestCard(hand)}
+	// 5. 如果找到了评分为正的牌组，返回它
+	if bestGroup != nil && bestGroup.Score > 0 {
+		return bestGroup.Cards
 	}
 	
-	return bestGroup.Cards
+	// 6. 如果所有牌组评分都不为正，但作为首出必须出牌
+	// 选择评分最高的牌组（即使是负分）或最小单牌
+	if len(groups) > 0 {
+		// 在所有牌组中选择评分最高的
+		best := groups[0]
+		for _, group := range groups[1:] {
+			if group.Score > best.Score {
+				best = group
+			}
+		}
+		// 如果最好的牌组评分大于单牌的隐含评分（假设为-5），则出这个牌组
+		if best.Score > -5.0 {
+			return best.Cards
+		}
+	}
+	
+	// 7. 最后的兜底方案：返回最小的单牌
+	smallestCard := algo.findSmallestCard(hand)
+	if smallestCard != nil {
+		return []*sdk.Card{smallestCard}
+	}
+	
+	// 8. 理论上不应该到这里，如果到了说明hand为空，返回nil
+	return nil
 }
 
 // identifyAllPossibleGroups 识别所有可能的牌组（除单牌外）

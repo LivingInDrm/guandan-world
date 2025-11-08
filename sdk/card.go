@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -30,6 +31,37 @@ type Card struct {
 // GetID 返回牌的唯一标识符
 func (c *Card) GetID() string {
 	return fmt.Sprintf("%s_%d", c.Color, c.Number)
+}
+
+// GetSuitNumber 将花色字符串转换为数字
+// 返回值: 0=Spade(黑桃), 1=Heart(红桃), 2=Club(梅花), 3=Diamond(方块)
+// Joker 返回 -1
+func (c *Card) GetSuitNumber() int {
+	switch c.Color {
+	case "Spade":
+		return 0
+	case "Heart":
+		return 1
+	case "Club":
+		return 2
+	case "Diamond":
+		return 3
+	case "Joker":
+		return -1
+	default:
+		return -1
+	}
+}
+
+// MarshalJSON 自定义 JSON 序列化方法
+// 将后端的 Card 结构转换为前端期望的格式
+func (c *Card) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"id":       c.GetID(),
+		"suit":     c.GetSuitNumber(),
+		"rank":     c.Number,
+		"is_joker": c.Color == "Joker",
+	})
 }
 
 // NewCard 创建新的牌

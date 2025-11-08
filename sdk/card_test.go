@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -272,5 +273,174 @@ func TestParseCardFromID(t *testing.T) {
 				t.Errorf("ParseCardFromID(%s, %d) should have returned an error", tc.cardID, tc.level)
 			}
 		})
+	}
+}
+
+func TestCardGetSuitNumber(t *testing.T) {
+	tests := []struct {
+		color    string
+		expected int
+	}{
+		{"Spade", 0},
+		{"Heart", 1},
+		{"Club", 2},
+		{"Diamond", 3},
+		{"Joker", -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.color, func(t *testing.T) {
+			card, err := NewCard(5, tt.color, 2)
+			if tt.color == "Joker" {
+				card, err = NewCard(15, "Joker", 2)
+			}
+			if err != nil {
+				t.Fatalf("Failed to create card: %v", err)
+			}
+			
+			result := card.GetSuitNumber()
+			if result != tt.expected {
+				t.Errorf("GetSuitNumber() for %s: expected %d, got %d", tt.color, tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestCardMarshalJSON(t *testing.T) {
+	tests := []struct {
+		name     string
+		number   int
+		color    string
+		level    int
+		expected map[string]interface{}
+	}{
+		{
+			name:   "Regular card - Spade 5",
+			number: 5,
+			color:  "Spade",
+			level:  2,
+			expected: map[string]interface{}{
+				"id":       "Spade_5",
+				"suit":     float64(0), // JSON unmarshals numbers as float64
+				"rank":     float64(5),
+				"is_joker": false,
+			},
+		},
+		{
+			name:   "Regular card - Heart 10",
+			number: 10,
+			color:  "Heart",
+			level:  2,
+			expected: map[string]interface{}{
+				"id":       "Heart_10",
+				"suit":     float64(1),
+				"rank":     float64(10),
+				"is_joker": false,
+			},
+		},
+		{
+			name:   "Small Joker",
+			number: 15,
+			color:  "Joker",
+			level:  2,
+			expected: map[string]interface{}{
+				"id":       "Joker_15",
+				"suit":     float64(-1),
+				"rank":     float64(15),
+				"is_joker": true,
+			},
+		},
+		{
+			name:   "Big Joker",
+			number: 16,
+			color:  "Joker",
+			level:  2,
+			expected: map[string]interface{}{
+				"id":       "Joker_16",
+				"suit":     float64(-1),
+				"rank":     float64(16),
+				"is_joker": true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			card, err := NewCard(tt.number, tt.color, tt.level)
+			if err != nil {
+				t.Fatalf("Failed to create card: %v", err)
+			}
+
+			// Marshal the card to JSON
+			jsonData, err := json.Marshal(card)
+			if err != nil {
+				t.Fatalf("Failed to marshal card to JSON: %v", err)
+			}
+
+			// Unmarshal back to a map to verify structure
+			var result map[string]interface{}
+			if err := json.Unmarshal(jsonData, &result); err != nil {
+				t.Fatalf("Failed to unmarshal JSON: %v", err)
+			}
+
+			// Verify each field
+			for key, expectedValue := range tt.expected {
+				actualValue, exists := result[key]
+				if !exists {
+					t.Errorf("Missing field '%s' in JSON output", key)
+					continue
+				}
+
+				if actualValue != expectedValue {
+					t.Errorf("Field '%s': expected %v (type %T), got %v (type %T)", 
+						key, expectedValue, expectedValue, actualValue, actualValue)
+				}
+			}
+
+			// Verify no extra fields
+			if len(result) != len(tt.expected) {
+				t.Errorf("Expected %d fields, got %d. Result: %v", len(tt.expected), len(result), result)
+			}
+		})
+	}
+}
+
+func TestCardSliceMarshalJSON(t *testing.T) {
+	// Test marshaling a slice of cards (common use case)
+	cards := []*Card{}
+	
+	card1, _ := NewCard(5, "Spade", 2)
+	card2, _ := NewCard(10, "Heart", 2)
+	card3, _ := NewCard(15, "Joker", 2)
+	
+	cards = append(cards, card1, card2, card3)
+
+	jsonData, err := json.Marshal(cards)
+	if err != nil {
+		t.Fatalf("Failed to marshal card slice to JSON: %v", err)
+	}
+
+	// Unmarshal back to verify
+	var result []map[string]interface{}
+	if err := json.Unmarshal(jsonData, &result); err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	if len(result) != 3 {
+		t.Errorf("Expected 3 cards, got %d", len(result))
+	}
+
+	// Verify first card has correct structure
+	if result[0]["id"] != "Spade_5" {
+		t.Errorf("First card id: expected 'Spade_5', got '%v'", result[0]["id"])
+	}
+	if result[0]["suit"] != float64(0) {
+		t.Errorf("First card suit: expected 0, got %v", result[0]["suit"])
+	}
+	if result[0]["rank"] != float64(5) {
+		t.Errorf("First card rank: expected 5, got %v", result[0]["rank"])
+	}
+	if result[0]["is_joker"] != false {
+		t.Errorf("First card is_joker: expected false, got %v", result[0]["is_joker"])
 	}
 }
