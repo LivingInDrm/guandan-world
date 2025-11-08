@@ -742,9 +742,22 @@ func (ge *GameEngine) emitEvent(event *GameEvent) {
 		return
 	}
 
-	// Call all handlers for this event type synchronously to maintain order
+	// Call all handlers for this event type asynchronously to avoid deadlock
+	// Each handler runs in its own goroutine to prevent blocking the engine
+	// This is crucial to avoid deadlock when handlers call back into the engine
 	for _, handler := range handlers {
-		handler(event) // 同步调用确保事件按顺序处理
+		// Create a copy of handler for the goroutine closure
+		h := handler
+		go func() {
+			// Use defer to recover from any panic in the handler
+			defer func() {
+				if r := recover(); r != nil {
+					// Log the panic but don't crash the engine
+					fmt.Printf("Event handler panic for %s: %v\n", event.Type, r)
+				}
+			}()
+			h(event)
+		}()
 	}
 }
 

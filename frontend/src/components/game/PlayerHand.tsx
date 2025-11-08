@@ -119,8 +119,11 @@ const CardGroup: React.FC<CardGroupProps> = ({
     }
   };
 
+  // Ensure cards is an array before spreading
+  const safeCards = Array.isArray(cards) ? cards : [];
+
   // Sort cards by suit priority: hearts > diamonds > clubs > spades
-  const sortedCards = [...cards].sort((a, b) => {
+  const sortedCards = [...safeCards].sort((a, b) => {
     if (a.is_joker && b.is_joker) return b.rank - a.rank; // Big joker first
     if (a.is_joker) return -1;
     if (b.is_joker) return 1;
@@ -148,7 +151,7 @@ const CardGroup: React.FC<CardGroupProps> = ({
   return (
     <div className="flex flex-col items-center mb-4">
       <div className="text-xs text-gray-600 mb-1 font-medium">
-        {getRankText(rank)} ({cards.length})
+        {getRankText(rank)} ({safeCards.length})
       </div>
       <div className="flex items-end">
         {sortedCards.map((card, index) => (
@@ -172,8 +175,11 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
   onCardSelect, 
   disabled = false 
 }) => {
+  // Ensure cards is an array
+  const safeCards = Array.isArray(cards) ? cards : [];
+  
   // Group cards by rank
-  const groupedCards = cards.reduce((groups, card) => {
+  const groupedCards = safeCards.reduce((groups, card) => {
     const rank = card.rank;
     if (!groups[rank]) {
       groups[rank] = [];
@@ -192,14 +198,14 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
   }, [onCardSelect]);
 
   const handleSelectAll = useCallback(() => {
-    onCardSelect([...cards]);
-  }, [cards, onCardSelect]);
+    onCardSelect([...safeCards]);
+  }, [safeCards, onCardSelect]);
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg p-4">
       <div className="flex justify-between items-center mb-3">
         <div className="text-sm font-medium text-gray-700">
-          手牌 ({cards.length}张)
+          手牌 ({safeCards.length}张)
           {selectedCards.length > 0 && (
             <span className="ml-2 text-blue-600">
               已选择 {selectedCards.length}张
@@ -218,7 +224,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
           )}
           <button
             onClick={handleSelectAll}
-            disabled={disabled || cards.length === 0}
+            disabled={disabled || safeCards.length === 0}
             className="text-xs px-2 py-1 bg-blue-200 text-blue-700 rounded hover:bg-blue-300 disabled:opacity-50"
           >
             全选
@@ -231,7 +237,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
           <CardGroup
             key={rank}
             rank={rank}
-            cards={groupedCards[rank]}
+            cards={groupedCards[rank] || []}
             selectedCards={selectedCards}
             onCardSelect={onCardSelect}
             disabled={disabled}
@@ -239,7 +245,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
         ))}
       </div>
       
-      {cards.length === 0 && (
+      {safeCards.length === 0 && (
         <div className="text-center text-gray-500 py-8">
           暂无手牌
         </div>

@@ -254,7 +254,8 @@ class GameService {
 
   private handleGameEvent(message: WSMessage): void {
     console.log('Game event:', message.data);
-    useGameStore.getState().setGameState(message.data);
+    // Note: Do NOT set gameState here - it should only be updated from player_view messages
+    // game_event is just a notification, not the full game state
     useGameStore.getState().setLastMessage(message);
   }
 

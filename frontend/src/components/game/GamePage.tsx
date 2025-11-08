@@ -68,7 +68,11 @@ const GamePage: React.FC = () => {
         if (response.success && response.data) {
           setRoom(response.data);
           setCurrentRoom(response.data);
-          setCurrentPhase(GamePageState.WAITING_PLAYERS);
+          // Only set to WAITING_PLAYERS if we're not already in a game phase
+          // This prevents resetting the phase when room updates during gameplay
+          if (currentPhase === GamePageState.WAITING_PLAYERS || !currentPhase) {
+            setCurrentPhase(GamePageState.WAITING_PLAYERS);
+          }
         } else {
           setRoomError('加载房间信息失败');
           navigate('/lobby');
@@ -87,7 +91,7 @@ const GamePage: React.FC = () => {
     } else if (currentRoom) {
       setRoom(currentRoom);
     }
-  }, [roomId, currentRoom, setCurrentRoom, setRoomError, setLoading, navigate, setCurrentPhase]);
+  }, [roomId, currentRoom, setCurrentRoom, setRoomError, setLoading, navigate, setCurrentPhase, currentPhase]);
 
   // WebSocket 事件监听
   useEffect(() => {
@@ -161,10 +165,8 @@ const GamePage: React.FC = () => {
         case 'player_played':
         case 'player_passed':
         case 'trick_completed':
-          // 更新游戏状态
-          if (payload.game_state) {
-            setGameState(payload.game_state);
-          }
+          // Note: Game state is updated from player_view messages, not from game_events
+          // game_events are just notifications and don't contain full game state
           break;
         default:
           break;
@@ -173,44 +175,112 @@ const GamePage: React.FC = () => {
 
     // 玩家视角
     const handlePlayerView = (message: WSMessage) => {
+      // Get the latest phase value from store instead of using closure
+      const latestPhase = useGameStore.getState().currentPhase;
+      
+      console.log('🎮 [GamePage] Received player_view message', {
+        timestamp: new Date().toISOString(),
+        messageType: message.type,
+        hasData: !!message.data,
+        closurePhase: currentPhase,
+        latestPhase: latestPhase,
+        roomId
+      });
+
       const data = message.data;
-      if (!data) return;
+      if (!data) {
+        console.warn('⚠️ [GamePage] player_view has no data, returning');
+        return;
+      }
 
       // GameDriver 发送的格式：data.player_view 包含实际数据
       const playerView = data.player_view;
       if (!playerView) {
-        console.warn('Received player_view message without player_view data:', data);
+        console.warn('⚠️ [GamePage] Received player_view message without player_view data:', data);
         return;
       }
 
+      console.log('✅ [GamePage] player_view data structure:', {
+        hasPlayerSeat: playerView.player_seat !== undefined,
+        playerSeat: playerView.player_seat ?? data.player_seat,
+        hasPlayerCards: !!playerView.player_cards,
+        playerCardsCount: playerView.player_cards?.length || 0,
+        hasGameState: !!playerView.game_state,
+        hasFilteredState: !!data.filtered_state,
+        eventType: data.event_type
+      });
+
       // 设置玩家座位
-      setPlayerSeat(playerView.player_seat ?? data.player_seat);
+      const seatNumber = playerView.player_seat ?? data.player_seat;
+      console.log('👤 [GamePage] Setting player seat:', seatNumber);
+      setPlayerSeat(seatNumber);
       
       // 设置手牌 - 从 player_cards 字段获取
-      setPlayerHand(playerView.player_cards || []);
+      const cards = playerView.player_cards || [];
+      console.log('🃏 [GamePage] Setting player hand:', {
+        cardCount: cards.length,
+        cards: cards.map(c => ({ id: c.id, suit: c.suit, rank: c.rank }))
+      });
+      setPlayerHand(cards);
       
       // 设置游戏状态
       if (playerView.game_state) {
+        console.log('🎲 [GamePage] Game state received:', {
+          hasCurrentMatch: !!playerView.game_state.current_match,
+          matchStatus: playerView.game_state.current_match?.status,
+          teamLevels: playerView.game_state.current_match?.team_levels,
+          hasCurrentDeal: !!playerView.game_state.current_match?.current_deal,
+          dealStatus: playerView.game_state.current_match?.current_deal?.status,
+          hasTributePhase: playerView.game_state.current_match?.current_deal?.tribute_phase !== null
+        });
+
         setGameState(playerView.game_state);
         
         // 根据当前阶段和游戏状态决定是否切换阶段
-        if (currentPhase === GamePageState.GAME_PREPARE) {
+        // Use latest phase from store to avoid stale closure
+        if (latestPhase === GamePageState.GAME_PREPARE) {
+          console.log('🔄 [GamePage] Currently in GAME_PREPARE, checking phase transition...');
+          
           // 判断是否有上贡阶段
           const currentDeal = playerView.game_state.current_match?.current_deal;
           const hasTribute = currentDeal?.tribute_phase !== null && currentDeal?.tribute_phase !== undefined;
           
+          console.log('📊 [GamePage] Phase transition check:', {
+            hasCurrentDeal: !!currentDeal,
+            hasTribute,
+            tributePhase: currentDeal?.tribute_phase,
+            willTransitionTo: hasTribute ? 'TRIBUTE_PHASE' : 'PLAYING'
+          });
+          
           if (hasTribute) {
+            console.log('🔀 [GamePage] ✅ Transitioning to TRIBUTE_PHASE');
             setCurrentPhase(GamePageState.TRIBUTE_PHASE);
           } else {
+            console.log('🔀 [GamePage] ✅ Transitioning to PLAYING');
             setCurrentPhase(GamePageState.PLAYING);
           }
+        } else {
+          console.log('ℹ️ [GamePage] Not in GAME_PREPARE phase, skipping phase transition. Current phase:', latestPhase);
         }
+      } else {
+        console.warn('⚠️ [GamePage] player_view has no game_state, skipping game state update');
       }
 
       // can_play 和 is_my_turn 可能在 filtered_state 中，也可能在顶层
       const filteredState = data.filtered_state || {};
-      setCanPlay(filteredState.can_play || data.can_play || false);
-      setMyTurn(filteredState.is_my_turn || data.is_my_turn || false);
+      const canPlayValue = filteredState.can_play || data.can_play || false;
+      const isMyTurnValue = filteredState.is_my_turn || data.is_my_turn || false;
+      
+      console.log('🎯 [GamePage] Player action state:', {
+        canPlay: canPlayValue,
+        isMyTurn: isMyTurnValue,
+        source: filteredState.can_play !== undefined ? 'filtered_state' : 'data'
+      });
+      
+      setCanPlay(canPlayValue);
+      setMyTurn(isMyTurnValue);
+
+      console.log('✨ [GamePage] player_view processing completed');
     };
 
     // 注册所有监听器
@@ -550,8 +620,24 @@ const GamePage: React.FC = () => {
   const renderPlaying = () => {
     if (!gameState || !room || playerSeat === null) return null;
 
+    // Ensure we have the minimum required game state data
+    // Backend sends nested structure: gameState.current_match.current_deal
+    const currentMatch = (gameState as any).current_match;
+    const currentDeal = currentMatch?.current_deal;
+    
+    if (!currentMatch || !currentDeal) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">加载游戏数据...</p>
+          </div>
+        </div>
+      );
+    }
+
     const players = room.players;
-    const trickInfo = gameState.current_deal?.current_trick || null;
+    const trickInfo = currentDeal.current_trick || null;
 
     return (
       <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -619,7 +705,7 @@ const GamePage: React.FC = () => {
           <DealResult
             dealResult={dealResult}
             players={room.players.filter(p => p !== null) as Player[]}
-            teamLevels={gameState?.team_levels || [2, 2]}
+            teamLevels={(gameState as any)?.current_match?.team_levels || [2, 2]}
             onContinue={handleContinue}
             onExit={handleReturnToLobby}
             isMatchFinished={false}

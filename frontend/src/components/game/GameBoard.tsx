@@ -119,17 +119,20 @@ const TeamLevelDisplay: React.FC<TeamLevelDisplayProps> = ({ teamLevels, current
     }
   };
 
+  // Provide default values if teamLevels is undefined
+  const safeTeamLevels = teamLevels || [2, 2];
+
   return (
     <div className="absolute top-4 left-4 bg-white border border-gray-300 rounded-lg p-3 shadow-sm">
       <div className="text-sm font-medium mb-2">等级信息</div>
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-600">队伍1 (座位0,2):</span>
-          <span className="font-medium text-blue-600">{getLevelText(teamLevels[0])}</span>
+          <span className="font-medium text-blue-600">{getLevelText(safeTeamLevels[0])}</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-600">队伍2 (座位1,3):</span>
-          <span className="font-medium text-red-600">{getLevelText(teamLevels[1])}</span>
+          <span className="font-medium text-red-600">{getLevelText(safeTeamLevels[1])}</span>
         </div>
         <div className="border-t pt-1 mt-2">
           <div className="flex items-center justify-between">
@@ -168,12 +171,17 @@ const GameBoard: React.FC<GameBoardProps> = ({
     return trickInfo.plays.find(p => p.player_seat === seat) || null;
   };
 
+  // Extract data from nested structure: gameState.current_match
+  const currentMatch = (gameState as any).current_match;
+  const teamLevels = currentMatch?.team_levels || [2, 2];
+  const currentLevel = currentMatch?.current_deal?.level || 2;
+
   return (
     <div className="relative w-full h-96 bg-green-100 border border-gray-300 rounded-lg">
       {/* Team Level Display */}
       <TeamLevelDisplay 
-        teamLevels={gameState.team_levels} 
-        currentLevel={gameState.current_deal.level} 
+        teamLevels={teamLevels} 
+        currentLevel={currentLevel} 
       />
       
       {/* Central Play Area */}
