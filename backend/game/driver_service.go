@@ -68,8 +68,8 @@ func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player
 	provider := NewRoomInputProvider(roomID, ds.wsManager)
 	driver.SetInputProvider(provider)
 
-	// Add WebSocket observer for real-time events
-	observer := NewWebSocketObserver(roomID, ds.wsManager)
+	// Add WebSocket observer for real-time events with engine reference
+	observer := NewWebSocketObserver(roomID, ds.wsManager, engine)
 	driver.AddObserver(observer)
 
 	// Store driver and provider
@@ -564,13 +564,15 @@ func (rip *RoomInputProvider) sendToPlayer(playerSeat int, message *websocket.WS
 type WebSocketObserver struct {
 	roomID    string
 	wsManager WSManagerInterface
+	engine    sdk.GameEngineInterface // Reference to engine for accessing player views
 }
 
 // NewWebSocketObserver creates a new WebSocket observer
-func NewWebSocketObserver(roomID string, wsManager WSManagerInterface) *WebSocketObserver {
+func NewWebSocketObserver(roomID string, wsManager WSManagerInterface, engine sdk.GameEngineInterface) *WebSocketObserver {
 	return &WebSocketObserver{
 		roomID:    roomID,
 		wsManager: wsManager,
+		engine:    engine,
 	}
 }
 
@@ -591,6 +593,23 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 	// Broadcast to all players in the room
 	wso.wsManager.BroadcastToRoom(wso.roomID, wsMessage)
 
+	// Send player-specific views only for key events
+	// These are events where hand cards change or game phase transitions occur
+	switch event.Type {
+	case sdk.EventMatchStarted,      // Match begins
+		sdk.EventDealStarted,        // New deal starts
+		sdk.EventCardsDealt,         // Cards dealt to players
+		sdk.EventTributeGiven,       // Tribute given (hand changes)
+		sdk.EventReturnTribute,      // Return tribute (hand changes)
+		sdk.EventTributeCompleted,   // Tribute phase completed
+		sdk.EventTrickStarted,       // New trick starts
+		sdk.EventPlayerPlayed,       // Player played cards (hand changes)
+		sdk.EventTrickEnded,         // Trick ends
+		sdk.EventDealEnded,          // Deal ends
+		sdk.EventMatchEnded:         // Match ends
+		wso.sendPlayerViews(event.Type)
+	}
+
 	// Log significant events
 	switch event.Type {
 	case sdk.EventMatchStarted, sdk.EventMatchEnded,
@@ -598,4 +617,143 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 		sdk.EventTributeCompleted:
 		log.Printf("Game event %s for room %s", event.Type, wso.roomID)
 	}
+}
+
+// sendPlayerViews sends player-specific game state to each player
+// This implements player view state filtering based on SDK GetPlayerView
+func (wso *WebSocketObserver) sendPlayerViews(eventType sdk.GameEventType) {
+	if wso.engine == nil {
+		return
+	}
+
+	// Send player view to each player (seats 0-3)
+	for playerSeat := 0; playerSeat < 4; playerSeat++ {
+		// Use SDK's GetPlayerView for proper state filtering
+		playerView := wso.engine.GetPlayerView(playerSeat)
+		if playerView == nil {
+			continue
+		}
+
+		// Get player ID from the game state
+		if playerView.GameState != nil &&
+			playerView.GameState.CurrentMatch != nil &&
+			playerSeat < len(playerView.GameState.CurrentMatch.Players) &&
+			playerView.GameState.CurrentMatch.Players[playerSeat] != nil {
+
+			playerID := playerView.GameState.CurrentMatch.Players[playerSeat].ID
+
+			// Create filtered player view message
+			wsMessage := &websocket.WSMessage{
+				Type: websocket.MSG_PLAYER_VIEW,
+				Data: map[string]interface{}{
+					"player_view":    playerView,
+					"event_type":     eventType,
+					"player_seat":    playerSeat,
+					"filtered_state": wso.createFilteredState(playerView, playerSeat),
+				},
+				Timestamp: time.Now(),
+				PlayerID:  playerID,
+			}
+
+			// Send to specific player
+			if err := wso.wsManager.SendToPlayer(playerID, wsMessage); err != nil {
+				log.Printf("Failed to send player view to player %s: %v", playerID, err)
+			}
+		}
+	}
+}
+
+// createFilteredState creates a filtered state object for a specific player
+// This ensures each player only sees information they should have access to
+func (wso *WebSocketObserver) createFilteredState(playerView *sdk.PlayerGameState, playerSeat int) map[string]interface{} {
+	if playerView == nil || playerView.GameState == nil {
+		return map[string]interface{}{}
+	}
+
+	gameState := playerView.GameState
+	filteredState := map[string]interface{}{
+		"player_seat": playerSeat,
+	}
+
+	// Determine if player can play based on game state
+	canPlay := false
+	isMyTurn := false
+	
+	if gameState.CurrentMatch != nil && gameState.CurrentMatch.CurrentDeal != nil {
+		deal := gameState.CurrentMatch.CurrentDeal
+		
+		// Player can play if:
+		// 1. Deal is in playing status
+		// 2. There is an active trick
+		// 3. It's the player's turn
+		if deal.Status == sdk.DealStatusPlaying && deal.CurrentTrick != nil {
+			isMyTurn = deal.CurrentTrick.CurrentTurn == playerSeat
+			canPlay = isMyTurn && len(playerView.PlayerCards) > 0
+		}
+	}
+	
+	filteredState["can_play"] = canPlay
+	filteredState["is_my_turn"] = isMyTurn
+
+	// Add current match info if available
+	if gameState.CurrentMatch != nil {
+		match := gameState.CurrentMatch
+		filteredState["current_match"] = map[string]interface{}{
+			"id":           match.ID,
+			"status":       match.Status,
+			"current_deal": match.CurrentDeal,
+			"team_levels":  match.TeamLevels,
+		}
+
+		// Add player states (filtered)
+		playerStates := make([]map[string]interface{}, len(match.Players))
+		for i, player := range match.Players {
+			if player != nil {
+				playerState := map[string]interface{}{
+					"id":       player.ID,
+					"username": player.Username,
+					"seat":     player.Seat,
+					"online":   player.Online,
+				}
+
+				// Only include hand cards for the current player
+				if i == playerSeat && playerView.PlayerCards != nil {
+					playerState["hand"] = playerView.PlayerCards
+					playerState["hand_count"] = len(playerView.PlayerCards)
+				} else {
+					// For other players, only show card count (not available in Match directly)
+					// Card count will be included in deal-specific data
+					playerState["hand_count"] = 0 // Will be updated from deal data if available
+				}
+
+				playerStates[i] = playerState
+			}
+		}
+		filteredState["players"] = playerStates
+	}
+
+	// Add current deal info if available
+	if gameState.CurrentMatch != nil && gameState.CurrentMatch.CurrentDeal != nil {
+		deal := gameState.CurrentMatch.CurrentDeal
+		filteredState["current_deal"] = map[string]interface{}{
+			"id":            deal.ID,
+			"level":         deal.Level,
+			"status":        deal.Status,
+			"tribute_phase": deal.TributePhase,
+		}
+
+		// Add current trick info if available
+		if deal.CurrentTrick != nil {
+			trick := deal.CurrentTrick
+			filteredState["current_trick"] = map[string]interface{}{
+				"id":           trick.ID,
+				"leader":       trick.Leader,
+				"current_turn": trick.CurrentTurn,
+				"plays":        trick.Plays,
+				"winner":       trick.Winner,
+			}
+		}
+	}
+
+	return filteredState
 }

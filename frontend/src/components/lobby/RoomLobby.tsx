@@ -21,11 +21,40 @@ const RoomLobby: React.FC = () => {
     setLoading,
     setError,
     clearError,
-    setPage
+    setPage,
+    setCurrentRoom
   } = useRoomStore();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [isCheckingRoom, setIsCheckingRoom] = useState(true);
+
+  // Check if user is already in a room
+  const checkUserRoom = async () => {
+    if (!user) {
+      setIsCheckingRoom(false);
+      return;
+    }
+
+    try {
+      const response = await apiClient.getMyRoom();
+      if (response.success && response.data) {
+        // User is already in a room, auto-redirect
+        console.log('User is already in room:', response.data.id);
+        // Set current room before navigation to avoid blank page
+        setCurrentRoom(response.data);
+        navigate(`/game/${response.data.id}`, { replace: true });
+        return;
+      }
+    } catch (err: any) {
+      // 404 means user is not in any room, which is normal
+      if (err.status !== 404) {
+        console.error('Failed to check user room:', err);
+      }
+    } finally {
+      setIsCheckingRoom(false);
+    }
+  };
 
   // Load room list
   const loadRoomList = async (page: number = currentPage) => {
@@ -63,6 +92,8 @@ const RoomLobby: React.FC = () => {
       const response = await apiClient.createRoom();
       if (response.success && response.data) {
         setShowCreateModal(false);
+        // Set current room before navigation to avoid blank page
+        setCurrentRoom(response.data);
         // Navigate to the game page
         navigate(`/game/${response.data.id}`);
       } else {
@@ -80,7 +111,9 @@ const RoomLobby: React.FC = () => {
 
     try {
       const response = await apiClient.joinRoom(roomId);
-      if (response.success) {
+      if (response.success && response.data) {
+        // Set current room before navigation to avoid blank page
+        setCurrentRoom(response.data);
         // Navigate to the game page
         console.log('Successfully joined room:', roomId);
         navigate(`/game/${roomId}`);
@@ -93,9 +126,14 @@ const RoomLobby: React.FC = () => {
     }
   };
 
+  // Check user's room status on mount
+  useEffect(() => {
+    checkUserRoom();
+  }, [user]);
+
   // Auto-refresh room list every 5 seconds
   useEffect(() => {
-    if (user) {
+    if (user && !isCheckingRoom) {
       loadRoomList();
       
       const interval = setInterval(() => {
@@ -110,7 +148,7 @@ const RoomLobby: React.FC = () => {
         }
       };
     }
-  }, [user]);
+  }, [user, isCheckingRoom]);
 
   // Refresh room list when returning from room page with shouldRefresh flag
   useEffect(() => {
@@ -135,6 +173,17 @@ const RoomLobby: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-gray-600">请先登录</p>
+      </div>
+    );
+  }
+
+  if (isCheckingRoom) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">检查房间状态...</p>
+        </div>
       </div>
     );
   }

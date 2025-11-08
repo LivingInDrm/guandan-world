@@ -35,6 +35,11 @@ const (
 	MSG_ERROR       = "error"
 	MSG_PING        = "ping"
 	MSG_PONG        = "pong"
+
+	// Game preparation messages
+	MSG_GAME_PREPARE = "game_prepare"
+	MSG_COUNTDOWN    = "countdown"
+	MSG_GAME_BEGIN   = "game_begin"
 )
 
 // JoinRoomData represents the data for joining a room

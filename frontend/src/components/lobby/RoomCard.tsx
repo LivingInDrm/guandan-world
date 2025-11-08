@@ -48,6 +48,10 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom, currentUserId }) 
     }
   };
 
+  const handleRoomClick = () => {
+    onJoinRoom(room.id);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
       <div className="p-6">
@@ -112,10 +116,10 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom, currentUserId }) 
         <div className="flex justify-end">
           {isUserInRoom ? (
             <button
-              disabled
-              className="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm font-medium cursor-not-allowed"
+              onClick={handleRoomClick}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              已在房间内
+              返回房间
             </button>
           ) : canJoin ? (
             <button

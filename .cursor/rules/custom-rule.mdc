@@ -1,0 +1,5 @@
+
+---
+alwaysApply: true
+---
+需要进行环境的部署和重启时，使用deploy.sh脚本，不要直接操作

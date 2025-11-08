@@ -42,7 +42,7 @@ class GameService {
 
     // Game state messages
     wsClient.on('game_event', this.handleGameEvent.bind(this));
-    wsClient.on('player_view', this.handlePlayerView.bind(this));
+    // Note: player_view is handled directly in GamePage.tsx for better context and state management
 
     // Player management
     wsClient.on('player_timeout', this.handlePlayerTimeout.bind(this));
@@ -258,14 +258,8 @@ class GameService {
     useGameStore.getState().setLastMessage(message);
   }
 
-  private handlePlayerView(message: WSMessage): void {
-    const playerData = message.data;
-    if (playerData) {
-      useGameStore.getState().setPlayerSeat(playerData.seat);
-      useGameStore.getState().setMyTurn(playerData.is_my_turn || false);
-      useGameStore.getState().setGameState(playerData.game_state);
-    }
-  }
+  // Note: handlePlayerView removed - it's handled directly in GamePage.tsx
+  // GamePage has better context for handling player view updates and game phase transitions
 
   private handlePlayerTimeout(message: WSMessage): void {
     console.log('Player timeout:', message.data);

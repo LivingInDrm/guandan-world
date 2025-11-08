@@ -32,40 +32,49 @@
 
 ### 环境要求
 
-**只需要 Docker！**
-- Docker 20.10+
-- Docker Compose 2.0+
+**开发环境：**
+- Docker 20.10+ 和 Docker Compose 2.0+（运行后端）
+- Node.js 18+ 和 npm（运行前端）
 - 至少 4GB RAM
 - 至少 10GB 磁盘空间
 
-**无需安装：**
-- ❌ Go
-- ❌ Node.js
-- ❌ Redis
-- ❌ PostgreSQL
-
-所有服务都在 Docker 中运行，确保环境一致性！
+**生产环境：**
+- Docker 20.10+ 和 Docker Compose 2.0+
+- 至少 4GB RAM
+- 至少 10GB 磁盘空间
 
 ### 开发环境部署
 
+**开发架构：后端Docker + 前端本地运行**
+
+这样做的好处：
+- ✅ 前端热重载更快，无Service Worker干扰
+- ✅ 调试方便，直接使用浏览器DevTools
+- ✅ 后端和数据库隔离在Docker中
+
 ```bash
-# 克隆项目
+# 1. 克隆项目
 git clone https://github.com/your-username/guandan-world.git
 cd guandan-world
 
-# 启动开发环境（支持代码热重载）
+# 2. 启动后端服务（Docker）
 ./deploy.sh dev deploy
 
-# 访问应用
-# 前端: http://localhost:5173 (Vite Dev Server)
+# 3. 在新终端启动前端（本地）
+cd frontend
+npm install      # 首次运行需要
+npm run dev      # 启动Vite开发服务器
+
+# 4. 访问应用
+# 前端: http://localhost:5173 (Vite本地服务)
 # 后端: http://localhost:8080
 ```
 
 **开发模式特性：**
-- ✅ 代码热重载（修改代码自动生效）
-- ✅ 本地代码挂载到容器
+- ✅ 前端本地运行，热重载快速
+- ✅ 后端Docker容器，支持Air热重载
 - ✅ 详细的调试日志
-- ✅ 所有服务都在 Docker 中
+- ✅ Vite自动代理API请求到后端
 
 ### 生产环境部署
 
@@ -86,8 +95,8 @@ cd guandan-world
 
 | 服务 | 开发模式 | 生产模式 |
 |------|---------|---------|
-| 前端 | http://localhost:5173 | http://localhost:3000 |
-| 后端 API | http://localhost:8080 | http://localhost:8080 |
+| 前端 | http://localhost:5173 (本地npm) | http://localhost:3000 (Docker) |
+| 后端 API | http://localhost:8080 (Docker) | http://localhost:8080 (Docker) |
 | WebSocket | ws://localhost:8080/ws | ws://localhost:8080/ws |
 | Grafana | - | http://localhost:3001 |
 | Prometheus | - | http://localhost:9090 |

@@ -14,13 +14,13 @@ export default defineConfig({
     proxy: {
       // 代理所有 /api 请求到后端
       '/api': {
-        target: process.env.VITE_API_URL || 'http://backend:8080',
+        target: process.env.VITE_API_URL || 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },
       // 代理 WebSocket 连接
       '/ws': {
-        target: process.env.VITE_WS_URL || 'ws://backend:8080',
+        target: process.env.VITE_WS_URL || 'ws://localhost:8080',
         ws: true,
         changeOrigin: true,
       }

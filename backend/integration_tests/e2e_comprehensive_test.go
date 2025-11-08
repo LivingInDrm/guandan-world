@@ -118,12 +118,13 @@ func (suite *E2EComprehensiveTestSuite) setupRoutes() {
 	rooms := suite.router.Group("/api/rooms")
 	rooms.Use(authHandler.JWTMiddleware())
 	{
-		rooms.GET("/", roomHandler.GetRooms)
+		rooms.GET("", roomHandler.GetRooms)
 		rooms.POST("/create", roomHandler.CreateRoom)
-		rooms.POST("/join", roomHandler.JoinRoom)
-		rooms.POST("/leave", roomHandler.LeaveRoom)
-		rooms.POST("/:id/start", roomHandler.StartGame)
 		rooms.GET("/my", roomHandler.GetMyRoom)
+		rooms.GET("/:id", roomHandler.GetRoom)
+		rooms.POST("/:id/join", roomHandler.JoinRoom)
+		rooms.POST("/:id/leave", roomHandler.LeaveRoom)
+		rooms.POST("/:id/start", roomHandler.StartGame)
 	}
 
 	// WebSocket路由
@@ -282,11 +283,7 @@ func (suite *E2EComprehensiveTestSuite) TestRequirement2_RoomLobbyManagement() {
 
 	// 2.4 测试其他用户加入房间
 	bob := suite.testUsers[1]
-	joinData := map[string]string{
-		"room_id": roomID,
-	}
-
-	resp = suite.makeRequest("POST", "/api/rooms/join", joinData, bob.Token)
+	resp = suite.makeRequest("POST", fmt.Sprintf("/api/rooms/%s/join", roomID), nil, bob.Token)
 	suite.Equal(http.StatusOK, resp.Code, "加入房间应该成功")
 
 	bob.AddEvent(fmt.Sprintf("加入房间成功: %s", roomID))
@@ -318,11 +315,7 @@ func (suite *E2EComprehensiveTestSuite) TestRequirement3_RoomWaitingManagement()
 	// 让其他3个用户加入房间
 	for i := 1; i < 4; i++ {
 		user := suite.testUsers[i]
-		joinData := map[string]string{
-			"room_id": roomID,
-		}
-
-		resp := suite.makeRequest("POST", "/api/rooms/join", joinData, user.Token)
+		resp := suite.makeRequest("POST", fmt.Sprintf("/api/rooms/%s/join", roomID), nil, user.Token)
 		suite.Equal(http.StatusOK, resp.Code, "用户 %s 加入房间应该成功", user.Username)
 		user.AddEvent(fmt.Sprintf("加入房间: %s", roomID))
 	}
@@ -382,10 +375,7 @@ func (suite *E2EComprehensiveTestSuite) TestRequirement4_GameStartFlow() {
 	// 所有用户加入房间
 	for i := 1; i < 4; i++ {
 		user := suite.testUsers[i]
-		joinData := map[string]string{
-			"room_id": roomID,
-		}
-		suite.makeRequest("POST", "/api/rooms/join", joinData, user.Token)
+		suite.makeRequest("POST", fmt.Sprintf("/api/rooms/%s/join", roomID), nil, user.Token)
 		user.AddEvent(fmt.Sprintf("加入房间: %s", roomID))
 	}
 
@@ -530,32 +520,29 @@ func (suite *E2EComprehensiveTestSuite) TestConcurrentGameScenarios() {
 		go func(roomIndex int) {
 			defer wg.Done()
 
-			// 为每个房间创建独立的用户组
-			roomUsers := make([]*E2ETestUser, 4)
-			for j := 0; j < 4; j++ {
-				username := fmt.Sprintf("room%d_user%d", roomIndex, j)
-				user := suite.createTempUser(username)
-				roomUsers[j] = user
+		// 为每个房间创建独立的用户组
+		roomUsers := make([]*E2ETestUser, 4)
+		for j := 0; j < 4; j++ {
+			username := fmt.Sprintf("room%d_user%d", roomIndex, j)
+			user := suite.createTempUser(username)
+			roomUsers[j] = user
+		}
+
+		// 创建房间
+		roomID := suite.createTestRoom(roomUsers[0])
+
+		// 其他用户加入房间
+		for j := 1; j < 4; j++ {
+			resp := suite.makeRequest("POST", fmt.Sprintf("/api/rooms/%s/join", roomID), nil, roomUsers[j].Token)
+			if resp.Code != http.StatusOK {
+				results <- false
+				return
 			}
+		}
 
-			// 创建房间
-			roomID := suite.createTestRoom(roomUsers[0])
-
-			// 其他用户加入房间
-			for j := 1; j < 4; j++ {
-				joinData := map[string]string{
-					"room_id": roomID,
-				}
-				resp := suite.makeRequest("POST", "/api/rooms/join", joinData, roomUsers[j].Token)
-				if resp.Code != http.StatusOK {
-					results <- false
-					return
-				}
-			}
-
-			// 开始游戏
-			resp := suite.makeRequest("POST", fmt.Sprintf("/api/rooms/%s/start", roomID), nil, roomUsers[0].Token)
-			results <- resp.Code == http.StatusOK
+		// 开始游戏
+		resp := suite.makeRequest("POST", fmt.Sprintf("/api/rooms/%s/start", roomID), nil, roomUsers[0].Token)
+		results <- resp.Code == http.StatusOK
 		}(i)
 	}
 
@@ -586,10 +573,7 @@ func (suite *E2EComprehensiveTestSuite) TestBoundaryConditionsAndErrorHandling()
 	alice := suite.testUsers[0]
 
 	// 1. 测试无效房间ID
-	invalidJoinData := map[string]string{
-		"room_id": "invalid-room-id",
-	}
-	resp := suite.makeRequest("POST", "/api/rooms/join", invalidJoinData, alice.Token)
+	resp := suite.makeRequest("POST", "/api/rooms/invalid-room-id/join", nil, alice.Token)
 	suite.NotEqual(http.StatusOK, resp.Code, "加入无效房间应该失败")
 
 	// 2. 测试无效token

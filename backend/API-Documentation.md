@@ -136,32 +136,54 @@ Authorization: Bearer <token>
   - 409: Player is already in a room
 
 #### 2.2 Join Room
-- **Endpoint**: `POST /api/rooms/join`
+- **Endpoint**: `POST /api/rooms/:id/join`
 - **Description**: Join an existing room
 - **Authentication**: Required
-- **Request Body**:
+- **URL Parameters**:
+  - `id`: Room ID (required)
+- **Request Body**: None
+- **Success Response** (200):
 ```json
 {
-  "room_id": "room_1234567890"  // Required
+  "room": {
+    "id": "room_1234567890",
+    "owner_id": "user_1234567890",
+    "status": "waiting",
+    "created_at": "2024-01-01T00:00:00Z",
+    "players": [...]
+  }
 }
 ```
-- **Success Response** (200): Returns updated room object
 - **Error Responses**:
   - 400: Invalid request
   - 404: Room not found
   - 409: Room is full or not accepting new players
 
 #### 2.3 Leave Room
-- **Endpoint**: `POST /api/rooms/leave`
+- **Endpoint**: `POST /api/rooms/:id/leave`
 - **Description**: Leave current room
 - **Authentication**: Required
-- **Request Body**:
+- **URL Parameters**:
+  - `id`: Room ID (required)
+- **Request Body**: None
+- **Success Response** (200):
 ```json
 {
-  "room_id": "room_1234567890"  // Required
+  "room": {
+    "id": "room_1234567890",
+    "owner_id": "user_1234567890",
+    "status": "waiting",
+    "created_at": "2024-01-01T00:00:00Z",
+    "players": [...]
+  }
 }
 ```
-- **Success Response** (200): Returns updated room object or success message if room was closed
+Or if room was closed:
+```json
+{
+  "message": "Successfully left room (room was closed)"
+}
+```
 - **Error Responses**:
   - 400: Invalid request
   - 404: Room not found
@@ -213,6 +235,34 @@ Authorization: Bearer <token>
   - 403: Not room owner
   - 404: Room not found
   - 409: Room not ready (need 4 players)
+
+#### 2.7 Get My Room
+- **Endpoint**: `GET /api/rooms/my`
+- **Description**: Get the room that the current user is in
+- **Authentication**: Required
+- **Success Response** (200):
+```json
+{
+  "room": {
+    "id": "room_1234567890",
+    "owner_id": "user_1234567890",
+    "status": "waiting",
+    "created_at": "2024-01-01T00:00:00Z",
+    "players": [
+      {
+        "id": "user_1234567890",
+        "username": "testuser",
+        "status": "online",
+        "is_owner": true,
+        "seat": 0
+      }
+    ]
+  }
+}
+```
+- **Error Responses**:
+  - 401: Unauthorized
+  - 404: Player is not in any room
 
 ### 3. Game Control APIs (Driver)
 

@@ -57,7 +57,7 @@ show_help() {
     echo "用法: $0 [MODE] [COMMAND]"
     echo ""
     echo "模式:"
-    echo "  dev          开发模式 (默认) - Docker + 热重载"
+    echo "  dev          开发模式 (默认) - 后端Docker + 前端本地"
     echo "  prod         生产模式 - 优化构建 + 监控栈"
     echo ""
     echo "命令:"
@@ -79,7 +79,9 @@ show_help() {
     echo "  $0 prod deploy         # 部署生产环境"
     echo "  $0 prod backup         # 备份生产数据"
     echo ""
-    echo "重要: 所有服务都在 Docker 中运行，确保环境一致性"
+    echo "重要提示:"
+    echo "  - dev模式: 后端在Docker中，前端需本地运行 (npm run dev)"
+    echo "  - prod模式: 所有服务都在Docker中运行"
 }
 
 # 检查依赖
@@ -259,26 +261,25 @@ check_health() {
         fi
     done
 
-    # 前端健康检查
-    if [ "$MODE" = "dev" ]; then
-        frontend_port=5173
-    else
+    # 前端健康检查（仅生产模式）
+    if [ "$MODE" = "prod" ]; then
         frontend_port=3000
-    fi
-
-    log_info "检查前端服务..."
-    for i in {1..10}; do
-        if curl -f -s "http://localhost:$frontend_port" > /dev/null 2>&1; then
-            log_success "前端服务健康"
-            break
-        else
-            if [ $i -eq 10 ]; then
-                log_warning "前端服务可能未就绪，请手动检查"
+        log_info "检查前端服务..."
+        for i in {1..10}; do
+            if curl -f -s "http://localhost:$frontend_port" > /dev/null 2>&1; then
+                log_success "前端服务健康"
                 break
+            else
+                if [ $i -eq 10 ]; then
+                    log_warning "前端服务可能未就绪，请手动检查"
+                    break
+                fi
+                sleep 3
             fi
-            sleep 3
-        fi
-    done
+        done
+    else
+        log_info "开发模式：前端需要本地运行"
+    fi
 
     log_success "健康检查完成"
 }
@@ -395,12 +396,21 @@ show_deployment_info() {
     echo "================================"
     
     if [ "$MODE" = "dev" ]; then
-        echo "前端地址: http://localhost:5173 (Vite Dev Server)"
-        echo "后端API: http://localhost:8080"
-        echo "WebSocket: ws://localhost:8080/ws"
+        echo "🔧 后端服务 (Docker):"
+        echo "  - API: http://localhost:8080"
+        echo "  - WebSocket: ws://localhost:8080/ws"
+        echo "  - 健康检查: http://localhost:8080/healthz"
+        echo ""
+        echo "💻 前端服务 (本地运行):"
+        echo "  请在新终端中运行:"
+        echo "  $ cd frontend"
+        echo "  $ npm install  (首次运行)"
+        echo "  $ npm run dev"
+        echo "  然后访问: http://localhost:5173"
         echo ""
         echo "✨ 开发模式特性:"
-        echo "  - 代码热重载（修改代码自动生效）"
+        echo "  - 后端在Docker中，支持热重载"
+        echo "  - 前端本地运行，无Service Worker干扰"
         echo "  - 详细的调试日志"
         echo "  - 直接访问服务端口"
     else
@@ -425,7 +435,12 @@ show_deployment_info() {
     fi
     
     echo ""
-    echo "💡 提示: 所有服务都在 Docker 中运行"
+    if [ "$MODE" = "dev" ]; then
+        echo "💡 提示: 后端在Docker，前端本地运行"
+        echo "   前端启动后Vite会自动代理 /api 和 /ws 到后端"
+    else
+        echo "💡 提示: 所有服务都在 Docker 中运行"
+    fi
 }
 
 # 主函数

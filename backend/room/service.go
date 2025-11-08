@@ -84,6 +84,7 @@ type RoomService interface {
 	StartGame(roomID, playerID string) error
 	CloseRoom(roomID string) error
 	GetPlayerRoom(playerID string) (*Room, error)
+	RevertGameStart(roomID string) error
 }
 
 // roomService implements RoomService interface
@@ -447,6 +448,26 @@ func (s *roomService) StartGame(roomID, playerID string) error {
 	// Update room status
 	room.Status = RoomStatusPlaying
 	room.UpdatedAt = time.Now()
+
+	return nil
+}
+
+// RevertGameStart reverts room status from playing back to ready
+// Used when game engine fails to start after status was changed
+func (s *roomService) RevertGameStart(roomID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	room, exists := s.rooms[roomID]
+	if !exists {
+		return errors.New("room not found")
+	}
+
+	// Only revert if currently in playing status
+	if room.Status == RoomStatusPlaying {
+		room.Status = RoomStatusReady
+		room.UpdatedAt = time.Now()
+	}
 
 	return nil
 }

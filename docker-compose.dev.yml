@@ -1,25 +1,25 @@
 # 开发环境配置 - 所有服务都在 Docker 中运行，支持热重载
 
 services:
-  # 前端开发服务
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    ports:
-      - "5173:5173"  # Vite dev server
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules  # 避免覆盖 node_modules
-    environment:
-      - VITE_API_URL=http://localhost:8080
-      - VITE_WS_URL=ws://localhost:8080
-    depends_on:
-      - backend
-    networks:
-      - guandan-network
-    stdin_open: true
-    tty: true
+  # 前端开发服务（注释掉，改为本地运行）
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile.dev
+  #   ports:
+  #     - "5173:5173"  # Vite dev server
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules  # 避免覆盖 node_modules
+  #   environment:
+  #     - VITE_API_URL=http://backend:8080
+  #     - VITE_WS_URL=ws://backend:8080
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - guandan-network
+  #   stdin_open: true
+  #   tty: true
 
   # 后端开发服务
   backend:

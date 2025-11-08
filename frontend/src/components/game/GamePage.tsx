@@ -129,12 +129,8 @@ const GamePage: React.FC = () => {
       // 若无room_id字段或匹配当前房间，则接受
       if (!message.data?.room_id || message.data.room_id === roomId) {
         setCountdown(null);
-        // 判断是否有上贡阶段
-        if (message.data.has_tribute) {
-          setCurrentPhase(GamePageState.TRIBUTE_PHASE);
-        } else {
-          setCurrentPhase(GamePageState.PLAYING);
-        }
+        // 不立即切换阶段，等待 player_view 消息
+        // player_view 会携带完整的游戏状态，收到后再切换阶段
       }
     };
 
@@ -178,15 +174,43 @@ const GamePage: React.FC = () => {
     // 玩家视角
     const handlePlayerView = (message: WSMessage) => {
       const data = message.data;
-      if (data) {
-        setPlayerSeat(data.player_seat);
-        setPlayerHand(data.hand || []);
-        setCanPlay(data.can_play || false);
-        setMyTurn(data.is_my_turn || false);
-        if (data.game_state) {
-          setGameState(data.game_state);
+      if (!data) return;
+
+      // GameDriver 发送的格式：data.player_view 包含实际数据
+      const playerView = data.player_view;
+      if (!playerView) {
+        console.warn('Received player_view message without player_view data:', data);
+        return;
+      }
+
+      // 设置玩家座位
+      setPlayerSeat(playerView.player_seat ?? data.player_seat);
+      
+      // 设置手牌 - 从 player_cards 字段获取
+      setPlayerHand(playerView.player_cards || []);
+      
+      // 设置游戏状态
+      if (playerView.game_state) {
+        setGameState(playerView.game_state);
+        
+        // 根据当前阶段和游戏状态决定是否切换阶段
+        if (currentPhase === GamePageState.GAME_PREPARE) {
+          // 判断是否有上贡阶段
+          const currentDeal = playerView.game_state.current_match?.current_deal;
+          const hasTribute = currentDeal?.tribute_phase !== null && currentDeal?.tribute_phase !== undefined;
+          
+          if (hasTribute) {
+            setCurrentPhase(GamePageState.TRIBUTE_PHASE);
+          } else {
+            setCurrentPhase(GamePageState.PLAYING);
+          }
         }
       }
+
+      // can_play 和 is_my_turn 可能在 filtered_state 中，也可能在顶层
+      const filteredState = data.filtered_state || {};
+      setCanPlay(filteredState.can_play || data.can_play || false);
+      setMyTurn(filteredState.is_my_turn || data.is_my_turn || false);
     };
 
     // 注册所有监听器

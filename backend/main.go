@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"guandan-world/backend/auth"
@@ -32,7 +33,11 @@ func main() {
 	})
 
 	// 初始化认证服务
-	authService := auth.NewAuthService("your-secret-key-change-in-production", 24*time.Hour)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "your-secret-key-change-in-production"
+	}
+	authService := auth.NewAuthService(jwtSecret, 24*time.Hour)
 	authHandler := handlers.NewAuthHandler(authService)
 
 	// 初始化房间服务
@@ -41,9 +46,6 @@ func main() {
 	// 初始化 WebSocket 管理器
 	wsManager := websocket.NewWSManager(authService, roomService)
 
-	// 初始化房间处理器
-	roomHandler := handlers.NewRoomHandler(roomService, authService)
-
 	// 初始化游戏服务（保留以备将来使用）
 	_ = game.NewGameService(wsManager)
 
@@ -51,39 +53,44 @@ func main() {
 	driverService := game.NewDriverService(wsManager)
 	gameDriverHandler := handlers.NewGameDriverHandler(driverService)
 
+	// 初始化房间处理器 - 注入 driverService 和 wsManager
+	roomHandler := handlers.NewRoomHandler(roomService, authService, driverService, wsManager)
+
 	// 启动 WebSocket 管理器
 	go wsManager.Run()
 
-	// 注册认证路由
+	// 注册认证路由（不需要JWT认证）
 	authHandler.RegisterRoutes(r)
 
-	// API 路由组
+	// API 路由组 - 需要认证的路由
 	api := r.Group("/api")
 	{
-		// 需要认证的路由
-		protected := api.Group("/", authHandler.JWTMiddleware())
+		// 房间管理路由（需要认证）
+		rooms := api.Group("/rooms")
+		rooms.Use(authHandler.JWTMiddleware())
 		{
-			// 房间管理路由
-			roomRoutes := protected.Group("/rooms")
-			{
-				roomRoutes.POST("/create", roomHandler.CreateRoom)
-				roomRoutes.POST("/:id/join", roomHandler.JoinRoom)
-				roomRoutes.POST("/:id/leave", roomHandler.LeaveRoom)
-				roomRoutes.GET("/", roomHandler.GetRooms)
-				roomRoutes.GET("/:id", roomHandler.GetRoom)
-				roomRoutes.POST("/:id/start", roomHandler.StartGame)
-			}
+			// 注意：特定路径必须在参数路径之前定义，避免被 /:id 匹配
+			rooms.GET("", roomHandler.GetRooms)                // GET /api/rooms - list rooms
+			rooms.POST("/create", roomHandler.CreateRoom)      // POST /api/rooms/create - create room  
+			rooms.GET("/my", roomHandler.GetMyRoom)            // GET /api/rooms/my - get current user's room
+			
+			// 参数路径放在后面
+			rooms.GET("/:id", roomHandler.GetRoom)             // GET /api/rooms/:id - get room details
+			rooms.POST("/:id/join", roomHandler.JoinRoom)      // POST /api/rooms/:id/join - join room
+			rooms.POST("/:id/leave", roomHandler.LeaveRoom)    // POST /api/rooms/:id/leave - leave room
+			rooms.POST("/:id/start", roomHandler.StartGame)    // POST /api/rooms/:id/start - start game
+		}
 
-			// 游戏驱动路由
-			driverRoutes := protected.Group("/game/driver")
-			{
-				driverRoutes.POST("/start", gameDriverHandler.StartGameWithDriver)
-				driverRoutes.POST("/play-decision", gameDriverHandler.SubmitPlayDecision)
-				driverRoutes.POST("/tribute-select", gameDriverHandler.SubmitTributeSelection)
-				driverRoutes.POST("/tribute-return", gameDriverHandler.SubmitReturnTribute)
-				driverRoutes.GET("/status/:room_id", gameDriverHandler.GetGameStatus)
-				driverRoutes.POST("/stop/:room_id", gameDriverHandler.StopGame)
-			}
+		// 游戏驱动路由（需要认证）
+		driver := api.Group("/game/driver")
+		driver.Use(authHandler.JWTMiddleware())
+		{
+			driver.POST("/start", gameDriverHandler.StartGameWithDriver)
+			driver.POST("/play-decision", gameDriverHandler.SubmitPlayDecision)
+			driver.POST("/tribute-select", gameDriverHandler.SubmitTributeSelection)
+			driver.POST("/tribute-return", gameDriverHandler.SubmitReturnTribute)
+			driver.GET("/status/:room_id", gameDriverHandler.GetGameStatus)
+			driver.POST("/stop/:room_id", gameDriverHandler.StopGame)
 		}
 	}
 

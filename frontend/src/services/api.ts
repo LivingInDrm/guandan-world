@@ -123,16 +123,26 @@ class ApiClient {
   }
 
   async createRoom(roomData: CreateRoomRequest = {}): Promise<ApiResponse<Room>> {
-    return this.request<Room>('/api/rooms', {
+    const response = await this.request<{ room: Room }>('/api/rooms/create', {
       method: 'POST',
       body: JSON.stringify(roomData),
     });
+    // Extract room from response
+    return {
+      ...response,
+      data: response.data?.room as Room
+    };
   }
 
   async joinRoom(roomId: string): Promise<ApiResponse<Room>> {
-    return this.request<Room>(`/api/rooms/${roomId}/join`, {
+    const response = await this.request<{ room: Room }>(`/api/rooms/${roomId}/join`, {
       method: 'POST',
     });
+    // Extract room from response
+    return {
+      ...response,
+      data: response.data?.room as Room
+    };
   }
 
   async leaveRoom(roomId: string): Promise<ApiResponse<void>> {
@@ -142,7 +152,21 @@ class ApiClient {
   }
 
   async getRoomDetails(roomId: string): Promise<ApiResponse<Room>> {
-    return this.request<Room>(`/api/rooms/${roomId}`);
+    const response = await this.request<{ room: Room }>(`/api/rooms/${roomId}`);
+    // Extract room from response
+    return {
+      ...response,
+      data: response.data?.room as Room
+    };
+  }
+
+  async getMyRoom(): Promise<ApiResponse<Room>> {
+    const response = await this.request<{ room: Room }>('/api/rooms/my');
+    // Extract room from response
+    return {
+      ...response,
+      data: response.data?.room as Room
+    };
   }
 
   async startGame(roomId: string): Promise<ApiResponse<void>> {
