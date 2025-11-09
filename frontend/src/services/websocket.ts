@@ -144,6 +144,13 @@ class WebSocketClient {
         return;
       }
       
+      // 🔍 Debug: Log all incoming WebSocket messages
+      console.group(`📨 WS Message: ${message.type}`);
+      console.log('📋 Full Message:', message);
+      console.log('📦 Data:', message.data);
+      console.log('⏰ Timestamp:', message.timestamp);
+      console.groupEnd();
+      
       // Dispatch to registered handlers
       const handlers = this.messageHandlers.get(message.type as WSMessageType);
       if (handlers) {

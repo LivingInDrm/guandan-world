@@ -60,8 +60,8 @@ func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player
 
 	// Create game driver with shorter timeouts for testing
 	config := sdk.DefaultGameDriverConfig()
-	config.PlayDecisionTimeout = 1 * time.Second // Short timeout for tests
-	config.TributeTimeout = 1 * time.Second
+	config.PlayDecisionTimeout = 10 * time.Second // Timeout for play decisions
+	config.TributeTimeout = 10 * time.Second      // Timeout for tribute phase
 	driver := sdk.NewGameDriver(engine, config)
 
 	// Create and set input provider for this room

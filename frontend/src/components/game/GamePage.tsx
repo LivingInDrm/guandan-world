@@ -140,43 +140,100 @@ const GamePage: React.FC = () => {
 
     // 游戏事件
     const handleGameEvent = (message: WSMessage) => {
-      const { event_type, event_data, ...restData } = message.data || {};
+      const { event_type, event_data, player_seat, ...restData } = message.data || {};
       // 兼容两种数据结构：优先使用event_data，回退到data本身
       const payload = event_data || restData;
 
+      // 🎯 Detailed Game Event Logging for Debug
+      console.group(`🎯 [GamePage] Processing Event: ${event_type}`);
+      console.log('📌 Event Type:', event_type);
+      console.log('👤 Player Seat:', player_seat);
+      console.log('📦 Payload:', payload);
+      console.log('🎮 Current Phase:', currentPhase);
+      
       switch (event_type) {
         case 'tribute_started':
+          console.log('➡️ Action: Set phase to TRIBUTE_PHASE');
           setCurrentPhase(GamePageState.TRIBUTE_PHASE);
           setTributeInfo(payload.tribute_info);
           break;
         case 'tribute_completed':
+          console.log('➡️ Action: Set phase to PLAYING');
           setCurrentPhase(GamePageState.PLAYING);
           setTributeInfo(null);
           break;
         case 'deal_completed':
+        case 'deal_ended':
+          console.log('➡️ Action: Set phase to DEAL_RESULT');
           setCurrentPhase(GamePageState.DEAL_RESULT);
-          setDealResult(payload.deal_result);
+          setDealResult(payload.deal_result || payload);
           break;
         case 'match_completed':
+        case 'match_ended':
+          console.log('➡️ Action: Set phase to MATCH_RESULT');
           setCurrentPhase(GamePageState.MATCH_RESULT);
-          setMatchResult(payload.match_result);
+          setMatchResult(payload.match_result || payload);
           break;
         case 'trick_started':
-        case 'player_played':
-        case 'player_passed':
-        case 'trick_completed':
+          console.log('🎲 Trick Started:', payload.trick);
           // Note: Game state is updated from player_view messages, not from game_events
           // game_events are just notifications and don't contain full game state
           break;
+        case 'player_played':
+          console.log('🃏 Player Played:', {
+            player: player_seat,
+            cards: payload.cards
+          });
+          break;
+        case 'player_passed':
+          console.log('⏭️ Player Passed:', player_seat);
+          break;
+        case 'trick_ended':
+        case 'trick_completed':
+          console.log('✅ Trick Ended:', {
+            winner: payload.winner,
+            next_leader: payload.next_leader
+          });
+          break;
+        case 'deal_started':
+          console.log('🎴 Deal Started:', {
+            level: payload.deal_level,
+            team0_level: payload.team0_level,
+            team1_level: payload.team1_level
+          });
+          break;
+        case 'tribute_rules_set':
+          console.log('📜 Tribute Rules:', payload);
+          break;
+        case 'tribute_immunity':
+          console.log('🛡️ Tribute Immunity:', payload);
+          break;
+        case 'tribute_given':
+          console.log('⬆️ Tribute Given:', {
+            giver: payload.giver,
+            receiver: payload.receiver,
+            card: payload.card
+          });
+          break;
+        case 'tribute_selected':
+          console.log('✅ Tribute Selected:', payload);
+          break;
+        case 'return_tribute':
+          console.log('⬇️ Return Tribute:', payload);
+          break;
         default:
+          console.log('ℹ️ Unhandled event type');
           break;
       }
+      console.groupEnd();
     };
 
     // 玩家视角
     const handlePlayerView = (message: WSMessage) => {
       // Get the latest phase value from store instead of using closure
       const latestPhase = useGameStore.getState().currentPhase;
+      
+      console.log('👁️ [GamePage] Received PLAYER_VIEW, current phase:', latestPhase);
       
       console.log('🎮 [GamePage] Received player_view message', {
         timestamp: new Date().toISOString(),

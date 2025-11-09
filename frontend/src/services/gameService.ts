@@ -253,7 +253,17 @@ class GameService {
   }
 
   private handleGameEvent(message: WSMessage): void {
-    console.log('Game event:', message.data);
+    const { event_type, event_data, player_seat, timestamp } = message.data || {};
+    
+    // 🎮 Enhanced Game Event Logging
+    console.group(`🎮 GAME_EVENT: ${event_type}`);
+    console.log('🎯 Event Type:', event_type);
+    console.log('👤 Player Seat:', player_seat);
+    console.log('📊 Event Data:', event_data);
+    console.log('⏰ Timestamp:', timestamp);
+    console.log('📋 Full Message:', message);
+    console.groupEnd();
+    
     // Note: Do NOT set gameState here - it should only be updated from player_view messages
     // game_event is just a notification, not the full game state
     useGameStore.getState().setLastMessage(message);
