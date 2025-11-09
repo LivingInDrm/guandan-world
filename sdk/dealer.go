@@ -26,6 +26,7 @@ func NewDealer(level int) (*Dealer, error) {
 // CreateFullDeck creates a complete deck of 108 cards for Guandan
 func (d *Dealer) CreateFullDeck() []*Card {
 	deck := make([]*Card, 0, 108)
+	deckIndex := 0  // 唯一索引计数器
 	
 	// Add regular cards (2-A) for each suit, 2 copies each
 	// Total: 4 suits × 13 cards × 2 copies = 104 cards
@@ -37,6 +38,8 @@ func (d *Dealer) CreateFullDeck() []*Card {
 					// This should never happen with valid inputs
 					continue
 				}
+				card.DeckIndex = deckIndex  // 分配唯一索引
+				deckIndex++
 				deck = append(deck, card)
 			}
 		}
@@ -46,7 +49,13 @@ func (d *Dealer) CreateFullDeck() []*Card {
 	// Total: 4 jokers
 	for copy := 0; copy < 2; copy++ {
 		smallJoker, _ := NewCard(15, "Joker", d.level) // Black Joker
+		smallJoker.DeckIndex = deckIndex
+		deckIndex++
+		
 		bigJoker, _ := NewCard(16, "Joker", d.level)   // Red Joker
+		bigJoker.DeckIndex = deckIndex
+		deckIndex++
+		
 		deck = append(deck, smallJoker, bigJoker)
 	}
 	

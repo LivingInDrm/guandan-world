@@ -215,11 +215,11 @@ func TestParseCardFromID(t *testing.T) {
 		level    int
 		expected Card
 	}{
-		{"Heart_5", 2, Card{Number: 5, Color: "Heart", Level: 2, Name: "5", RawNumber: 5}},
-		{"Spade_14", 3, Card{Number: 14, Color: "Spade", Level: 3, Name: "Ace", RawNumber: 1}},
-		{"Joker_15", 2, Card{Number: 15, Color: "Joker", Level: 2, Name: "Black Joker", RawNumber: 15}},
-		{"Joker_16", 2, Card{Number: 16, Color: "Joker", Level: 2, Name: "Red Joker", RawNumber: 16}},
-		{"Club_11", 5, Card{Number: 11, Color: "Club", Level: 5, Name: "Jack", RawNumber: 11}},
+		{"Heart_5_12", 2, Card{Number: 5, Color: "Heart", Level: 2, Name: "5", RawNumber: 5, DeckIndex: 12}},
+		{"Spade_14_48", 3, Card{Number: 14, Color: "Spade", Level: 3, Name: "Ace", RawNumber: 1, DeckIndex: 48}},
+		{"Joker_15_104", 2, Card{Number: 15, Color: "Joker", Level: 2, Name: "Black Joker", RawNumber: 15, DeckIndex: 104}},
+		{"Joker_16_106", 2, Card{Number: 16, Color: "Joker", Level: 2, Name: "Red Joker", RawNumber: 16, DeckIndex: 106}},
+		{"Club_11_36", 5, Card{Number: 11, Color: "Club", Level: 5, Name: "Jack", RawNumber: 11, DeckIndex: 36}},
 	}
 
 	for _, tc := range testCases {
@@ -245,6 +245,9 @@ func TestParseCardFromID(t *testing.T) {
 			if card.RawNumber != tc.expected.RawNumber {
 				t.Errorf("Expected RawNumber %d, got %d", tc.expected.RawNumber, card.RawNumber)
 			}
+			if card.DeckIndex != tc.expected.DeckIndex {
+				t.Errorf("Expected DeckIndex %d, got %d", tc.expected.DeckIndex, card.DeckIndex)
+			}
 
 			// Test round-trip: ID -> Card -> ID
 			if card.GetID() != tc.cardID {
@@ -258,12 +261,15 @@ func TestParseCardFromID(t *testing.T) {
 		cardID string
 		level  int
 	}{
-		{"", 2},               // Empty ID
-		{"Heart", 2},          // Missing number
-		{"Heart_5_Extra", 2},  // Too many parts
-		{"Heart_17", 2},       // Invalid number
-		{"InvalidColor_5", 2}, // Invalid color
-		{"Heart_abc", 2},      // Non-numeric number
+		{"", 2},                 // Empty ID
+		{"Heart", 2},            // Missing number
+		{"Heart_5", 2},          // Missing deck index (old format)
+		{"Heart_5_12_Extra", 2}, // Too many parts
+		{"Heart_17_0", 2},       // Invalid number
+		{"InvalidColor_5_0", 2}, // Invalid color
+		{"Heart_abc_0", 2},      // Non-numeric number
+		{"Heart_5_abc", 2},      // Non-numeric deck index
+		{"Heart_5_200", 2},      // Deck index out of range
 	}
 
 	for _, tc := range invalidCases {
@@ -308,55 +314,60 @@ func TestCardGetSuitNumber(t *testing.T) {
 
 func TestCardMarshalJSON(t *testing.T) {
 	tests := []struct {
-		name     string
-		number   int
-		color    string
-		level    int
-		expected map[string]interface{}
+		name      string
+		number    int
+		color     string
+		level     int
+		deckIndex int
+		expected  map[string]interface{}
 	}{
 		{
-			name:   "Regular card - Spade 5",
-			number: 5,
-			color:  "Spade",
-			level:  2,
+			name:      "Regular card - Spade 5",
+			number:    5,
+			color:     "Spade",
+			level:     2,
+			deckIndex: 8,
 			expected: map[string]interface{}{
-				"id":       "Spade_5",
+				"id":       "Spade_5_8",
 				"suit":     float64(0), // JSON unmarshals numbers as float64
 				"rank":     float64(5),
 				"is_joker": false,
 			},
 		},
 		{
-			name:   "Regular card - Heart 10",
-			number: 10,
-			color:  "Heart",
-			level:  2,
+			name:      "Regular card - Heart 10",
+			number:    10,
+			color:     "Heart",
+			level:     2,
+			deckIndex: 68,
 			expected: map[string]interface{}{
-				"id":       "Heart_10",
+				"id":       "Heart_10_68",
 				"suit":     float64(1),
 				"rank":     float64(10),
 				"is_joker": false,
 			},
 		},
 		{
-			name:   "Small Joker",
-			number: 15,
-			color:  "Joker",
-			level:  2,
+			name:      "Small Joker",
+			number:    15,
+			color:     "Joker",
+			level:     2,
+			deckIndex: 104,
 			expected: map[string]interface{}{
-				"id":       "Joker_15",
+				"id":       "Joker_15_104",
 				"suit":     float64(-1),
 				"rank":     float64(15),
 				"is_joker": true,
 			},
 		},
 		{
-			name:   "Big Joker",
-			number: 16,
-			color:  "Joker",
-			level:  2,
+			name:      "Big Joker",
+			number:    16,
+			color:     "Joker",
+			level:     2,
+			deckIndex: 106,
 			expected: map[string]interface{}{
-				"id":       "Joker_16",
+				"id":       "Joker_16_106",
 				"suit":     float64(-1),
 				"rank":     float64(16),
 				"is_joker": true,
@@ -370,6 +381,7 @@ func TestCardMarshalJSON(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create card: %v", err)
 			}
+			card.DeckIndex = tt.deckIndex  // 设置测试索引
 
 			// Marshal the card to JSON
 			jsonData, err := json.Marshal(card)
@@ -410,8 +422,13 @@ func TestCardSliceMarshalJSON(t *testing.T) {
 	cards := []*Card{}
 	
 	card1, _ := NewCard(5, "Spade", 2)
+	card1.DeckIndex = 8
+	
 	card2, _ := NewCard(10, "Heart", 2)
+	card2.DeckIndex = 68
+	
 	card3, _ := NewCard(15, "Joker", 2)
+	card3.DeckIndex = 104
 	
 	cards = append(cards, card1, card2, card3)
 
@@ -431,8 +448,8 @@ func TestCardSliceMarshalJSON(t *testing.T) {
 	}
 
 	// Verify first card has correct structure
-	if result[0]["id"] != "Spade_5" {
-		t.Errorf("First card id: expected 'Spade_5', got '%v'", result[0]["id"])
+	if result[0]["id"] != "Spade_5_8" {
+		t.Errorf("First card id: expected 'Spade_5_8', got '%v'", result[0]["id"])
 	}
 	if result[0]["suit"] != float64(0) {
 		t.Errorf("First card suit: expected 0, got %v", result[0]["suit"])

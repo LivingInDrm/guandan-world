@@ -319,12 +319,15 @@ func (d *Deal) dealCards() error {
 // createFullDeck creates a full deck of 108 cards
 func (d *Deal) createFullDeck() []*Card {
 	deck := make([]*Card, 0, 108)
+	deckIndex := 0 // 唯一索引计数器
 
 	// Add regular cards (2-A) for each suit, 2 copies each
 	for _, color := range Colors {
 		for number := 2; number <= 14; number++ {
 			for copy := 0; copy < 2; copy++ {
 				card, _ := NewCard(number, color, d.Level)
+				card.DeckIndex = deckIndex // 分配唯一索引
+				deckIndex++
 				deck = append(deck, card)
 			}
 		}
@@ -333,7 +336,13 @@ func (d *Deal) createFullDeck() []*Card {
 	// Add jokers (2 small jokers + 2 big jokers)
 	for copy := 0; copy < 2; copy++ {
 		smallJoker, _ := NewCard(15, "Joker", d.Level)
+		smallJoker.DeckIndex = deckIndex
+		deckIndex++
+
 		bigJoker, _ := NewCard(16, "Joker", d.Level)
+		bigJoker.DeckIndex = deckIndex
+		deckIndex++
+
 		deck = append(deck, smallJoker, bigJoker)
 	}
 
@@ -524,13 +533,13 @@ func (d *Deal) finishCurrentTrick() error {
 
 	// Find next leader for the next trick
 	nextLeader := d.CurrentTrick.Winner
-	
+
 	// Check if the winner finished their cards and no one followed
 	if len(d.PlayerCards[nextLeader]) == 0 {
 		// Check if anyone followed (played non-pass after the winner)
 		anyoneFollowed := false
 		winnerPlayIndex := -1
-		
+
 		// Find when the winner played
 		for i, play := range d.CurrentTrick.Plays {
 			if play.PlayerSeat == d.CurrentTrick.Winner && !play.IsPass {
@@ -538,7 +547,7 @@ func (d *Deal) finishCurrentTrick() error {
 				break
 			}
 		}
-		
+
 		// Check if anyone played (not passed) after the winner
 		if winnerPlayIndex >= 0 {
 			for i := winnerPlayIndex + 1; i < len(d.CurrentTrick.Plays); i++ {
@@ -548,7 +557,7 @@ func (d *Deal) finishCurrentTrick() error {
 				}
 			}
 		}
-		
+
 		// If no one followed, give priority to teammate
 		if !anyoneFollowed {
 			// Find teammate (0<->2, 1<->3)
@@ -641,7 +650,7 @@ func (d *Deal) determineFirstPlayer() int {
 			rank4 := d.LastResult.Rankings[3]
 			tribute3 := d.TributePhase.TributeCards[rank3]
 			tribute4 := d.TributePhase.TributeCards[rank4]
-			
+
 			// Compare tribute cards to determine who starts
 			if tribute3 != nil && tribute4 != nil {
 				if tribute3.GreaterThan(tribute4) {
@@ -652,11 +661,11 @@ func (d *Deal) determineFirstPlayer() int {
 			}
 			// Fallback to rank3 if tribute cards not available
 			return rank3
-			
+
 		case VictoryTypeSingleLast:
 			// Single Last: rank4 gives tribute, so rank4 starts
 			return d.LastResult.Rankings[3]
-			
+
 		case VictoryTypePartnerLast:
 			// Partner Last: rank3 gives tribute, so rank3 starts
 			return d.LastResult.Rankings[2]

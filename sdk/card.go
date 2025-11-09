@@ -26,11 +26,13 @@ type Card struct {
 	Color     string // 花色
 	Level     int    // 当前级别
 	Name      string // 牌的名称
+	DeckIndex int    // 牌在整副牌中的唯一索引 (0-107)
 }
 
 // GetID 返回牌的唯一标识符
+// 格式: Color_Number_DeckIndex (例如: "Club_14_52")
 func (c *Card) GetID() string {
-	return fmt.Sprintf("%s_%d", c.Color, c.Number)
+	return fmt.Sprintf("%s_%d_%d", c.Color, c.Number, c.DeckIndex)
 }
 
 // GetSuitNumber 将花色字符串转换为数字
@@ -111,6 +113,7 @@ func NewCard(number int, color string, level int) (*Card, error) {
 // Clone 克隆牌
 func (c *Card) Clone() *Card {
 	newCard, _ := NewCard(c.Number, c.Color, c.Level)
+	newCard.DeckIndex = c.DeckIndex  // 复制索引
 	return newCard
 }
 
@@ -227,7 +230,7 @@ func contains(slice []string, item string) bool {
 }
 
 // ParseCardFromID 从cardID字符串解析创建Card对象
-// cardID格式：'Color_Number' (例如: "Heart_5", "Joker_15")
+// cardID格式：'Color_Number_DeckIndex' (例如: "Heart_5_12", "Joker_15_104")
 // 参数:
 //
 //	cardID: 卡牌ID字符串
@@ -243,7 +246,7 @@ func ParseCardFromID(cardID string, level int) (*Card, error) {
 	}
 
 	// 分割字符串 - 手动实现避免引入strings包
-	parts := make([]string, 0, 2)
+	parts := make([]string, 0, 3)
 	lastIndex := 0
 	for i, char := range cardID {
 		if char == '_' {
@@ -257,12 +260,13 @@ func ParseCardFromID(cardID string, level int) (*Card, error) {
 		parts = append(parts, cardID[lastIndex:])
 	}
 
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid card ID format, expected 'Color_Number'")
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("invalid card ID format, expected 'Color_Number_DeckIndex', got: %s", cardID)
 	}
 
 	color := parts[0]
 	numberStr := parts[1]
+	deckIndexStr := parts[2]
 
 	// 解析数字 - 手动实现避免引入strconv包
 	var number int
@@ -304,6 +308,28 @@ func ParseCardFromID(cardID string, level int) (*Card, error) {
 		return nil, fmt.Errorf("invalid card number: %s", numberStr)
 	}
 
+	// 解析 DeckIndex
+	var deckIndex int
+	// 手动解析 deckIndex (0-107)
+	for _, char := range deckIndexStr {
+		if char < '0' || char > '9' {
+			return nil, fmt.Errorf("invalid deck index: %s", deckIndexStr)
+		}
+		deckIndex = deckIndex*10 + int(char-'0')
+	}
+	
+	if deckIndex < 0 || deckIndex > 107 {
+		return nil, fmt.Errorf("deck index out of range (0-107): %d", deckIndex)
+	}
+
 	// 使用现有的NewCard函数创建卡牌
-	return NewCard(number, color, level)
+	card, err := NewCard(number, color, level)
+	if err != nil {
+		return nil, err
+	}
+	
+	// 设置 DeckIndex
+	card.DeckIndex = deckIndex
+	
+	return card, nil
 }

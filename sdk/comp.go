@@ -258,10 +258,10 @@ func getMaxCardRawNumber(cards []*Card) int {
 
 // BaseComp 基础牌组结构
 type BaseComp struct {
-	Cards           []*Card  // 原始牌组（包含万能牌）
-	NormalizedCards []*Card  // 规范化牌组（万能牌已替换为具体牌）
-	Valid           bool
-	Type            CompType
+	Cards           []*Card  `json:"cards"`            // 原始牌组（包含万能牌）
+	NormalizedCards []*Card  `json:"-"`                // 规范化牌组（万能牌已替换为具体牌）- 不序列化
+	Valid           bool     `json:"valid"`
+	Type            CompType `json:"type"`
 }
 
 // GetCards 获取牌组中的原始牌（包含万能牌）
@@ -466,6 +466,7 @@ func NewPair(cards []*Card) *Pair {
 							baseCard.Number,
 							baseCard.Color,
 							card.Level,
+							card.DeckIndex,  // 复用原万能牌的索引
 						)
 					}
 				}
@@ -548,6 +549,7 @@ func NewTriple(cards []*Card) *Triple {
 								baseNormalCard.Number,
 								baseNormalCard.Color,
 								card.Level,
+								card.DeckIndex,  // 复用原万能牌的索引
 							)
 						}
 					}
@@ -2062,6 +2064,7 @@ func cloneCard(card *Card) *Card {
 		Color:     card.Color,
 		Level:     card.Level,
 		Name:      card.Name,
+		DeckIndex: card.DeckIndex,
 	}
 }
 
@@ -2075,20 +2078,23 @@ func cloneCards(cards []*Card) []*Card {
 }
 
 // createReplacementCard 创建一张替换牌
-func createReplacementCard(rawNumber int, color string, level int) *Card {
+// deckIndex: 使用原万能牌的 DeckIndex 保持唯一性
+func createReplacementCard(rawNumber int, color string, level int, deckIndex int) *Card {
 	// 使用NewCard来正确创建牌，确保Number和RawNumber都被正确设置
 	number := rawNumber
 	if rawNumber == 1 {
 		number = 14 // Ace conversion
 	}
 	card, _ := NewCard(number, color, level)
+	card.DeckIndex = deckIndex  // 复用原万能牌的索引
 	return card
 }
 
 // replaceWildcardInPlace 在克隆的牌组中原地替换万能牌
 func replaceWildcardInPlace(cards []*Card, wildcardIndex int, rawNumber int, color string) {
 	if wildcardIndex >= 0 && wildcardIndex < len(cards) && cards[wildcardIndex].IsWildcard() {
-		cards[wildcardIndex] = createReplacementCard(rawNumber, color, cards[wildcardIndex].Level)
+		originalDeckIndex := cards[wildcardIndex].DeckIndex  // 保存原万能牌的索引
+		cards[wildcardIndex] = createReplacementCard(rawNumber, color, cards[wildcardIndex].Level, originalDeckIndex)
 	}
 }
 
@@ -2216,13 +2222,13 @@ func normalizePlate(cards []*Card) []*Card {
 		// 第一组全是万能牌，应该是第二组-1
 		expectedRawNumber := secondGroupBase.RawNumber - 1
 		for i := 0; i < 3; i++ {
-			result[i] = createReplacementCard(expectedRawNumber, "Spade", result[i].Level)
+			result[i] = createReplacementCard(expectedRawNumber, "Spade", result[i].Level, result[i].DeckIndex)
 		}
 	} else if secondGroupBase == nil && firstGroupBase != nil {
 		// 第二组全是万能牌，应该是第一组+1
 		expectedRawNumber := firstGroupBase.RawNumber + 1
 		for i := 3; i < 6; i++ {
-			result[i] = createReplacementCard(expectedRawNumber, "Spade", result[i].Level)
+			result[i] = createReplacementCard(expectedRawNumber, "Spade", result[i].Level, result[i].DeckIndex)
 		}
 	}
 	
@@ -2261,22 +2267,23 @@ func normalizeStraight(cards []*Card) []*Card {
 	// 顺子已经是排好序的，万能牌需要填补空缺
 	// 根据顺子的实际值来确定万能牌应该是什么
 	for _, idx := range wildcardIndices {
+		originalDeckIndex := result[idx].DeckIndex  // 保存原索引
 		// 根据位置确定万能牌应该的值
 		if idx == 0 {
 			// 第一张，应该是第二张-1
 			if result[1].IsWildcard() {
 				// 如果第二张也是万能牌，看第三张
-				result[idx] = createReplacementCard(result[2].RawNumber-2, "Spade", result[idx].Level)
+				result[idx] = createReplacementCard(result[2].RawNumber-2, "Spade", result[idx].Level, originalDeckIndex)
 			} else {
-				result[idx] = createReplacementCard(result[1].RawNumber-1, "Spade", result[idx].Level)
+				result[idx] = createReplacementCard(result[1].RawNumber-1, "Spade", result[idx].Level, originalDeckIndex)
 			}
 		} else if idx == 4 {
 			// 最后一张，应该是倒数第二张+1
 			if result[3].IsWildcard() {
 				// 如果倒数第二张也是万能牌，看倒数第三张
-				result[idx] = createReplacementCard(result[2].RawNumber+2, "Spade", result[idx].Level)
+				result[idx] = createReplacementCard(result[2].RawNumber+2, "Spade", result[idx].Level, originalDeckIndex)
 			} else {
-				result[idx] = createReplacementCard(result[3].RawNumber+1, "Spade", result[idx].Level)
+				result[idx] = createReplacementCard(result[3].RawNumber+1, "Spade", result[idx].Level, originalDeckIndex)
 			}
 		} else {
 			// 中间的牌，根据前后推断
@@ -2286,7 +2293,7 @@ func normalizeStraight(cards []*Card) []*Card {
 			} else if !result[idx+1].IsWildcard() {
 				expectedValue = result[idx+1].RawNumber - 1
 			}
-			result[idx] = createReplacementCard(expectedValue, "Spade", result[idx].Level)
+			result[idx] = createReplacementCard(expectedValue, "Spade", result[idx].Level, originalDeckIndex)
 		}
 	}
 	
@@ -2295,12 +2302,13 @@ func normalizeStraight(cards []*Card) []*Card {
 	if result[4].RawNumber == 1 {
 		// A在高位顺子中相当于14
 		for _, idx := range wildcardIndices {
+			originalDeckIndex := result[idx].DeckIndex  // 保存原索引
 			if idx == 4 {
-				result[idx] = createReplacementCard(1, "Spade", result[idx].Level) // A保持为1
+				result[idx] = createReplacementCard(1, "Spade", result[idx].Level, originalDeckIndex) // A保持为1
 			} else {
 				// 重新计算其他位置的值：10, 11, 12, 13, 1(A)
 				positionValues := []int{10, 11, 12, 13, 1}
-				result[idx] = createReplacementCard(positionValues[idx], "Spade", result[idx].Level)
+				result[idx] = createReplacementCard(positionValues[idx], "Spade", result[idx].Level, originalDeckIndex)
 			}
 		}
 	}
@@ -2335,6 +2343,7 @@ func normalizeNaiveBomb(cards []*Card) []*Card {
 				baseCard.Number,
 				baseCard.Color,
 				card.Level,
+				card.DeckIndex,  // 复用原万能牌的索引
 			)
 		}
 	}
@@ -2424,7 +2433,7 @@ func normalizeTube(cards []*Card) []*Card {
 			// 替换为最大的单张，使钢管尽可能大
 			targetNum := singles[len(singles)-1]
 			for _, idx := range wildcardIndices {
-				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level)
+				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level, result[idx].DeckIndex)
 			}
 		}
 	} else if wildcardCount == 2 {
@@ -2434,7 +2443,7 @@ func normalizeTube(cards []*Card) []*Card {
 			// 替换为较大的单张，使钢管更大
 			targetNum := singles[1] // 第二大的单张
 			for _, idx := range wildcardIndices {
-				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level)
+				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level, result[idx].DeckIndex)
 			}
 		} else if len(pairs) == 2 {
 			// 已有两个对子，万能牌应该组成第三个对子
@@ -2464,7 +2473,7 @@ func normalizeTube(cards []*Card) []*Card {
 			}
 			
 			for _, idx := range wildcardIndices {
-				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level)
+				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level, result[idx].DeckIndex)
 			}
 		}
 	}
@@ -2486,7 +2495,7 @@ func normalizeTube(cards []*Card) []*Card {
 			if result[i].IsWildcard() && wildcardIdx < len(wildcardIndices) {
 				// 根据位置确定应该替换的数字
 				// 这里需要更复杂的逻辑来确定最优替换
-				result[i] = createReplacementCard(maxNum, "Spade", result[i].Level)
+				result[i] = createReplacementCard(maxNum, "Spade", result[i].Level, result[i].DeckIndex)
 				wildcardIdx++
 			}
 		}
