@@ -528,15 +528,11 @@ func (h *RoomHandler) runGamePrepareSequence(roomID string, players [4]*room.Pla
 								"players": playersList,
 							},
 						},
-					},
-					// Additional metadata (matches GameDriver format)
-					"event_type":  "match_started",
-					"player_seat": i,
-					"filtered_state": map[string]interface{}{
-						"can_play":   false, // Cannot play yet (game not started)
-						"is_my_turn": false, // Not my turn yet
-					},
 				},
+				// Additional metadata (matches GameDriver format)
+				"event_type":  "match_started",
+				"player_seat": i,
+			},
 				Timestamp: time.Now(),
 				PlayerID:  player.ID,
 			}

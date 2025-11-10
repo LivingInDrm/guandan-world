@@ -46,9 +46,6 @@ func main() {
 	// 初始化 WebSocket 管理器
 	wsManager := websocket.NewWSManager(authService, roomService)
 
-	// 初始化游戏服务（保留以备将来使用）
-	_ = game.NewGameService(wsManager)
-
 	// 初始化游戏驱动服务
 	driverService := game.NewDriverService(wsManager)
 	gameDriverHandler := handlers.NewGameDriverHandler(driverService)

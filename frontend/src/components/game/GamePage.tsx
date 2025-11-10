@@ -263,7 +263,6 @@ const GamePage: React.FC = () => {
         hasPlayerCards: !!playerView.player_cards,
         playerCardsCount: playerView.player_cards?.length || 0,
         hasGameState: !!playerView.game_state,
-        hasFilteredState: !!data.filtered_state,
         eventType: data.event_type
       });
 
@@ -276,7 +275,7 @@ const GamePage: React.FC = () => {
       const cards = playerView.player_cards || [];
       console.log('🃏 [GamePage] Setting player hand:', {
         cardCount: cards.length,
-        cards: cards.map(c => ({ id: c.id, suit: c.suit, rank: c.rank }))
+        cards: cards.map((c: Card) => ({ id: c.id, suit: c.suit, rank: c.rank }))
       });
       setPlayerHand(cards);
       
@@ -323,15 +322,29 @@ const GamePage: React.FC = () => {
         console.warn('⚠️ [GamePage] player_view has no game_state, skipping game state update');
       }
 
-      // can_play 和 is_my_turn 可能在 filtered_state 中，也可能在顶层
-      const filteredState = data.filtered_state || {};
-      const canPlayValue = filteredState.can_play || data.can_play || false;
-      const isMyTurnValue = filteredState.is_my_turn || data.is_my_turn || false;
+      // 从 player_view 中计算 can_play 和 is_my_turn
+      // 必须满足以下条件才能出牌：
+      // 1. deal.status === 'playing' (出牌阶段，而非上贡阶段)
+      // 2. 存在 currentTrick
+      // 3. currentTrick.current_turn === playerSeat (轮到自己)
+      // 4. 有手牌
+      const currentDeal = playerView.game_state?.current_match?.current_deal;
+      const currentTrick = currentDeal?.current_trick;
+      const isPlayingPhase = currentDeal?.status === 'playing';
+      const isMyTurnValue = isPlayingPhase && 
+                           currentTrick !== null && 
+                           currentTrick !== undefined &&
+                           currentTrick.current_turn === playerView.player_seat;
+      const canPlayValue = isMyTurnValue && (playerView.player_cards?.length || 0) > 0;
       
       console.log('🎯 [GamePage] Player action state:', {
         canPlay: canPlayValue,
         isMyTurn: isMyTurnValue,
-        source: filteredState.can_play !== undefined ? 'filtered_state' : 'data'
+        dealStatus: currentDeal?.status,
+        isPlayingPhase: isPlayingPhase,
+        currentTurn: currentTrick?.current_turn,
+        playerSeat: playerView.player_seat,
+        hasCards: (playerView.player_cards?.length || 0) > 0
       });
       
       setCanPlay(canPlayValue);

@@ -116,17 +116,21 @@ Authorization: Bearer <token>
 {
   "room": {
     "id": "room_1234567890",
-    "owner_id": "user_1234567890",
-    "status": "waiting",  // waiting | ready | playing
+    "owner": "user_1234567890",
+    "status": "waiting",
+    "player_count": 1,
     "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z",
     "players": [
       {
         "id": "user_1234567890",
         "username": "testuser",
-        "status": "online",
-        "is_owner": true,
-        "seat": 0
-      }
+        "seat": 0,
+        "online": true
+      },
+      null,
+      null,
+      null
     ]
   }
 }
@@ -147,10 +151,27 @@ Authorization: Bearer <token>
 {
   "room": {
     "id": "room_1234567890",
-    "owner_id": "user_1234567890",
+    "owner": "user_1234567890",
     "status": "waiting",
+    "player_count": 2,
     "created_at": "2024-01-01T00:00:00Z",
-    "players": [...]
+    "updated_at": "2024-01-01T00:00:00Z",
+    "players": [
+      {
+        "id": "user_1234567890",
+        "username": "player1",
+        "seat": 0,
+        "online": true
+      },
+      {
+        "id": "user_2345678901",
+        "username": "player2",
+        "seat": 1,
+        "online": true
+      },
+      null,
+      null
+    ]
   }
 }
 ```
@@ -171,10 +192,22 @@ Authorization: Bearer <token>
 {
   "room": {
     "id": "room_1234567890",
-    "owner_id": "user_1234567890",
+    "owner": "user_1234567890",
     "status": "waiting",
+    "player_count": 1,
     "created_at": "2024-01-01T00:00:00Z",
-    "players": [...]
+    "updated_at": "2024-01-01T00:00:00Z",
+    "players": [
+      {
+        "id": "user_1234567890",
+        "username": "player1",
+        "seat": 0,
+        "online": true
+      },
+      null,
+      null,
+      null
+    ]
   }
 }
 ```
@@ -203,18 +236,36 @@ Or if room was closed:
   "rooms": [
     {
       "id": "room_1234567890",
-      "owner_id": "user_1234567890",
+      "owner": "user_1234567890",
       "status": "waiting",
+      "player_count": 3,
+      "can_join": true,
       "created_at": "2024-01-01T00:00:00Z",
-      "players": [...]
+      "players": [
+        {
+          "id": "user_1234567890",
+          "username": "player1",
+          "seat": 0,
+          "online": true
+        },
+        {
+          "id": "user_2345678901",
+          "username": "player2",
+          "seat": 1,
+          "online": true
+        },
+        {
+          "id": "user_3456789012",
+          "username": "player3",
+          "seat": 2,
+          "online": true
+        }
+      ]
     }
   ],
-  "pagination": {
-    "page": 1,
-    "limit": 12,
-    "total": 100,
-    "total_pages": 9
-  }
+  "total_count": 100,
+  "page": 1,
+  "limit": 12
 }
 ```
 
@@ -245,17 +296,26 @@ Or if room was closed:
 {
   "room": {
     "id": "room_1234567890",
-    "owner_id": "user_1234567890",
+    "owner": "user_1234567890",
     "status": "waiting",
+    "player_count": 2,
     "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z",
     "players": [
       {
         "id": "user_1234567890",
         "username": "testuser",
-        "status": "online",
-        "is_owner": true,
-        "seat": 0
-      }
+        "seat": 0,
+        "online": true
+      },
+      {
+        "id": "user_2345678901",
+        "username": "player2",
+        "seat": 1,
+        "online": true
+      },
+      null,
+      null
     ]
   }
 }
