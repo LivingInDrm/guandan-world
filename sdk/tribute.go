@@ -469,14 +469,14 @@ func (tp *TributePhase) getCardKey(card *Card) string {
 	return fmt.Sprintf("%d_%s", card.Number, card.Color)
 }
 
-// handleTimeout handles timeout during tribute selection
-func (tp *TributePhase) handleTimeout() error {
+// handleTimeout handles timeout during tribute selection by returning the card to auto-select
+func (tp *TributePhase) handleTimeout() (*Card, error) {
 	if tp.Status != TributeStatusSelecting {
-		return errors.New("not in selecting status")
+		return nil, errors.New("not in selecting status")
 	}
 
 	if len(tp.PoolCards) == 0 {
-		return errors.New("no cards in pool to auto-select")
+		return nil, errors.New("no cards in pool to auto-select")
 	}
 
 	// Auto-select the highest card
@@ -487,7 +487,7 @@ func (tp *TributePhase) handleTimeout() error {
 		}
 	}
 
-	return tp.selectTribute(tp.SelectingPlayer, highestCard)
+	return highestCard, nil
 }
 
 // setPoolCards sets the pool cards for double down scenario
@@ -685,8 +685,16 @@ func (tm *TributeManager) HandleTimeoutAction(phase *TributePhase, playerCards [
 
 	switch phase.Status {
 	case TributeStatusSelecting:
-		// Handle selection timeout
-		return phase.handleTimeout()
+		// Handle selection timeout - get the auto-selected card
+		card, err := phase.handleTimeout()
+		if err != nil {
+			return err
+		}
+		// Perform the actual selection with the returned card
+		if card != nil {
+			return phase.selectTribute(phase.SelectingPlayer, card)
+		}
+		return nil
 
 	case TributeStatusReturning:
 		// Find player who needs to return and auto-select lowest card

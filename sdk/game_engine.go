@@ -385,6 +385,7 @@ func (ge *GameEngine) StartMatch(players []Player) error {
 	return nil
 }
 
+
 // StartDeal starts a new deal in the current match
 func (ge *GameEngine) StartDeal() error {
 	ge.mutex.Lock()
@@ -648,13 +649,67 @@ func (ge *GameEngine) ProcessTimeouts() []*GameEvent {
 
 	events := make([]*GameEvent, 0)
 
-	if ge.currentMatch != nil && ge.currentMatch.CurrentDeal != nil {
-		timeoutEvents := ge.currentMatch.CurrentDeal.ProcessTimeouts()
-		events = append(events, timeoutEvents...)
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return events
+	}
 
-		// Emit all timeout events
-		for _, event := range timeoutEvents {
-			ge.emitEvent(event)
+	deal := ge.currentMatch.CurrentDeal
+	timeoutActions := deal.GetTimeoutActions()
+
+	for _, action := range timeoutActions {
+		// First emit timeout event
+		timeoutEvent := &GameEvent{
+			Type: EventPlayerTimeout,
+			Data: map[string]interface{}{
+				"player_seat": action.PlayerSeat,
+				"action":      action.ActionType,
+			},
+			Timestamp:  time.Now(),
+			PlayerSeat: action.PlayerSeat,
+		}
+		ge.emitEvent(timeoutEvent)
+		events = append(events, timeoutEvent)
+
+		// Then perform the action and emit corresponding event
+		switch action.ActionType {
+		case "pass":
+			// Unlock temporarily to call PassTurn
+			ge.mutex.Unlock()
+			event, err := ge.PassTurn(action.PlayerSeat)
+			ge.mutex.Lock()
+			if err == nil && event != nil {
+				events = append(events, event)
+			}
+
+		case "auto_play":
+			// Extract cards from AutoData
+			if cards, ok := action.AutoData.([]*Card); ok && len(cards) > 0 {
+				// Unlock temporarily to call PlayCards
+				ge.mutex.Unlock()
+				event, err := ge.PlayCards(action.PlayerSeat, cards)
+				ge.mutex.Lock()
+				if err == nil && event != nil {
+					events = append(events, event)
+				}
+			}
+
+		case "tribute_select":
+			// Extract card from AutoData and convert to cardID
+			if card, ok := action.AutoData.(*Card); ok && card != nil {
+				// Convert *Card to cardID for SubmitTributeSelection
+				cardID := card.GetID()
+				
+				// Unlock temporarily to call SubmitTributeSelection (same as normal selection)
+				ge.mutex.Unlock()
+				err := ge.SubmitTributeSelection(action.PlayerSeat, cardID)
+				ge.mutex.Lock()
+				
+				// SubmitTributeSelection internally emits EventTributeSelected
+				// No need to collect events here
+				if err != nil {
+					// Log error but continue (optional: could break/return)
+				}
+			}
 		}
 	}
 

@@ -209,34 +209,24 @@ func (d *Deal) PassTurn(playerSeat int) error {
 	return nil
 }
 
-// ProcessTimeouts processes any pending timeouts and returns resulting events
-func (d *Deal) ProcessTimeouts() []*GameEvent {
-	events := make([]*GameEvent, 0)
+// GetTimeoutActions checks for any pending timeouts and returns actions to be taken
+// This method only detects timeouts without executing state changes
+func (d *Deal) GetTimeoutActions() []TimeoutAction {
+	actions := make([]TimeoutAction, 0)
 	now := time.Now()
 
 	// Check tribute phase timeout
 	if d.Status == DealStatusTribute && d.TributePhase != nil {
 		if d.TributePhase.Status == TributeStatusSelecting && now.After(d.TributePhase.SelectTimeout) {
-			// Auto-select tribute on timeout
-			err := d.TributePhase.handleTimeout()
-			if err == nil {
-				event := &GameEvent{
-					Type: EventPlayerTimeout,
-					Data: map[string]interface{}{
-						"player_seat": d.TributePhase.SelectingPlayer,
-						"action":      "tribute_select",
-					},
-					Timestamp:  now,
+			// Get auto-selected card without executing the selection
+			card, err := d.TributePhase.handleTimeout()
+			if err == nil && card != nil {
+				action := TimeoutAction{
 					PlayerSeat: d.TributePhase.SelectingPlayer,
+					ActionType: "tribute_select",
+					AutoData:   card,
 				}
-				events = append(events, event)
-
-				// Check if tribute phase finished
-				if d.TributePhase.Status == TributeStatusFinished {
-					// Note: Tribute effects are applied by GameEngine, not here
-					d.startFirstTrick()
-					d.Status = DealStatusPlaying
-				}
+				actions = append(actions, action)
 			}
 		}
 	}
@@ -246,22 +236,17 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 		if now.After(d.CurrentTrick.TurnTimeout) {
 			currentPlayer := d.CurrentTrick.CurrentTurn
 
-			// Auto-pass on timeout
-			err := d.PassTurn(currentPlayer)
-			if err == nil {
-				event := &GameEvent{
-					Type: EventPlayerTimeout,
-					Data: map[string]interface{}{
-						"player_seat": currentPlayer,
-						"action":      "pass",
-					},
-					Timestamp:  now,
+			// Check if player can pass (not the leader)
+			if d.CurrentTrick.LeadComp != nil {
+				action := TimeoutAction{
 					PlayerSeat: currentPlayer,
+					ActionType: "pass",
+					AutoData:   nil,
 				}
-				events = append(events, event)
+				actions = append(actions, action)
 			} else {
-				// If pass fails, try to play a card instead (for trick leader)
-				if d.CurrentTrick.LeadComp == nil && len(d.PlayerCards[currentPlayer]) > 0 {
+				// Player is the leader, must play a card
+				if len(d.PlayerCards[currentPlayer]) > 0 {
 					// Find smallest card to play
 					smallestCard := d.PlayerCards[currentPlayer][0]
 					for _, card := range d.PlayerCards[currentPlayer] {
@@ -270,25 +255,18 @@ func (d *Deal) ProcessTimeouts() []*GameEvent {
 						}
 					}
 
-					playErr := d.PlayCards(currentPlayer, []*Card{smallestCard})
-					if playErr == nil {
-						event := &GameEvent{
-							Type: EventPlayerTimeout,
-							Data: map[string]interface{}{
-								"player_seat": currentPlayer,
-								"action":      "auto_play",
-							},
-							Timestamp:  now,
-							PlayerSeat: currentPlayer,
-						}
-						events = append(events, event)
+					action := TimeoutAction{
+						PlayerSeat: currentPlayer,
+						ActionType: "auto_play",
+						AutoData:   []*Card{smallestCard},
 					}
+					actions = append(actions, action)
 				}
 			}
 		}
 	}
 
-	return events
+	return actions
 }
 
 // dealCards deals 27 cards to each player

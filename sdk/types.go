@@ -175,3 +175,10 @@ type TrickInfo struct {
 	IsLeader bool     `json:"is_leader"`           // 是否为首出
 	LeadComp CardComp `json:"lead_comp,omitempty"` // 当前领先的牌组合 (如果不是首出)
 }
+
+// TimeoutAction represents an action that should be taken due to timeout
+type TimeoutAction struct {
+	PlayerSeat int         `json:"player_seat"` // Seat number of player who timed out
+	ActionType string      `json:"action_type"` // "pass", "auto_play", "tribute_select"
+	AutoData   interface{} `json:"auto_data"`   // Additional data for auto action (e.g., cards to play)
+}
