@@ -31,7 +31,6 @@ func NewDeal(level int, lastResult *DealResult) (*Deal, error) {
 			return nil, fmt.Errorf("failed to create tribute phase: %w", err)
 		}
 		deal.TributePhase = tributePhase
-		// Keep status as waiting - tribute phase will be started after dealing cards
 	}
 
 	return deal, nil
@@ -154,7 +153,6 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 
 	// Move to next player
 	d.CurrentTrick.CurrentTurn = d.getNextPlayer(playerSeat)
-	d.CurrentTrick.TurnTimeout = time.Now().Add(20 * time.Second)
 
 	// Check if trick is finished (all players played or passed)
 	if d.isTrickFinished() {
@@ -199,7 +197,6 @@ func (d *Deal) PassTurn(playerSeat int) error {
 
 	// Move to next player
 	d.CurrentTrick.CurrentTurn = d.getNextPlayer(playerSeat)
-	d.CurrentTrick.TurnTimeout = time.Now().Add(20 * time.Second)
 
 	// Check if trick is finished
 	if d.isTrickFinished() {
@@ -207,66 +204,6 @@ func (d *Deal) PassTurn(playerSeat int) error {
 	}
 
 	return nil
-}
-
-// GetTimeoutActions checks for any pending timeouts and returns actions to be taken
-// This method only detects timeouts without executing state changes
-func (d *Deal) GetTimeoutActions() []TimeoutAction {
-	actions := make([]TimeoutAction, 0)
-	now := time.Now()
-
-	// Check tribute phase timeout
-	if d.Status == DealStatusTribute && d.TributePhase != nil {
-		if d.TributePhase.Status == TributeStatusSelecting && now.After(d.TributePhase.SelectTimeout) {
-			// Get auto-selected card without executing the selection
-			card, err := d.TributePhase.handleTimeout()
-			if err == nil && card != nil {
-				action := TimeoutAction{
-					PlayerSeat: d.TributePhase.SelectingPlayer,
-					ActionType: "tribute_select",
-					AutoData:   card,
-				}
-				actions = append(actions, action)
-			}
-		}
-	}
-
-	// Check trick timeout
-	if d.Status == DealStatusPlaying && d.CurrentTrick != nil && d.CurrentTrick.Status == TrickStatusPlaying {
-		if now.After(d.CurrentTrick.TurnTimeout) {
-			currentPlayer := d.CurrentTrick.CurrentTurn
-
-			// Check if player can pass (not the leader)
-			if d.CurrentTrick.LeadComp != nil {
-				action := TimeoutAction{
-					PlayerSeat: currentPlayer,
-					ActionType: "pass",
-					AutoData:   nil,
-				}
-				actions = append(actions, action)
-			} else {
-				// Player is the leader, must play a card
-				if len(d.PlayerCards[currentPlayer]) > 0 {
-					// Find smallest card to play
-					smallestCard := d.PlayerCards[currentPlayer][0]
-					for _, card := range d.PlayerCards[currentPlayer] {
-						if card.LessThan(smallestCard) {
-							smallestCard = card
-						}
-					}
-
-					action := TimeoutAction{
-						PlayerSeat: currentPlayer,
-						ActionType: "auto_play",
-						AutoData:   []*Card{smallestCard},
-					}
-					actions = append(actions, action)
-				}
-			}
-		}
-	}
-
-	return actions
 }
 
 // dealCards deals 27 cards to each player
@@ -364,8 +301,6 @@ func (d *Deal) startFirstTrick() error {
 		return fmt.Errorf("failed to create first trick: %w", err)
 	}
 
-	// Do NOT start the trick immediately - leave it in Waiting status
-	// The trick will be started by checkPreActionStateTransitions when first player acts
 	d.CurrentTrick = trick
 	return nil
 }

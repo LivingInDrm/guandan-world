@@ -114,6 +114,7 @@ export const WS_MESSAGE_TYPES = {
   GAME_EVENT: 'game_event',
   PLAYER_VIEW: 'player_view',
   ROOM_UPDATE: 'room_update',
+  GAME_ACTION: 'game_action',
   
   // Timeout and auto-play
   PLAYER_TIMEOUT: 'player_timeout',
@@ -193,6 +194,16 @@ export interface PlayerGameState {
   game_state: GameState;
   can_play: boolean;
   turn_timeout: string | null;
+  remaining_seconds: number;
+}
+
+export interface GameActionData {
+  action_type: 'play_decision_required' | 'tribute_select' | 'tribute_return';
+  player_seat: number;
+  hand?: Card[];
+  trick_info?: TrickInfo;
+  timeout?: number;
+  tribute_options?: Card[];
 }
 
 // Tribute phase related types

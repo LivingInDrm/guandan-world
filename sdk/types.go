@@ -56,7 +56,7 @@ type Match struct {
 // Deal represents a single deal (one round of the game)
 type Deal struct {
 	ID           string        `json:"id"`
-	Level        int           `json:"level"` // Current level for this deal
+	Level        int           `json:"level"`        // Current level for this deal
 	Status       DealStatus    `json:"status"`
 	CurrentTrick *Trick        `json:"current_trick"`
 	TrickHistory []*Trick      `json:"trick_history"`
@@ -78,8 +78,7 @@ type Trick struct {
 	LeadComp    CardComp      `json:"lead_comp"`    // Leading card combination
 	Status      TrickStatus   `json:"status"`
 	StartTime   time.Time     `json:"start_time"`
-	TurnTimeout time.Time     `json:"turn_timeout"` // When current player's turn times out
-	NextLeader  int           `json:"next_leader"`  // Seat number of next trick leader (set when trick finishes)
+	NextLeader  int           `json:"next_leader"` // Seat number of next trick leader (set when trick finishes)
 }
 
 // PlayAction represents a single play action by a player
@@ -99,7 +98,6 @@ type TributePhase struct {
 	ReturnCards      map[int]*Card `json:"return_cards"`      // receiver -> card
 	PoolCards        []*Card       `json:"pool_cards"`        // Cards in tribute pool (for double-down)
 	SelectingPlayer  int           `json:"selecting_player"`  // Player selecting from pool (-1 if none)
-	SelectTimeout    time.Time     `json:"select_timeout"`    // When selection times out
 	IsImmune         bool          `json:"is_immune"`         // Whether tribute was skipped due to immunity
 	SelectionResults map[int]int   `json:"selection_results"` // receiver -> original_giver (for double-down tracking)
 }
@@ -120,7 +118,7 @@ type TributeAction struct {
 	PlayerID     int               `json:"player_id"`
 	Options      []*Card           `json:"options"`       // Available cards to choose from
 	TargetPlayer int               `json:"target_player"` // Target player for return tribute
-	Timeout      time.Duration     `json:"timeout"`
+	Timeout      time.Duration     `json:"timeout"`       // DRIVER-MANAGED: Set by GameDriver, not by Tribute layer
 }
 
 // TributeActionType represents the type of tribute action
@@ -176,9 +174,9 @@ type TrickInfo struct {
 	LeadComp CardComp `json:"lead_comp,omitempty"` // 当前领先的牌组合 (如果不是首出)
 }
 
-// TimeoutAction represents an action that should be taken due to timeout
-type TimeoutAction struct {
-	PlayerSeat int         `json:"player_seat"` // Seat number of player who timed out
-	ActionType string      `json:"action_type"` // "pass", "auto_play", "tribute_select"
-	AutoData   interface{} `json:"auto_data"`   // Additional data for auto action (e.g., cards to play)
+// PlayerTimeoutStats 玩家超时统计信息
+type PlayerTimeoutStats struct {
+	PlayDecisionTimeouts int `json:"play_decision_timeouts"` // 出牌决策超时次数
+	TributeTimeouts      int `json:"tribute_timeouts"`       // 贡牌超时次数
+	TotalTimeouts        int `json:"total_timeouts"`         // 总超时次数
 }

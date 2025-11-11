@@ -78,14 +78,12 @@ func (c *HTTPClient) CallAPI(method, path string, body interface{}, result inter
 
 // ParseCard 解析卡牌数据（从WebSocket消息）
 func ParseCard(cardMap map[string]interface{}, currentRank int) *sdk.Card {
-	number, ok1 := cardMap["number"].(float64)
-	color, ok2 := cardMap["color"].(string)
-
-	if !ok1 || !ok2 {
+	cardID, ok := cardMap["id"].(string)
+	if !ok {
 		return nil
 	}
 
-	card, err := sdk.NewCard(int(number), color, currentRank)
+	card, err := sdk.ParseCardFromID(cardID, currentRank)
 	if err != nil {
 		return nil
 	}

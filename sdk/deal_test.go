@@ -283,19 +283,7 @@ func TestDealCardsEqual(t *testing.T) {
 	}
 }
 
-func TestDealGetTimeoutActions(t *testing.T) {
-	deal, _ := NewDeal(5, nil)
-
-	// Test with no active components
-	actions := deal.GetTimeoutActions()
-	if actions == nil {
-		t.Error("GetTimeoutActions should return empty slice, not nil")
-	}
-
-	if len(actions) != 0 {
-		t.Error("GetTimeoutActions should return empty slice when no active components")
-	}
-}
+// TestDealGetTimeoutActions removed - timeout handling moved to GameDriver (Task 4)
 
 func TestDealFinishDeal(t *testing.T) {
 	deal, _ := NewDeal(5, nil)

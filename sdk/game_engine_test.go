@@ -227,19 +227,7 @@ func TestGameEngineErrorHandling(t *testing.T) {
 	}
 }
 
-func TestGameEngineProcessTimeouts(t *testing.T) {
-	engine := NewGameEngine()
-
-	// Test with no active match
-	events := engine.ProcessTimeouts()
-	if events == nil {
-		t.Error("ProcessTimeouts should return empty slice, not nil")
-	}
-
-	if len(events) != 0 {
-		t.Error("ProcessTimeouts should return empty slice when no active match")
-	}
-}
+// TestGameEngineProcessTimeouts removed - timeout handling moved to GameDriver (Task 5)
 
 func TestGameEngineThreadSafety(t *testing.T) {
 	engine := NewGameEngine()

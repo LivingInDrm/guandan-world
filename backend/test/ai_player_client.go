@@ -19,11 +19,12 @@ import (
 // AIPlayerClient 代表一个独立的AI玩家客户端
 type AIPlayerClient struct {
 	// 配置
-	serverURL string
-	roomID    string
-	username  string
-	password  string
-	verbose   bool
+	serverURL   string
+	roomID      string
+	username    string
+	password    string
+	verbose     bool
+	playDelay   time.Duration
 
 	// 认证信息
 	authToken string
@@ -52,12 +53,18 @@ type AIPlayerClient struct {
 
 // NewAIPlayerClient 创建新的AI玩家客户端
 func NewAIPlayerClient(serverURL, roomID, username, password string, verbose bool) *AIPlayerClient {
+	return NewAIPlayerClientWithDelay(serverURL, roomID, username, password, verbose, 5*time.Second)
+}
+
+// NewAIPlayerClientWithDelay 创建新的AI玩家客户端并指定出牌延迟
+func NewAIPlayerClientWithDelay(serverURL, roomID, username, password string, verbose bool, playDelay time.Duration) *AIPlayerClient {
 	return &AIPlayerClient{
 		serverURL:   serverURL,
 		roomID:      roomID,
 		username:    username,
 		password:    password,
 		verbose:     verbose,
+		playDelay:   playDelay,
 		httpClient:  NewHTTPClient(serverURL, &http.Client{Timeout: 10 * time.Second}),
 		aiAlgorithm: ai.NewSmartAutoPlayAlgorithm(2), // 从2级开始
 		currentRank: 2,
@@ -272,10 +279,19 @@ func (c *AIPlayerClient) handleGameEvent(msg *wsmanager.WSMessage) {
 	// 处理出牌事件 - 从手牌中移除
 	if eventType == "player_played" {
 		if eventData, ok := data["event_data"].(map[string]interface{}); ok {
-			if playerSeat, ok := eventData["player_seat"].(float64); ok {
-				if int(playerSeat) == c.playerSeat {
-					c.removeCardsFromHand(eventData)
-				}
+			playerSeat := -1
+			if ps, ok := eventData["player_seat"].(float64); ok {
+				playerSeat = int(ps)
+			}
+			
+			// 记录所有玩家的出牌
+			if cardsData, ok := eventData["cards"].([]interface{}); ok {
+				c.logVerbose(fmt.Sprintf("Player %d played %d cards", playerSeat, len(cardsData)))
+			}
+			
+			// 只移除自己的手牌
+			if playerSeat == c.playerSeat {
+				c.removeCardsFromHand(eventData)
 			}
 		}
 	}
@@ -407,12 +423,43 @@ func (c *AIPlayerClient) handlePlayDecisionRequest(data map[string]interface{}) 
 
 	// 如果有leadComp，解析它
 	if leadCompData, ok := trickData["lead_comp"]; ok && leadCompData != nil {
-		// leadComp存在但为nil表示可以出任何牌
-		trickInfo.LeadComp = nil
+		c.logVerbose(fmt.Sprintf("Raw lead_comp data: %+v", leadCompData))
+		if leadCompMap, ok := leadCompData.(map[string]interface{}); ok {
+			c.logVerbose(fmt.Sprintf("lead_comp map: %+v", leadCompMap))
+			if cardsData, ok := leadCompMap["cards"].([]interface{}); ok {
+				c.logVerbose(fmt.Sprintf("lead_comp cards count: %d", len(cardsData)))
+				leadCards := ParseCards(cardsData, c.currentRank)
+				c.logVerbose(fmt.Sprintf("Parsed lead cards count: %d", len(leadCards)))
+				if len(leadCards) > 0 {
+					trickInfo.LeadComp = sdk.FromCardList(leadCards, nil)
+					c.logVerbose(fmt.Sprintf("LeadComp set: type=%v, valid=%v", trickInfo.LeadComp.GetType(), trickInfo.LeadComp.IsValid()))
+				}
+			} else {
+				c.logVerbose("Failed to parse cards from lead_comp")
+			}
+		} else {
+			c.logVerbose(fmt.Sprintf("lead_comp is not a map, type: %T", leadCompData))
+		}
+	} else {
+		c.logVerbose("No lead_comp in trick_info")
 	}
 
 	// 使用AI算法获取决策
 	selectedCards := c.aiAlgorithm.SelectCardsToPlay(hand, trickInfo)
+
+	c.logVerbose(fmt.Sprintf("AI selected %d cards, isLeader=%v, hasLeadComp=%v", 
+		len(selectedCards), isLeader, trickInfo.LeadComp != nil))
+	if len(selectedCards) > 0 {
+		cardIDs := make([]string, len(selectedCards))
+		for i, card := range selectedCards {
+			cardIDs[i] = card.GetID()
+		}
+		c.logVerbose(fmt.Sprintf("Selected cards: %v", cardIDs))
+	}
+	if trickInfo.LeadComp != nil {
+		c.logVerbose(fmt.Sprintf("LeadComp: type=%v, cards=%v", 
+			trickInfo.LeadComp.GetType(), trickInfo.LeadComp.GetCards()))
+	}
 
 	// 安全检查：如果是首出但算法返回空结果，强制出最小的牌
 	if isLeader && len(selectedCards) == 0 {
@@ -431,6 +478,9 @@ func (c *AIPlayerClient) handlePlayDecisionRequest(data map[string]interface{}) 
 			return
 		}
 	}
+
+	// 等待配置的延迟时间
+	time.Sleep(c.playDelay)
 
 	// 构建决策
 	var action string

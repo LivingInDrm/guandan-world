@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"testing"
-	"time"
 )
 
 func TestGameEngine_CompleteGameFlow(t *testing.T) {
@@ -296,78 +295,8 @@ func TestGameEngine_PlayerView(t *testing.T) {
 	}
 }
 
-func TestGameEngine_ProcessTimeouts(t *testing.T) {
-	// Setup game
-	engine := NewGameEngine()
-	players := []Player{
-		{ID: "player1", Username: "Player1", Seat: 0},
-		{ID: "player2", Username: "Player2", Seat: 1},
-		{ID: "player3", Username: "Player3", Seat: 2},
-		{ID: "player4", Username: "Player4", Seat: 3},
-	}
-
-	err := engine.StartMatch(players)
-	if err != nil {
-		t.Fatalf("Failed to start match: %v", err)
-	}
-
-	err = engine.StartDeal()
-	if err != nil {
-		t.Fatalf("Failed to start deal: %v", err)
-	}
-
-	gameState := engine.GetGameState()
-	deal := gameState.CurrentMatch.CurrentDeal
-
-	// Skip tribute phase if it exists
-	if deal.Status == DealStatusTribute {
-		deal.Status = DealStatusPlaying
-		err := deal.startFirstTrick()
-		if err != nil {
-			t.Fatalf("Failed to start first trick: %v", err)
-		}
-	}
-
-	// Test timeout processing (should not timeout immediately)
-	events := engine.ProcessTimeouts()
-	if len(events) > 0 {
-		t.Error("Should not have timeout events immediately after starting")
-	}
-
-	// Simulate timeout by setting past time
-	if deal.CurrentTrick != nil {
-		t.Logf("Deal status: %v, Trick status: %v", deal.Status, deal.CurrentTrick.Status)
-
-		// Make sure trick is in playing status
-		deal.CurrentTrick.Status = TrickStatusPlaying
-		deal.CurrentTrick.TurnTimeout = time.Now().Add(-1 * time.Second)
-
-		t.Logf("After setup - Deal status: %v, Trick status: %v, Timeout: %v",
-			deal.Status, deal.CurrentTrick.Status, deal.CurrentTrick.TurnTimeout)
-
-		events = engine.ProcessTimeouts()
-		t.Logf("Got %d timeout events", len(events))
-		for i, event := range events {
-			t.Logf("Event %d: Type=%v, Data=%v", i, event.Type, event.Data)
-		}
-
-		if len(events) == 0 {
-			t.Error("Expected timeout events after timeout period")
-		} else {
-			// Should have timeout event
-			found := false
-			for _, event := range events {
-				if event.Type == EventPlayerTimeout {
-					found = true
-					break
-				}
-			}
-			if !found {
-				t.Error("Expected timeout event in processed events")
-			}
-		}
-	}
-}
+// TestGameEngine_ProcessTimeouts removed - timeout handling moved to GameDriver (Task 5)
+// See GameDriver tests (game_driver_task3_test.go) for timeout behavior verification
 
 func TestGameEngine_PlayerDisconnectReconnect(t *testing.T) {
 	// Setup game

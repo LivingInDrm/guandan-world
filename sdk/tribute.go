@@ -3,7 +3,6 @@ package sdk
 import (
 	"errors"
 	"fmt"
-	"time"
 )
 
 // TributeManager handles all tribute-related operations independently
@@ -51,7 +50,6 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 		// Rank1 优先从贡牌池中挑选其一；Rank2 获得剩下的一张贡牌
 		tributePhase.Status = TributeStatusWaiting // 初始状态应该是 Waiting
 		tributePhase.SelectingPlayer = rank1       // Rank1 先选
-		tributePhase.SelectTimeout = time.Now().Add(30 * time.Second)
 
 		tributePhase.TributeMap[rank3] = -1 // -1 表示贡献到池子
 		tributePhase.TributeMap[rank4] = -1 // -1 表示贡献到池子
@@ -208,7 +206,7 @@ func (tm *TributeManager) ApplyTributeToHands(tributePhase *TributePhase, player
 	}
 
 	// Handle double down scenario specially
-	if tributePhase.SelectionResults != nil && len(tributePhase.SelectionResults) > 0 {
+	if len(tributePhase.SelectionResults) > 0 {
 		return tm.applyDoubleDownTributeToHands(tributePhase, playerHands)
 	}
 
@@ -436,7 +434,6 @@ func (tp *TributePhase) selectTribute(playerSeat int, card *Card) error {
 		// Find the second place player (teammate of current selector)
 		secondPlace := tp.getSecondPlace()
 		tp.SelectingPlayer = secondPlace
-		tp.SelectTimeout = time.Now().Add(30 * time.Second)
 	} else {
 		// Selection finished, build return tribute relationships
 		tp.buildReturnTributeRelationships()
@@ -467,27 +464,6 @@ func (tp *TributePhase) buildReturnTributeRelationships() {
 // getCardKey returns a unique key for a card
 func (tp *TributePhase) getCardKey(card *Card) string {
 	return fmt.Sprintf("%d_%s", card.Number, card.Color)
-}
-
-// handleTimeout handles timeout during tribute selection by returning the card to auto-select
-func (tp *TributePhase) handleTimeout() (*Card, error) {
-	if tp.Status != TributeStatusSelecting {
-		return nil, errors.New("not in selecting status")
-	}
-
-	if len(tp.PoolCards) == 0 {
-		return nil, errors.New("no cards in pool to auto-select")
-	}
-
-	// Auto-select the highest card
-	highestCard := tp.PoolCards[0]
-	for _, card := range tp.PoolCards {
-		if card.GreaterThan(highestCard) {
-			highestCard = card
-		}
-	}
-
-	return highestCard, nil
 }
 
 // setPoolCards sets the pool cards for double down scenario
@@ -559,7 +535,6 @@ func (tm *TributeManager) ProcessTributePhaseAction(phase *TributePhase, playerC
 				Type:     TributeActionSelect,
 				PlayerID: phase.SelectingPlayer,
 				Options:  phase.PoolCards,
-				Timeout:  30 * time.Second,
 			}, nil
 		}
 
@@ -575,7 +550,6 @@ func (tm *TributeManager) ProcessTributePhaseAction(phase *TributePhase, playerC
 						PlayerID:     receiver,
 						Options:      playerCards[receiver],
 						TargetPlayer: giver,
-						Timeout:      30 * time.Second,
 					}, nil
 				}
 			}
@@ -677,46 +651,6 @@ func (tm *TributeManager) SubmitReturn(phase *TributePhase, playerID int, cardID
 	return nil
 }
 
-// HandleTimeoutAction handles timeout for current tribute action
-func (tm *TributeManager) HandleTimeoutAction(phase *TributePhase, playerCards [4][]*Card) error {
-	if phase == nil {
-		return errors.New("no tribute phase")
-	}
-
-	switch phase.Status {
-	case TributeStatusSelecting:
-		// Handle selection timeout - get the auto-selected card
-		card, err := phase.handleTimeout()
-		if err != nil {
-			return err
-		}
-		// Perform the actual selection with the returned card
-		if card != nil {
-			return phase.selectTribute(phase.SelectingPlayer, card)
-		}
-		return nil
-
-	case TributeStatusReturning:
-		// Find player who needs to return and auto-select lowest card
-		for giver, receiver := range phase.TributeMap {
-			if receiver != -1 && phase.TributeCards[giver] != nil {
-				if phase.ReturnCards[receiver] == nil {
-					// Get lowest card for auto-return
-					lowestCard := tm.getLowestCard(playerCards[receiver])
-					if lowestCard != nil {
-						phase.addReturnCard(receiver, lowestCard)
-					}
-					break
-				}
-			}
-		}
-		return nil
-
-	default:
-		return errors.New("no pending tribute action to timeout")
-	}
-}
-
 // GetTributeStatusInfo returns detailed tribute status information
 func (tm *TributeManager) GetTributeStatusInfo(phase *TributePhase, playerCards [4][]*Card) *TributeStatusInfo {
 	if phase == nil {
@@ -733,7 +667,6 @@ func (tm *TributeManager) GetTributeStatusInfo(phase *TributePhase, playerCards 
 				Type:     TributeActionSelect,
 				PlayerID: phase.SelectingPlayer,
 				Options:  phase.PoolCards,
-				Timeout:  30 * time.Second,
 			})
 		}
 
@@ -746,7 +679,6 @@ func (tm *TributeManager) GetTributeStatusInfo(phase *TributePhase, playerCards 
 						PlayerID:     receiver,
 						Options:      playerCards[receiver],
 						TargetPlayer: giver,
-						Timeout:      30 * time.Second,
 					})
 				}
 			}
@@ -759,6 +691,6 @@ func (tm *TributeManager) GetTributeStatusInfo(phase *TributePhase, playerCards 
 		ReturnCards:    phase.ReturnCards,
 		TributeMap:     phase.TributeMap,
 		PendingActions: pendingActions,
-		IsImmune:       false, // This would need to be tracked separately
+		IsImmune:       phase.IsImmune,
 	}
 }

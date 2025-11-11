@@ -2,6 +2,7 @@ package game
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 type MockDriverWSManager struct {
 	broadcasts map[string][]*websocket.WSMessage
 	messages   map[string][]*websocket.WSMessage
+	mu         sync.RWMutex
 }
 
 func NewMockDriverWSManager() *MockDriverWSManager {
@@ -23,6 +25,8 @@ func NewMockDriverWSManager() *MockDriverWSManager {
 }
 
 func (m *MockDriverWSManager) BroadcastToRoom(roomID string, message *websocket.WSMessage) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if m.broadcasts[roomID] == nil {
 		m.broadcasts[roomID] = make([]*websocket.WSMessage, 0)
 	}
@@ -30,6 +34,8 @@ func (m *MockDriverWSManager) BroadcastToRoom(roomID string, message *websocket.
 }
 
 func (m *MockDriverWSManager) SendToPlayer(playerID string, message *websocket.WSMessage) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if m.messages[playerID] == nil {
 		m.messages[playerID] = make([]*websocket.WSMessage, 0)
 	}
@@ -38,10 +44,14 @@ func (m *MockDriverWSManager) SendToPlayer(playerID string, message *websocket.W
 }
 
 func (m *MockDriverWSManager) GetBroadcasts(roomID string) []*websocket.WSMessage {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	return m.broadcasts[roomID]
 }
 
 func (m *MockDriverWSManager) GetMessages(playerID string) []*websocket.WSMessage {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	return m.messages[playerID]
 }
 
@@ -261,8 +271,11 @@ func TestWebSocketObserver_OnGameEvent(t *testing.T) {
 	// Create mock WebSocket manager
 	wsManager := NewMockDriverWSManager()
 	
+	// Create a test engine
+	engine := sdk.NewGameEngine()
+	
 	// Create observer
-	observer := NewWebSocketObserver("test-room", wsManager)
+	observer := NewWebSocketObserver("test-room", wsManager, engine)
 	
 	// Create test event
 	event := &sdk.GameEvent{

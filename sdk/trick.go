@@ -21,8 +21,7 @@ func NewTrick(leader int) (*Trick, error) {
 		LeadComp:    nil,
 		Status:      TrickStatusWaiting,
 		StartTime:   time.Now(),
-		TurnTimeout: time.Now().Add(20 * time.Second),
-		NextLeader:  -1, // Will be set when trick finishes
+		NextLeader:  -1,
 	}, nil
 }
 
@@ -33,7 +32,6 @@ func (t *Trick) StartTrick() error {
 	}
 
 	t.Status = TrickStatusPlaying
-	t.TurnTimeout = time.Now().Add(20 * time.Second)
 
 	return nil
 }
@@ -82,7 +80,6 @@ func (t *Trick) PlayCards(playerSeat int, cards []*Card, comp CardComp) error {
 
 	// Move to next player
 	t.CurrentTurn = t.getNextPlayer(playerSeat)
-	t.TurnTimeout = time.Now().Add(20 * time.Second)
 
 	// Check if trick is finished
 	if t.isTrickFinished() {
@@ -121,7 +118,6 @@ func (t *Trick) PassTurn(playerSeat int) error {
 
 	// Move to next player
 	t.CurrentTurn = t.getNextPlayer(playerSeat)
-	t.TurnTimeout = time.Now().Add(20 * time.Second)
 
 	// Check if trick is finished
 	if t.isTrickFinished() {
@@ -182,20 +178,6 @@ func (t *Trick) GetPlayerPlay(playerSeat int) *PlayAction {
 		}
 	}
 	return nil
-}
-
-// ProcessTimeout handles timeout for the current player
-func (t *Trick) ProcessTimeout() error {
-	if t.Status != TrickStatusPlaying {
-		return errors.New("trick is not in playing status")
-	}
-
-	if time.Now().Before(t.TurnTimeout) {
-		return errors.New("timeout not reached yet")
-	}
-
-	// Auto-pass on timeout
-	return t.PassTurn(t.CurrentTurn)
 }
 
 // canPlayCombination checks if a combination can be played against the current lead

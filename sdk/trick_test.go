@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"testing"
-	"time"
 )
 
 func TestNewTrick(t *testing.T) {
@@ -449,39 +448,4 @@ func TestTrickFinishTrick(t *testing.T) {
 	}
 }
 
-func TestTrickProcessTimeout(t *testing.T) {
-	trick, _ := NewTrick(0)
-	trick.StartTrick()
-
-	// Set up lead play
-	cards := []*Card{}
-	card, _ := NewCard(10, "Heart", 5)
-	cards = append(cards, card)
-	comp := NewSingle(cards)
-	trick.PlayCards(0, cards, comp)
-
-	// Test timeout not reached yet
-	err := trick.ProcessTimeout()
-	if err == nil {
-		t.Error("ProcessTimeout should fail when timeout not reached")
-	}
-
-	// Set timeout to past
-	trick.TurnTimeout = time.Now().Add(-1 * time.Second)
-
-	// Test timeout processing
-	err = trick.ProcessTimeout()
-	if err != nil {
-		t.Errorf("ProcessTimeout failed: %v", err)
-	}
-
-	// Should have added a pass play
-	if len(trick.Plays) != 2 {
-		t.Error("Should have 2 plays after timeout")
-	}
-
-	lastPlay := trick.Plays[len(trick.Plays)-1]
-	if !lastPlay.IsPass {
-		t.Error("Timeout should result in pass")
-	}
-}
+// TestTrickProcessTimeout removed - timeout handling moved to GameDriver (Task 4)

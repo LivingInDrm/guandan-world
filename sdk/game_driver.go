@@ -2,7 +2,9 @@ package sdk
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -72,6 +74,10 @@ type GameDriverConfig struct {
 	// 超时配置
 	PlayDecisionTimeout time.Duration `json:"play_decision_timeout"` // 出牌决策超时时间
 	TributeTimeout      time.Duration `json:"tribute_timeout"`       // 贡牌选择超时时间
+	TurnTimeoutSeconds  int           `json:"turn_timeout_seconds"`  // 单次出牌超时秒数
+
+	// 超时策略
+	TimeoutStrategy TimeoutStrategy `json:"-"` // 超时默认决策策略（不序列化）
 
 	// 并发控制
 	MaxConcurrentPlayers int `json:"max_concurrent_players"` // 最大并发处理玩家数
@@ -83,10 +89,12 @@ type GameDriverConfig struct {
 // DefaultGameDriverConfig 返回默认的游戏驱动器配置
 func DefaultGameDriverConfig() *GameDriverConfig {
 	return &GameDriverConfig{
-		PlayDecisionTimeout:  30 * time.Second, // 30秒出牌超时
-		TributeTimeout:       20 * time.Second, // 20秒贡牌超时
-		MaxConcurrentPlayers: 4,                // 最多4个玩家
-		AsyncEventHandling:   false,            // 同步事件处理确保顺序
+		PlayDecisionTimeout:  30 * time.Second,         // 30秒出牌超时
+		TributeTimeout:       20 * time.Second,         // 20秒贡牌超时
+		TurnTimeoutSeconds:   20,                       // 20秒单次出牌超时
+		TimeoutStrategy:      NewDefaultTimeoutStrategy(), // 使用默认超时策略
+		MaxConcurrentPlayers: 4,                        // 最多4个玩家
+		AsyncEventHandling:   false,                    // 同步事件处理确保顺序
 	}
 }
 
@@ -97,6 +105,13 @@ type GameDriver struct {
 	inputProvider PlayerInputProvider // 玩家输入提供者
 	observers     []EventObserver     // 事件观察者列表
 	config        *GameDriverConfig   // 驱动器配置
+
+	// 超时管理
+	timeoutStats  map[int]*PlayerTimeoutStats // 超时统计 (座位号 -> 统计信息)
+	timeoutMu     sync.RWMutex                // 保护超时统计的读写锁
+	gameCancelCtx context.Context             // 游戏取消信号上下文（将在RunMatch中初始化）
+	cancelFunc    context.CancelFunc          // 取消函数（将在RunMatch中初始化）
+	cancelMu      sync.Mutex                  // 保护cancelFunc的互斥锁
 }
 
 // NewGameDriver 创建新的游戏驱动器
@@ -105,10 +120,16 @@ func NewGameDriver(engine GameEngineInterface, config *GameDriverConfig) *GameDr
 		config = DefaultGameDriverConfig()
 	}
 
+	// 如果配置中没有设置超时策略，使用默认策略
+	if config.TimeoutStrategy == nil {
+		config.TimeoutStrategy = NewDefaultTimeoutStrategy()
+	}
+
 	return &GameDriver{
-		engine:    engine,
-		observers: make([]EventObserver, 0),
-		config:    config,
+		engine:       engine,
+		observers:    make([]EventObserver, 0),
+		config:       config,
+		timeoutStats: make(map[int]*PlayerTimeoutStats),
 	}
 }
 
@@ -155,6 +176,57 @@ func (gd *GameDriver) GetConfig() *GameDriverConfig {
 	return gd.config
 }
 
+// GetTimeoutStats 获取超时统计信息（返回深拷贝，避免外部修改）
+func (gd *GameDriver) GetTimeoutStats() map[int]*PlayerTimeoutStats {
+	gd.timeoutMu.RLock()
+	defer gd.timeoutMu.RUnlock()
+
+	// 返回深拷贝以防止外部修改内部状态
+	result := make(map[int]*PlayerTimeoutStats, len(gd.timeoutStats))
+	for seat, stats := range gd.timeoutStats {
+		if stats != nil {
+			// 复制值而不是共享指针
+			statsCopy := *stats
+			result[seat] = &statsCopy
+		}
+	}
+	return result
+}
+
+// CancelMatch 取消当前正在运行的比赛（线程安全）
+func (gd *GameDriver) CancelMatch() {
+	gd.cancelMu.Lock()
+	defer gd.cancelMu.Unlock()
+	
+	if gd.cancelFunc != nil {
+		gd.cancelFunc()
+	}
+}
+
+// incrementPlayDecisionTimeout 增加出牌决策超时次数（内部方法，线程安全）
+func (gd *GameDriver) incrementPlayDecisionTimeout(seat int) {
+	gd.timeoutMu.Lock()
+	defer gd.timeoutMu.Unlock()
+
+	if gd.timeoutStats[seat] == nil {
+		gd.timeoutStats[seat] = &PlayerTimeoutStats{}
+	}
+	gd.timeoutStats[seat].PlayDecisionTimeouts++
+	gd.timeoutStats[seat].TotalTimeouts++
+}
+
+// incrementTributeTimeout 增加贡牌超时次数（内部方法，线程安全）
+func (gd *GameDriver) incrementTributeTimeout(seat int) {
+	gd.timeoutMu.Lock()
+	defer gd.timeoutMu.Unlock()
+
+	if gd.timeoutStats[seat] == nil {
+		gd.timeoutStats[seat] = &PlayerTimeoutStats{}
+	}
+	gd.timeoutStats[seat].TributeTimeouts++
+	gd.timeoutStats[seat].TotalTimeouts++
+}
+
 // GameDriverResult 游戏驱动器返回的扩展结果
 type GameDriverResult struct {
 	*MatchResult                      // 嵌入现有的MatchResult
@@ -175,6 +247,25 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 	if gd.inputProvider == nil {
 		return nil, fmt.Errorf("input provider not set")
 	}
+
+	// 使用互斥锁保护cancelFunc的读写
+	gd.cancelMu.Lock()
+	// 如果存在之前的取消函数，先调用它防止资源泄漏
+	if gd.cancelFunc != nil {
+		gd.cancelFunc()
+	}
+
+	// 创建游戏取消上下文，用于游戏结束时取消所有待处理的操作
+	gd.gameCancelCtx, gd.cancelFunc = context.WithCancel(context.Background())
+	gd.cancelMu.Unlock()
+	
+	defer func() {
+		gd.cancelMu.Lock()
+		if gd.cancelFunc != nil {
+			gd.cancelFunc() // 确保游戏结束时取消所有操作
+		}
+		gd.cancelMu.Unlock()
+	}()
 
 	// 注册内部事件处理器，用于通知观察者
 	gd.engine.RegisterEventHandler(EventMatchStarted, gd.handleEngineEvent)
@@ -304,15 +395,40 @@ func (gd *GameDriver) runTributePhase() error {
 		}
 
 		// 根据动作类型请求玩家输入
-		ctx, cancel := context.WithTimeout(context.Background(), gd.config.TributeTimeout)
+		// 使用gameCancelCtx作为基础，这样游戏结束时会自动取消所有请求
+		ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.TributeTimeout)
 
 		switch action.Type {
 		case TributeActionSelect:
 			// 双下选牌
 			selectedCard, err := gd.inputProvider.RequestTributeSelection(ctx, action.PlayerID, action.Options)
+			ctxErr := ctx.Err() // 在cancel()之前捕获上下文错误
 			cancel()
+			
 			if err != nil {
-				return fmt.Errorf("failed to get tribute selection from player %d: %w", action.PlayerID, err)
+				switch {
+				case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
+					// 超时，使用默认策略
+					gd.handleTimeout(action.PlayerID, "tribute_select")
+					selectedCard = gd.config.TimeoutStrategy.GetDefaultTributeCard(action.Options)
+					if selectedCard == nil {
+						// Fallback：选择第一个非nil选项
+						for _, c := range action.Options {
+							if c != nil {
+								selectedCard = c
+								break
+							}
+						}
+						if selectedCard == nil {
+							return fmt.Errorf("timeout strategy returned nil and no valid options, player %d", action.PlayerID)
+						}
+					}
+				case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
+					// 游戏被取消
+					return fmt.Errorf("game cancelled during tribute selection for player %d", action.PlayerID)
+				default:
+					return fmt.Errorf("failed to get tribute selection from player %d: %w", action.PlayerID, err)
+				}
 			}
 
 			if err := gd.engine.SubmitTributeSelection(action.PlayerID, selectedCard.GetID()); err != nil {
@@ -322,9 +438,33 @@ func (gd *GameDriver) runTributePhase() error {
 		case TributeActionReturn:
 			// 还贡
 			returnCard, err := gd.inputProvider.RequestReturnTribute(ctx, action.PlayerID, action.Options)
+			ctxErr := ctx.Err() // 在cancel()之前捕获上下文错误
 			cancel()
+			
 			if err != nil {
-				return fmt.Errorf("failed to get return tribute from player %d: %w", action.PlayerID, err)
+				switch {
+				case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
+					// 超时，使用默认策略
+					gd.handleTimeout(action.PlayerID, "return_tribute")
+					returnCard = gd.config.TimeoutStrategy.GetDefaultReturnCard(action.Options)
+					if returnCard == nil {
+						// Fallback：选择第一个非nil选项
+						for _, c := range action.Options {
+							if c != nil {
+								returnCard = c
+								break
+							}
+						}
+						if returnCard == nil {
+							return fmt.Errorf("timeout strategy returned nil and no valid return card, player %d", action.PlayerID)
+						}
+					}
+				case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
+					// 游戏被取消
+					return fmt.Errorf("game cancelled during return tribute for player %d", action.PlayerID)
+				default:
+					return fmt.Errorf("failed to get return tribute from player %d: %w", action.PlayerID, err)
+				}
 			}
 
 			if err := gd.engine.SubmitReturnTribute(action.PlayerID, returnCard.GetID()); err != nil {
@@ -421,13 +561,40 @@ func (gd *GameDriver) runTrick() error {
 			LeadComp: turnInfo.LeadComp,
 		}
 
-		// 请求玩家决策
-		ctx, cancel := context.WithTimeout(context.Background(), gd.config.PlayDecisionTimeout)
+		// 请求玩家决策（带超时检测）
+		// 使用gameCancelCtx作为基础，这样游戏结束时会自动取消所有请求
+		ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.PlayDecisionTimeout)
 		decision, err := gd.inputProvider.RequestPlayDecision(ctx, currentPlayer, playerView.PlayerCards, trickInfo)
+		ctxErr := ctx.Err() // 在cancel()之前捕获上下文错误
 		cancel()
 
+		// 处理超时情况
 		if err != nil {
-			return fmt.Errorf("failed to get play decision from player %d: %w", currentPlayer, err)
+			switch {
+			case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
+				// 超时，使用默认策略生成决策
+				gd.handleTimeout(currentPlayer, "play_decision")
+				decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(playerView.PlayerCards, trickInfo)
+				if decision == nil {
+					// 如果策略返回nil，使用PASS作为后备
+					decision = &PlayDecision{Action: ActionPass}
+				}
+			case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
+				// 游戏被取消（例如：游戏结束或用户中止）
+				return fmt.Errorf("game cancelled during play decision for player %d", currentPlayer)
+			default:
+				// 其他错误
+				return fmt.Errorf("failed to get play decision from player %d: %w", currentPlayer, err)
+			}
+		}
+
+		// 如果decision仍然为nil（可能是provider返回了nil），使用默认策略
+		if decision == nil {
+			decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(playerView.PlayerCards, trickInfo)
+			if decision == nil {
+				// 如果策略也返回nil，使用PASS作为后备
+				decision = &PlayDecision{Action: ActionPass}
+			}
 		}
 
 		// 执行决策前再次检查状态
@@ -472,5 +639,28 @@ func (gd *GameDriver) runTrick() error {
 
 // handleEngineEvent 处理引擎事件并转发给观察者
 func (gd *GameDriver) handleEngineEvent(event *GameEvent) {
+	gd.notifyObservers(event)
+}
+
+// handleTimeout 处理玩家超时
+// actionType: "play_decision", "tribute_select", "return_tribute"
+func (gd *GameDriver) handleTimeout(playerSeat int, actionType string) {
+	// 记录超时统计
+	switch actionType {
+	case "play_decision":
+		gd.incrementPlayDecisionTimeout(playerSeat)
+	case "tribute_select", "return_tribute":
+		gd.incrementTributeTimeout(playerSeat)
+	}
+
+	// 发出超时事件
+	event := &GameEvent{
+		Type:       EventPlayerTimeout,
+		PlayerSeat: playerSeat,
+		Data: map[string]interface{}{
+			"action": actionType, // 与GameEngine保持一致的key
+		},
+		Timestamp: time.Now(),
+	}
 	gd.notifyObservers(event)
 }

@@ -21,6 +21,7 @@ func main() {
 	numPlayers := flag.Int("num-players", 3, "Number of AI players to create (default: 3)")
 	usernamePrefix := flag.String("username-prefix", "ai_player", "Username prefix for AI players")
 	password := flag.String("password", "ai123456", "Password for AI players")
+	playDelay := flag.Int("play-delay", 5, "AI play delay in seconds (default: 5)")
 
 	flag.Parse()
 
@@ -38,6 +39,7 @@ func main() {
 	log.Printf("Server: %s", *serverURL)
 	log.Printf("Room ID: %s", *roomID)
 	log.Printf("Number of players: %d", *numPlayers)
+	log.Printf("Play delay: %d seconds", *playDelay)
 	log.Printf("Verbose: %v", *verbose)
 	log.Printf("==============================")
 	log.Println()
@@ -50,7 +52,7 @@ func main() {
 	clients := make([]*test.AIPlayerClient, *numPlayers)
 	for i := 0; i < *numPlayers; i++ {
 		username := fmt.Sprintf("%s_%d", *usernamePrefix, i+1)
-		clients[i] = test.NewAIPlayerClient(*serverURL, *roomID, username, *password, *verbose)
+		clients[i] = test.NewAIPlayerClientWithDelay(*serverURL, *roomID, username, *password, *verbose, time.Duration(*playDelay)*time.Second)
 	}
 
 	// 使用WaitGroup等待所有客户端启动

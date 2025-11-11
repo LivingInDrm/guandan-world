@@ -5,7 +5,7 @@ import { useRoomStore } from '../../store/roomStore';
 import { useGameStore } from '../../store/gameStore';
 import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
-import type { Room, Player, WSMessage, Card } from '../../types';
+import type { Room, Player, WSMessage, Card, GameActionData } from '../../types';
 import { WS_MESSAGE_TYPES } from '../../types';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
@@ -56,6 +56,7 @@ const GamePage: React.FC = () => {
   const [canPlay, setCanPlay] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [turnTimeoutSeconds, setTurnTimeoutSeconds] = useState<number>(20);
 
   // 初始加载房间信息
   useEffect(() => {
@@ -353,6 +354,20 @@ const GamePage: React.FC = () => {
       console.log('✨ [GamePage] player_view processing completed');
     };
 
+    const handleGameAction = (message: WSMessage) => {
+      console.log('🎮 [GamePage] Received game_action:', message);
+      const actionData = message.data as GameActionData;
+      
+      if (actionData.timeout !== undefined) {
+        console.log(`⏱️ [GamePage] Setting timeout to ${actionData.timeout} seconds`);
+        setTurnTimeoutSeconds(actionData.timeout);
+      }
+      
+      if (actionData.player_seat === playerSeat) {
+        console.log('🎯 [GamePage] This action is for current player');
+      }
+    };
+
     // 注册所有监听器
     wsClient.on(WS_MESSAGE_TYPES.ROOM_UPDATE, handleRoomUpdate);
     wsClient.on(WS_MESSAGE_TYPES.GAME_PREPARE, handleGamePrepare);
@@ -360,6 +375,7 @@ const GamePage: React.FC = () => {
     wsClient.on(WS_MESSAGE_TYPES.GAME_BEGIN, handleGameBegin);
     wsClient.on(WS_MESSAGE_TYPES.GAME_EVENT, handleGameEvent);
     wsClient.on(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
+    wsClient.on(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
 
     // 加入房间
     wsClient.send(WS_MESSAGE_TYPES.JOIN_ROOM, { room_id: roomId });
@@ -372,6 +388,7 @@ const GamePage: React.FC = () => {
       wsClient.off(WS_MESSAGE_TYPES.GAME_BEGIN, handleGameBegin);
       wsClient.off(WS_MESSAGE_TYPES.GAME_EVENT, handleGameEvent);
       wsClient.off(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
+      wsClient.off(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
     };
   }, [roomId, isConnected, setCurrentPhase, setCountdown, setTributeInfo, setDealResult, setMatchResult, setGameState, setPlayerSeat, setMyTurn, setCurrentRoom]);
 
@@ -732,7 +749,7 @@ const GamePage: React.FC = () => {
           selectedCards={selectedCards}
           canPlay={canPlay}
           isMyTurn={isMyTurn}
-          turnTimeoutSeconds={30}
+          turnTimeoutSeconds={turnTimeoutSeconds}
           onPlayCards={handlePlayCards}
           onPass={handlePass}
           disabled={false}

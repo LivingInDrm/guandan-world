@@ -70,10 +70,11 @@ type GameState struct {
 // PlayerGameState 表示从特定玩家视角看到的游戏状态
 // 包含该玩家的私有信息（如手牌）和公共可见信息
 type PlayerGameState struct {
-	PlayerSeat   int        `json:"player_seat"`   // 玩家的座位号(0-3)
-	GameState    *GameState `json:"game_state"`    // 游戏的公共状态信息
-	PlayerCards  []*Card    `json:"player_cards"`  // 该玩家的手牌（只对该玩家可见）
-	VisibleCards []*Card    `json:"visible_cards"` // 当前可见的牌（已出的牌）
+	PlayerSeat       int        `json:"player_seat"`        // 玩家的座位号(0-3)
+	GameState        *GameState `json:"game_state"`         // 游戏的公共状态信息
+	PlayerCards      []*Card    `json:"player_cards"`       // 该玩家的手牌（只对该玩家可见）
+	VisibleCards     []*Card    `json:"visible_cards"`      // 当前可见的牌（已出的牌）
+	RemainingSeconds int        `json:"remaining_seconds"` // 当前回合剩余秒数
 }
 
 // GameStatus 表示游戏的当前状态
@@ -197,15 +198,6 @@ type GameEngineInterface interface {
 	//   - 完成牌的交换
 	SubmitReturnTribute(playerID int, cardID string) error
 
-	// SkipTributeAction 跳过当前贡牌动作（超时处理）
-	// 返回值:
-	//   error: 如果当前没有待处理的贡牌动作，返回错误
-	// 功能说明:
-	//   - 用于处理玩家超时的情况
-	//   - 双下选牌时自动选择最大的牌
-	//   - 还贡时自动选择最小的牌
-	SkipTributeAction() error
-
 	// GetTributeStatus 获取当前贡牌状态
 	// 返回值:
 	//   *TributeStatusInfo: 当前贡牌阶段的详细信息，如果不在贡牌阶段返回nil
@@ -258,16 +250,6 @@ type GameEngineInterface interface {
 	//   - 事件处理器在独立的协程中执行，不会阻塞游戏进程
 	//   - 常用事件包括：出牌、过牌、牌局结束、比赛结束等
 	RegisterEventHandler(eventType GameEventType, handler GameEventHandler)
-
-	// ProcessTimeouts 处理超时情况
-	// 返回值:
-	//   []*GameEvent: 因超时产生的事件列表
-	// 功能说明:
-	//   - 检查是否有玩家操作超时
-	//   - 对超时玩家执行自动操作
-	//   - 返回因超时处理产生的事件
-	//   - 需要定期调用以维护游戏进度
-	ProcessTimeouts() []*GameEvent
 
 	// 玩家管理
 
@@ -604,19 +586,25 @@ func (ge *GameEngine) GetPlayerView(playerSeat int) *PlayerGameState {
 
 	gameState := ge.GetGameState()
 	playerView := &PlayerGameState{
-		PlayerSeat: playerSeat,
-		GameState:  gameState,
+		PlayerSeat:       playerSeat,
+		GameState:        gameState,
+		RemainingSeconds: 0,
 	}
 
 	// Add player-specific information if there's an active deal
 	if ge.currentMatch != nil && ge.currentMatch.CurrentDeal != nil {
+		deal := ge.currentMatch.CurrentDeal
+		
 		if playerSeat >= 0 && playerSeat < 4 {
-			playerView.PlayerCards = ge.currentMatch.CurrentDeal.PlayerCards[playerSeat]
+			playerView.PlayerCards = deal.PlayerCards[playerSeat]
 		}
 
 		// Add visible cards (cards played in current trick)
-		if ge.currentMatch.CurrentDeal.CurrentTrick != nil {
+		if deal.CurrentTrick != nil {
 			playerView.VisibleCards = ge.getVisibleCardsForPlayer(playerSeat)
+			
+			// Note: Remaining seconds calculation removed - timeout managed by GameDriver
+			playerView.RemainingSeconds = 0
 		}
 	}
 
@@ -640,80 +628,6 @@ func (ge *GameEngine) RegisterEventHandler(eventType GameEventType, handler Game
 		ge.eventHandlers[eventType] = make([]GameEventHandler, 0)
 	}
 	ge.eventHandlers[eventType] = append(ge.eventHandlers[eventType], handler)
-}
-
-// ProcessTimeouts processes any pending timeouts and returns resulting events
-func (ge *GameEngine) ProcessTimeouts() []*GameEvent {
-	ge.mutex.Lock()
-	defer ge.mutex.Unlock()
-
-	events := make([]*GameEvent, 0)
-
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return events
-	}
-
-	deal := ge.currentMatch.CurrentDeal
-	timeoutActions := deal.GetTimeoutActions()
-
-	for _, action := range timeoutActions {
-		// First emit timeout event
-		timeoutEvent := &GameEvent{
-			Type: EventPlayerTimeout,
-			Data: map[string]interface{}{
-				"player_seat": action.PlayerSeat,
-				"action":      action.ActionType,
-			},
-			Timestamp:  time.Now(),
-			PlayerSeat: action.PlayerSeat,
-		}
-		ge.emitEvent(timeoutEvent)
-		events = append(events, timeoutEvent)
-
-		// Then perform the action and emit corresponding event
-		switch action.ActionType {
-		case "pass":
-			// Unlock temporarily to call PassTurn
-			ge.mutex.Unlock()
-			event, err := ge.PassTurn(action.PlayerSeat)
-			ge.mutex.Lock()
-			if err == nil && event != nil {
-				events = append(events, event)
-			}
-
-		case "auto_play":
-			// Extract cards from AutoData
-			if cards, ok := action.AutoData.([]*Card); ok && len(cards) > 0 {
-				// Unlock temporarily to call PlayCards
-				ge.mutex.Unlock()
-				event, err := ge.PlayCards(action.PlayerSeat, cards)
-				ge.mutex.Lock()
-				if err == nil && event != nil {
-					events = append(events, event)
-				}
-			}
-
-		case "tribute_select":
-			// Extract card from AutoData and convert to cardID
-			if card, ok := action.AutoData.(*Card); ok && card != nil {
-				// Convert *Card to cardID for SubmitTributeSelection
-				cardID := card.GetID()
-				
-				// Unlock temporarily to call SubmitTributeSelection (same as normal selection)
-				ge.mutex.Unlock()
-				err := ge.SubmitTributeSelection(action.PlayerSeat, cardID)
-				ge.mutex.Lock()
-				
-				// SubmitTributeSelection internally emits EventTributeSelected
-				// No need to collect events here
-				if err != nil {
-					// Log error but continue (optional: could break/return)
-				}
-			}
-		}
-	}
-
-	return events
 }
 
 // HandlePlayerDisconnect handles a player disconnection
@@ -847,6 +761,7 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 		// Start the new trick
 		err := deal.CurrentTrick.StartTrick()
 		if err == nil {
+			// Note: Timeout is now managed by GameDriver, not set here
 			// 收集所有玩家的手牌信息，避免在事件处理器中调用引擎方法
 			playerHands := make(map[int][]*Card)
 			for i := 0; i < 4; i++ {
@@ -1355,38 +1270,6 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerID,
-	})
-
-	return nil
-}
-
-// SkipTributeAction 跳过当前贡牌动作（超时处理）
-func (ge *GameEngine) SkipTributeAction() error {
-	ge.mutex.Lock()
-	defer ge.mutex.Unlock()
-
-	// 验证基本状态
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return errors.New("no active deal")
-	}
-
-	deal := ge.currentMatch.CurrentDeal
-	if deal.Status != DealStatusTribute || deal.TributePhase == nil {
-		return errors.New("not in tribute phase")
-	}
-
-	// 调用 TributeManager 处理超时
-	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
-	err := tm.HandleTimeoutAction(deal.TributePhase, deal.PlayerCards)
-	if err != nil {
-		return err
-	}
-
-	// 发送超时事件
-	ge.emitEvent(&GameEvent{
-		Type:      EventPlayerTimeout,
-		Data:      map[string]interface{}{"action": "tribute_timeout", "phase": deal.TributePhase.Status},
-		Timestamp: time.Now(),
 	})
 
 	return nil

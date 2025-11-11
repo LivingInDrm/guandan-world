@@ -312,59 +312,6 @@ func TestSubmitReturnTribute(t *testing.T) {
 	}
 }
 
-// TestSkipTributeAction tests timeout handling
-func TestSkipTributeAction(t *testing.T) {
-	engine := NewGameEngine()
-
-	// Set up match with double down selection
-	players := []Player{
-		{ID: "p1", Username: "Player1", Seat: 0},
-		{ID: "p2", Username: "Player2", Seat: 1},
-		{ID: "p3", Username: "Player3", Seat: 2},
-		{ID: "p4", Username: "Player4", Seat: 3},
-	}
-
-	engine.StartMatch(players)
-
-	lastResult := &DealResult{
-		Rankings:    []int{0, 2, 1, 3},
-		VictoryType: VictoryTypeDoubleDown,
-	}
-
-	deal, _ := NewDeal(2, lastResult)
-
-	// Set up all player hands
-	for i := 0; i < 4; i++ {
-		deal.PlayerCards[i] = []*Card{}
-	}
-	deal.PlayerCards[0] = []*Card{{Number: 10, Color: "Heart", Name: "10"}}     // rank1
-	deal.PlayerCards[1] = []*Card{{Number: 14, Color: "Spade", Name: "Ace"}}    // rank3
-	deal.PlayerCards[2] = []*Card{{Number: 9, Color: "Diamond", Name: "9"}}     // rank2
-	deal.PlayerCards[3] = []*Card{{Number: 13, Color: "Diamond", Name: "King"}} // rank4
-
-	engine.currentMatch.CurrentDeal = deal
-	deal.Status = DealStatusTribute
-
-	// Reset tribute phase to waiting status
-	if deal.TributePhase != nil {
-		deal.TributePhase.Status = TributeStatusWaiting
-	}
-
-	// Process to get selection state
-	engine.ProcessTributePhase()
-
-	// Skip (timeout) the selection
-	err := engine.SkipTributeAction()
-	if err != nil {
-		t.Errorf("SkipTributeAction failed: %v", err)
-	}
-
-	// Verify auto-selection happened (should select highest card)
-	if deal.TributePhase.SelectionResults == nil || deal.TributePhase.SelectionResults[0] == 0 {
-		t.Errorf("Auto-selection did not happen")
-	}
-}
-
 // TestGetTributeStatus tests getting tribute status
 func TestGetTributeStatus(t *testing.T) {
 	engine := NewGameEngine()
