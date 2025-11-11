@@ -390,7 +390,7 @@ const GamePage: React.FC = () => {
       wsClient.off(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
       wsClient.off(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
     };
-  }, [roomId, isConnected, setCurrentPhase, setCountdown, setTributeInfo, setDealResult, setMatchResult, setGameState, setPlayerSeat, setMyTurn, setCurrentRoom]);
+  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setTributeInfo, setDealResult, setMatchResult, setGameState, setPlayerSeat, setMyTurn, setCurrentRoom]);
 
   // 开始游戏
   const handleStartGame = async () => {

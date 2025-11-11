@@ -198,12 +198,12 @@ export interface PlayerGameState {
 }
 
 export interface GameActionData {
-  action_type: 'play_decision_required' | 'tribute_select' | 'tribute_return';
+  action_type: 'play_decision_required' | 'tribute_selection_required' | 'return_tribute_required';
   player_seat: number;
   hand?: Card[];
   trick_info?: TrickInfo;
   timeout?: number;
-  tribute_options?: Card[];
+  options?: Card[];
 }
 
 // Tribute phase related types
