@@ -208,6 +208,12 @@ const GameBoard: React.FC<GameBoardProps> = ({
   const getPlayerStatus = (seat: number): PlayerStatus => {
     if (!trickInfo) return PlayerStatus.WAITING;
     
+    // 优先检查是否轮到该玩家
+    if (trickInfo.current_turn === seat) {
+      return PlayerStatus.PLAYING;
+    }
+    
+    // 然后检查最后一次出牌记录
     const playerPlays = trickInfo.plays.filter(p => p.player_seat === seat);
     const lastPlay = playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
     
@@ -215,10 +221,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
       return lastPlay.is_pass ? PlayerStatus.PASSED : PlayerStatus.PLAYED;
     }
     
-    if (trickInfo.current_turn === seat) {
-      return PlayerStatus.PLAYING;
-    }
-    
+    // 默认等待状态
     return PlayerStatus.WAITING;
   };
 
