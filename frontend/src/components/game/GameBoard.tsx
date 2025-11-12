@@ -227,6 +227,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   const getPlayForSeat = (seat: number): PlayAction | null => {
     if (!trickInfo) return null;
+    
+    // 轮到该玩家时，清空显示（等待玩家做决策）
+    if (trickInfo.current_turn === seat) {
+      return null;
+    }
+    
+    // 显示该玩家最后一次出牌
     const playerPlays = trickInfo.plays.filter(p => p.player_seat === seat);
     return playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
   };
