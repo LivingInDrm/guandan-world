@@ -67,14 +67,19 @@ type GameState struct {
 	UpdatedAt    time.Time  `json:"updated_at"`              // 最后更新时间
 }
 
-// PlayerGameState 表示从特定玩家视角看到的游戏状态
+// PlayerView 表示从特定玩家视角看到的游戏状态
 // 包含该玩家的私有信息（如手牌）和公共可见信息
-type PlayerGameState struct {
-	PlayerSeat       int        `json:"player_seat"`        // 玩家的座位号(0-3)
-	GameState        *GameState `json:"game_state"`         // 游戏的公共状态信息
-	PlayerCards      []*Card    `json:"player_cards"`       // 该玩家的手牌（只对该玩家可见）
-	VisibleCards     []*Card    `json:"visible_cards"`      // 当前可见的牌（已出的牌）
-	RemainingSeconds int        `json:"remaining_seconds"` // 当前回合剩余秒数
+// 该结构采用扁平化设计，移除冗余字段，减少嵌套层级，提升传输和解析效率
+type PlayerView struct {
+	PlayerSeat   int           `json:"player_seat"`             // 玩家的座位号(0-3)
+	PlayerCards  []*Card       `json:"player_cards"`            // 该玩家的手牌（只对该玩家可见）
+	TeamLevels   [2]int        `json:"team_levels"`             // 两队当前等级 [team0, team1]
+	DealLevel    int           `json:"deal_level"`              // 当前局的等级
+	DealStatus   DealStatus    `json:"deal_status"`             // 当前局的状态
+	TrickID      string        `json:"trick_id,omitempty"`      // 当前Trick的ID（playing阶段）
+	CurrentTurn  *int          `json:"current_turn,omitempty"`  // 当前轮到的玩家座位号（playing阶段，使用指针避免0值被omitempty省略）
+	Plays        []*PlayAction `json:"plays,omitempty"`         // 当前Trick的所有出牌记录（playing阶段）
+	TributePhase *TributePhase `json:"tribute_phase,omitempty"` // 上贡阶段信息（tribute阶段）
 }
 
 // GameStatus 表示游戏的当前状态
@@ -222,13 +227,16 @@ type GameEngineInterface interface {
 	// 参数:
 	//   playerSeat: 玩家座位号(0-3)
 	// 返回值:
-	//   *PlayerGameState: 包含该玩家手牌和可见信息的游戏状态
+	// GetPlayerView 获取玩家视角的游戏状态
+	// 参数:
+	//   playerSeat: 玩家座位号(0-3)
+	// 返回值:
+	//   *PlayerView: 玩家视角游戏状态
 	// 功能说明:
 	//   - 返回从指定玩家角度看到的游戏状态
-	//   - 包含该玩家的手牌信息
-	//   - 包含当前可见的牌（已出的牌）
+	//   - 包含玩家手牌、比赛等级、当前局信息、Trick信息等
 	//   - 隐藏其他玩家的手牌信息
-	GetPlayerView(playerSeat int) *PlayerGameState
+	GetPlayerView(playerSeat int) *PlayerView
 
 	// IsGameFinished 检查游戏是否已结束
 	// 返回值:
@@ -579,36 +587,48 @@ func (ge *GameEngine) GetGameState() *GameState {
 	}
 }
 
-// GetPlayerView returns the game state from a specific player's perspective
-func (ge *GameEngine) GetPlayerView(playerSeat int) *PlayerGameState {
+// GetPlayerView 返回玩家视角的游戏状态
+func (ge *GameEngine) GetPlayerView(playerSeat int) *PlayerView {
 	ge.mutex.RLock()
 	defer ge.mutex.RUnlock()
 
-	gameState := ge.GetGameState()
-	playerView := &PlayerGameState{
-		PlayerSeat:       playerSeat,
-		GameState:        gameState,
-		RemainingSeconds: 0,
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return nil
 	}
 
-	// Add player-specific information if there's an active deal
-	if ge.currentMatch != nil && ge.currentMatch.CurrentDeal != nil {
-		deal := ge.currentMatch.CurrentDeal
+	deal := ge.currentMatch.CurrentDeal
+	
+	view := &PlayerView{
+		PlayerSeat: playerSeat,
+		TeamLevels: ge.currentMatch.TeamLevels,
+		DealLevel:  deal.Level,
+		DealStatus: deal.Status,
+	}
+
+	if playerSeat >= 0 && playerSeat < 4 {
+		cards := deal.PlayerCards[playerSeat]
+		if cards == nil {
+			cards = make([]*Card, 0)
+		}
+		view.PlayerCards = cards
+	}
+
+	// 根据 deal.Status 填充不同的字段
+	if deal.Status == DealStatusPlaying && deal.CurrentTrick != nil {
+		view.TrickID = deal.CurrentTrick.ID
+		turn := deal.CurrentTrick.CurrentTurn
+		view.CurrentTurn = &turn
 		
-		if playerSeat >= 0 && playerSeat < 4 {
-			playerView.PlayerCards = deal.PlayerCards[playerSeat]
+		plays := deal.CurrentTrick.Plays
+		if plays == nil {
+			plays = make([]*PlayAction, 0)
 		}
-
-		// Add visible cards (cards played in current trick)
-		if deal.CurrentTrick != nil {
-			playerView.VisibleCards = ge.getVisibleCardsForPlayer(playerSeat)
-			
-			// Note: Remaining seconds calculation removed - timeout managed by GameDriver
-			playerView.RemainingSeconds = 0
-		}
+		view.Plays = plays
+	} else if deal.Status == DealStatusTribute && deal.TributePhase != nil {
+		view.TributePhase = deal.TributePhase
 	}
 
-	return playerView
+	return view
 }
 
 // IsGameFinished checks if the game is finished
@@ -728,21 +748,6 @@ func (ge *GameEngine) emitEvent(event *GameEvent) {
 			h(event)
 		}()
 	}
-}
-
-// getVisibleCardsForPlayer returns the cards visible to a specific player
-func (ge *GameEngine) getVisibleCardsForPlayer(playerSeat int) []*Card {
-	visibleCards := make([]*Card, 0)
-
-	if ge.currentMatch.CurrentDeal.CurrentTrick != nil {
-		for _, play := range ge.currentMatch.CurrentDeal.CurrentTrick.Plays {
-			if play.Cards != nil {
-				visibleCards = append(visibleCards, play.Cards...)
-			}
-		}
-	}
-
-	return visibleCards
 }
 
 // checkPreActionStateTransitions checks for state transitions that should happen before player actions

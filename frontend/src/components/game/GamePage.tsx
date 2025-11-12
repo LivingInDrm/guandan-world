@@ -5,7 +5,7 @@ import { useRoomStore } from '../../store/roomStore';
 import { useGameStore } from '../../store/gameStore';
 import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
-import type { Room, Player, WSMessage, Card, GameActionData } from '../../types';
+import type { Room, Player, WSMessage, Card, GameActionData, PlayerView, PlayerGameState } from '../../types';
 import { WS_MESSAGE_TYPES } from '../../types';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
@@ -252,28 +252,22 @@ const GamePage: React.FC = () => {
         return;
       }
 
-      // GameDriver 发送的格式：data.player_view 包含实际数据
-      const playerView = data.player_view;
+      const playerView: PlayerView = data.player_view;
       if (!playerView) {
         console.warn('⚠️ [GamePage] Received player_view message without player_view data:', data);
         return;
       }
 
       console.log('✅ [GamePage] player_view data structure:', {
-        hasPlayerSeat: playerView.player_seat !== undefined,
-        playerSeat: playerView.player_seat ?? data.player_seat,
-        hasPlayerCards: !!playerView.player_cards,
+        playerSeat: playerView.player_seat,
         playerCardsCount: playerView.player_cards?.length || 0,
-        hasGameState: !!playerView.game_state,
+        dealStatus: playerView.deal_status,
+        teamLevels: playerView.team_levels,
         eventType: data.event_type
       });
 
-      // 设置玩家座位
-      const seatNumber = playerView.player_seat ?? data.player_seat;
-      console.log('👤 [GamePage] Setting player seat:', seatNumber);
-      setPlayerSeat(seatNumber);
+      setPlayerSeat(playerView.player_seat);
       
-      // 设置手牌 - 从 player_cards 字段获取
       const cards = playerView.player_cards || [];
       console.log('🃏 [GamePage] Setting player hand:', {
         cardCount: cards.length,
@@ -281,89 +275,69 @@ const GamePage: React.FC = () => {
       });
       setPlayerHand(cards);
       
-      // 设置游戏状态
-      if (playerView.game_state) {
-        console.log('🎲 [GamePage] Game state received:', {
-          hasCurrentMatch: !!playerView.game_state.current_match,
-          matchStatus: playerView.game_state.current_match?.status,
-          teamLevels: playerView.game_state.current_match?.team_levels,
-          hasCurrentDeal: !!playerView.game_state.current_match?.current_deal,
-          dealStatus: playerView.game_state.current_match?.current_deal?.status,
-          hasTributePhase: playerView.game_state.current_match?.current_deal?.tribute_phase !== null
+      const currentTrickId = playerView.trick_id;
+      if (currentTrickId && currentTrickId !== previousTrickId) {
+        console.log('🔄 [GamePage] Trick changed:', {
+          previousTrickId,
+          currentTrickId,
+          playsCount: playerView.plays?.length || 0
         });
-
-        setGameState(playerView.game_state);
+        setPreviousTrickId(currentTrickId);
+      }
+      
+      if (latestPhase === GamePageState.GAME_PREPARE) {
+        console.log('🔄 [GamePage] Currently in GAME_PREPARE, checking phase transition...');
         
-        // 检测Trick变化
-        const currentDeal = playerView.game_state.current_match?.current_deal;
-        const currentTrickId = currentDeal?.current_trick?.id;
+        console.log('📊 [GamePage] Phase transition check:', {
+          dealStatus: playerView.deal_status,
+          hasTributePhase: !!playerView.tribute_phase,
+          tributePhaseStatus: playerView.tribute_phase?.status
+        });
         
-        if (currentTrickId && currentTrickId !== previousTrickId) {
-          console.log('🔄 [GamePage] Trick changed:', {
-            previousTrickId,
-            currentTrickId,
-            playsCount: currentDeal?.current_trick?.plays?.length || 0
-          });
-          setPreviousTrickId(currentTrickId);
-        }
-        
-        // 根据当前阶段和游戏状态决定是否切换阶段
-        // Use latest phase from store to avoid stale closure
-        if (latestPhase === GamePageState.GAME_PREPARE) {
-          console.log('🔄 [GamePage] Currently in GAME_PREPARE, checking phase transition...');
-          
-          // 判断是否有上贡阶段
-          const currentDeal = playerView.game_state.current_match?.current_deal;
-          const hasTribute = currentDeal?.tribute_phase !== null && currentDeal?.tribute_phase !== undefined;
-          
-          console.log('📊 [GamePage] Phase transition check:', {
-            hasCurrentDeal: !!currentDeal,
-            hasTribute,
-            tributePhase: currentDeal?.tribute_phase,
-            willTransitionTo: hasTribute ? 'TRIBUTE_PHASE' : 'PLAYING'
-          });
-          
-          if (hasTribute) {
-            console.log('🔀 [GamePage] ✅ Transitioning to TRIBUTE_PHASE');
-            setCurrentPhase(GamePageState.TRIBUTE_PHASE);
-          } else {
-            console.log('🔀 [GamePage] ✅ Transitioning to PLAYING');
-            setCurrentPhase(GamePageState.PLAYING);
-          }
+        if (playerView.deal_status === 'tribute') {
+          console.log('🔀 [GamePage] ✅ Transitioning to TRIBUTE_PHASE (deal_status=tribute)');
+          setCurrentPhase(GamePageState.TRIBUTE_PHASE);
+        } else if (playerView.deal_status === 'playing') {
+          console.log('🔀 [GamePage] ✅ Transitioning to PLAYING (deal_status=playing)');
+          setCurrentPhase(GamePageState.PLAYING);
         } else {
-          console.log('ℹ️ [GamePage] Not in GAME_PREPARE phase, skipping phase transition. Current phase:', latestPhase);
+          console.log('ℹ️ [GamePage] deal_status is neither tribute nor playing:', playerView.deal_status);
         }
       } else {
-        console.warn('⚠️ [GamePage] player_view has no game_state, skipping game state update');
+        console.log('ℹ️ [GamePage] Not in GAME_PREPARE phase, skipping phase transition. Current phase:', latestPhase);
       }
 
-      // 从 player_view 中计算 can_play 和 is_my_turn
-      // 必须满足以下条件才能出牌：
-      // 1. deal.status === 'playing' (出牌阶段，而非上贡阶段)
-      // 2. 存在 currentTrick
-      // 3. currentTrick.current_turn === playerSeat (轮到自己)
-      // 4. 有手牌
-      const currentDeal = playerView.game_state?.current_match?.current_deal;
-      const currentTrick = currentDeal?.current_trick;
-      const isPlayingPhase = currentDeal?.status === 'playing';
+      const isPlayingPhase = playerView.deal_status === 'playing';
       const isMyTurnValue = isPlayingPhase && 
-                           currentTrick !== null && 
-                           currentTrick !== undefined &&
-                           currentTrick.current_turn === playerView.player_seat;
-      const canPlayValue = isMyTurnValue && (playerView.player_cards?.length || 0) > 0;
+                           playerView.current_turn === playerView.player_seat;
+      const handLen = playerView.player_cards?.length ?? 0;
+      const canPlayValue = isMyTurnValue && handLen > 0;
       
       console.log('🎯 [GamePage] Player action state:', {
         canPlay: canPlayValue,
         isMyTurn: isMyTurnValue,
-        dealStatus: currentDeal?.status,
+        dealStatus: playerView.deal_status,
         isPlayingPhase: isPlayingPhase,
-        currentTurn: currentTrick?.current_turn,
+        currentTurn: playerView.current_turn,
         playerSeat: playerView.player_seat,
-        hasCards: (playerView.player_cards?.length || 0) > 0
+        hasCards: handLen > 0
       });
       
       setCanPlay(canPlayValue);
       setMyTurn(isMyTurnValue);
+
+      setTributeInfo(playerView.tribute_phase || null);
+
+      const playerGameState: PlayerGameState = {
+        team_levels: playerView.team_levels,
+        deal_level: playerView.deal_level,
+        deal_status: playerView.deal_status,
+        trick_id: playerView.trick_id,
+        current_turn: playerView.current_turn,
+        plays: playerView.plays,
+        tribute_phase: playerView.tribute_phase
+      };
+      setGameState(playerGameState);
 
       console.log('✨ [GamePage] player_view processing completed');
     };
@@ -717,40 +691,28 @@ const GamePage: React.FC = () => {
     );
   };
 
-  // 渲染出牌界面
   const renderPlaying = () => {
     if (!gameState || !room || playerSeat === null) return null;
 
-    // Ensure we have the minimum required game state data
-    // Backend sends nested structure: gameState.current_match.current_deal
-    const currentMatch = (gameState as any).current_match;
-    const currentDeal = currentMatch?.current_deal;
+    const playerGameState = gameState as PlayerGameState;
+    const teamLevels = playerGameState.team_levels || [2, 2];
+    const currentLevel = playerGameState.deal_level || 2;
+    const plays = playerGameState.plays || [];
+    const currentTurn = playerGameState.current_turn ?? -1;
     
-    if (!currentMatch || !currentDeal) {
-      return (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">加载游戏数据...</p>
-          </div>
-        </div>
-      );
-    }
-
     const players = room.players;
-    const trickInfo = currentDeal.current_trick || null;
 
     return (
       <div className="max-w-6xl mx-auto p-6 space-y-6">
-        {/* Game Board */}
         <GameBoard
-          gameState={gameState}
+          teamLevels={teamLevels}
+          currentLevel={currentLevel}
+          plays={plays}
+          currentTurn={currentTurn}
           players={players}
           currentPlayerSeat={playerSeat}
-          trickInfo={trickInfo}
         />
 
-        {/* Player Hand */}
         <PlayerHand
           cards={playerHand}
           selectedCards={selectedCards}
@@ -758,7 +720,6 @@ const GamePage: React.FC = () => {
           disabled={!canPlay}
         />
 
-        {/* Game Controls */}
         <GameControls
           selectedCards={selectedCards}
           canPlay={canPlay}
@@ -806,7 +767,7 @@ const GamePage: React.FC = () => {
           <DealResult
             dealResult={dealResult}
             players={room.players.filter(p => p !== null) as Player[]}
-            teamLevels={(gameState as any)?.current_match?.team_levels || [2, 2]}
+            teamLevels={(gameState as PlayerGameState)?.team_levels || [2, 2]}
             onContinue={handleContinue}
             onExit={handleReturnToLobby}
             isMatchFinished={false}

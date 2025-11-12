@@ -170,31 +170,26 @@ export const PlayerStatus = {
 
 export type PlayerStatus = typeof PlayerStatus[keyof typeof PlayerStatus];
 
-export interface GameState {
-  match_id: string;
-  current_deal: DealState;
-  team_levels: [number, number]; // Team 0 and Team 1 levels
-  current_player: number;
-  status: string;
-}
-
-export interface DealState {
-  id: string;
-  level: number;
-  status: string;
-  current_trick: TrickInfo | null;
-  player_cards: Card[][];
-  rankings: number[];
-  start_time: string;
+export interface PlayerView {
+  player_seat: number;
+  player_cards: Card[];
+  team_levels: [number, number];
+  deal_level: number;
+  deal_status: string;
+  trick_id?: string;
+  current_turn?: number;
+  plays?: PlayAction[];
+  tribute_phase?: TributePhase;
 }
 
 export interface PlayerGameState {
-  player_seat: number;
-  hand: Card[];
-  game_state: GameState;
-  can_play: boolean;
-  turn_timeout: string | null;
-  remaining_seconds: number;
+  team_levels: [number, number];
+  deal_level: number;
+  deal_status: string;
+  trick_id?: string;
+  current_turn?: number;
+  plays?: PlayAction[];
+  tribute_phase?: TributePhase;
 }
 
 export interface GameActionData {

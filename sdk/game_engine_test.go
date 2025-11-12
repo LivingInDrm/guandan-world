@@ -134,16 +134,46 @@ func TestGameEngineGetPlayerView(t *testing.T) {
 
 	playerView := engine.GetPlayerView(0)
 
+	if playerView != nil {
+		t.Error("GetPlayerView should return nil when no match is active")
+	}
+
+	players := []Player{
+		{ID: "p1", Username: "Player1", Seat: 0},
+		{ID: "p2", Username: "Player2", Seat: 1},
+		{ID: "p3", Username: "Player3", Seat: 2},
+		{ID: "p4", Username: "Player4", Seat: 3},
+	}
+	
+	err := engine.StartMatch(players)
+	if err != nil {
+		t.Fatalf("Failed to start match: %v", err)
+	}
+
+	err = engine.StartDeal()
+	if err != nil {
+		t.Fatalf("Failed to start deal: %v", err)
+	}
+
+	playerView = engine.GetPlayerView(0)
 	if playerView == nil {
-		t.Fatal("GetPlayerView should return a non-nil view")
+		t.Fatal("GetPlayerView should return a non-nil view when match and deal are active")
 	}
 
 	if playerView.PlayerSeat != 0 {
 		t.Error("Player view should have correct player seat")
 	}
 
-	if playerView.GameState == nil {
-		t.Error("Player view should have game state")
+	if len(playerView.TeamLevels) != 2 {
+		t.Error("Player view should have team levels")
+	}
+
+	if playerView.PlayerCards == nil {
+		t.Error("Player view should have initialized player cards")
+	}
+	
+	if len(playerView.PlayerCards) != 27 {
+		t.Errorf("Player should have 27 cards, got %d", len(playerView.PlayerCards))
 	}
 }
 

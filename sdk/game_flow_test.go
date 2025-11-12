@@ -284,8 +284,12 @@ func TestGameEngine_PlayerView(t *testing.T) {
 			t.Errorf("Expected player seat %d, got %d", playerSeat, playerView.PlayerSeat)
 		}
 
-		if playerView.GameState == nil {
-			t.Errorf("Expected game state in player view for player %d", playerSeat)
+		if len(playerView.TeamLevels) != 2 {
+			t.Errorf("Expected team levels in player view for player %d", playerSeat)
+		}
+
+		if playerView.PlayerCards == nil {
+			t.Errorf("Expected player cards in player view for player %d", playerSeat)
 		}
 
 		// Player should have their cards

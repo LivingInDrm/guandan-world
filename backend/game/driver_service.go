@@ -674,27 +674,30 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 }
 
 // sendPlayerViews sends player-specific game state to each player
-// This implements player view state filtering based on SDK GetPlayerView
 func (wso *WebSocketObserver) sendPlayerViews(eventType sdk.GameEventType) {
 	if wso.engine == nil {
 		return
 	}
 
+	// Get game state once to extract player IDs
+	gameState := wso.engine.GetGameState()
+	if gameState == nil || gameState.CurrentMatch == nil {
+		return
+	}
+
 	// Send player view to each player (seats 0-3)
 	for playerSeat := 0; playerSeat < 4; playerSeat++ {
-		// Use SDK's GetPlayerView for proper state filtering
+		// Get player view for this seat
 		playerView := wso.engine.GetPlayerView(playerSeat)
 		if playerView == nil {
 			continue
 		}
 
 		// Get player ID from the game state
-		if playerView.GameState != nil &&
-			playerView.GameState.CurrentMatch != nil &&
-			playerSeat < len(playerView.GameState.CurrentMatch.Players) &&
-			playerView.GameState.CurrentMatch.Players[playerSeat] != nil {
+		if playerSeat < len(gameState.CurrentMatch.Players) &&
+			gameState.CurrentMatch.Players[playerSeat] != nil {
 
-			playerID := playerView.GameState.CurrentMatch.Players[playerSeat].ID
+			playerID := gameState.CurrentMatch.Players[playerSeat].ID
 
 			// Create filtered player view message
 			wsMessage := &websocket.WSMessage{

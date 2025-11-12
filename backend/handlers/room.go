@@ -501,38 +501,23 @@ func (h *RoomHandler) runGamePrepareSequence(roomID string, players [4]*room.Pla
 			}
 
 			// Send initial player view
-			// Use nested structure to match GameDriver format
-			// Format: data.player_view contains the actual PlayerGameState
 			initialView := &websocket.WSMessage{
 				Type: "player_view",
 				Data: map[string]interface{}{
-					// Nested player_view object (matches GameDriver format)
 					"player_view": map[string]interface{}{
 						"player_seat":   i,
-						"player_cards":  []interface{}{}, // Empty hand initially (SDK uses player_cards)
-						"visible_cards": []interface{}{}, // No visible cards yet
-						"game_state": map[string]interface{}{
-							"id":     "",
-							"status": "waiting",
-							"current_match": map[string]interface{}{
-								"id":          "",
-								"status":      "waiting",
-								"team_levels": []int{2, 2}, // Initial levels for both teams
-								"current_deal": map[string]interface{}{
-									"id":            "",
-									"level":         2, // Starting level
-									"status":        "waiting",
-									"tribute_phase": nil,
-									"current_trick": nil,
-								},
-								"players": playersList,
-							},
-						},
+						"player_cards":  []interface{}{},
+						"team_levels":   []int{2, 2},
+						"deal_level":    2,
+						"deal_status":   "waiting",
+						"trick_id":      "",
+						"current_turn":  nil,
+						"plays":         []interface{}{},
+						"tribute_phase": nil,
+					},
+					"event_type":  "match_started",
+					"player_seat": i,
 				},
-				// Additional metadata (matches GameDriver format)
-				"event_type":  "match_started",
-				"player_seat": i,
-			},
 				Timestamp: time.Now(),
 				PlayerID:  player.ID,
 			}

@@ -1,13 +1,15 @@
 import React from 'react';
-import type { GameState, Player, TrickInfo, PlayAction } from '../../types';
+import type { Player, PlayAction } from '../../types';
 import { PlayerStatus } from '../../types';
 import CardDisplay from './CardDisplay';
 
 interface GameBoardProps {
-  gameState: GameState;
+  teamLevels: [number, number];
+  currentLevel: number;
+  plays: PlayAction[];
+  currentTurn: number;
   players: (Player | null)[];
   currentPlayerSeat: number;
-  trickInfo: TrickInfo | null;
 }
 
 interface PlayerAreaProps {
@@ -200,58 +202,44 @@ const TeamLevelDisplay: React.FC<TeamLevelDisplayProps> = ({ teamLevels, current
 };
 
 const GameBoard: React.FC<GameBoardProps> = ({ 
-  gameState, 
+  teamLevels,
+  currentLevel,
+  plays,
+  currentTurn,
   players, 
-  currentPlayerSeat, 
-  trickInfo 
+  currentPlayerSeat
 }) => {
   const getPlayerStatus = (seat: number): PlayerStatus => {
-    if (!trickInfo) return PlayerStatus.WAITING;
-    
-    // 优先检查是否轮到该玩家
-    if (trickInfo.current_turn === seat) {
+    if (currentTurn === seat) {
       return PlayerStatus.PLAYING;
     }
     
-    // 然后检查最后一次出牌记录
-    const playerPlays = trickInfo.plays.filter(p => p.player_seat === seat);
+    const playerPlays = plays.filter(p => p.player_seat === seat);
     const lastPlay = playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
     
     if (lastPlay) {
       return lastPlay.is_pass ? PlayerStatus.PASSED : PlayerStatus.PLAYED;
     }
     
-    // 默认等待状态
     return PlayerStatus.WAITING;
   };
 
   const getPlayForSeat = (seat: number): PlayAction | null => {
-    if (!trickInfo) return null;
-    
-    // 轮到该玩家时，清空显示（等待玩家做决策）
-    if (trickInfo.current_turn === seat) {
+    if (currentTurn === seat) {
       return null;
     }
     
-    // 显示该玩家最后一次出牌
-    const playerPlays = trickInfo.plays.filter(p => p.player_seat === seat);
+    const playerPlays = plays.filter(p => p.player_seat === seat);
     return playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
   };
 
-  // Extract data from nested structure: gameState.current_match
-  const currentMatch = (gameState as any).current_match;
-  const teamLevels = currentMatch?.team_levels || [2, 2];
-  const currentLevel = currentMatch?.current_deal?.level || 2;
-
   return (
     <div className="relative w-full h-96 bg-green-100 border border-gray-300 rounded-lg">
-      {/* Team Level Display */}
       <TeamLevelDisplay 
         teamLevels={teamLevels} 
         currentLevel={currentLevel} 
       />
       
-      {/* Central Play Area */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative w-64 h-40 bg-green-200 border-2 border-green-400 rounded-lg">
           <PlayedCardsDisplay 
@@ -273,33 +261,32 @@ const GameBoard: React.FC<GameBoardProps> = ({
         </div>
       </div>
       
-      {/* Player Areas - positioned around the board */}
       <PlayerArea
         player={players[currentPlayerSeat]}
         position="bottom"
         status={getPlayerStatus(currentPlayerSeat)}
-        isCurrentTurn={trickInfo?.current_turn === currentPlayerSeat}
+        isCurrentTurn={currentTurn === currentPlayerSeat}
       />
       
       <PlayerArea
         player={players[(currentPlayerSeat + 1) % 4]}
         position="left"
         status={getPlayerStatus((currentPlayerSeat + 1) % 4)}
-        isCurrentTurn={trickInfo?.current_turn === (currentPlayerSeat + 1) % 4}
+        isCurrentTurn={currentTurn === (currentPlayerSeat + 1) % 4}
       />
       
       <PlayerArea
         player={players[(currentPlayerSeat + 2) % 4]}
         position="top"
         status={getPlayerStatus((currentPlayerSeat + 2) % 4)}
-        isCurrentTurn={trickInfo?.current_turn === (currentPlayerSeat + 2) % 4}
+        isCurrentTurn={currentTurn === (currentPlayerSeat + 2) % 4}
       />
       
       <PlayerArea
         player={players[(currentPlayerSeat + 3) % 4]}
         position="right"
         status={getPlayerStatus((currentPlayerSeat + 3) % 4)}
-        isCurrentTurn={trickInfo?.current_turn === (currentPlayerSeat + 3) % 4}
+        isCurrentTurn={currentTurn === (currentPlayerSeat + 3) % 4}
       />
     </div>
   );
