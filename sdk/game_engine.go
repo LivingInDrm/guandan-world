@@ -473,7 +473,7 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	validator := NewPlayValidator(deal.Level)
 	err := validator.ValidatePlay(playerSeat, cards, deal.PlayerCards[playerSeat], deal.CurrentTrick)
 	if err != nil {
-		return nil, fmt.Errorf("invalid play: %w", err)
+		return nil, err
 	}
 
 	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the play

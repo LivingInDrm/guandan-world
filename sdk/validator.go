@@ -5,6 +5,26 @@ import (
 	"fmt"
 )
 
+// ValidationError 表示可恢复的验证错误（非法出牌）
+type ValidationError struct {
+	PlayerSeat int
+	Reason     string
+	Detail     string
+}
+
+func (e *ValidationError) Error() string {
+	return e.Detail
+}
+
+// 错误原因常量
+const (
+	ReasonNotYourTurn        = "not_your_turn"
+	ReasonInvalidCards       = "invalid_cards"
+	ReasonCannotBeat         = "cannot_beat"
+	ReasonCardOwnership      = "card_ownership"
+	ReasonInvalidCombination = "invalid_combination"
+)
+
 // PlayValidator handles all play validation logic
 type PlayValidator struct {
 	level int // Current deal level for wildcard validation
@@ -21,18 +41,30 @@ func NewPlayValidator(level int) *PlayValidator {
 func (pv *PlayValidator) ValidatePlay(playerSeat int, cards []*Card, playerCards []*Card, currentTrick *Trick) error {
 	// Basic validation
 	if len(cards) == 0 {
-		return errors.New("cannot play empty cards")
+		return &ValidationError{
+			PlayerSeat: playerSeat,
+			Reason:     ReasonInvalidCards,
+			Detail:     "cannot play empty cards",
+		}
 	}
 
 	// Validate it's the player's turn
 	if currentTrick != nil && currentTrick.CurrentTurn != playerSeat {
-		return fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, currentTrick.CurrentTurn)
+		return &ValidationError{
+			PlayerSeat: playerSeat,
+			Reason:     ReasonNotYourTurn,
+			Detail:     fmt.Sprintf("not player %d's turn, current turn is %d", playerSeat, currentTrick.CurrentTurn),
+		}
 	}
 
 	// Validate cards are from player's hand
 	err := pv.validatePlayerOwnsCards(cards, playerCards)
 	if err != nil {
-		return fmt.Errorf("invalid card ownership: %w", err)
+		return &ValidationError{
+			PlayerSeat: playerSeat,
+			Reason:     ReasonCardOwnership,
+			Detail:     fmt.Sprintf("invalid card ownership: %v", err),
+		}
 	}
 
 	// Create and validate card combination
@@ -43,14 +75,22 @@ func (pv *PlayValidator) ValidatePlay(playerSeat int, cards []*Card, playerCards
 
 	comp := FromCardList(cards, prevComp)
 	if !comp.IsValid() {
-		return errors.New("invalid card combination")
+		return &ValidationError{
+			PlayerSeat: playerSeat,
+			Reason:     ReasonInvalidCombination,
+			Detail:     "invalid card combination",
+		}
 	}
 
 	// If this is not the first play in the trick, validate against lead combination
 	if currentTrick != nil && currentTrick.LeadComp != nil {
 		err = pv.validateAgainstLeadCombination(comp, currentTrick.LeadComp)
 		if err != nil {
-			return fmt.Errorf("cannot beat lead combination: %w", err)
+			return &ValidationError{
+				PlayerSeat: playerSeat,
+				Reason:     ReasonCannotBeat,
+				Detail:     fmt.Sprintf("cannot beat lead combination: %v", err),
+			}
 		}
 	}
 

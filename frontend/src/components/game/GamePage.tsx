@@ -57,6 +57,7 @@ const GamePage: React.FC = () => {
   const [isStarting, setIsStarting] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [turnTimeoutSeconds, setTurnTimeoutSeconds] = useState<number>(20);
+  const [previousTrickId, setPreviousTrickId] = useState<string | null>(null);
 
   // 初始加载房间信息
   useEffect(() => {
@@ -292,6 +293,19 @@ const GamePage: React.FC = () => {
         });
 
         setGameState(playerView.game_state);
+        
+        // 检测Trick变化
+        const currentDeal = playerView.game_state.current_match?.current_deal;
+        const currentTrickId = currentDeal?.current_trick?.id;
+        
+        if (currentTrickId && currentTrickId !== previousTrickId) {
+          console.log('🔄 [GamePage] Trick changed:', {
+            previousTrickId,
+            currentTrickId,
+            playsCount: currentDeal?.current_trick?.plays?.length || 0
+          });
+          setPreviousTrickId(currentTrickId);
+        }
         
         // 根据当前阶段和游戏状态决定是否切换阶段
         // Use latest phase from store to avoid stale closure

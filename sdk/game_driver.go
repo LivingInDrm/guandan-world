@@ -610,6 +610,39 @@ func (gd *GameDriver) runTrick() error {
 
 			_, err = gd.engine.PlayCards(currentPlayer, decision.Cards)
 			if err != nil {
+				// 检查是否为验证错误
+				var validationErr *ValidationError
+				if errors.As(err, &validationErr) {
+					// 检测到非法出牌
+					// 记录为超时统计（统一处理非法行为）
+					gd.handleTimeout(currentPlayer, "invalid_play")
+					
+					// 使用超时策略自动生成合法决策
+					autoDecision := gd.config.TimeoutStrategy.GetDefaultPlayDecision(playerView.PlayerCards, trickInfo)
+					if autoDecision == nil {
+						// 策略返回nil，使用PASS作为后备
+						autoDecision = &PlayDecision{Action: ActionPass}
+					}
+					
+					// 执行自动决策
+					if autoDecision.Action == ActionPlay {
+						_, autoErr := gd.engine.PlayCards(currentPlayer, autoDecision.Cards)
+						if autoErr != nil {
+							// 自动策略也失败了，这是严重系统错误
+							return fmt.Errorf("auto-play failed for player %d after invalid play: %w", currentPlayer, autoErr)
+						}
+					} else {
+						_, autoErr := gd.engine.PassTurn(currentPlayer)
+						if autoErr != nil {
+							return fmt.Errorf("auto-pass failed for player %d after invalid play: %w", currentPlayer, autoErr)
+						}
+					}
+					
+					// 继续游戏循环，不退出
+					continue
+				}
+				
+				// 其他系统错误，仍然退出游戏
 				return fmt.Errorf("failed to play cards for player %d: %w", currentPlayer, err)
 			}
 		} else if decision.Action == ActionPass {

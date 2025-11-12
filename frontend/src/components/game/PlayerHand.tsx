@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import type { Card } from '../../types';
+import CardDisplay, { getRankText } from './CardDisplay';
 
 interface PlayerHandProps {
   cards: Card[];
@@ -7,89 +8,6 @@ interface PlayerHandProps {
   onCardSelect: (cards: Card[]) => void;
   disabled?: boolean;
 }
-
-interface CardDisplayProps {
-  card: Card;
-  isSelected: boolean;
-  onClick: () => void;
-  disabled?: boolean;
-  stackIndex?: number;
-}
-
-const CardDisplay: React.FC<CardDisplayProps> = ({ 
-  card, 
-  isSelected, 
-  onClick, 
-  disabled = false,
-  stackIndex = 0 
-}) => {
-  const getSuitSymbol = (suit: number) => {
-    switch (suit) {
-      case 0: return '♠'; // spades
-      case 1: return '♥'; // hearts
-      case 2: return '♣'; // clubs
-      case 3: return '♦'; // diamonds
-      default: return '';
-    }
-  };
-
-  const getSuitColor = (suit: number) => {
-    return suit === 1 || suit === 3 ? 'text-red-600' : 'text-black';
-  };
-
-  const getRankText = (rank: number) => {
-    if (rank === 15) return '小王';
-    if (rank === 16) return '大王';
-    if (rank <= 10) return rank.toString();
-    switch (rank) {
-      case 11: return 'J';
-      case 12: return 'Q';
-      case 13: return 'K';
-      case 14: return 'A';
-      default: return rank.toString();
-    }
-  };
-
-  const getCardBackground = () => {
-    if (card.is_joker) {
-      return card.rank === 16 ? 'bg-red-100' : 'bg-gray-100';
-    }
-    return 'bg-white';
-  };
-
-  return (
-    <div
-      className={`
-        relative w-12 h-16 border border-gray-300 rounded cursor-pointer transition-all duration-200
-        ${getCardBackground()}
-        ${isSelected ? 'transform -translate-y-2 border-blue-500 shadow-lg' : 'hover:shadow-md'}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-      `}
-      style={{ 
-        marginLeft: stackIndex > 0 ? '-8px' : '0',
-        zIndex: stackIndex 
-      }}
-      onClick={disabled ? undefined : onClick}
-    >
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-xs">
-        {card.is_joker ? (
-          <div className="text-center font-bold">
-            {getRankText(card.rank)}
-          </div>
-        ) : (
-          <>
-            <div className={`font-bold ${getSuitColor(card.suit)}`}>
-              {getRankText(card.rank)}
-            </div>
-            <div className={`text-lg ${getSuitColor(card.suit)}`}>
-              {getSuitSymbol(card.suit)}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
 
 interface CardGroupProps {
   rank: number;
@@ -106,29 +24,14 @@ const CardGroup: React.FC<CardGroupProps> = ({
   onCardSelect, 
   disabled = false 
 }) => {
-  const getRankText = (rank: number) => {
-    if (rank === 15) return '小王';
-    if (rank === 16) return '大王';
-    if (rank <= 10) return rank.toString();
-    switch (rank) {
-      case 11: return 'J';
-      case 12: return 'Q';
-      case 13: return 'K';
-      case 14: return 'A';
-      default: return rank.toString();
-    }
-  };
-
-  // Ensure cards is an array before spreading
   const safeCards = Array.isArray(cards) ? cards : [];
 
-  // Sort cards by suit priority: hearts > diamonds > clubs > spades
   const sortedCards = [...safeCards].sort((a, b) => {
-    if (a.is_joker && b.is_joker) return b.rank - a.rank; // Big joker first
+    if (a.is_joker && b.is_joker) return b.rank - a.rank;
     if (a.is_joker) return -1;
     if (b.is_joker) return 1;
     
-    const suitPriority = [3, 1, 2, 0]; // hearts, diamonds, clubs, spades
+    const suitPriority = [3, 1, 2, 0];
     const aPriority = suitPriority.indexOf(a.suit);
     const bPriority = suitPriority.indexOf(b.suit);
     return aPriority - bPriority;
@@ -138,11 +41,9 @@ const CardGroup: React.FC<CardGroupProps> = ({
     const isSelected = selectedCards.some(c => c.id === clickedCard.id);
     
     if (isSelected) {
-      // Remove from selection
       const newSelection = selectedCards.filter(c => c.id !== clickedCard.id);
       onCardSelect(newSelection);
     } else {
-      // Add to selection
       const newSelection = [...selectedCards, clickedCard];
       onCardSelect(newSelection);
     }

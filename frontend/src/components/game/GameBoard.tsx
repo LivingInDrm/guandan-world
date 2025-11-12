@@ -1,6 +1,7 @@
 import React from 'react';
-import type { GameState, Player, TrickInfo } from '../../types';
+import type { GameState, Player, TrickInfo, PlayAction } from '../../types';
 import { PlayerStatus } from '../../types';
+import CardDisplay from './CardDisplay';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -13,15 +14,13 @@ interface PlayerAreaProps {
   player: Player | null;
   position: 'bottom' | 'left' | 'top' | 'right';
   status: PlayerStatus;
-  lastPlay: any; // Cards played in current trick
   isCurrentTurn: boolean;
 }
 
 const PlayerArea: React.FC<PlayerAreaProps> = ({ 
   player, 
   position, 
-  status, 
-  lastPlay, 
+  status,
   isCurrentTurn 
 }) => {
   const getPositionClasses = () => {
@@ -92,14 +91,69 @@ const PlayerArea: React.FC<PlayerAreaProps> = ({
         <div className={`text-xs px-2 py-1 rounded mt-1 ${getStatusColor()}`}>
           {getStatusText()}
         </div>
-        {lastPlay && lastPlay.cards && lastPlay.cards.length > 0 && (
-          <div className="text-xs text-gray-500 mt-1">
-            出牌: {lastPlay.cards.length}张
-          </div>
-        )}
       </div>
     </div>
   );
+};
+
+interface PlayedCardsDisplayProps {
+  play: PlayAction | null;
+  position: 'bottom' | 'left' | 'top' | 'right';
+}
+
+const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position }) => {
+  const getPositionClasses = () => {
+    const base = 'absolute flex items-center justify-center';
+    switch (position) {
+      case 'bottom':
+        return `${base} bottom-2 left-1/2 transform -translate-x-1/2`;
+      case 'top':
+        return `${base} top-2 left-1/2 transform -translate-x-1/2`;
+      case 'left':
+        return `${base} left-2 top-1/2 transform -translate-y-1/2`;
+      case 'right':
+        return `${base} right-2 top-1/2 transform -translate-y-1/2`;
+      default:
+        return base;
+    }
+  };
+
+  const getFlexDirection = () => {
+    return position === 'left' || position === 'right' ? 'flex-col' : 'flex-row';
+  };
+
+  if (!play) {
+    return <div className={getPositionClasses()} />;
+  }
+
+  if (play.is_pass) {
+    return (
+      <div className={getPositionClasses()}>
+        <div className="bg-gray-200 px-3 py-1 rounded text-sm text-gray-600 font-medium">
+          不出
+        </div>
+      </div>
+    );
+  }
+
+  if (play.cards && play.cards.length > 0) {
+    return (
+      <div className={getPositionClasses()}>
+        <div className={`flex ${getFlexDirection()} items-center gap-0.5`}>
+          {play.cards.map((card, index) => (
+            <CardDisplay
+              key={card.id}
+              card={card}
+              size="small"
+              stackIndex={index}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return <div className={getPositionClasses()} />;
 };
 
 interface TeamLevelDisplayProps {
@@ -166,7 +220,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
     return PlayerStatus.WAITING;
   };
 
-  const getLastPlay = (seat: number) => {
+  const getPlayForSeat = (seat: number): PlayAction | null => {
     if (!trickInfo) return null;
     return trickInfo.plays.find(p => p.player_seat === seat) || null;
   };
@@ -186,15 +240,23 @@ const GameBoard: React.FC<GameBoardProps> = ({
       
       {/* Central Play Area */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-48 h-32 bg-green-200 border-2 border-green-400 rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-sm text-gray-600 mb-1">出牌区</div>
-            {trickInfo && trickInfo.plays.length > 0 && (
-              <div className="text-xs text-gray-500">
-                当前轮次: {trickInfo.plays.length}/4
-              </div>
-            )}
-          </div>
+        <div className="relative w-64 h-40 bg-green-200 border-2 border-green-400 rounded-lg">
+          <PlayedCardsDisplay 
+            play={getPlayForSeat(currentPlayerSeat)}
+            position="bottom"
+          />
+          <PlayedCardsDisplay 
+            play={getPlayForSeat((currentPlayerSeat + 1) % 4)}
+            position="left"
+          />
+          <PlayedCardsDisplay 
+            play={getPlayForSeat((currentPlayerSeat + 2) % 4)}
+            position="top"
+          />
+          <PlayedCardsDisplay 
+            play={getPlayForSeat((currentPlayerSeat + 3) % 4)}
+            position="right"
+          />
         </div>
       </div>
       
@@ -203,7 +265,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
         player={players[currentPlayerSeat]}
         position="bottom"
         status={getPlayerStatus(currentPlayerSeat)}
-        lastPlay={getLastPlay(currentPlayerSeat)}
         isCurrentTurn={trickInfo?.current_turn === currentPlayerSeat}
       />
       
@@ -211,7 +272,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
         player={players[(currentPlayerSeat + 1) % 4]}
         position="left"
         status={getPlayerStatus((currentPlayerSeat + 1) % 4)}
-        lastPlay={getLastPlay((currentPlayerSeat + 1) % 4)}
         isCurrentTurn={trickInfo?.current_turn === (currentPlayerSeat + 1) % 4}
       />
       
@@ -219,7 +279,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
         player={players[(currentPlayerSeat + 2) % 4]}
         position="top"
         status={getPlayerStatus((currentPlayerSeat + 2) % 4)}
-        lastPlay={getLastPlay((currentPlayerSeat + 2) % 4)}
         isCurrentTurn={trickInfo?.current_turn === (currentPlayerSeat + 2) % 4}
       />
       
@@ -227,7 +286,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
         player={players[(currentPlayerSeat + 3) % 4]}
         position="right"
         status={getPlayerStatus((currentPlayerSeat + 3) % 4)}
-        lastPlay={getLastPlay((currentPlayerSeat + 3) % 4)}
         isCurrentTurn={trickInfo?.current_turn === (currentPlayerSeat + 3) % 4}
       />
     </div>
