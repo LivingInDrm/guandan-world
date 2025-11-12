@@ -208,9 +208,11 @@ const GameBoard: React.FC<GameBoardProps> = ({
   const getPlayerStatus = (seat: number): PlayerStatus => {
     if (!trickInfo) return PlayerStatus.WAITING;
     
-    const play = trickInfo.plays.find(p => p.player_seat === seat);
-    if (play) {
-      return play.is_pass ? PlayerStatus.PASSED : PlayerStatus.PLAYED;
+    const playerPlays = trickInfo.plays.filter(p => p.player_seat === seat);
+    const lastPlay = playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
+    
+    if (lastPlay) {
+      return lastPlay.is_pass ? PlayerStatus.PASSED : PlayerStatus.PLAYED;
     }
     
     if (trickInfo.current_turn === seat) {
@@ -222,7 +224,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   const getPlayForSeat = (seat: number): PlayAction | null => {
     if (!trickInfo) return null;
-    return trickInfo.plays.find(p => p.player_seat === seat) || null;
+    const playerPlays = trickInfo.plays.filter(p => p.player_seat === seat);
+    return playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
   };
 
   // Extract data from nested structure: gameState.current_match
