@@ -8,6 +8,7 @@ import "game/match.proto";
 import "game/deal.proto";
 import "game/result.proto";
 import "messages/tribute_events.proto";
+import "messages/connection_events.proto";
 
 // GameEvent 表示游戏中发生的事件
 // 游戏引擎通过事件系统通知外部系统游戏状态变化
@@ -34,6 +35,11 @@ message GameEvent {
     TributeSelectedEvent tribute_selected = 21;
     ReturnTributeEvent return_tribute = 22;
     TributeCompletedEvent tribute_completed = 23;
+    
+    // 连接事件 (6D组)
+    PlayerTimeoutEvent player_timeout = 24;
+    PlayerDisconnectEvent player_disconnect = 25;
+    PlayerReconnectEvent player_reconnect = 26;
   }
 }
 

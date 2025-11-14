@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package guandan.messages;
+option go_package = "guandan-world/proto/gen/go/messages";
+
+import "common/enums.proto";
+
+// PlayerTimeoutEvent 玩家超时事件
+// 当玩家在规定时间内未完成操作时触发
+message PlayerTimeoutEvent {
+  common.TimeoutActionType action_type = 1;  // 超时的动作类型
+}
+
+// PlayerDisconnectEvent 玩家断线事件
+// 当玩家断开连接时触发
+message PlayerDisconnectEvent {
+  bool auto_play = 1;  // 是否启用自动托管 (断线时为 true)
+}
+
+// PlayerReconnectEvent 玩家重连事件
+// 当玩家重新连接时触发
+message PlayerReconnectEvent {
+  bool auto_play = 1;  // 是否启用自动托管 (重连后为 false)
+}

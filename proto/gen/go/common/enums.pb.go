@@ -295,6 +295,59 @@ func (TributeStatus) EnumDescriptor() ([]byte, []int) {
 	return file_common_enums_proto_rawDescGZIP(), []int{4}
 }
 
+// TimeoutActionType 表示超时的动作类型
+type TimeoutActionType int32
+
+const (
+	TimeoutActionType_TIMEOUT_ACTION_TYPE_UNSPECIFIED    TimeoutActionType = 0 // 未指定
+	TimeoutActionType_TIMEOUT_ACTION_TYPE_PLAY_DECISION  TimeoutActionType = 1 // 出牌决策超时
+	TimeoutActionType_TIMEOUT_ACTION_TYPE_TRIBUTE_SELECT TimeoutActionType = 2 // 选择进贡牌超时
+	TimeoutActionType_TIMEOUT_ACTION_TYPE_RETURN_TRIBUTE TimeoutActionType = 3 // 回贡超时
+)
+
+// Enum value maps for TimeoutActionType.
+var (
+	TimeoutActionType_name = map[int32]string{
+		0: "TIMEOUT_ACTION_TYPE_UNSPECIFIED",
+		1: "TIMEOUT_ACTION_TYPE_PLAY_DECISION",
+		2: "TIMEOUT_ACTION_TYPE_TRIBUTE_SELECT",
+		3: "TIMEOUT_ACTION_TYPE_RETURN_TRIBUTE",
+	}
+	TimeoutActionType_value = map[string]int32{
+		"TIMEOUT_ACTION_TYPE_UNSPECIFIED":    0,
+		"TIMEOUT_ACTION_TYPE_PLAY_DECISION":  1,
+		"TIMEOUT_ACTION_TYPE_TRIBUTE_SELECT": 2,
+		"TIMEOUT_ACTION_TYPE_RETURN_TRIBUTE": 3,
+	}
+)
+
+func (x TimeoutActionType) Enum() *TimeoutActionType {
+	p := new(TimeoutActionType)
+	*p = x
+	return p
+}
+
+func (x TimeoutActionType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TimeoutActionType) Descriptor() protoreflect.EnumDescriptor {
+	return file_common_enums_proto_enumTypes[5].Descriptor()
+}
+
+func (TimeoutActionType) Type() protoreflect.EnumType {
+	return &file_common_enums_proto_enumTypes[5]
+}
+
+func (x TimeoutActionType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TimeoutActionType.Descriptor instead.
+func (TimeoutActionType) EnumDescriptor() ([]byte, []int) {
+	return file_common_enums_proto_rawDescGZIP(), []int{5}
+}
+
 // CompType 表示牌型组合类型
 type CompType int32
 
@@ -359,11 +412,11 @@ func (x CompType) String() string {
 }
 
 func (CompType) Descriptor() protoreflect.EnumDescriptor {
-	return file_common_enums_proto_enumTypes[5].Descriptor()
+	return file_common_enums_proto_enumTypes[6].Descriptor()
 }
 
 func (CompType) Type() protoreflect.EnumType {
-	return &file_common_enums_proto_enumTypes[5]
+	return &file_common_enums_proto_enumTypes[6]
 }
 
 func (x CompType) Number() protoreflect.EnumNumber {
@@ -372,7 +425,7 @@ func (x CompType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CompType.Descriptor instead.
 func (CompType) EnumDescriptor() ([]byte, []int) {
-	return file_common_enums_proto_rawDescGZIP(), []int{5}
+	return file_common_enums_proto_rawDescGZIP(), []int{6}
 }
 
 // GameEventType 表示游戏事件类型
@@ -466,11 +519,11 @@ func (x GameEventType) String() string {
 }
 
 func (GameEventType) Descriptor() protoreflect.EnumDescriptor {
-	return file_common_enums_proto_enumTypes[6].Descriptor()
+	return file_common_enums_proto_enumTypes[7].Descriptor()
 }
 
 func (GameEventType) Type() protoreflect.EnumType {
-	return &file_common_enums_proto_enumTypes[6]
+	return &file_common_enums_proto_enumTypes[7]
 }
 
 func (x GameEventType) Number() protoreflect.EnumNumber {
@@ -479,7 +532,7 @@ func (x GameEventType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GameEventType.Descriptor instead.
 func (GameEventType) EnumDescriptor() ([]byte, []int) {
-	return file_common_enums_proto_rawDescGZIP(), []int{6}
+	return file_common_enums_proto_rawDescGZIP(), []int{7}
 }
 
 var File_common_enums_proto protoreflect.FileDescriptor
@@ -515,7 +568,12 @@ const file_common_enums_proto_rawDesc = "" +
 	"\x16TRIBUTE_STATUS_WAITING\x10\x01\x12\x1c\n" +
 	"\x18TRIBUTE_STATUS_SELECTING\x10\x02\x12\x1c\n" +
 	"\x18TRIBUTE_STATUS_RETURNING\x10\x03\x12\x1b\n" +
-	"\x17TRIBUTE_STATUS_FINISHED\x10\x04*\xbd\x02\n" +
+	"\x17TRIBUTE_STATUS_FINISHED\x10\x04*\xaf\x01\n" +
+	"\x11TimeoutActionType\x12#\n" +
+	"\x1fTIMEOUT_ACTION_TYPE_UNSPECIFIED\x10\x00\x12%\n" +
+	"!TIMEOUT_ACTION_TYPE_PLAY_DECISION\x10\x01\x12&\n" +
+	"\"TIMEOUT_ACTION_TYPE_TRIBUTE_SELECT\x10\x02\x12&\n" +
+	"\"TIMEOUT_ACTION_TYPE_RETURN_TRIBUTE\x10\x03*\xbd\x02\n" +
 	"\bCompType\x12\x19\n" +
 	"\x15COMP_TYPE_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eCOMP_TYPE_FOLD\x10\x01\x12\x15\n" +
@@ -568,15 +626,16 @@ func file_common_enums_proto_rawDescGZIP() []byte {
 	return file_common_enums_proto_rawDescData
 }
 
-var file_common_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
+var file_common_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
 var file_common_enums_proto_goTypes = []any{
-	(VictoryType)(0),   // 0: guandan.common.VictoryType
-	(DealStatus)(0),    // 1: guandan.common.DealStatus
-	(MatchStatus)(0),   // 2: guandan.common.MatchStatus
-	(TrickStatus)(0),   // 3: guandan.common.TrickStatus
-	(TributeStatus)(0), // 4: guandan.common.TributeStatus
-	(CompType)(0),      // 5: guandan.common.CompType
-	(GameEventType)(0), // 6: guandan.common.GameEventType
+	(VictoryType)(0),       // 0: guandan.common.VictoryType
+	(DealStatus)(0),        // 1: guandan.common.DealStatus
+	(MatchStatus)(0),       // 2: guandan.common.MatchStatus
+	(TrickStatus)(0),       // 3: guandan.common.TrickStatus
+	(TributeStatus)(0),     // 4: guandan.common.TributeStatus
+	(TimeoutActionType)(0), // 5: guandan.common.TimeoutActionType
+	(CompType)(0),          // 6: guandan.common.CompType
+	(GameEventType)(0),     // 7: guandan.common.GameEventType
 }
 var file_common_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -596,7 +655,7 @@ func file_common_enums_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_common_enums_proto_rawDesc), len(file_common_enums_proto_rawDesc)),
-			NumEnums:      7,
+			NumEnums:      8,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

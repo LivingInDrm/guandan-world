@@ -382,6 +382,54 @@ func ToProtoGameEvent(e *GameEvent) *pbmsg.GameEvent {
 				},
 			}
 		}
+
+	// ==================== 连接事件 (6D组) ====================
+
+	case EventPlayerTimeout:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		event := &pbmsg.PlayerTimeoutEvent{}
+		if action, ok := data["action"].(string); ok {
+			event.ActionType = ToProtoTimeoutActionType(TimeoutActionType(action))
+		}
+		result.Payload = &pbmsg.GameEvent_PlayerTimeout{
+			PlayerTimeout: event,
+		}
+
+	case EventPlayerDisconnect:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		event := &pbmsg.PlayerDisconnectEvent{}
+		if autoPlay, ok := data["auto_play"].(bool); ok {
+			event.AutoPlay = autoPlay
+		}
+		// 注意：Data 中的 "player_seat" 字段是冗余的（与 GameEvent.PlayerSeat 相同）
+		// 此处有意忽略，避免数据重复。FromProto 时会从 GameEvent.PlayerSeat 重建此字段
+		result.Payload = &pbmsg.GameEvent_PlayerDisconnect{
+			PlayerDisconnect: event,
+		}
+
+	case EventPlayerReconnect:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		event := &pbmsg.PlayerReconnectEvent{}
+		if autoPlay, ok := data["auto_play"].(bool); ok {
+			event.AutoPlay = autoPlay
+		}
+		// 注意：Data 中的 "player_seat" 字段是冗余的（与 GameEvent.PlayerSeat 相同）
+		// 此处有意忽略，避免数据重复。FromProto 时会从 GameEvent.PlayerSeat 重建此字段
+		result.Payload = &pbmsg.GameEvent_PlayerReconnect{
+			PlayerReconnect: event,
+		}
 	}
 
 	return result
@@ -595,6 +643,31 @@ func FromProtoGameEvent(pe *pbmsg.GameEvent) *GameEvent {
 	case *pbmsg.GameEvent_TributeCompleted:
 		if payload.TributeCompleted != nil && payload.TributeCompleted.TributePhase != nil {
 			result.Data = FromProtoTributePhase(payload.TributeCompleted.TributePhase)
+		}
+
+	// ==================== 连接事件 (6D组) ====================
+
+	case *pbmsg.GameEvent_PlayerTimeout:
+		if payload.PlayerTimeout != nil {
+			result.Data = map[string]interface{}{
+				"action": string(FromProtoTimeoutActionType(payload.PlayerTimeout.ActionType)),
+			}
+		}
+
+	case *pbmsg.GameEvent_PlayerDisconnect:
+		if payload.PlayerDisconnect != nil {
+			result.Data = map[string]interface{}{
+				"player_seat": result.PlayerSeat,  // 冗余字段：与 GameEvent.PlayerSeat 相同，为兼容现有代码保留
+				"auto_play":   payload.PlayerDisconnect.AutoPlay,
+			}
+		}
+
+	case *pbmsg.GameEvent_PlayerReconnect:
+		if payload.PlayerReconnect != nil {
+			result.Data = map[string]interface{}{
+				"player_seat": result.PlayerSeat,  // 冗余字段：与 GameEvent.PlayerSeat 相同，为兼容现有代码保留
+				"auto_play":   payload.PlayerReconnect.AutoPlay,
+			}
 		}
 
 	default:

@@ -125,6 +125,28 @@ func TestEnumAdapters(t *testing.T) {
 	if backGET != get {
 		t.Errorf("GameEventType round-trip failed: got %v, want %v", backGET, get)
 	}
+
+	// 测试 TimeoutActionType
+	tat := TimeoutActionPlayDecision
+	protoTAT := ToProtoTimeoutActionType(tat)
+	backTAT := FromProtoTimeoutActionType(protoTAT)
+	if backTAT != tat {
+		t.Errorf("TimeoutActionType round-trip failed: got %v, want %v", backTAT, tat)
+	}
+
+	// 测试所有 TimeoutActionType 值
+	timeoutActions := []TimeoutActionType{
+		TimeoutActionPlayDecision,
+		TimeoutActionTributeSelect,
+		TimeoutActionReturnTribute,
+	}
+	for _, ta := range timeoutActions {
+		protoTA := ToProtoTimeoutActionType(ta)
+		backTA := FromProtoTimeoutActionType(protoTA)
+		if backTA != ta {
+			t.Errorf("TimeoutActionType %v round-trip failed: got %v", ta, backTA)
+		}
+	}
 }
 
 // 测试 nil 处理
@@ -362,4 +384,123 @@ func mustNewCard(number int, color string, level int) *Card {
 		panic(err)
 	}
 	return card
+}
+
+// TestConnectionEventsAdapter 测试连接事件的 Proto 适配器
+func TestConnectionEventsAdapter(t *testing.T) {
+	tests := []struct {
+		name      string
+		eventType GameEventType
+		data      map[string]interface{}
+		validate  func(t *testing.T, data map[string]interface{})
+	}{
+		{
+			name:      "PlayerTimeout_PlayDecision",
+			eventType: EventPlayerTimeout,
+			data: map[string]interface{}{
+				"action": "play_decision",
+			},
+			validate: func(t *testing.T, data map[string]interface{}) {
+				if action, ok := data["action"].(string); !ok || action != "play_decision" {
+					t.Errorf("action mismatch: got %v, want play_decision", data["action"])
+				}
+			},
+		},
+		{
+			name:      "PlayerTimeout_TributeSelect",
+			eventType: EventPlayerTimeout,
+			data: map[string]interface{}{
+				"action": "tribute_select",
+			},
+			validate: func(t *testing.T, data map[string]interface{}) {
+				if action, ok := data["action"].(string); !ok || action != "tribute_select" {
+					t.Errorf("action mismatch: got %v, want tribute_select", data["action"])
+				}
+			},
+		},
+		{
+			name:      "PlayerTimeout_ReturnTribute",
+			eventType: EventPlayerTimeout,
+			data: map[string]interface{}{
+				"action": "return_tribute",
+			},
+			validate: func(t *testing.T, data map[string]interface{}) {
+				if action, ok := data["action"].(string); !ok || action != "return_tribute" {
+					t.Errorf("action mismatch: got %v, want return_tribute", data["action"])
+				}
+			},
+		},
+		{
+			name:      "PlayerDisconnect",
+			eventType: EventPlayerDisconnect,
+			data: map[string]interface{}{
+				"player_seat": 2,
+				"auto_play":   true,
+			},
+			validate: func(t *testing.T, data map[string]interface{}) {
+				if autoPlay, ok := data["auto_play"].(bool); !ok || autoPlay != true {
+					t.Errorf("auto_play mismatch: got %v, want true", data["auto_play"])
+				}
+			},
+		},
+		{
+			name:      "PlayerReconnect",
+			eventType: EventPlayerReconnect,
+			data: map[string]interface{}{
+				"player_seat": 2,
+				"auto_play":   false,
+			},
+			validate: func(t *testing.T, data map[string]interface{}) {
+				if autoPlay, ok := data["auto_play"].(bool); !ok || autoPlay != false {
+					t.Errorf("auto_play mismatch: got %v, want false", data["auto_play"])
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// 创建原始事件
+			event := &GameEvent{
+				Type:       tt.eventType,
+				PlayerSeat: 2,
+				Data:       tt.data,
+			}
+
+			// Go -> Proto
+			protoEvent := ToProtoGameEvent(event)
+			if protoEvent == nil {
+				t.Fatal("ToProtoGameEvent returned nil")
+			}
+
+			if protoEvent.PlayerSeat != 2 {
+				t.Errorf("PlayerSeat mismatch: got %d, want 2", protoEvent.PlayerSeat)
+			}
+
+			// Proto -> Go
+			restored := FromProtoGameEvent(protoEvent)
+			if restored == nil {
+				t.Fatal("FromProtoGameEvent returned nil")
+			}
+
+			if restored.Type != tt.eventType {
+				t.Errorf("Type mismatch: got %v, want %v", restored.Type, tt.eventType)
+			}
+
+			if restored.PlayerSeat != 2 {
+				t.Errorf("PlayerSeat mismatch: got %d, want 2", restored.PlayerSeat)
+			}
+
+			// 验证 Data 字段
+			data, ok := restored.Data.(map[string]interface{})
+			if !ok {
+				t.Fatal("Data is not a map")
+			}
+
+			// 使用自定义验证函数
+			tt.validate(t, data)
+
+			t.Logf("✅ %s round-trip successful", tt.name)
+		})
+	}
 }

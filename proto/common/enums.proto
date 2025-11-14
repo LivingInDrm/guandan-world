@@ -46,6 +46,14 @@ enum TributeStatus {
   TRIBUTE_STATUS_FINISHED = 4;    // 已完成
 }
 
+// TimeoutActionType 表示超时的动作类型
+enum TimeoutActionType {
+  TIMEOUT_ACTION_TYPE_UNSPECIFIED = 0;     // 未指定
+  TIMEOUT_ACTION_TYPE_PLAY_DECISION = 1;   // 出牌决策超时
+  TIMEOUT_ACTION_TYPE_TRIBUTE_SELECT = 2;  // 选择进贡牌超时
+  TIMEOUT_ACTION_TYPE_RETURN_TRIBUTE = 3;  // 回贡超时
+}
+
 // CompType 表示牌型组合类型
 enum CompType {
   COMP_TYPE_UNSPECIFIED = 0;    // 未指定

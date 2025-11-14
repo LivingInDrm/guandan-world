@@ -48,6 +48,9 @@ type GameEvent struct {
 	//	*GameEvent_TributeSelected
 	//	*GameEvent_ReturnTribute
 	//	*GameEvent_TributeCompleted
+	//	*GameEvent_PlayerTimeout
+	//	*GameEvent_PlayerDisconnect
+	//	*GameEvent_PlayerReconnect
 	Payload       isGameEvent_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -237,6 +240,33 @@ func (x *GameEvent) GetTributeCompleted() *TributeCompletedEvent {
 	return nil
 }
 
+func (x *GameEvent) GetPlayerTimeout() *PlayerTimeoutEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_PlayerTimeout); ok {
+			return x.PlayerTimeout
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetPlayerDisconnect() *PlayerDisconnectEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_PlayerDisconnect); ok {
+			return x.PlayerDisconnect
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetPlayerReconnect() *PlayerReconnectEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_PlayerReconnect); ok {
+			return x.PlayerReconnect
+		}
+	}
+	return nil
+}
+
 type isGameEvent_Payload interface {
 	isGameEvent_Payload()
 }
@@ -298,6 +328,19 @@ type GameEvent_TributeCompleted struct {
 	TributeCompleted *TributeCompletedEvent `protobuf:"bytes,23,opt,name=tribute_completed,json=tributeCompleted,proto3,oneof"`
 }
 
+type GameEvent_PlayerTimeout struct {
+	// 连接事件 (6D组)
+	PlayerTimeout *PlayerTimeoutEvent `protobuf:"bytes,24,opt,name=player_timeout,json=playerTimeout,proto3,oneof"`
+}
+
+type GameEvent_PlayerDisconnect struct {
+	PlayerDisconnect *PlayerDisconnectEvent `protobuf:"bytes,25,opt,name=player_disconnect,json=playerDisconnect,proto3,oneof"`
+}
+
+type GameEvent_PlayerReconnect struct {
+	PlayerReconnect *PlayerReconnectEvent `protobuf:"bytes,26,opt,name=player_reconnect,json=playerReconnect,proto3,oneof"`
+}
+
 func (*GameEvent_MatchStarted) isGameEvent_Payload() {}
 
 func (*GameEvent_DealStarted) isGameEvent_Payload() {}
@@ -325,6 +368,12 @@ func (*GameEvent_TributeSelected) isGameEvent_Payload() {}
 func (*GameEvent_ReturnTribute) isGameEvent_Payload() {}
 
 func (*GameEvent_TributeCompleted) isGameEvent_Payload() {}
+
+func (*GameEvent_PlayerTimeout) isGameEvent_Payload() {}
+
+func (*GameEvent_PlayerDisconnect) isGameEvent_Payload() {}
+
+func (*GameEvent_PlayerReconnect) isGameEvent_Payload() {}
 
 // MatchStartedEvent 比赛开始事件
 // 当新比赛开始时触发
@@ -592,7 +641,7 @@ var File_messages_game_event_proto protoreflect.FileDescriptor
 
 const file_messages_game_event_proto_rawDesc = "" +
 	"\n" +
-	"\x19messages/game_event.proto\x12\x10guandan.messages\x1a\x12common/enums.proto\x1a\x10game/match.proto\x1a\x0fgame/deal.proto\x1a\x11game/result.proto\x1a\x1dmessages/tribute_events.proto\"\xe1\t\n" +
+	"\x19messages/game_event.proto\x12\x10guandan.messages\x1a\x12common/enums.proto\x1a\x10game/match.proto\x1a\x0fgame/deal.proto\x1a\x11game/result.proto\x1a\x1dmessages/tribute_events.proto\x1a messages/connection_events.proto\"\xdd\v\n" +
 	"\tGameEvent\x121\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x1d.guandan.common.GameEventTypeR\x04type\x12!\n" +
 	"\ftimestamp_ms\x18\x02 \x01(\x03R\vtimestampMs\x12\x1f\n" +
@@ -615,7 +664,10 @@ const file_messages_game_event_proto_rawDesc = "" +
 	"\rtribute_given\x18\x14 \x01(\v2#.guandan.messages.TributeGivenEventH\x00R\ftributeGiven\x12S\n" +
 	"\x10tribute_selected\x18\x15 \x01(\v2&.guandan.messages.TributeSelectedEventH\x00R\x0ftributeSelected\x12M\n" +
 	"\x0ereturn_tribute\x18\x16 \x01(\v2$.guandan.messages.ReturnTributeEventH\x00R\rreturnTribute\x12V\n" +
-	"\x11tribute_completed\x18\x17 \x01(\v2'.guandan.messages.TributeCompletedEventH\x00R\x10tributeCompletedB\t\n" +
+	"\x11tribute_completed\x18\x17 \x01(\v2'.guandan.messages.TributeCompletedEventH\x00R\x10tributeCompleted\x12M\n" +
+	"\x0eplayer_timeout\x18\x18 \x01(\v2$.guandan.messages.PlayerTimeoutEventH\x00R\rplayerTimeout\x12V\n" +
+	"\x11player_disconnect\x18\x19 \x01(\v2'.guandan.messages.PlayerDisconnectEventH\x00R\x10playerDisconnect\x12S\n" +
+	"\x10player_reconnect\x18\x1a \x01(\v2&.guandan.messages.PlayerReconnectEventH\x00R\x0fplayerReconnectB\t\n" +
 	"\apayload\">\n" +
 	"\x11MatchStartedEvent\x12)\n" +
 	"\x05match\x18\x01 \x01(\v2\x13.guandan.game.MatchR\x05match\"w\n" +
@@ -664,11 +716,14 @@ var file_messages_game_event_proto_goTypes = []any{
 	(*TributeSelectedEvent)(nil),    // 13: guandan.messages.TributeSelectedEvent
 	(*ReturnTributeEvent)(nil),      // 14: guandan.messages.ReturnTributeEvent
 	(*TributeCompletedEvent)(nil),   // 15: guandan.messages.TributeCompletedEvent
-	(*game.Match)(nil),              // 16: guandan.game.Match
-	(*game.Deal)(nil),               // 17: guandan.game.Deal
-	(*game.TeamUpgrades)(nil),       // 18: guandan.game.TeamUpgrades
-	(*game.DealResult)(nil),         // 19: guandan.game.DealResult
-	(*game.MatchResult)(nil),        // 20: guandan.game.MatchResult
+	(*PlayerTimeoutEvent)(nil),      // 16: guandan.messages.PlayerTimeoutEvent
+	(*PlayerDisconnectEvent)(nil),   // 17: guandan.messages.PlayerDisconnectEvent
+	(*PlayerReconnectEvent)(nil),    // 18: guandan.messages.PlayerReconnectEvent
+	(*game.Match)(nil),              // 19: guandan.game.Match
+	(*game.Deal)(nil),               // 20: guandan.game.Deal
+	(*game.TeamUpgrades)(nil),       // 21: guandan.game.TeamUpgrades
+	(*game.DealResult)(nil),         // 22: guandan.game.DealResult
+	(*game.MatchResult)(nil),        // 23: guandan.game.MatchResult
 }
 var file_messages_game_event_proto_depIdxs = []int32{
 	6,  // 0: guandan.messages.GameEvent.type:type_name -> guandan.common.GameEventType
@@ -686,18 +741,21 @@ var file_messages_game_event_proto_depIdxs = []int32{
 	13, // 12: guandan.messages.GameEvent.tribute_selected:type_name -> guandan.messages.TributeSelectedEvent
 	14, // 13: guandan.messages.GameEvent.return_tribute:type_name -> guandan.messages.ReturnTributeEvent
 	15, // 14: guandan.messages.GameEvent.tribute_completed:type_name -> guandan.messages.TributeCompletedEvent
-	16, // 15: guandan.messages.MatchStartedEvent.match:type_name -> guandan.game.Match
-	17, // 16: guandan.messages.DealStartedEvent.deal:type_name -> guandan.game.Deal
-	18, // 17: guandan.messages.DealStartedEvent.team_levels:type_name -> guandan.game.TeamUpgrades
-	17, // 18: guandan.messages.DealEndedEvent.deal:type_name -> guandan.game.Deal
-	19, // 19: guandan.messages.DealEndedEvent.result:type_name -> guandan.game.DealResult
-	16, // 20: guandan.messages.MatchEndedEvent.match:type_name -> guandan.game.Match
-	20, // 21: guandan.messages.MatchEndedEvent.result:type_name -> guandan.game.MatchResult
-	22, // [22:22] is the sub-list for method output_type
-	22, // [22:22] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	16, // 15: guandan.messages.GameEvent.player_timeout:type_name -> guandan.messages.PlayerTimeoutEvent
+	17, // 16: guandan.messages.GameEvent.player_disconnect:type_name -> guandan.messages.PlayerDisconnectEvent
+	18, // 17: guandan.messages.GameEvent.player_reconnect:type_name -> guandan.messages.PlayerReconnectEvent
+	19, // 18: guandan.messages.MatchStartedEvent.match:type_name -> guandan.game.Match
+	20, // 19: guandan.messages.DealStartedEvent.deal:type_name -> guandan.game.Deal
+	21, // 20: guandan.messages.DealStartedEvent.team_levels:type_name -> guandan.game.TeamUpgrades
+	20, // 21: guandan.messages.DealEndedEvent.deal:type_name -> guandan.game.Deal
+	22, // 22: guandan.messages.DealEndedEvent.result:type_name -> guandan.game.DealResult
+	19, // 23: guandan.messages.MatchEndedEvent.match:type_name -> guandan.game.Match
+	23, // 24: guandan.messages.MatchEndedEvent.result:type_name -> guandan.game.MatchResult
+	25, // [25:25] is the sub-list for method output_type
+	25, // [25:25] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_messages_game_event_proto_init() }
@@ -706,6 +764,7 @@ func file_messages_game_event_proto_init() {
 		return
 	}
 	file_messages_tribute_events_proto_init()
+	file_messages_connection_events_proto_init()
 	file_messages_game_event_proto_msgTypes[0].OneofWrappers = []any{
 		(*GameEvent_MatchStarted)(nil),
 		(*GameEvent_DealStarted)(nil),
@@ -721,6 +780,9 @@ func file_messages_game_event_proto_init() {
 		(*GameEvent_TributeSelected)(nil),
 		(*GameEvent_ReturnTribute)(nil),
 		(*GameEvent_TributeCompleted)(nil),
+		(*GameEvent_PlayerTimeout)(nil),
+		(*GameEvent_PlayerDisconnect)(nil),
+		(*GameEvent_PlayerReconnect)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

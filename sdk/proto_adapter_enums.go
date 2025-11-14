@@ -2,8 +2,8 @@
 //
 // 职责:
 // - 所有枚举类型的双向转换（SDK ↔ Proto）
-// - 包含 7 种枚举：VictoryType, DealStatus, MatchStatus, TrickStatus,
-//   TributeStatus, CompType, GameEventType
+// - 包含 8 种枚举：VictoryType, DealStatus, MatchStatus, TrickStatus,
+//   TributeStatus, CompType, GameEventType, TimeoutActionType
 //
 // 依赖:
 // - 无外部依赖（基础层）
@@ -13,6 +13,7 @@
 // - proto_adapter_action.go: 使用 ToProtoTrickStatus, FromProtoTrickStatus
 // - proto_adapter_tribute.go: 使用 ToProtoTributeStatus, FromProtoTributeStatus
 // - proto_adapter_result.go: 使用 ToProtoVictoryType, FromProtoVictoryType
+// - proto_adapter_event.go: 使用 ToProtoTimeoutActionType, FromProtoTimeoutActionType
 package sdk
 
 import (
@@ -332,6 +333,34 @@ func FromProtoGameEventType(pget pb.GameEventType) GameEventType {
 		return EventPlayerDisconnect
 	case pb.GameEventType_GAME_EVENT_TYPE_PLAYER_RECONNECT:
 		return EventPlayerReconnect
+	default:
+		return ""
+	}
+}
+
+// ToProtoTimeoutActionType 转换 SDK TimeoutActionType 到 Proto TimeoutActionType
+func ToProtoTimeoutActionType(tat TimeoutActionType) pb.TimeoutActionType {
+	switch tat {
+	case TimeoutActionPlayDecision:
+		return pb.TimeoutActionType_TIMEOUT_ACTION_TYPE_PLAY_DECISION
+	case TimeoutActionTributeSelect:
+		return pb.TimeoutActionType_TIMEOUT_ACTION_TYPE_TRIBUTE_SELECT
+	case TimeoutActionReturnTribute:
+		return pb.TimeoutActionType_TIMEOUT_ACTION_TYPE_RETURN_TRIBUTE
+	default:
+		return pb.TimeoutActionType_TIMEOUT_ACTION_TYPE_UNSPECIFIED
+	}
+}
+
+// FromProtoTimeoutActionType 转换 Proto TimeoutActionType 到 SDK TimeoutActionType
+func FromProtoTimeoutActionType(ptat pb.TimeoutActionType) TimeoutActionType {
+	switch ptat {
+	case pb.TimeoutActionType_TIMEOUT_ACTION_TYPE_PLAY_DECISION:
+		return TimeoutActionPlayDecision
+	case pb.TimeoutActionType_TIMEOUT_ACTION_TYPE_TRIBUTE_SELECT:
+		return TimeoutActionTributeSelect
+	case pb.TimeoutActionType_TIMEOUT_ACTION_TYPE_RETURN_TRIBUTE:
+		return TimeoutActionReturnTribute
 	default:
 		return ""
 	}

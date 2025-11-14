@@ -16,6 +16,15 @@ const (
 	ActionPass ActionType = "pass" // 过牌
 )
 
+// TimeoutActionType 定义超时的动作类型
+type TimeoutActionType string
+
+const (
+	TimeoutActionPlayDecision  TimeoutActionType = "play_decision"  // 出牌决策超时
+	TimeoutActionTributeSelect TimeoutActionType = "tribute_select" // 选择进贡牌超时
+	TimeoutActionReturnTribute TimeoutActionType = "return_tribute" // 回贡超时
+)
+
 // PlayDecision 表示玩家的出牌决策
 type PlayDecision struct {
 	Action ActionType `json:"action"`          // 动作类型：出牌或过牌
