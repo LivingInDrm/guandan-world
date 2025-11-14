@@ -7,6 +7,7 @@ import "common/enums.proto";
 import "game/match.proto";
 import "game/deal.proto";
 import "game/result.proto";
+import "messages/tribute_events.proto";
 
 // GameEvent 表示游戏中发生的事件
 // 游戏引擎通过事件系统通知外部系统游戏状态变化
@@ -22,6 +23,17 @@ message GameEvent {
     CardsDealtEvent cards_dealt = 12;
     DealEndedEvent deal_ended = 13;
     MatchEndedEvent match_ended = 14;
+    
+    // 进贡事件 (6B组)
+    TributePhaseEvent tribute_phase = 15;
+    TributeRulesSetEvent tribute_rules_set = 16;
+    TributeImmunityEvent tribute_immunity = 17;
+    TributePoolCreatedEvent tribute_pool_created = 18;
+    TributeStartedEvent tribute_started = 19;
+    TributeGivenEvent tribute_given = 20;
+    TributeSelectedEvent tribute_selected = 21;
+    ReturnTributeEvent return_tribute = 22;
+    TributeCompletedEvent tribute_completed = 23;
   }
 }
 

@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package guandan.messages;
+option go_package = "guandan-world/proto/gen/go/messages";
+
+import "common/card.proto";
+import "common/enums.proto";
+import "game/actions.proto";
+import "game/result.proto";
+
+// TributePhaseEvent 进贡阶段事件
+// 当进入进贡阶段时触发（占位符事件，通常不单独使用）
+message TributePhaseEvent {
+  game.TributePhase tribute_phase = 1;  // 进贡阶段信息
+}
+
+// TributeRulesSetEvent 上贡规则确定事件
+// 当确定本局的进贡规则时触发（基于上一局结果）
+message TributeRulesSetEvent {
+  game.DealResult last_result = 1;      // 上一局的结果
+  common.VictoryType victory_type = 2;  // 胜利类型
+  TributeRules tribute_rules = 3;       // 进贡规则详情
+  repeated int32 player_rankings = 4;   // 玩家排名 (固定4个元素，按名次顺序)
+}
+
+// TributeRules 进贡规则详情
+// 描述本局进贡的具体规则
+message TributeRules {
+  map<int32, int32> tribute_map = 1;  // 进贡映射: 贡牌者座位号 -> 受贡者座位号
+  bool is_double_down = 2;            // 是否为双下场景
+  string description = 3;             // 规则描述文本
+}
+
+// TributeImmunityEvent 免贡事件
+// 当玩家获得免贡资格时触发
+message TributeImmunityEvent {
+  game.TributePhase tribute_phase = 1;  // 进贡阶段信息
+  string immunity_reason = 2;           // 免贡原因描述
+}
+
+// TributePoolCreatedEvent 贡牌池创建事件（双下场景）
+// 当双下情况下创建贡牌池时触发
+message TributePoolCreatedEvent {
+  string description = 1;                      // 贡牌池描述
+  repeated TributeContributor contributors = 2; // 贡献者列表
+  repeated int32 selection_order = 3;          // 选牌顺序（玩家座位号列表）
+  repeated common.Card pool_cards = 4;         // 贡牌池中的牌
+  int32 selecting_player = 5;                  // 当前选牌玩家座位号 (0-3)
+}
+
+// TributeContributor 贡牌贡献者信息
+// 记录向贡牌池贡献牌的玩家和牌
+message TributeContributor {
+  int32 player_seat = 1;  // 贡献者座位号 (0-3)
+  common.Card card = 2;   // 贡献的牌
+}
+
+// TributeStartedEvent 贡牌开始事件
+// 当开始进贡流程时触发（占位符事件，通常不单独使用）
+message TributeStartedEvent {
+  game.TributePhase tribute_phase = 1;  // 进贡阶段信息
+}
+
+// TributeGivenEvent 上贡完成事件
+// 当玩家完成上贡（选定贡牌）时触发
+message TributeGivenEvent {
+  int32 giver = 1;              // 贡牌者座位号 (0-3)
+  int32 receiver = 2;           // 受贡者座位号 (0-3)
+  common.Card card = 3;         // 贡牌
+  string tribute_type = 4;      // 贡牌类型: "normal"
+  bool is_auto_selected = 5;    // 是否自动选择（通常为true）
+  string selection_reason = 6;  // 选择原因描述
+}
+
+// TributeSelectedEvent 选牌完成事件（双下场景）
+// 当玩家从贡牌池中选择一张牌时触发
+message TributeSelectedEvent {
+  string action = 1;                       // 动作类型: "select"
+  int32 player = 2;                        // 选牌玩家座位号 (0-3)
+  string card_id = 3;                      // 选中的牌ID
+  common.Card selected_card = 4;           // 选中的牌
+  repeated common.Card remaining_options = 5; // 剩余可选牌
+  int32 selection_order = 6;               // 选择顺序 (1表示第一次, 2表示第二次)
+  bool is_timeout = 7;                     // 是否因超时而自动选择
+}
+
+// ReturnTributeEvent 还贡完成事件
+// 当受贡玩家完成还贡时触发
+message ReturnTributeEvent {
+  string action = 1;                // 动作类型: "return"
+  int32 player = 2;                 // 还贡玩家座位号 (0-3)
+  string card_id = 3;               // 还贡牌ID
+  common.Card return_card = 4;      // 还贡的牌
+  int32 target_player = 5;          // 接收还贡的玩家座位号 (0-3)
+  common.Card original_tribute = 6; // 原始收到的贡牌
+  bool is_auto_selected = 7;        // 是否自动选择
+  string selection_reason = 8;      // 选择原因描述
+}
+
+// TributeCompletedEvent 进贡阶段结束事件
+// 当整个进贡阶段完成时触发
+message TributeCompletedEvent {
+  game.TributePhase tribute_phase = 1;  // 最终的进贡阶段状态
+}

@@ -144,6 +144,244 @@ func ToProtoGameEvent(e *GameEvent) *pbmsg.GameEvent {
 				Result: ToProtoMatchResult(matchResult),
 			},
 		}
+
+	// ==================== 进贡事件 (6B组) ====================
+
+	case EventTributePhase:
+		if tributePhase, ok := e.Data.(*TributePhase); ok {
+			result.Payload = &pbmsg.GameEvent_TributePhase{
+				TributePhase: &pbmsg.TributePhaseEvent{
+					TributePhase: ToProtoTributePhase(tributePhase),
+				},
+			}
+		}
+
+	case EventTributeRulesSet:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		lastResult, _ := data["last_result"].(*DealResult)
+		victoryType, _ := data["victory_type"].(VictoryType)
+		playerRankings, _ := data["player_rankings"].([]int)
+		
+		event := &pbmsg.TributeRulesSetEvent{
+			LastResult:  ToProtoDealResult(lastResult),
+			VictoryType: ToProtoVictoryType(victoryType),
+		}
+		
+		// 转换 player_rankings
+		if len(playerRankings) > 0 {
+			event.PlayerRankings = make([]int32, len(playerRankings))
+			for i, rank := range playerRankings {
+				event.PlayerRankings[i] = int32(rank)
+			}
+		}
+		
+		// 转换 tribute_rules
+		if tributeRulesData, ok := data["tribute_rules"].(map[string]interface{}); ok {
+			event.TributeRules = &pbmsg.TributeRules{}
+			
+			if tributeMap, ok := tributeRulesData["tribute_map"].(map[int]int); ok {
+				event.TributeRules.TributeMap = make(map[int32]int32)
+				for k, v := range tributeMap {
+					event.TributeRules.TributeMap[int32(k)] = int32(v)
+				}
+			}
+			
+			if isDoubleDown, ok := tributeRulesData["is_double_down"].(bool); ok {
+				event.TributeRules.IsDoubleDown = isDoubleDown
+			}
+			
+			if description, ok := tributeRulesData["description"].(string); ok {
+				event.TributeRules.Description = description
+			}
+		}
+		
+		result.Payload = &pbmsg.GameEvent_TributeRulesSet{
+			TributeRulesSet: event,
+		}
+
+	case EventTributeImmunity:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		tributePhase, _ := data["tribute_phase"].(*TributePhase)
+		immunityReason, _ := data["immunity_reason"].(string)
+		
+		result.Payload = &pbmsg.GameEvent_TributeImmunity{
+			TributeImmunity: &pbmsg.TributeImmunityEvent{
+				TributePhase:   ToProtoTributePhase(tributePhase),
+				ImmunityReason: immunityReason,
+			},
+		}
+
+	case EventTributePoolCreated:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		event := &pbmsg.TributePoolCreatedEvent{}
+		
+		if description, ok := data["description"].(string); ok {
+			event.Description = description
+		}
+		
+		if selectingPlayer, ok := data["selecting_player"].(int); ok {
+			event.SelectingPlayer = int32(selectingPlayer)
+		}
+		
+		if poolCards, ok := data["pool_cards"].([]*Card); ok {
+			event.PoolCards = ToProtoCards(poolCards)
+		}
+		
+		if selectionOrder, ok := data["selection_order"].([]int); ok {
+			event.SelectionOrder = make([]int32, len(selectionOrder))
+			for i, order := range selectionOrder {
+				event.SelectionOrder[i] = int32(order)
+			}
+		}
+		
+		// 转换 contributors
+		if contributors, ok := data["contributors"].([]map[string]interface{}); ok {
+			event.Contributors = make([]*pbmsg.TributeContributor, len(contributors))
+			for i, contrib := range contributors {
+				playerSeat, _ := contrib["player_seat"].(int)
+				card, _ := contrib["card"].(*Card)
+				event.Contributors[i] = &pbmsg.TributeContributor{
+					PlayerSeat: int32(playerSeat),
+					Card:       ToProtoCard(card),
+				}
+			}
+		}
+		
+		result.Payload = &pbmsg.GameEvent_TributePoolCreated{
+			TributePoolCreated: event,
+		}
+
+	case EventTributeGiven:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		event := &pbmsg.TributeGivenEvent{}
+		
+		if giver, ok := data["giver"].(int); ok {
+			event.Giver = int32(giver)
+		}
+		if receiver, ok := data["receiver"].(int); ok {
+			event.Receiver = int32(receiver)
+		}
+		if card, ok := data["card"].(*Card); ok {
+			event.Card = ToProtoCard(card)
+		}
+		if tributeType, ok := data["tribute_type"].(string); ok {
+			event.TributeType = tributeType
+		}
+		if isAutoSelected, ok := data["is_auto_selected"].(bool); ok {
+			event.IsAutoSelected = isAutoSelected
+		}
+		if selectionReason, ok := data["selection_reason"].(string); ok {
+			event.SelectionReason = selectionReason
+		}
+		
+		result.Payload = &pbmsg.GameEvent_TributeGiven{
+			TributeGiven: event,
+		}
+
+	case EventTributeSelected:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		event := &pbmsg.TributeSelectedEvent{}
+		
+		if action, ok := data["action"].(string); ok {
+			event.Action = action
+		}
+		if player, ok := data["player"].(int); ok {
+			event.Player = int32(player)
+		}
+		if cardID, ok := data["cardID"].(string); ok {
+			event.CardId = cardID
+		}
+		if selectedCard, ok := data["selected_card"].(*Card); ok {
+			event.SelectedCard = ToProtoCard(selectedCard)
+		}
+		if remainingOptions, ok := data["remaining_options"].([]*Card); ok {
+			event.RemainingOptions = ToProtoCards(remainingOptions)
+		}
+		if selectionOrder, ok := data["selection_order"].(int); ok {
+			event.SelectionOrder = int32(selectionOrder)
+		}
+		if isTimeout, ok := data["is_timeout"].(bool); ok {
+			event.IsTimeout = isTimeout
+		}
+		
+		result.Payload = &pbmsg.GameEvent_TributeSelected{
+			TributeSelected: event,
+		}
+
+	case EventReturnTribute:
+		data, ok := e.Data.(map[string]interface{})
+		if !ok {
+			break
+		}
+		
+		event := &pbmsg.ReturnTributeEvent{}
+		
+		if action, ok := data["action"].(string); ok {
+			event.Action = action
+		}
+		if player, ok := data["player"].(int); ok {
+			event.Player = int32(player)
+		}
+		if cardID, ok := data["cardID"].(string); ok {
+			event.CardId = cardID
+		}
+		if returnCard, ok := data["return_card"].(*Card); ok {
+			event.ReturnCard = ToProtoCard(returnCard)
+		}
+		if targetPlayer, ok := data["target_player"].(int); ok {
+			event.TargetPlayer = int32(targetPlayer)
+		}
+		if originalTribute, ok := data["original_tribute"].(*Card); ok {
+			event.OriginalTribute = ToProtoCard(originalTribute)
+		}
+		if isAutoSelected, ok := data["is_auto_selected"].(bool); ok {
+			event.IsAutoSelected = isAutoSelected
+		}
+		if selectionReason, ok := data["selection_reason"].(string); ok {
+			event.SelectionReason = selectionReason
+		}
+		
+		result.Payload = &pbmsg.GameEvent_ReturnTribute{
+			ReturnTribute: event,
+		}
+
+	case EventTributeStarted:
+		if tributePhase, ok := e.Data.(*TributePhase); ok {
+			result.Payload = &pbmsg.GameEvent_TributeStarted{
+				TributeStarted: &pbmsg.TributeStartedEvent{
+					TributePhase: ToProtoTributePhase(tributePhase),
+				},
+			}
+		}
+
+	case EventTributeCompleted:
+		if tributePhase, ok := e.Data.(*TributePhase); ok {
+			result.Payload = &pbmsg.GameEvent_TributeCompleted{
+				TributeCompleted: &pbmsg.TributeCompletedEvent{
+					TributePhase: ToProtoTributePhase(tributePhase),
+				},
+			}
+		}
 	}
 
 	return result
@@ -216,6 +454,147 @@ func FromProtoGameEvent(pe *pbmsg.GameEvent) *GameEvent {
 				"winner":       match.Winner,       // 从match中获取
 				"final_levels": match.TeamLevels,   // 从match中获取
 			}
+		}
+
+	// ==================== 进贡事件 (6B组) ====================
+
+	case *pbmsg.GameEvent_TributePhase:
+		if payload.TributePhase != nil && payload.TributePhase.TributePhase != nil {
+			result.Data = FromProtoTributePhase(payload.TributePhase.TributePhase)
+		}
+
+	case *pbmsg.GameEvent_TributeRulesSet:
+		if payload.TributeRulesSet != nil {
+			data := make(map[string]interface{})
+			
+			if payload.TributeRulesSet.LastResult != nil {
+				data["last_result"] = FromProtoDealResult(payload.TributeRulesSet.LastResult)
+			}
+			
+			data["victory_type"] = FromProtoVictoryType(payload.TributeRulesSet.VictoryType)
+			
+			// 转换 player_rankings
+			if len(payload.TributeRulesSet.PlayerRankings) > 0 {
+				rankings := make([]int, len(payload.TributeRulesSet.PlayerRankings))
+				for i, rank := range payload.TributeRulesSet.PlayerRankings {
+					rankings[i] = int(rank)
+				}
+				data["player_rankings"] = rankings
+			}
+			
+			// 转换 tribute_rules
+			if payload.TributeRulesSet.TributeRules != nil {
+				tributeRules := make(map[string]interface{})
+				
+				if len(payload.TributeRulesSet.TributeRules.TributeMap) > 0 {
+					tributeMap := make(map[int]int)
+					for k, v := range payload.TributeRulesSet.TributeRules.TributeMap {
+						tributeMap[int(k)] = int(v)
+					}
+					tributeRules["tribute_map"] = tributeMap
+				}
+				
+				tributeRules["is_double_down"] = payload.TributeRulesSet.TributeRules.IsDoubleDown
+				tributeRules["description"] = payload.TributeRulesSet.TributeRules.Description
+				
+				data["tribute_rules"] = tributeRules
+			}
+			
+			result.Data = data
+		}
+
+	case *pbmsg.GameEvent_TributeImmunity:
+		if payload.TributeImmunity != nil {
+			result.Data = map[string]interface{}{
+				"tribute_phase":   FromProtoTributePhase(payload.TributeImmunity.TributePhase),
+				"immunity_reason": payload.TributeImmunity.ImmunityReason,
+			}
+		}
+
+	case *pbmsg.GameEvent_TributePoolCreated:
+		if payload.TributePoolCreated != nil {
+			data := make(map[string]interface{})
+			data["description"] = payload.TributePoolCreated.Description
+			data["selecting_player"] = int(payload.TributePoolCreated.SelectingPlayer)
+			
+			if len(payload.TributePoolCreated.PoolCards) > 0 {
+				data["pool_cards"] = FromProtoCards(payload.TributePoolCreated.PoolCards)
+			}
+			
+			if len(payload.TributePoolCreated.SelectionOrder) > 0 {
+				selectionOrder := make([]int, len(payload.TributePoolCreated.SelectionOrder))
+				for i, order := range payload.TributePoolCreated.SelectionOrder {
+					selectionOrder[i] = int(order)
+				}
+				data["selection_order"] = selectionOrder
+			}
+			
+			// 转换 contributors
+			if len(payload.TributePoolCreated.Contributors) > 0 {
+				contributors := make([]map[string]interface{}, len(payload.TributePoolCreated.Contributors))
+				for i, contrib := range payload.TributePoolCreated.Contributors {
+					contributors[i] = map[string]interface{}{
+						"player_seat": int(contrib.PlayerSeat),
+						"card":        FromProtoCard(contrib.Card),
+					}
+				}
+				data["contributors"] = contributors
+			}
+			
+			result.Data = data
+		}
+
+	case *pbmsg.GameEvent_TributeGiven:
+		if payload.TributeGiven != nil {
+			result.Data = map[string]interface{}{
+				"giver":            int(payload.TributeGiven.Giver),
+				"receiver":         int(payload.TributeGiven.Receiver),
+				"card":             FromProtoCard(payload.TributeGiven.Card),
+				"tribute_type":     payload.TributeGiven.TributeType,
+				"is_auto_selected": payload.TributeGiven.IsAutoSelected,
+				"selection_reason": payload.TributeGiven.SelectionReason,
+			}
+		}
+
+	case *pbmsg.GameEvent_TributeSelected:
+		if payload.TributeSelected != nil {
+			data := make(map[string]interface{})
+			data["action"] = payload.TributeSelected.Action
+			data["player"] = int(payload.TributeSelected.Player)
+			data["cardID"] = payload.TributeSelected.CardId
+			data["selected_card"] = FromProtoCard(payload.TributeSelected.SelectedCard)
+			data["selection_order"] = int(payload.TributeSelected.SelectionOrder)
+			data["is_timeout"] = payload.TributeSelected.IsTimeout
+			
+			if len(payload.TributeSelected.RemainingOptions) > 0 {
+				data["remaining_options"] = FromProtoCards(payload.TributeSelected.RemainingOptions)
+			}
+			
+			result.Data = data
+		}
+
+	case *pbmsg.GameEvent_ReturnTribute:
+		if payload.ReturnTribute != nil {
+			result.Data = map[string]interface{}{
+				"action":           payload.ReturnTribute.Action,
+				"player":           int(payload.ReturnTribute.Player),
+				"cardID":           payload.ReturnTribute.CardId,
+				"return_card":      FromProtoCard(payload.ReturnTribute.ReturnCard),
+				"target_player":    int(payload.ReturnTribute.TargetPlayer),
+				"original_tribute": FromProtoCard(payload.ReturnTribute.OriginalTribute),
+				"is_auto_selected": payload.ReturnTribute.IsAutoSelected,
+				"selection_reason": payload.ReturnTribute.SelectionReason,
+			}
+		}
+
+	case *pbmsg.GameEvent_TributeStarted:
+		if payload.TributeStarted != nil && payload.TributeStarted.TributePhase != nil {
+			result.Data = FromProtoTributePhase(payload.TributeStarted.TributePhase)
+		}
+
+	case *pbmsg.GameEvent_TributeCompleted:
+		if payload.TributeCompleted != nil && payload.TributeCompleted.TributePhase != nil {
+			result.Data = FromProtoTributePhase(payload.TributeCompleted.TributePhase)
 		}
 
 	default:

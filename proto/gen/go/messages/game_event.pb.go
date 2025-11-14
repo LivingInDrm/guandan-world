@@ -39,6 +39,15 @@ type GameEvent struct {
 	//	*GameEvent_CardsDealt
 	//	*GameEvent_DealEnded
 	//	*GameEvent_MatchEnded
+	//	*GameEvent_TributePhase
+	//	*GameEvent_TributeRulesSet
+	//	*GameEvent_TributeImmunity
+	//	*GameEvent_TributePoolCreated
+	//	*GameEvent_TributeStarted
+	//	*GameEvent_TributeGiven
+	//	*GameEvent_TributeSelected
+	//	*GameEvent_ReturnTribute
+	//	*GameEvent_TributeCompleted
 	Payload       isGameEvent_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -147,6 +156,87 @@ func (x *GameEvent) GetMatchEnded() *MatchEndedEvent {
 	return nil
 }
 
+func (x *GameEvent) GetTributePhase() *TributePhaseEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_TributePhase); ok {
+			return x.TributePhase
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetTributeRulesSet() *TributeRulesSetEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_TributeRulesSet); ok {
+			return x.TributeRulesSet
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetTributeImmunity() *TributeImmunityEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_TributeImmunity); ok {
+			return x.TributeImmunity
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetTributePoolCreated() *TributePoolCreatedEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_TributePoolCreated); ok {
+			return x.TributePoolCreated
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetTributeStarted() *TributeStartedEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_TributeStarted); ok {
+			return x.TributeStarted
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetTributeGiven() *TributeGivenEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_TributeGiven); ok {
+			return x.TributeGiven
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetTributeSelected() *TributeSelectedEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_TributeSelected); ok {
+			return x.TributeSelected
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetReturnTribute() *ReturnTributeEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_ReturnTribute); ok {
+			return x.ReturnTribute
+		}
+	}
+	return nil
+}
+
+func (x *GameEvent) GetTributeCompleted() *TributeCompletedEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*GameEvent_TributeCompleted); ok {
+			return x.TributeCompleted
+		}
+	}
+	return nil
+}
+
 type isGameEvent_Payload interface {
 	isGameEvent_Payload()
 }
@@ -171,6 +261,43 @@ type GameEvent_MatchEnded struct {
 	MatchEnded *MatchEndedEvent `protobuf:"bytes,14,opt,name=match_ended,json=matchEnded,proto3,oneof"`
 }
 
+type GameEvent_TributePhase struct {
+	// 进贡事件 (6B组)
+	TributePhase *TributePhaseEvent `protobuf:"bytes,15,opt,name=tribute_phase,json=tributePhase,proto3,oneof"`
+}
+
+type GameEvent_TributeRulesSet struct {
+	TributeRulesSet *TributeRulesSetEvent `protobuf:"bytes,16,opt,name=tribute_rules_set,json=tributeRulesSet,proto3,oneof"`
+}
+
+type GameEvent_TributeImmunity struct {
+	TributeImmunity *TributeImmunityEvent `protobuf:"bytes,17,opt,name=tribute_immunity,json=tributeImmunity,proto3,oneof"`
+}
+
+type GameEvent_TributePoolCreated struct {
+	TributePoolCreated *TributePoolCreatedEvent `protobuf:"bytes,18,opt,name=tribute_pool_created,json=tributePoolCreated,proto3,oneof"`
+}
+
+type GameEvent_TributeStarted struct {
+	TributeStarted *TributeStartedEvent `protobuf:"bytes,19,opt,name=tribute_started,json=tributeStarted,proto3,oneof"`
+}
+
+type GameEvent_TributeGiven struct {
+	TributeGiven *TributeGivenEvent `protobuf:"bytes,20,opt,name=tribute_given,json=tributeGiven,proto3,oneof"`
+}
+
+type GameEvent_TributeSelected struct {
+	TributeSelected *TributeSelectedEvent `protobuf:"bytes,21,opt,name=tribute_selected,json=tributeSelected,proto3,oneof"`
+}
+
+type GameEvent_ReturnTribute struct {
+	ReturnTribute *ReturnTributeEvent `protobuf:"bytes,22,opt,name=return_tribute,json=returnTribute,proto3,oneof"`
+}
+
+type GameEvent_TributeCompleted struct {
+	TributeCompleted *TributeCompletedEvent `protobuf:"bytes,23,opt,name=tribute_completed,json=tributeCompleted,proto3,oneof"`
+}
+
 func (*GameEvent_MatchStarted) isGameEvent_Payload() {}
 
 func (*GameEvent_DealStarted) isGameEvent_Payload() {}
@@ -180,6 +307,24 @@ func (*GameEvent_CardsDealt) isGameEvent_Payload() {}
 func (*GameEvent_DealEnded) isGameEvent_Payload() {}
 
 func (*GameEvent_MatchEnded) isGameEvent_Payload() {}
+
+func (*GameEvent_TributePhase) isGameEvent_Payload() {}
+
+func (*GameEvent_TributeRulesSet) isGameEvent_Payload() {}
+
+func (*GameEvent_TributeImmunity) isGameEvent_Payload() {}
+
+func (*GameEvent_TributePoolCreated) isGameEvent_Payload() {}
+
+func (*GameEvent_TributeStarted) isGameEvent_Payload() {}
+
+func (*GameEvent_TributeGiven) isGameEvent_Payload() {}
+
+func (*GameEvent_TributeSelected) isGameEvent_Payload() {}
+
+func (*GameEvent_ReturnTribute) isGameEvent_Payload() {}
+
+func (*GameEvent_TributeCompleted) isGameEvent_Payload() {}
 
 // MatchStartedEvent 比赛开始事件
 // 当新比赛开始时触发
@@ -447,7 +592,7 @@ var File_messages_game_event_proto protoreflect.FileDescriptor
 
 const file_messages_game_event_proto_rawDesc = "" +
 	"\n" +
-	"\x19messages/game_event.proto\x12\x10guandan.messages\x1a\x12common/enums.proto\x1a\x10game/match.proto\x1a\x0fgame/deal.proto\x1a\x11game/result.proto\"\xf1\x03\n" +
+	"\x19messages/game_event.proto\x12\x10guandan.messages\x1a\x12common/enums.proto\x1a\x10game/match.proto\x1a\x0fgame/deal.proto\x1a\x11game/result.proto\x1a\x1dmessages/tribute_events.proto\"\xe1\t\n" +
 	"\tGameEvent\x121\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x1d.guandan.common.GameEventTypeR\x04type\x12!\n" +
 	"\ftimestamp_ms\x18\x02 \x01(\x03R\vtimestampMs\x12\x1f\n" +
@@ -461,7 +606,16 @@ const file_messages_game_event_proto_rawDesc = "" +
 	"\n" +
 	"deal_ended\x18\r \x01(\v2 .guandan.messages.DealEndedEventH\x00R\tdealEnded\x12D\n" +
 	"\vmatch_ended\x18\x0e \x01(\v2!.guandan.messages.MatchEndedEventH\x00R\n" +
-	"matchEndedB\t\n" +
+	"matchEnded\x12J\n" +
+	"\rtribute_phase\x18\x0f \x01(\v2#.guandan.messages.TributePhaseEventH\x00R\ftributePhase\x12T\n" +
+	"\x11tribute_rules_set\x18\x10 \x01(\v2&.guandan.messages.TributeRulesSetEventH\x00R\x0ftributeRulesSet\x12S\n" +
+	"\x10tribute_immunity\x18\x11 \x01(\v2&.guandan.messages.TributeImmunityEventH\x00R\x0ftributeImmunity\x12]\n" +
+	"\x14tribute_pool_created\x18\x12 \x01(\v2).guandan.messages.TributePoolCreatedEventH\x00R\x12tributePoolCreated\x12P\n" +
+	"\x0ftribute_started\x18\x13 \x01(\v2%.guandan.messages.TributeStartedEventH\x00R\x0etributeStarted\x12J\n" +
+	"\rtribute_given\x18\x14 \x01(\v2#.guandan.messages.TributeGivenEventH\x00R\ftributeGiven\x12S\n" +
+	"\x10tribute_selected\x18\x15 \x01(\v2&.guandan.messages.TributeSelectedEventH\x00R\x0ftributeSelected\x12M\n" +
+	"\x0ereturn_tribute\x18\x16 \x01(\v2$.guandan.messages.ReturnTributeEventH\x00R\rreturnTribute\x12V\n" +
+	"\x11tribute_completed\x18\x17 \x01(\v2'.guandan.messages.TributeCompletedEventH\x00R\x10tributeCompletedB\t\n" +
 	"\apayload\">\n" +
 	"\x11MatchStartedEvent\x12)\n" +
 	"\x05match\x18\x01 \x01(\v2\x13.guandan.game.MatchR\x05match\"w\n" +
@@ -494,18 +648,27 @@ func file_messages_game_event_proto_rawDescGZIP() []byte {
 
 var file_messages_game_event_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_messages_game_event_proto_goTypes = []any{
-	(*GameEvent)(nil),         // 0: guandan.messages.GameEvent
-	(*MatchStartedEvent)(nil), // 1: guandan.messages.MatchStartedEvent
-	(*DealStartedEvent)(nil),  // 2: guandan.messages.DealStartedEvent
-	(*CardsDealtEvent)(nil),   // 3: guandan.messages.CardsDealtEvent
-	(*DealEndedEvent)(nil),    // 4: guandan.messages.DealEndedEvent
-	(*MatchEndedEvent)(nil),   // 5: guandan.messages.MatchEndedEvent
-	(common.GameEventType)(0), // 6: guandan.common.GameEventType
-	(*game.Match)(nil),        // 7: guandan.game.Match
-	(*game.Deal)(nil),         // 8: guandan.game.Deal
-	(*game.TeamUpgrades)(nil), // 9: guandan.game.TeamUpgrades
-	(*game.DealResult)(nil),   // 10: guandan.game.DealResult
-	(*game.MatchResult)(nil),  // 11: guandan.game.MatchResult
+	(*GameEvent)(nil),               // 0: guandan.messages.GameEvent
+	(*MatchStartedEvent)(nil),       // 1: guandan.messages.MatchStartedEvent
+	(*DealStartedEvent)(nil),        // 2: guandan.messages.DealStartedEvent
+	(*CardsDealtEvent)(nil),         // 3: guandan.messages.CardsDealtEvent
+	(*DealEndedEvent)(nil),          // 4: guandan.messages.DealEndedEvent
+	(*MatchEndedEvent)(nil),         // 5: guandan.messages.MatchEndedEvent
+	(common.GameEventType)(0),       // 6: guandan.common.GameEventType
+	(*TributePhaseEvent)(nil),       // 7: guandan.messages.TributePhaseEvent
+	(*TributeRulesSetEvent)(nil),    // 8: guandan.messages.TributeRulesSetEvent
+	(*TributeImmunityEvent)(nil),    // 9: guandan.messages.TributeImmunityEvent
+	(*TributePoolCreatedEvent)(nil), // 10: guandan.messages.TributePoolCreatedEvent
+	(*TributeStartedEvent)(nil),     // 11: guandan.messages.TributeStartedEvent
+	(*TributeGivenEvent)(nil),       // 12: guandan.messages.TributeGivenEvent
+	(*TributeSelectedEvent)(nil),    // 13: guandan.messages.TributeSelectedEvent
+	(*ReturnTributeEvent)(nil),      // 14: guandan.messages.ReturnTributeEvent
+	(*TributeCompletedEvent)(nil),   // 15: guandan.messages.TributeCompletedEvent
+	(*game.Match)(nil),              // 16: guandan.game.Match
+	(*game.Deal)(nil),               // 17: guandan.game.Deal
+	(*game.TeamUpgrades)(nil),       // 18: guandan.game.TeamUpgrades
+	(*game.DealResult)(nil),         // 19: guandan.game.DealResult
+	(*game.MatchResult)(nil),        // 20: guandan.game.MatchResult
 }
 var file_messages_game_event_proto_depIdxs = []int32{
 	6,  // 0: guandan.messages.GameEvent.type:type_name -> guandan.common.GameEventType
@@ -514,18 +677,27 @@ var file_messages_game_event_proto_depIdxs = []int32{
 	3,  // 3: guandan.messages.GameEvent.cards_dealt:type_name -> guandan.messages.CardsDealtEvent
 	4,  // 4: guandan.messages.GameEvent.deal_ended:type_name -> guandan.messages.DealEndedEvent
 	5,  // 5: guandan.messages.GameEvent.match_ended:type_name -> guandan.messages.MatchEndedEvent
-	7,  // 6: guandan.messages.MatchStartedEvent.match:type_name -> guandan.game.Match
-	8,  // 7: guandan.messages.DealStartedEvent.deal:type_name -> guandan.game.Deal
-	9,  // 8: guandan.messages.DealStartedEvent.team_levels:type_name -> guandan.game.TeamUpgrades
-	8,  // 9: guandan.messages.DealEndedEvent.deal:type_name -> guandan.game.Deal
-	10, // 10: guandan.messages.DealEndedEvent.result:type_name -> guandan.game.DealResult
-	7,  // 11: guandan.messages.MatchEndedEvent.match:type_name -> guandan.game.Match
-	11, // 12: guandan.messages.MatchEndedEvent.result:type_name -> guandan.game.MatchResult
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	7,  // 6: guandan.messages.GameEvent.tribute_phase:type_name -> guandan.messages.TributePhaseEvent
+	8,  // 7: guandan.messages.GameEvent.tribute_rules_set:type_name -> guandan.messages.TributeRulesSetEvent
+	9,  // 8: guandan.messages.GameEvent.tribute_immunity:type_name -> guandan.messages.TributeImmunityEvent
+	10, // 9: guandan.messages.GameEvent.tribute_pool_created:type_name -> guandan.messages.TributePoolCreatedEvent
+	11, // 10: guandan.messages.GameEvent.tribute_started:type_name -> guandan.messages.TributeStartedEvent
+	12, // 11: guandan.messages.GameEvent.tribute_given:type_name -> guandan.messages.TributeGivenEvent
+	13, // 12: guandan.messages.GameEvent.tribute_selected:type_name -> guandan.messages.TributeSelectedEvent
+	14, // 13: guandan.messages.GameEvent.return_tribute:type_name -> guandan.messages.ReturnTributeEvent
+	15, // 14: guandan.messages.GameEvent.tribute_completed:type_name -> guandan.messages.TributeCompletedEvent
+	16, // 15: guandan.messages.MatchStartedEvent.match:type_name -> guandan.game.Match
+	17, // 16: guandan.messages.DealStartedEvent.deal:type_name -> guandan.game.Deal
+	18, // 17: guandan.messages.DealStartedEvent.team_levels:type_name -> guandan.game.TeamUpgrades
+	17, // 18: guandan.messages.DealEndedEvent.deal:type_name -> guandan.game.Deal
+	19, // 19: guandan.messages.DealEndedEvent.result:type_name -> guandan.game.DealResult
+	16, // 20: guandan.messages.MatchEndedEvent.match:type_name -> guandan.game.Match
+	20, // 21: guandan.messages.MatchEndedEvent.result:type_name -> guandan.game.MatchResult
+	22, // [22:22] is the sub-list for method output_type
+	22, // [22:22] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_messages_game_event_proto_init() }
@@ -533,12 +705,22 @@ func file_messages_game_event_proto_init() {
 	if File_messages_game_event_proto != nil {
 		return
 	}
+	file_messages_tribute_events_proto_init()
 	file_messages_game_event_proto_msgTypes[0].OneofWrappers = []any{
 		(*GameEvent_MatchStarted)(nil),
 		(*GameEvent_DealStarted)(nil),
 		(*GameEvent_CardsDealt)(nil),
 		(*GameEvent_DealEnded)(nil),
 		(*GameEvent_MatchEnded)(nil),
+		(*GameEvent_TributePhase)(nil),
+		(*GameEvent_TributeRulesSet)(nil),
+		(*GameEvent_TributeImmunity)(nil),
+		(*GameEvent_TributePoolCreated)(nil),
+		(*GameEvent_TributeStarted)(nil),
+		(*GameEvent_TributeGiven)(nil),
+		(*GameEvent_TributeSelected)(nil),
+		(*GameEvent_ReturnTribute)(nil),
+		(*GameEvent_TributeCompleted)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
