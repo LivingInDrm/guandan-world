@@ -1,0 +1,65 @@
+syntax = "proto3";
+package guandan.game;
+option go_package = "guandan-world/proto/gen/go/game";
+
+import "common/enums.proto";
+import "game/actions.proto";
+
+// TeamUpgrades 表示两个队伍的升级数
+message TeamUpgrades {
+  int32 team0 = 1;  // 队伍0的升级数 (0-3): 0=未升级, 1=对下, 2=单下, 3=双下
+  int32 team1 = 2;  // 队伍1的升级数 (0-3): 同上
+}
+
+// PlayerDealStats 包含单个玩家在一局中的统计信息
+message PlayerDealStats {
+  int32 player_seat = 1;    // 玩家座位号 (0-3)
+  int32 cards_played = 2;   // 已出牌数
+  int32 tricks_won = 3;     // 赢得的墩数
+  int32 pass_count = 4;     // 过牌次数
+  int32 timeout_count = 5;  // 超时次数
+  int32 finish_rank = 6;    // 完成排名 (1-4，1表示第一个出完)
+}
+
+// DealStatistics 包含已完成局的详细统计信息
+message DealStatistics {
+  int32 total_tricks = 1;                       // 总墩数
+  repeated PlayerDealStats player_stats = 2;    // 玩家统计 (固定4个)
+  TributePhase tribute_phase = 3;               // 贡牌阶段信息（复用 TributePhase，避免重复定义）
+}
+
+// DealResult 表示已完成局的结果
+message DealResult {
+  repeated int32 rankings = 1;                  // 完成顺序 (座位号数组), 长度2-4, rankings[0]是第一个出完的玩家
+  int32 winning_team = 2;                       // 获胜队伍: 0或1
+  guandan.common.VictoryType victory_type = 3;  // 胜利类型
+  TeamUpgrades upgrades = 4;                    // 每个队伍的升级数
+  int64 duration_ms = 5;                        // 持续时间 (毫秒)
+  int32 trick_count = 6;                        // 墩数
+  DealStatistics statistics = 7;                // 详细统计
+}
+
+// TeamMatchStats 包含一个队伍在比赛中的统计信息
+message TeamMatchStats {
+  int32 team = 1;          // 队伍编号: 0或1
+  int32 deals_won = 2;     // 赢得的局数
+  int32 total_tricks = 3;  // 所有局中赢得的总墩数
+  int32 upgrades = 4;      // 获得的总升级数
+}
+
+// MatchStatistics 包含已完成比赛的详细统计信息
+message MatchStatistics {
+  int32 total_deals = 1;                    // 总局数
+  int64 total_duration_ms = 2;              // 总持续时间 (毫秒)
+  repeated TeamMatchStats team_stats = 3;   // 队伍统计 (固定2个)
+  // 注意: final_levels 已移除，请从父级 MatchResult.final_levels 获取
+  // reserved 字段 100-199 用于未来扩展
+}
+
+// MatchResult 表示已完成比赛的结果
+message MatchResult {
+  int32 winner = 1;                 // 获胜队伍: 0或1
+  TeamUpgrades final_levels = 2;    // 两个队伍的最终级别
+  int64 duration_ms = 3;            // 总持续时间 (毫秒)
+  MatchStatistics statistics = 4;   // 详细统计
+}

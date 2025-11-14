@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package guandan.game;
+option go_package = "guandan-world/proto/gen/go/game";
+
+import "common/card.proto";
+import "common/enums.proto";
+
+// CardComp 表示牌型组合（多态）
+// 对应 Go: sdk/comp.go:CardComp 接口
+message CardComp {
+  oneof comp {
+    FoldComp fold = 10;                      // 弃牌
+    IllegalComp illegal = 11;                // 非法牌组
+    SingleComp single = 12;                  // 单张
+    PairComp pair = 13;                      // 对子
+    TripleComp triple = 14;                  // 三张
+    FullHouseComp full_house = 15;           // 葫芦（三带二）
+    StraightComp straight = 16;              // 顺子
+    PlateComp plate = 17;                    // 钢板（连续三张）
+    TubeComp tube = 18;                      // 钢管（连续对子）
+    JokerBombComp joker_bomb = 19;           // 王炸
+    NaiveBombComp naive_bomb = 20;           // 炸弹
+    StraightFlushComp straight_flush = 21;   // 同花顺
+  }
+}
+
+// FoldComp 表示弃牌
+// 对应 Go: sdk/comp.go:Fold
+message FoldComp {
+  repeated common.Card cards = 1;  // 牌组中的牌（空数组）
+  bool valid = 2;                  // 是否有效
+  common.CompType type = 3;        // 牌型类型: COMP_TYPE_FOLD
+}
+
+// IllegalComp 表示非法牌组
+// 对应 Go: sdk/comp.go:IllegalComp
+message IllegalComp {
+  repeated common.Card cards = 1;  // 牌组中的牌
+  bool valid = 2;                  // 是否有效（始终为 false）
+  common.CompType type = 3;        // 牌型类型: COMP_TYPE_ILLEGAL
+}
+
+// SingleComp 表示单张
+// 对应 Go: sdk/comp.go:Single
+message SingleComp {
+  repeated common.Card cards = 1;  // 牌组中的牌（固定 1 张）
+  bool valid = 2;                  // 是否有效
+  common.CompType type = 3;        // 牌型类型: COMP_TYPE_SINGLE
+}
+
+// PairComp 表示对子
+// 对应 Go: sdk/comp.go:Pair
+message PairComp {
+  repeated common.Card cards = 1;             // 牌组中的牌（固定 2 张，包含万能牌）
+  bool valid = 2;                             // 是否有效
+  common.CompType type = 3;                   // 牌型类型: COMP_TYPE_PAIR
+  repeated common.Card normalized_cards = 4;  // 规范化牌组（万能牌已替换为具体牌，用于比较）
+}
+
+// TripleComp 表示三张
+// 对应 Go: sdk/comp.go:Triple
+message TripleComp {
+  repeated common.Card cards = 1;             // 牌组中的牌（固定 3 张，包含万能牌）
+  bool valid = 2;                             // 是否有效
+  common.CompType type = 3;                   // 牌型类型: COMP_TYPE_TRIPLE
+  repeated common.Card normalized_cards = 4;  // 规范化牌组（万能牌已替换为具体牌，用于比较）
+}
+
+// FullHouseComp 表示葫芦（三带二）
+// 对应 Go: sdk/comp.go:FullHouse
+message FullHouseComp {
+  repeated common.Card cards = 1;             // 牌组中的牌（固定 5 张: 3张 + 2张，包含万能牌）
+  bool valid = 2;                             // 是否有效
+  common.CompType type = 3;                   // 牌型类型: COMP_TYPE_FULL_HOUSE
+  repeated common.Card normalized_cards = 4;  // 规范化牌组（万能牌已替换为具体牌，用于比较）
+}
+
+// StraightComp 表示顺子
+// 对应 Go: sdk/comp.go:Straight
+message StraightComp {
+  repeated common.Card cards = 1;             // 牌组中的牌（固定 5 张连续，包含万能牌）
+  bool valid = 2;                             // 是否有效
+  common.CompType type = 3;                   // 牌型类型: COMP_TYPE_STRAIGHT
+  repeated common.Card normalized_cards = 4;  // 规范化牌组（万能牌已替换为具体牌，用于比较）
+}
+
+// PlateComp 表示钢板（连续三张）
+// 对应 Go: sdk/comp.go:Plate
+message PlateComp {
+  repeated common.Card cards = 1;             // 牌组中的牌（固定 6 张: 两个连续的三张，包含万能牌）
+  bool valid = 2;                             // 是否有效
+  common.CompType type = 3;                   // 牌型类型: COMP_TYPE_PLATE
+  repeated common.Card normalized_cards = 4;  // 规范化牌组（万能牌已替换为具体牌，用于比较）
+}
+
+// TubeComp 表示钢管（连续对子）
+// 对应 Go: sdk/comp.go:Tube
+message TubeComp {
+  repeated common.Card cards = 1;             // 牌组中的牌（固定 6 张: 三个连续的对子，包含万能牌）
+  bool valid = 2;                             // 是否有效
+  common.CompType type = 3;                   // 牌型类型: COMP_TYPE_TUBE
+  repeated common.Card normalized_cards = 4;  // 规范化牌组（万能牌已替换为具体牌，用于比较）
+}
+
+// JokerBombComp 表示王炸
+// 对应 Go: sdk/comp.go:JokerBomb
+message JokerBombComp {
+  repeated common.Card cards = 1;  // 牌组中的牌（固定 4 张: 2个小王 + 2个大王）
+  bool valid = 2;                  // 是否有效
+  common.CompType type = 3;        // 牌型类型: COMP_TYPE_JOKER_BOMB
+}
+
+// NaiveBombComp 表示炸弹
+// 对应 Go: sdk/comp.go:NaiveBomb
+message NaiveBombComp {
+  repeated common.Card cards = 1;             // 牌组中的牌（至少 4 张相同数字，包含万能牌）
+  bool valid = 2;                             // 是否有效
+  common.CompType type = 3;                   // 牌型类型: COMP_TYPE_NAIVE_BOMB
+  repeated common.Card normalized_cards = 4;  // 规范化牌组（万能牌已替换为具体牌，用于比较）
+}
+
+// StraightFlushComp 表示同花顺
+// 对应 Go: sdk/comp.go:StraightFlush
+message StraightFlushComp {
+  repeated common.Card cards = 1;             // 牌组中的牌（固定 5 张同花色连续，包含万能牌）
+  bool valid = 2;                             // 是否有效
+  common.CompType type = 3;                   // 牌型类型: COMP_TYPE_STRAIGHT_FLUSH
+  repeated common.Card normalized_cards = 4;  // 规范化牌组（万能牌已替换为具体牌，用于比较）
+}

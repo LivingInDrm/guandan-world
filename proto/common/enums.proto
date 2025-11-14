@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package guandan.common;
+option go_package = "guandan-world/proto/gen/go/common";
+
+// VictoryType 表示牌局胜利类型
+enum VictoryType {
+  VICTORY_TYPE_UNSPECIFIED = 0;  // 未指定
+  VICTORY_TYPE_DOUBLE_DOWN = 1;  // 双下: rank1和rank2同队 (+3级)
+  VICTORY_TYPE_SINGLE_LAST = 2;  // 单下: rank1和rank3同队 (+2级)
+  VICTORY_TYPE_PARTNER_LAST = 3; // 对下: rank1和rank4同队 (+1级)
+}
+
+// DealStatus 表示牌局状态
+enum DealStatus {
+  DEAL_STATUS_UNSPECIFIED = 0; // 未指定
+  DEAL_STATUS_WAITING = 1;     // 等待开始
+  DEAL_STATUS_DEALING = 2;     // 发牌中
+  DEAL_STATUS_TRIBUTE = 3;     // 进贡阶段
+  DEAL_STATUS_PLAYING = 4;     // 出牌中
+  DEAL_STATUS_FINISHED = 5;    // 已结束
+}
+
+// MatchStatus 表示比赛状态
+enum MatchStatus {
+  MATCH_STATUS_UNSPECIFIED = 0; // 未指定
+  MATCH_STATUS_WAITING = 1;     // 等待开始
+  MATCH_STATUS_PLAYING = 2;     // 进行中
+  MATCH_STATUS_FINISHED = 3;    // 已结束
+}
+
+// TrickStatus 表示轮次状态
+enum TrickStatus {
+  TRICK_STATUS_UNSPECIFIED = 0; // 未指定
+  TRICK_STATUS_WAITING = 1;     // 等待开始
+  TRICK_STATUS_PLAYING = 2;     // 出牌中
+  TRICK_STATUS_FINISHED = 3;    // 已结束
+}
+
+// TributeStatus 表示进贡阶段状态
+enum TributeStatus {
+  TRIBUTE_STATUS_UNSPECIFIED = 0; // 未指定
+  TRIBUTE_STATUS_WAITING = 1;     // 等待开始
+  TRIBUTE_STATUS_SELECTING = 2;   // 选牌中(双下时从池中选择)
+  TRIBUTE_STATUS_RETURNING = 3;   // 还贡中
+  TRIBUTE_STATUS_FINISHED = 4;    // 已完成
+}
+
+// CompType 表示牌型组合类型
+enum CompType {
+  COMP_TYPE_UNSPECIFIED = 0;    // 未指定
+  COMP_TYPE_FOLD = 1;           // 弃牌/过牌
+  COMP_TYPE_ILLEGAL = 2;        // 非法牌型
+  COMP_TYPE_SINGLE = 3;         // 单张
+  COMP_TYPE_PAIR = 4;           // 对子
+  COMP_TYPE_TRIPLE = 5;         // 三张
+  COMP_TYPE_FULL_HOUSE = 6;     // 葫芦(三带二)
+  COMP_TYPE_STRAIGHT = 7;       // 顺子
+  COMP_TYPE_PLATE = 8;          // 钢板(连对)
+  COMP_TYPE_TUBE = 9;           // 钢管(三顺)
+  COMP_TYPE_JOKER_BOMB = 10;    // 王炸(双王)
+  COMP_TYPE_NAIVE_BOMB = 11;    // 炸弹(4张或以上同数字)
+  COMP_TYPE_STRAIGHT_FLUSH = 12; // 同花顺
+}
+
+// GameEventType 表示游戏事件类型
+enum GameEventType {
+  GAME_EVENT_TYPE_UNSPECIFIED = 0;         // 未指定
+  GAME_EVENT_TYPE_MATCH_STARTED = 1;       // 比赛开始
+  GAME_EVENT_TYPE_DEAL_STARTED = 2;        // 牌局开始
+  GAME_EVENT_TYPE_CARDS_DEALT = 3;         // 发牌完成
+  GAME_EVENT_TYPE_TRIBUTE_PHASE = 4;       // 进贡阶段
+  GAME_EVENT_TYPE_TRIBUTE_RULES_SET = 5;   // 进贡规则确定
+  GAME_EVENT_TYPE_TRIBUTE_IMMUNITY = 6;    // 免贡
+  GAME_EVENT_TYPE_TRIBUTE_POOL_CREATED = 7; // 贡牌池创建(双下)
+  GAME_EVENT_TYPE_TRIBUTE_STARTED = 8;     // 开始进贡
+  GAME_EVENT_TYPE_TRIBUTE_GIVEN = 9;       // 上贡完成
+  GAME_EVENT_TYPE_TRIBUTE_SELECTED = 10;   // 选牌完成(双下)
+  GAME_EVENT_TYPE_RETURN_TRIBUTE = 11;     // 还贡完成
+  GAME_EVENT_TYPE_TRIBUTE_COMPLETED = 12;  // 进贡阶段结束
+  GAME_EVENT_TYPE_TRICK_STARTED = 13;      // 轮次开始
+  GAME_EVENT_TYPE_PLAYER_PLAYED = 14;      // 玩家出牌
+  GAME_EVENT_TYPE_PLAYER_PASSED = 15;      // 玩家过牌
+  GAME_EVENT_TYPE_TRICK_ENDED = 16;        // 轮次结束
+  GAME_EVENT_TYPE_DEAL_ENDED = 17;         // 牌局结束
+  GAME_EVENT_TYPE_MATCH_ENDED = 18;        // 比赛结束
+  GAME_EVENT_TYPE_PLAYER_TIMEOUT = 19;     // 玩家超时
+  GAME_EVENT_TYPE_PLAYER_DISCONNECT = 20;  // 玩家断线
+  GAME_EVENT_TYPE_PLAYER_RECONNECT = 21;   // 玩家重连
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+package guandan.game;
+option go_package = "guandan-world/proto/gen/go/game";
+
+import "common/card.proto";
+import "common/enums.proto";
+import "game/actions.proto";
+import "game/result.proto";
+
+// PlayerHand 表示单个玩家的手牌
+message PlayerHand {
+  int32 player_seat = 1;         // 玩家座位号 (0-3)
+  repeated common.Card cards = 2;  // 该玩家的手牌
+}
+
+// Deal 表示一局游戏（一轮比赛中的单局）
+message Deal {
+  string id = 1;                     // 局ID
+  int32 level = 2;                   // 当前局的级别 (2-A对应3-14, 15=小王, 16=大王)
+  common.DealStatus status = 3;      // 局状态
+  Trick current_trick = 4;           // 当前墩（可选）
+  repeated Trick trick_history = 5;  // 墩历史记录
+  TributePhase tribute_phase = 6;    // 上贡阶段信息（可选）
+  repeated PlayerHand player_hands = 7;  // 每个玩家的当前手牌 (固定4个)
+  repeated int32 rankings = 8;       // 完成顺序（玩家座位号）
+  int64 start_time_ms = 9;           // 开始时间戳 (毫秒)
+  int64 end_time_ms = 10;            // 结束时间戳 (毫秒, 0表示未结束)
+  DealResult last_result = 11;       // 上一局的结果（可选，用于上贡判定）
+}

@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package guandan.game;
+option go_package = "guandan-world/proto/gen/go/game";
+
+import "common/card.proto";
+import "common/enums.proto";
+import "game/card_comp.proto";
+
+// PlayAction 表示玩家的一次出牌动作
+// 对应 Go: sdk/types.go:PlayAction
+message PlayAction {
+  int32 player_seat = 1;              // 玩家座位号 (0-3)
+  repeated common.Card cards = 2;     // 打出的牌（空表示弃牌/pass）
+  CardComp comp = 3;                  // 牌型组合（弃牌时可能为空）
+  int64 timestamp_ms = 4;             // 出牌时间戳（毫秒）
+  bool is_pass = 5;                   // 是否为弃牌
+}
+
+// Trick 表示一轮出牌（从领先玩家开始，所有玩家依次出牌或弃牌）
+// 对应 Go: sdk/types.go:Trick
+message Trick {
+  string id = 1;                      // Trick 唯一标识
+  int32 leader = 2;                   // 领先玩家座位号 (0-3)
+  int32 current_turn = 3;             // 当前轮到的玩家座位号 (0-3)
+  repeated PlayAction plays = 4;      // 本轮所有出牌动作
+  int32 winner = 5;                   // 赢家座位号 (0-3)，-1 表示未结束
+  CardComp lead_comp = 6;             // 当前领先的牌型组合
+  common.TrickStatus status = 7;      // Trick 状态: WAITING, PLAYING, FINISHED
+  int64 start_time_ms = 8;            // 开始时间戳（毫秒）
+  int32 next_leader = 9;              // 下一轮领先玩家座位号 (0-3)，仅在 Trick 结束时设置
+}
+
+// TributePhase 表示贡牌阶段
+// 对应 Go: sdk/types.go:TributePhase
+message TributePhase {
+  common.TributeStatus status = 1;                   // 贡牌阶段状态: WAITING, SELECTING, RETURNING, FINISHED
+  map<int32, int32> tribute_map = 2;                 // 贡牌映射: 贡牌者座位号 -> 受贡者座位号
+  map<int32, common.Card> tribute_cards = 3;         // 贡牌: 贡牌者座位号 -> 贡牌
+  map<int32, common.Card> return_cards = 4;          // 回贡: 受贡者座位号 -> 回贡牌
+  repeated common.Card pool_cards = 5;               // 贡牌池（双下时使用）
+  int32 selecting_player = 6;                        // 正在从池中选牌的玩家座位号 (0-3)，-1 表示无
+  bool is_immune = 7;                                // 是否免贡
+  map<int32, int32> selection_results = 8;           // 选牌结果: 受贡者座位号 -> 原始贡牌者座位号（用于双下追踪）
+}

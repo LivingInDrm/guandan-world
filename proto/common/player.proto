@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package guandan.common;
+option go_package = "guandan-world/proto/gen/go/common";
+
+// Player 表示游戏玩家
+message Player {
+  // 玩家唯一标识符
+  string id = 1;
+  
+  // 玩家用户名
+  string username = 2;
+  
+  // 玩家座位号 (0-3)
+  // 座位0和座位2为一队(team 0)，座位1和座位3为另一队(team 1)
+  int32 seat = 3;
+  
+  // 玩家是否在线
+  bool online = 4;
+  
+  // 是否启用自动托管
+  // 当玩家离线或超时时，系统会自动为其出牌
+  bool auto_play = 5;
+}

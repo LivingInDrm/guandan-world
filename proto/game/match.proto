@@ -1,0 +1,36 @@
+syntax = "proto3";
+package guandan.game;
+option go_package = "guandan-world/proto/gen/go/game";
+
+import "common/player.proto";
+import "common/enums.proto";
+import "common/card.proto";
+import "game/deal.proto";
+import "game/actions.proto";
+import "game/result.proto";
+
+// Match 表示一场比赛（多局游戏）
+message Match {
+  string id = 1;                       // 比赛ID
+  common.MatchStatus status = 2;       // 比赛状态
+  repeated common.Player players = 3;  // 玩家列表 (固定4个)
+  Deal current_deal = 4;               // 当前局（可选）
+  repeated Deal deal_history = 5;      // 历史局记录
+  TeamUpgrades team_levels = 6;        // 两队当前级别 (team0: seats 0,2; team1: seats 1,3)
+  int32 winner = 7;                    // 获胜队伍: -1表示未结束, 0或1表示获胜队伍
+  int64 start_time_ms = 8;             // 比赛开始时间戳 (毫秒)
+  int64 end_time_ms = 9;               // 比赛结束时间戳 (毫秒, 0表示未结束)
+}
+
+// PlayerView 表示单个玩家的游戏视图（仅包含该玩家可见的信息）
+message PlayerView {
+  int32 player_seat = 1;               // 玩家的座位号 (0-3)
+  repeated common.Card player_cards = 2;  // 该玩家的手牌（只对该玩家可见）
+  TeamUpgrades team_levels = 3;        // 两队当前等级
+  int32 deal_level = 4;                // 当前局的等级
+  common.DealStatus deal_status = 5;   // 当前局的状态
+  string trick_id = 6;                 // 当前Trick的ID（playing阶段，可选）
+  int32 current_turn = 7;              // 当前轮到的玩家座位号（playing阶段，-1表示无）
+  repeated PlayAction plays = 8;       // 当前Trick的所有出牌记录（playing阶段，可选）
+  TributePhase tribute_phase = 9;      // 上贡阶段信息（tribute阶段，可选）
+}

@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package guandan.messages;
+option go_package = "guandan-world/proto/gen/go/messages";
+
+import "common/enums.proto";
+import "game/match.proto";
+import "game/deal.proto";
+import "game/result.proto";
+
+// GameEvent 表示游戏中发生的事件
+// 游戏引擎通过事件系统通知外部系统游戏状态变化
+message GameEvent {
+  common.GameEventType type = 1;  // 事件类型
+  int64 timestamp_ms = 2;         // 事件发生的时间戳 (毫秒)
+  int32 player_seat = 3;          // 触发事件的玩家座位号 (0-3), -1表示无关联玩家
+  
+  // 事件数据载荷 (根据type字段解析对应的具体事件)
+  oneof payload {
+    MatchStartedEvent match_started = 10;
+    DealStartedEvent deal_started = 11;
+    CardsDealtEvent cards_dealt = 12;
+    DealEndedEvent deal_ended = 13;
+    MatchEndedEvent match_ended = 14;
+  }
+}
+
+// MatchStartedEvent 比赛开始事件
+// 当新比赛开始时触发
+message MatchStartedEvent {
+  game.Match match = 1;  // 新开始的比赛实例
+}
+
+// DealStartedEvent 牌局开始事件
+// 当新的一局开始时触发
+message DealStartedEvent {
+  game.Deal deal = 1;                // 当前局的完整信息（包含level）
+  game.TeamUpgrades team_levels = 2; // 当前比赛等级（不在Deal中，需要单独提供）
+}
+
+// CardsDealtEvent 发牌完成事件
+// 当发牌完成时触发
+message CardsDealtEvent {
+  repeated int32 hand_sizes = 1;  // 每个玩家的手牌数量 (固定4个元素)
+  int32 dealer = 2;               // 发牌者座位号 (0-3), -1表示系统发牌
+}
+
+// DealEndedEvent 牌局结束事件
+// 当一局游戏结束时触发
+message DealEndedEvent {
+  game.Deal deal = 1;          // 结束的局的完整信息（包含rankings）
+  game.DealResult result = 2;  // 局结果（包含statistics、胜利类型、升级数等）
+}
+
+// MatchEndedEvent 比赛结束事件
+// 当整场比赛结束时触发
+message MatchEndedEvent {
+  game.Match match = 1;         // 结束的比赛的完整信息（包含winner和team_levels）
+  game.MatchResult result = 2;  // 比赛统计结果
+}

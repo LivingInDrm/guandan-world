@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package guandan.common;
+option go_package = "guandan-world/proto/gen/go/common";
+
+// Card 表示一张扑克牌
+message Card {
+  // 牌的数字值 (1-16): 
+  // 1=Ace(转换为14), 2-10=数字牌, 11=Jack, 12=Queen, 13=King, 14=Ace, 15=小王, 16=大王
+  int32 number = 1;
+  
+  // 原始数字值 (用于顺子比较): 1-14
+  // Ace的原始值为1，用于判断顺子的连续性
+  int32 raw_number = 2;
+  
+  // 花色: "Spade"(黑桃), "Club"(梅花), "Heart"(红桃), "Diamond"(方块), "Joker"(王牌)
+  // 王牌的花色为 "Joker"，其他牌必须是四种花色之一
+  string color = 3;
+  
+  // 当前游戏级别 (2-14): 用于判断级别牌和变化牌
+  // 与当前级别相同数字的牌为级别牌，红桃级别牌为变化牌(万能牌)
+  int32 level = 4;
+  
+  // 牌的名称: "2"-"10", "Jack", "Queen", "King", "Ace", "Black Joker", "Red Joker"
+  string name = 5;
+  
+  // 牌在整副牌中的唯一索引 (0-107)
+  // 两副牌共108张，每张牌有唯一的索引用于区分
+  int32 deck_index = 6;
+}
