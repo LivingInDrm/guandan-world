@@ -396,10 +396,8 @@ func (ge *GameEngine) StartDeal() error {
 	event := &GameEvent{
 		Type: EventDealStarted,
 		Data: map[string]interface{}{
-			"deal":        ge.currentMatch.CurrentDeal,
 			"deal_level":  ge.currentMatch.CurrentDeal.Level,
-			"team0_level": ge.currentMatch.TeamLevels[0],
-			"team1_level": ge.currentMatch.TeamLevels[1],
+			"team_levels": ge.currentMatch.TeamLevels,
 		},
 		Timestamp: time.Now(),
 	}
@@ -504,7 +502,6 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 		Data: map[string]interface{}{
 			"player_seat": playerSeat,
 			"cards":       cards,
-			"deal_state":  deal,
 		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerSeat,
@@ -557,7 +554,6 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 		Type: EventPlayerPassed,
 		Data: map[string]interface{}{
 			"player_seat": playerSeat,
-			"deal_state":  deal,
 		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerSeat,
@@ -1105,15 +1101,9 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 				givenEvent := &GameEvent{
 					Type: EventTributeGiven,
 					Data: map[string]interface{}{
-						// 保留现有字段格式
 						"giver":    giver,
 						"receiver": receiver,
 						"card":     currentCard,
-
-						// 新增字段
-						"tribute_type":     "normal",
-						"is_auto_selected": true,
-						"selection_reason": "除红桃Trump外最大牌",
 					},
 					Timestamp: time.Now(),
 				}
@@ -1246,13 +1236,11 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 		}
 	}
 
-	// 找到还贡的目标玩家和原来收到的贡牌
+	// 找到还贡的目标玩家
 	var targetPlayer int = -1
-	var originalTribute *Card
 	for giver, receiver := range deal.TributePhase.TributeMap {
 		if receiver == playerID && receiver != -1 {
 			targetPlayer = giver
-			originalTribute = deal.TributePhase.TributeCards[giver]
 			break
 		}
 	}
@@ -1261,17 +1249,9 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 	ge.emitEvent(&GameEvent{
 		Type: EventReturnTribute,
 		Data: map[string]interface{}{
-			// 保留现有字段
-			"action": "return",
-			"player": playerID,
-			"cardID": cardID,
-
-			// 新增字段
-			"return_card":      returnCard,
-			"target_player":    targetPlayer,
-			"original_tribute": originalTribute,
-			"is_auto_selected": false, // 正常选择，非自动
-			"selection_reason": "玩家手动选择",
+			"player":        playerID,
+			"return_card":   returnCard,
+			"target_player": targetPlayer,
 		},
 		Timestamp:  time.Now(),
 		PlayerSeat: playerID,
