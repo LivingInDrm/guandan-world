@@ -7,6 +7,7 @@
 - [API 接口](#api-接口)
 - [使用示例](#使用示例)
 - [最佳实践](#最佳实践)
+- [废弃的 API](#废弃的-api)
 
 ## 概述
 
@@ -682,11 +683,22 @@ turnInfo, err := engine.GetTurnInfo()
 #### 事件处理
 
 ```go
-// 注册事件处理器
-engine.RegisterEventHandler(EventPlayerPlayed, func(event *GameEvent) {
+// 注册事件处理器（推荐使用 On 方法）
+engine.On(EventPlayerPlayed, func(event *GameEvent) {
     // 处理玩家出牌事件
 })
+
+// 使用 RegisterObserver 接口
+type MyObserver struct{}
+
+func (o *MyObserver) OnGameEvent(event *GameEvent) {
+    // 处理事件
+}
+
+engine.RegisterObserver(EventPlayerPlayed, &MyObserver{})
 ```
+
+> **注意**: `RegisterEventHandler` 方法已被标记为废弃（Deprecated），虽然仍然可用以保持向后兼容，但建议新代码使用 `On` 或 `RegisterObserver` 方法。
 
 ## 使用示例
 
@@ -712,8 +724,8 @@ func main() {
         {ID: "p4", Username: "David", Seat: 3},
     }
     
-    // 注册事件处理器
-    engine.RegisterEventHandler(sdk.EventPlayerPlayed, func(event *sdk.GameEvent) {
+    // 注册事件处理器（使用 On 方法）
+    engine.On(sdk.EventPlayerPlayed, func(event *sdk.GameEvent) {
         fmt.Printf("Player %d played cards\n", event.PlayerSeat)
     })
     
@@ -846,6 +858,86 @@ fmt.Printf("Match completed, winner: Team %d\n", result.Winner)
 - 为每个模块编写单元测试
 - 使用模拟对象测试复杂交互
 - 编写集成测试验证完整流程
+
+---
+
+## 废弃的 API
+
+为了保持向后兼容性，以下 API 仍然可用，但已被标记为 **Deprecated（废弃）**。建议新代码使用推荐的替代 API。
+
+### 事件处理
+
+#### ❌ 废弃: RegisterEventHandler
+
+```go
+// 已废弃 - 仅为向后兼容保留
+engine.RegisterEventHandler(EventPlayerPlayed, func(event *GameEvent) {
+    // 处理事件
+})
+```
+
+#### ✅ 推荐: On 方法
+
+```go
+// 推荐使用 - 更简洁的函数式API
+engine.On(EventPlayerPlayed, func(event *GameEvent) {
+    // 处理事件
+})
+```
+
+#### ✅ 推荐: RegisterObserver 接口
+
+```go
+// 推荐使用 - 适合需要实现完整观察者的场景
+type MyObserver struct{}
+
+func (o *MyObserver) OnGameEvent(event *GameEvent) {
+    // 处理事件
+}
+
+engine.RegisterObserver(EventPlayerPlayed, &MyObserver{})
+```
+
+### 迁移指南
+
+如果您的代码使用了 `RegisterEventHandler`，可以通过以下方式进行迁移：
+
+**旧代码**:
+```go
+handler := func(event *GameEvent) {
+    fmt.Printf("Event: %s\n", event.Type)
+}
+engine.RegisterEventHandler(EventMatchStarted, handler)
+engine.RegisterEventHandler(EventDealStarted, handler)
+```
+
+**新代码（选项1 - 使用 On）**:
+```go
+handler := func(event *GameEvent) {
+    fmt.Printf("Event: %s\n", event.Type)
+}
+engine.On(EventMatchStarted, handler)
+engine.On(EventDealStarted, handler)
+```
+
+**新代码（选项2 - 使用 RegisterObserver）**:
+```go
+type EventLogger struct{}
+
+func (el *EventLogger) OnGameEvent(event *GameEvent) {
+    fmt.Printf("Event: %s\n", event.Type)
+}
+
+observer := &EventLogger{}
+engine.RegisterObserver(EventMatchStarted, observer)
+engine.RegisterObserver(EventDealStarted, observer)
+```
+
+### 废弃原因
+
+- **统一接口**: 新的 API 使用统一的 `EventObserver` 接口，替代原有的双层事件系统
+- **更好的类型安全**: 新的事件工厂方法提供更好的类型安全保证
+- **更清晰的语义**: `On` 方法提供更简洁的函数式语法，`RegisterObserver` 提供标准的观察者模式接口
 
 ---
 

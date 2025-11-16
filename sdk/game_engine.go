@@ -7,56 +7,6 @@ import (
 	"time"
 )
 
-// GameEventType 定义游戏事件的类型
-// 游戏引擎通过这些事件类型来通知外部系统游戏状态的变化
-type GameEventType string
-
-// 游戏事件类型常量定义
-// 这些常量用于标识不同类型的游戏事件，外部系统可以通过监听这些事件来响应游戏状态变化
-const (
-	EventMatchStarted       GameEventType = "match_started"        // 比赛开始事件
-	EventDealStarted        GameEventType = "deal_started"         // 牌局开始事件
-	EventCardsDealt         GameEventType = "cards_dealt"          // 发牌完成事件
-	EventTributePhase       GameEventType = "tribute_phase"        // 进贡阶段事件
-	EventTributeRulesSet    GameEventType = "tribute_rules_set"    // 上贡规则确定事件
-	EventTributeImmunity    GameEventType = "tribute_immunity"     // 免贡事件
-	EventTributePoolCreated GameEventType = "tribute_pool_created" // 贡牌池创建事件（双下）
-	EventTributeStarted     GameEventType = "tribute_started"      // 贡牌开始事件
-	EventTributeGiven       GameEventType = "tribute_given"        // 上贡完成事件
-	EventTributeSelected    GameEventType = "tribute_selected"     // 选牌完成事件（双下）
-	EventReturnTribute      GameEventType = "return_tribute"       // 还贡完成事件
-	EventTributeCompleted   GameEventType = "tribute_completed"    // 贡牌阶段结束事件
-	EventTrickStarted       GameEventType = "trick_started"        // 新轮次开始事件
-	EventPlayerPlayed       GameEventType = "player_played"        // 玩家出牌事件
-	EventPlayerPassed       GameEventType = "player_passed"        // 玩家过牌事件
-	EventTrickEnded         GameEventType = "trick_ended"          // 轮次结束事件
-	EventDealEnded          GameEventType = "deal_ended"           // 牌局结束事件
-	EventMatchEnded         GameEventType = "match_ended"          // 比赛结束事件
-	EventPlayerTimeout      GameEventType = "player_timeout"       // 玩家超时事件
-	EventPlayerDisconnect   GameEventType = "player_disconnect"    // 玩家断线事件
-	EventPlayerReconnect    GameEventType = "player_reconnect"     // 玩家重连事件
-)
-
-// GameEvent 表示游戏中发生的事件及其相关数据
-// 游戏引擎通过事件系统来通知外部关于游戏状态变化的信息
-type GameEvent struct {
-	Type       GameEventType `json:"type"`                  // 事件类型，标识这是什么类型的事件
-	Data       interface{}   `json:"data"`                  // 事件数据，包含与事件相关的具体信息
-	Timestamp  time.Time     `json:"timestamp"`             // 事件发生的时间戳
-	PlayerSeat int           `json:"player_seat,omitempty"` // 触发事件的玩家座位号（如果适用）
-}
-
-// GameEventHandler 是处理游戏事件的函数类型
-// 参数:
-//
-//	*GameEvent: 要处理的游戏事件
-//
-// 功能说明:
-//   - 事件处理器在独立的协程中运行，不会阻塞游戏主流程
-//   - 可以用于日志记录、统计分析、UI更新等
-//   - 处理器应该快速执行，避免长时间阻塞
-type GameEventHandler func(*GameEvent)
-
 // GameState 表示游戏的完整状态
 // 包含游戏的全局信息，适用于管理员或观察者视角
 type GameState struct {
@@ -96,13 +46,13 @@ const (
 // GameEngine 是管理完整游戏生命周期的主要游戏引擎
 // 它协调所有游戏组件，处理玩家操作，管理游戏状态，并发送事件通知
 type GameEngine struct {
-	id            string                               // 游戏引擎的唯一标识符
-	status        GameStatus                           // 当前游戏状态
-	currentMatch  *Match                               // 当前活跃的比赛实例
-	eventHandlers map[GameEventType][]GameEventHandler // 事件处理器映射，按事件类型分组
-	mutex         sync.RWMutex                         // 读写锁，保护并发访问游戏状态
-	createdAt     time.Time                            // 游戏引擎创建时间
-	updatedAt     time.Time                            // 最后更新时间
+	id           string                            // 游戏引擎的唯一标识符
+	status       GameStatus                        // 当前游戏状态
+	currentMatch *Match                            // 当前活跃的比赛实例
+	observers    map[GameEventType][]EventObserver // 事件观察者映射，按事件类型分组
+	mutex        sync.RWMutex                      // 读写锁，保护并发访问游戏状态
+	createdAt    time.Time                         // 游戏引擎创建时间
+	updatedAt    time.Time                         // 最后更新时间
 }
 
 // GameEngineInterface 定义了游戏引擎的公共接口
@@ -248,7 +198,28 @@ type GameEngineInterface interface {
 
 	// 事件处理
 
-	// RegisterEventHandler 注册游戏事件处理器
+	// RegisterObserver 注册事件观察者（推荐使用）
+	// 参数:
+	//   eventType: 要监听的事件类型
+	//   observer: 事件观察者接口
+	// 功能说明:
+	//   - 允许外部系统监听游戏事件
+	//   - 支持多个观察者监听同一事件类型
+	//   - 事件观察者在独立的协程中执行，不会阻塞游戏进程
+	RegisterObserver(eventType GameEventType, observer EventObserver)
+
+	// On 语法糖方法，方便函数式注册事件处理器（推荐使用）
+	// 参数:
+	//   eventType: 要监听的事件类型
+	//   handler: 事件处理函数
+	// 功能说明:
+	//   - 提供更简洁的事件注册方式
+	//   - 内部自动包装为EventObserver
+	//   - 功能等同于RegisterObserver
+	On(eventType GameEventType, handler func(*GameEvent))
+
+	// RegisterEventHandler 注册游戏事件处理器（已废弃，使用On代替）
+	// Deprecated: 使用 RegisterObserver 或 On 代替
 	// 参数:
 	//   eventType: 要监听的事件类型
 	//   handler: 事件处理函数
@@ -333,11 +304,11 @@ type GameEngineInterface interface {
 func NewGameEngine() *GameEngine {
 	now := time.Now()
 	return &GameEngine{
-		id:            generateID(),
-		status:        GameStatusWaiting,
-		eventHandlers: make(map[GameEventType][]GameEventHandler),
-		createdAt:     now,
-		updatedAt:     now,
+		id:        generateID(),
+		status:    GameStatusWaiting,
+		observers: make(map[GameEventType][]EventObserver),
+		createdAt: now,
+		updatedAt: now,
 	}
 }
 
@@ -365,12 +336,8 @@ func (ge *GameEngine) StartMatch(players []Player) error {
 	ge.updatedAt = time.Now()
 
 	// Emit match started event
-	event := &GameEvent{
-		Type:      EventMatchStarted,
-		Data:      match,
-		Timestamp: time.Now(),
-	}
-	ge.emitEvent(event)
+	event := NewMatchStartedEvent(match)
+	ge.emitEventLocked(event)
 
 	return nil
 }
@@ -393,15 +360,8 @@ func (ge *GameEngine) StartDeal() error {
 	ge.updatedAt = time.Now()
 
 	// Emit deal started event
-	event := &GameEvent{
-		Type: EventDealStarted,
-		Data: map[string]interface{}{
-			"deal_level":  ge.currentMatch.CurrentDeal.Level,
-			"team_levels": ge.currentMatch.TeamLevels,
-		},
-		Timestamp: time.Now(),
-	}
-	ge.emitEvent(event)
+	event := NewDealStartedEvent(ge.currentMatch.CurrentDeal.Level, ge.currentMatch.TeamLevels)
+	ge.emitEventLocked(event)
 
 	// If there's a tribute phase, emit tribute rules set event first
 	if ge.currentMatch.CurrentDeal.TributePhase != nil {
@@ -424,21 +384,8 @@ func (ge *GameEngine) StartDeal() error {
 		}
 
 		// Emit tribute rules set event
-		rulesEvent := &GameEvent{
-			Type: EventTributeRulesSet,
-			Data: map[string]interface{}{
-				"last_result":  lastResult,
-				"victory_type": lastResult.VictoryType,
-				"tribute_rules": map[string]interface{}{
-					"tribute_map":    tributeMap,
-					"is_double_down": isDoubleDown,
-					"description":    ruleDescription,
-				},
-				"player_rankings": lastResult.Rankings,
-			},
-			Timestamp: time.Now(),
-		}
-		ge.emitEvent(rulesEvent)
+		rulesEvent := NewTributeRulesSetEvent(lastResult, lastResult.VictoryType, tributeMap, isDoubleDown, ruleDescription, lastResult.Rankings)
+		ge.emitEventLocked(rulesEvent)
 	}
 
 	// Check if tribute phase was skipped due to immunity
@@ -450,15 +397,8 @@ func (ge *GameEngine) StartDeal() error {
 			ge.currentMatch.CurrentDeal.PlayerCards)
 
 		// Emit immunity event with detailed information
-		immunityEvent := &GameEvent{
-			Type: EventTributeImmunity,
-			Data: map[string]interface{}{
-				"tribute_phase":   ge.currentMatch.CurrentDeal.TributePhase,
-				"immunity_reason": immunityDetails,
-			},
-			Timestamp: time.Now(),
-		}
-		ge.emitEvent(immunityEvent)
+		immunityEvent := NewTributeImmunityEvent(ge.currentMatch.CurrentDeal.TributePhase, immunityDetails)
+		ge.emitEventLocked(immunityEvent)
 	}
 
 	return nil
@@ -485,7 +425,7 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the play
 	preEvents := ge.checkPreActionStateTransitions()
 	for _, evt := range preEvents {
-		ge.emitEvent(evt)
+		ge.emitEventLocked(evt)
 	}
 
 	// Execute the play
@@ -497,21 +437,13 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	ge.updatedAt = time.Now()
 
 	// Create and emit player played event
-	event := &GameEvent{
-		Type: EventPlayerPlayed,
-		Data: map[string]interface{}{
-			"player_seat": playerSeat,
-			"cards":       cards,
-		},
-		Timestamp:  time.Now(),
-		PlayerSeat: playerSeat,
-	}
-	ge.emitEvent(event)
+	event := NewPlayerPlayedEvent(playerSeat, cards)
+	ge.emitEventLocked(event)
 
 	// Check for post-action state transitions (e.g., trick ending, deal ending)
 	postEvents := ge.checkPostActionStateTransitions()
 	for _, evt := range postEvents {
-		ge.emitEvent(evt)
+		ge.emitEventLocked(evt)
 	}
 
 	return event, nil
@@ -538,7 +470,7 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the pass
 	preEvents := ge.checkPreActionStateTransitions()
 	for _, evt := range preEvents {
-		ge.emitEvent(evt)
+		ge.emitEventLocked(evt)
 	}
 
 	// Execute the pass
@@ -550,20 +482,13 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 	ge.updatedAt = time.Now()
 
 	// Create and emit player passed event
-	event := &GameEvent{
-		Type: EventPlayerPassed,
-		Data: map[string]interface{}{
-			"player_seat": playerSeat,
-		},
-		Timestamp:  time.Now(),
-		PlayerSeat: playerSeat,
-	}
-	ge.emitEvent(event)
+	event := NewPlayerPassedEvent(playerSeat)
+	ge.emitEventLocked(event)
 
 	// Check for post-action state transitions (e.g., trick ending, deal ending)
 	postEvents := ge.checkPostActionStateTransitions()
 	for _, evt := range postEvents {
-		ge.emitEvent(evt)
+		ge.emitEventLocked(evt)
 	}
 
 	return event, nil
@@ -635,15 +560,37 @@ func (ge *GameEngine) IsGameFinished() bool {
 	return ge.status == GameStatusFinished
 }
 
-// RegisterEventHandler registers an event handler for a specific event type
-func (ge *GameEngine) RegisterEventHandler(eventType GameEventType, handler GameEventHandler) {
+// RegisterObserver registers an event observer for a specific event type
+//
+// Concurrency contract for observers:
+//   - Observers are called asynchronously in separate goroutines
+//   - Observers should be non-blocking and fast-executing
+//   - Observers must not make synchronous calls back into GameEngine methods
+//     while expecting immediate state changes during event processing
+//   - Event delivery order is not guaranteed across different event types
+//   - Multiple observers for the same event type will all be called
+//   - Observers should handle panics internally or they will be recovered and logged
+func (ge *GameEngine) RegisterObserver(eventType GameEventType, observer EventObserver) {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.eventHandlers[eventType] == nil {
-		ge.eventHandlers[eventType] = make([]GameEventHandler, 0)
+	if ge.observers[eventType] == nil {
+		ge.observers[eventType] = make([]EventObserver, 0)
 	}
-	ge.eventHandlers[eventType] = append(ge.eventHandlers[eventType], handler)
+	ge.observers[eventType] = append(ge.observers[eventType], observer)
+}
+
+// On is a convenience method for registering event handlers using functions
+// See RegisterObserver for concurrency contract details
+func (ge *GameEngine) On(eventType GameEventType, handler func(*GameEvent)) {
+	ge.RegisterObserver(eventType, EventHandlerFunc(handler))
+}
+
+// RegisterEventHandler registers an event handler (legacy interface for backward compatibility)
+// Deprecated: Use RegisterObserver or On instead
+// See RegisterObserver for concurrency contract details
+func (ge *GameEngine) RegisterEventHandler(eventType GameEventType, handler GameEventHandler) {
+	ge.RegisterObserver(eventType, EventHandlerFunc(handler))
 }
 
 // HandlePlayerDisconnect handles a player disconnection
@@ -663,16 +610,8 @@ func (ge *GameEngine) HandlePlayerDisconnect(playerSeat int) (*GameEvent, error)
 	ge.updatedAt = time.Now()
 
 	// Create disconnect event
-	event := &GameEvent{
-		Type: EventPlayerDisconnect,
-		Data: map[string]interface{}{
-			"player_seat": playerSeat,
-			"auto_play":   true,
-		},
-		Timestamp:  time.Now(),
-		PlayerSeat: playerSeat,
-	}
-	ge.emitEvent(event)
+	event := NewPlayerDisconnectEvent(playerSeat)
+	ge.emitEventLocked(event)
 
 	return event, nil
 }
@@ -694,16 +633,8 @@ func (ge *GameEngine) HandlePlayerReconnect(playerSeat int) (*GameEvent, error) 
 	ge.updatedAt = time.Now()
 
 	// Create reconnect event
-	event := &GameEvent{
-		Type: EventPlayerReconnect,
-		Data: map[string]interface{}{
-			"player_seat": playerSeat,
-			"auto_play":   false,
-		},
-		Timestamp:  time.Now(),
-		PlayerSeat: playerSeat,
-	}
-	ge.emitEvent(event)
+	event := NewPlayerReconnectEvent(playerSeat)
+	ge.emitEventLocked(event)
 
 	return event, nil
 }
@@ -720,28 +651,69 @@ func (ge *GameEngine) SetPlayerAutoPlay(playerSeat int, enabled bool) error {
 	return ge.currentMatch.SetPlayerAutoPlay(playerSeat, enabled)
 }
 
-// emitEvent emits an event to all registered handlers
+// emitEvent emits an event to all registered observers
 func (ge *GameEngine) emitEvent(event *GameEvent) {
-	handlers, exists := ge.eventHandlers[event.Type]
-	if !exists {
+	// Safely read and copy the observer list to avoid holding the lock during callback execution
+	ge.mutex.RLock()
+	observers, exists := ge.observers[event.Type]
+	if !exists || len(observers) == 0 {
+		ge.mutex.RUnlock()
 		return
 	}
+	// Create a copy of the observer slice to prevent race conditions
+	observersCopy := make([]EventObserver, len(observers))
+	copy(observersCopy, observers)
+	ge.mutex.RUnlock()
 
-	// Call all handlers for this event type asynchronously to avoid deadlock
-	// Each handler runs in its own goroutine to prevent blocking the engine
-	// This is crucial to avoid deadlock when handlers call back into the engine
-	for _, handler := range handlers {
-		// Create a copy of handler for the goroutine closure
-		h := handler
+	// Call all observers for this event type asynchronously to avoid deadlock
+	// Each observer runs in its own goroutine to prevent blocking the engine
+	// This is crucial to avoid deadlock when observers call back into the engine
+	for _, observer := range observersCopy {
+		// Create a copy of observer for the goroutine closure
+		obs := observer
 		go func() {
-			// Use defer to recover from any panic in the handler
+			// Use defer to recover from any panic in the observer
 			defer func() {
 				if r := recover(); r != nil {
 					// Log the panic but don't crash the engine
-					fmt.Printf("Event handler panic for %s: %v\n", event.Type, r)
+					// TODO: Replace with pluggable logger interface
+					fmt.Printf("[GameEngine] Event observer panic for %s: %v\n", event.Type, r)
 				}
 			}()
-			h(event)
+			obs.OnGameEvent(event)
+		}()
+	}
+}
+
+// Note: Observer contract
+// - Observers run asynchronously and should be non-blocking
+// - Observers should not re-enter engine methods that depend on immediate state changes while locks are held
+// - Event delivery is not guaranteed to be ordered across different event types
+
+// emitEventLocked is called when the caller already holds ge.mutex lock
+// It reads the observers without acquiring additional locks to avoid deadlock
+// Note: All calls to this method must be inside a ge.mutex.Lock() block
+func (ge *GameEngine) emitEventLocked(event *GameEvent) {
+	// Caller already holds the lock, so we can safely read observers
+	observers, exists := ge.observers[event.Type]
+	if !exists || len(observers) == 0 {
+		return
+	}
+	// Create a copy of the observer slice
+	observersCopy := make([]EventObserver, len(observers))
+	copy(observersCopy, observers)
+
+	// Call all observers asynchronously outside the lock
+	for _, observer := range observersCopy {
+		obs := observer
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					// TODO: Replace with pluggable logger interface
+					fmt.Printf("[GameEngine] Event observer panic for %s: %v\n", event.Type, r)
+				}
+			}()
+			obs.OnGameEvent(event)
 		}()
 	}
 }
@@ -763,27 +735,7 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 		err := deal.CurrentTrick.StartTrick()
 		if err == nil {
 			// Note: Timeout is now managed by GameDriver, not set here
-			// 收集所有玩家的手牌信息，避免在事件处理器中调用引擎方法
-			playerHands := make(map[int][]*Card)
-			for i := 0; i < 4; i++ {
-				if deal.PlayerCards[i] != nil {
-					// 创建手牌的副本，避免并发访问问题
-					handCopy := make([]*Card, len(deal.PlayerCards[i]))
-					copy(handCopy, deal.PlayerCards[i])
-					playerHands[i] = handCopy
-				}
-			}
-
-			trickStartedEvent := &GameEvent{
-				Type: EventTrickStarted,
-				Data: map[string]interface{}{
-					"trick":        deal.CurrentTrick,
-					"leader":       deal.CurrentTrick.Leader,
-					"current_turn": deal.CurrentTrick.CurrentTurn,
-					"player_hands": playerHands,
-				},
-				Timestamp: time.Now(),
-			}
+			trickStartedEvent := NewTrickStartedEvent(deal.CurrentTrick, deal.CurrentTrick.Leader, deal.CurrentTrick.CurrentTurn)
 			events = append(events, trickStartedEvent)
 		}
 	}
@@ -823,16 +775,7 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 		}
 
 		// Emit deal ended event
-		dealEndedEvent := &GameEvent{
-			Type: EventDealEnded,
-			Data: map[string]interface{}{
-				"deal":       deal,
-				"result":     dealResult,
-				"rankings":   deal.Rankings,
-				"statistics": dealResult.Statistics,
-			},
-			Timestamp: time.Now(),
-		}
+		dealEndedEvent := NewDealEndedEvent(deal, dealResult, deal.Rankings, dealResult.Statistics)
 		events = append(events, dealEndedEvent)
 
 		// Update match with deal result
@@ -846,16 +789,7 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 				matchResult := ge.createMatchResult()
 
 				// Emit match ended event
-				matchEndedEvent := &GameEvent{
-					Type: EventMatchEnded,
-					Data: map[string]interface{}{
-						"match":        ge.currentMatch,
-						"result":       matchResult,
-						"winner":       ge.currentMatch.Winner,
-						"final_levels": ge.currentMatch.TeamLevels,
-					},
-					Timestamp: time.Now(),
-				}
+				matchEndedEvent := NewMatchEndedEvent(ge.currentMatch, matchResult, ge.currentMatch.Winner, ge.currentMatch.TeamLevels)
 				events = append(events, matchEndedEvent)
 			}
 		}
@@ -863,15 +797,7 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 		// Check if current trick is finished
 		// Emit trick ended event
 		finishedTrick := deal.CurrentTrick
-		trickEndedEvent := &GameEvent{
-			Type: EventTrickEnded,
-			Data: map[string]interface{}{
-				"trick":       finishedTrick,
-				"winner":      finishedTrick.Winner,
-				"next_leader": finishedTrick.NextLeader,
-			},
-			Timestamp: time.Now(),
-		}
+		trickEndedEvent := NewTrickEndedEvent(finishedTrick, finishedTrick.Winner, finishedTrick.NextLeader)
 		events = append(events, trickEndedEvent)
 
 		// Add finished trick to history
@@ -1002,20 +928,6 @@ func (ge *GameEngine) AutoPlayForPlayer(playerSeat int) (*GameEvent, error) {
 	return nil, errors.New("unable to auto-play")
 }
 
-// sendEvent 发送游戏事件到所有注册的处理器
-func (ge *GameEngine) sendEvent(event *GameEvent) {
-	// 获取该事件类型的所有处理器
-	handlers, exists := ge.eventHandlers[event.Type]
-	if !exists || len(handlers) == 0 {
-		return
-	}
-
-	// 在独立的协程中执行每个处理器
-	for _, handler := range handlers {
-		go handler(event)
-	}
-}
-
 // ProcessTributePhase 处理贡牌阶段
 func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 	ge.mutex.Lock()
@@ -1075,18 +987,8 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 		}
 
 		// 触发贡牌池创建事件
-		poolEvent := &GameEvent{
-			Type: EventTributePoolCreated,
-			Data: map[string]interface{}{
-				"description":      fmt.Sprintf("双下贡牌池已创建，包含%d张贡牌", len(contributors)),
-				"contributors":     contributors,
-				"selection_order":  selectionOrder,
-				"pool_cards":       deal.TributePhase.PoolCards,
-				"selecting_player": deal.TributePhase.SelectingPlayer,
-			},
-			Timestamp: time.Now(),
-		}
-		ge.emitEvent(poolEvent)
+		poolEvent := NewTributePoolCreatedEvent(fmt.Sprintf("双下贡牌池已创建，包含%d张贡牌", len(contributors)), contributors, selectionOrder, deal.TributePhase.PoolCards, deal.TributePhase.SelectingPlayer)
+		ge.emitEventLocked(poolEvent)
 	}
 
 	// 检测上贡卡牌是否刚刚被确定（适用于所有场景）
@@ -1098,16 +1000,8 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 
 			if currentCard != nil && previousCard == nil {
 				// 触发上贡完成事件
-				givenEvent := &GameEvent{
-					Type: EventTributeGiven,
-					Data: map[string]interface{}{
-						"giver":    giver,
-						"receiver": receiver,
-						"card":     currentCard,
-					},
-					Timestamp: time.Now(),
-				}
-				ge.emitEvent(givenEvent)
+				givenEvent := NewTributeGivenEvent(giver, receiver, currentCard)
+				ge.emitEventLocked(givenEvent)
 			}
 		}
 	}
@@ -1121,11 +1015,7 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 		}
 
 		// 发送完成事件（同步发送以确保日志顺序正确）
-		ge.emitEvent(&GameEvent{
-			Type:      EventTributeCompleted,
-			Data:      deal.TributePhase,
-			Timestamp: time.Now(),
-		})
+		ge.emitEventLocked(NewTributeCompletedEvent(deal.TributePhase))
 
 		// 启动游戏阶段（包括创建第一个trick和设置状态）
 		err = deal.StartPlayingPhase()
@@ -1184,23 +1074,7 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 	}
 
 	// 发送增强的选择事件
-	ge.emitEvent(&GameEvent{
-		Type: EventTributeSelected,
-		Data: map[string]interface{}{
-			// 保留现有字段
-			"action": "select",
-			"player": playerID,
-			"cardID": cardID,
-
-			// 新增字段
-			"selected_card":     selectedCard,
-			"remaining_options": remainingOptions,
-			"selection_order":   selectionOrder,
-			"is_timeout":        false, // 正常选择，非超时
-		},
-		Timestamp:  time.Now(),
-		PlayerSeat: playerID,
-	})
+	ge.emitEventLocked(NewTributeSelectedEvent("select", playerID, cardID, selectedCard, remainingOptions, selectionOrder, false))
 
 	return nil
 }
@@ -1236,26 +1110,20 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 		}
 	}
 
-	// 找到还贡的目标玩家
+	// Find the target player (the original giver who should receive the return tribute)
+	// TributeMap[giver] = receiver, so we need to find giver where receiver == playerID
 	var targetPlayer int = -1
 	for giver, receiver := range deal.TributePhase.TributeMap {
-		if receiver == playerID && receiver != -1 {
+		// receiver == -1 means tribute to pool (double down scenario), skip those
+		// We're looking for direct tribute where this player (playerID) is the receiver
+		if receiver == playerID {
 			targetPlayer = giver
 			break
 		}
 	}
 
-	// 发送增强的还贡事件
-	ge.emitEvent(&GameEvent{
-		Type: EventReturnTribute,
-		Data: map[string]interface{}{
-			"player":        playerID,
-			"return_card":   returnCard,
-			"target_player": targetPlayer,
-		},
-		Timestamp:  time.Now(),
-		PlayerSeat: playerID,
-	})
+	// Send enhanced return tribute event
+	ge.emitEventLocked(NewReturnTributeEvent(playerID, returnCard, targetPlayer))
 
 	return nil
 }

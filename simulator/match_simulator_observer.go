@@ -353,26 +353,22 @@ func (mso *MatchSimulatorObserver) handleTrickStarted(event *sdk.GameEvent) {
 		if leader, ok := data["leader"].(int); ok {
 			mso.log(fmt.Sprintf("Event: New Trick Started, Leader: Player %d", leader))
 
-			// 输出每个玩家的手牌信息（从事件数据中获取，避免死锁）
-			if mso.verbose {
-				if playerHands, ok := data["player_hands"].(map[int][]*sdk.Card); ok {
-					mso.log("=== Player Hands at Trick Start ===")
-					for playerSeat := 0; playerSeat < 4; playerSeat++ {
-						if cards, exists := playerHands[playerSeat]; exists {
-							var cardStrs []string
-							for _, card := range cards {
-								cardStrs = append(cardStrs, card.ToShortString())
-							}
-							mso.log(fmt.Sprintf("Player %d (%d cards): [%s]",
-								playerSeat, len(cards), strings.Join(cardStrs, ",")))
-						} else {
-							mso.log(fmt.Sprintf("Player %d: No cards", playerSeat))
+			if mso.verbose && mso.engine != nil {
+				mso.log("=== Player Hands at Trick Start ===")
+				for playerSeat := 0; playerSeat < 4; playerSeat++ {
+					playerView := mso.engine.GetPlayerView(playerSeat)
+					if playerView != nil && playerView.PlayerCards != nil {
+						var cardStrs []string
+						for _, card := range playerView.PlayerCards {
+							cardStrs = append(cardStrs, card.ToShortString())
 						}
+						mso.log(fmt.Sprintf("Player %d (%d cards): [%s]",
+							playerSeat, len(playerView.PlayerCards), strings.Join(cardStrs, ",")))
+					} else {
+						mso.log(fmt.Sprintf("Player %d: No cards", playerSeat))
 					}
-					mso.log("====================================")
-				} else {
-					mso.log(fmt.Sprintf("New Trick Started (Leader: Player %d) - Hand details not available", leader))
 				}
+				mso.log("====================================")
 			}
 		}
 	}

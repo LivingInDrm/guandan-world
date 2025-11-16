@@ -28,7 +28,7 @@
 ### 4. 出牌阶段（Trick）事件
 | 事件类型 | 触发时机 | 数据内容 | 接收对象 |
 |---------|---------|---------|---------|
-| **EventTrickStarted** | 新的 trick 开始（pre-action） | trick、leader、current_turn、player_hands | 所有玩家 |
+| **EventTrickStarted** | 新的 trick 开始（pre-action） | trick、leader、current_turn | 所有玩家 |
 | **EventPlayerPlayed** | 玩家出牌 | player_seat、cards、deal_state | 所有玩家 |
 | **EventPlayerPassed** | 玩家过牌 | player_seat、deal_state | 所有玩家 |
 | **EventTrickEnded** | trick 结束（post-action） | trick、winner、next_leader | 所有玩家 |
@@ -119,11 +119,11 @@ func (ge *GameEngine) emitEvent(event *GameEvent) {
 #### 步骤 2：GameDriver 注册和转发
 ```go
 // game_driver.go - RunMatch()
-gd.engine.RegisterEventHandler(EventMatchStarted, gd.handleEngineEvent)
-gd.engine.RegisterEventHandler(EventDealStarted, gd.handleEngineEvent)
+gd.engine.RegisterObserver(EventMatchStarted, gd)
+gd.engine.RegisterObserver(EventDealStarted, gd)
 // ... 注册所有事件类型
 
-func (gd *GameDriver) handleEngineEvent(event *GameEvent) {
+func (gd *GameDriver) OnGameEvent(event *GameEvent) {
     gd.notifyObservers(event)
 }
 
@@ -141,6 +141,11 @@ func (gd *GameDriver) notifyObservers(event *GameEvent) {
 **配置项**：
 - `AsyncEventHandling = false`（默认）：**同步处理确保顺序**
 - `AsyncEventHandling = true`：异步处理提升性能
+
+> **API 更新说明**: 
+> - 推荐使用 `RegisterObserver(eventType, observer)` 或 `On(eventType, handler)` 方法注册事件
+> - `RegisterEventHandler` 方法已被标记为废弃（Deprecated），但仍保留以保持向后兼容
+> - 新代码应使用新的 API
 
 #### 步骤 3：WebSocketObserver 处理
 ```go
@@ -218,7 +223,7 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 #### Pre-Action 检查
 - **检查内容**：trick 是否处于 `TrickStatusWaiting`
 - **触发事件**：`EventTrickStarted`
-- **包含数据**：trick、leader、current_turn、**player_hands（所有玩家手牌快照）**
+- **包含数据**：trick、leader、current_turn
 
 #### Post-Action 检查
 - **检查内容**：
@@ -369,58 +374,44 @@ func (ge *GameEngine) eventDispatcher() {
 }
 ```
 
-#### 问题 2：事件数据冗余
+#### 问题 2：事件数据冗余（✅ 已修复）
 
 **问题描述**：
-- `EventTrickStarted` 包含 `player_hands`（所有玩家手牌）
+- `EventTrickStarted` 和 `EventCardsDealt` 包含敏感的玩家手牌信息
 - 通过 `MSG_GAME_EVENT` 广播时，泄露了私有信息
 
-**代码位置**：
+**修复方案**：
+从 SDK 源头彻底移除敏感数据
+
+1. **EventTrickStarted 修复**：
+   - 移除 `NewTrickStartedEvent()` 的 `playerHands` 参数
+   - 从源头消除手牌数据收集
+   
+2. **EventCardsDealt 修复**：
+   - 移除 `NewCardsDealtEvent()` 的 `playerCards` 参数
+   - 事件只包含消息通知，不包含任何手牌数据
+   - 玩家手牌通过 `MSG_PLAYER_VIEW` 单独发送
+
+**修复后数据结构**：
 ```go
-// game_engine.go:796
-playerHands := make(map[int][]*Card)
-for i := 0; i < 4; i++ {
-    if deal.PlayerCards[i] != nil {
-        handCopy := make([]*Card, len(deal.PlayerCards[i]))
-        copy(handCopy, deal.PlayerCards[i])
-        playerHands[i] = handCopy  // 包含所有玩家手牌！
-    }
+// EventTrickStarted - 只包含公共信息
+Data: {
+    "trick":        deal.CurrentTrick,
+    "leader":       deal.CurrentTrick.Leader,
+    "current_turn": deal.CurrentTrick.CurrentTurn,
+}
+
+// EventCardsDealt - 只包含通知消息
+Data: {
+    "message": "Cards dealt to all players",
 }
 ```
 
-**影响**：
-- 安全风险：前端 JS 可以访问其他玩家手牌
-- 网络浪费：不必要的数据传输
-
-**建议修复**：
-```go
-// 方案 1：移除 player_hands 字段
-trickStartedEvent := &GameEvent{
-    Type: EventTrickStarted,
-    Data: map[string]interface{}{
-        "trick":        deal.CurrentTrick,
-        "leader":       deal.CurrentTrick.Leader,
-        "current_turn": deal.CurrentTrick.CurrentTurn,
-        // 移除 "player_hands": playerHands,
-    },
-    Timestamp: time.Now(),
-}
-
-// 方案 2：在 WebSocketObserver 中过滤敏感数据
-func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
-    // 克隆事件数据并移除敏感信息
-    eventData := filterSensitiveData(event.Data)
-    
-    wsMessage := &websocket.WSMessage{
-        Type: websocket.MSG_GAME_EVENT,
-        Data: map[string]interface{}{
-            "event_type": string(event.Type),
-            "event_data": eventData,  // 已过滤
-        },
-    }
-    wso.wsManager.BroadcastToRoom(wso.roomID, wsMessage)
-}
-```
+**安全保障**：
+- ✅ SDK 层：事件从源头不包含任何玩家私有手牌
+- ✅ MSG_GAME_EVENT：广播的事件数据无敏感信息
+- ✅ MSG_PLAYER_VIEW：每个玩家只能看到自己的手牌
+- ✅ 网络传输：减少冗余数据
 
 #### 问题 3：Player View 发送频率过高
 

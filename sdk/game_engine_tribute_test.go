@@ -372,16 +372,16 @@ func TestGetTributeStatus(t *testing.T) {
 func TestTributeEventHandling(t *testing.T) {
 	engine := NewGameEngine()
 
-	// Track events
-	var receivedEvents []*GameEvent
-	engine.RegisterEventHandler(EventTributeCompleted, func(event *GameEvent) {
-		receivedEvents = append(receivedEvents, event)
+	// Track events using channel for thread-safe communication
+	eventChan := make(chan *GameEvent, 10)
+	engine.On(EventTributeCompleted, func(event *GameEvent) {
+		eventChan <- event
 	})
-	engine.RegisterEventHandler(EventTributeSelected, func(event *GameEvent) {
-		receivedEvents = append(receivedEvents, event)
+	engine.On(EventTributeSelected, func(event *GameEvent) {
+		eventChan <- event
 	})
-	engine.RegisterEventHandler(EventReturnTribute, func(event *GameEvent) {
-		receivedEvents = append(receivedEvents, event)
+	engine.On(EventReturnTribute, func(event *GameEvent) {
+		eventChan <- event
 	})
 
 	// Set up match
@@ -432,8 +432,21 @@ func TestTributeEventHandling(t *testing.T) {
 	// Process again to complete
 	engine.ProcessTributePhase()
 
-	// Give time for events to be processed
-	time.Sleep(100 * time.Millisecond)
+	// Collect events with timeout - use a loop that exits on timeout
+	var receivedEvents []*GameEvent
+	timeout := time.After(1 * time.Second)
+	collecting := true
+	for collecting {
+		select {
+		case event := <-eventChan:
+			receivedEvents = append(receivedEvents, event)
+			if len(receivedEvents) >= 2 {
+				collecting = false
+			}
+		case <-timeout:
+			collecting = false
+		}
+	}
 
 	// Check events were received
 	if len(receivedEvents) < 2 {

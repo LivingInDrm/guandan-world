@@ -57,18 +57,6 @@ type PlayerInputProvider interface {
 	RequestReturnTribute(ctx context.Context, playerSeat int, hand []*Card) (*Card, error)
 }
 
-// EventObserver 定义事件观察者接口
-// 用于观察和响应游戏事件，但不影响游戏流程
-type EventObserver interface {
-	// OnGameEvent 处理游戏事件
-	// 参数:
-	//   event: 游戏事件
-	// 功能说明:
-	//   - 该方法应该快速执行，不应阻塞游戏流程
-	//   - 主要用于日志记录、统计分析、UI更新等
-	OnGameEvent(event *GameEvent)
-}
-
 // GameDriverConfig 游戏驱动器配置
 type GameDriverConfig struct {
 	// 超时配置
@@ -104,7 +92,12 @@ type GameDriver struct {
 	engine        GameEngineInterface // 游戏引擎接口
 	inputProvider PlayerInputProvider // 玩家输入提供者
 	observers     []EventObserver     // 事件观察者列表
+	observersMu   sync.RWMutex        // 保护观察者列表的读写锁
 	config        *GameDriverConfig   // 驱动器配置
+
+	// 事件系统
+	registeredWithEngine bool       // 标记是否已向引擎注册为观察者（防止重复注册）
+	registrationMu       sync.Mutex // 保护注册状态的互斥锁
 
 	// 超时管理
 	timeoutStats  map[int]*PlayerTimeoutStats // 超时统计 (座位号 -> 统计信息)
@@ -139,12 +132,25 @@ func (gd *GameDriver) SetInputProvider(provider PlayerInputProvider) {
 }
 
 // AddObserver 添加事件观察者
+// 如果观察者已存在，不会重复添加
 func (gd *GameDriver) AddObserver(observer EventObserver) {
+	gd.observersMu.Lock()
+	defer gd.observersMu.Unlock()
+	
+	// 检查是否已存在，避免重复添加
+	for _, obs := range gd.observers {
+		if obs == observer {
+			return
+		}
+	}
+	
 	gd.observers = append(gd.observers, observer)
 }
 
 // RemoveObserver 移除事件观察者
 func (gd *GameDriver) RemoveObserver(observer EventObserver) {
+	gd.observersMu.Lock()
+	defer gd.observersMu.Unlock()
 	for i, obs := range gd.observers {
 		if obs == observer {
 			gd.observers = append(gd.observers[:i], gd.observers[i+1:]...)
@@ -153,15 +159,45 @@ func (gd *GameDriver) RemoveObserver(observer EventObserver) {
 	}
 }
 
+// OnGameEvent 实现 EventObserver 接口
+// GameDriver 作为 EventObserver，接收来自 GameEngine 的事件并转发给自己的观察者
+func (gd *GameDriver) OnGameEvent(event *GameEvent) {
+	gd.notifyObservers(event)
+}
+
 // notifyObservers 通知所有观察者
 func (gd *GameDriver) notifyObservers(event *GameEvent) {
-	for _, observer := range gd.observers {
+	// Safely read and copy the observer list to avoid holding the lock during callback execution
+	gd.observersMu.RLock()
+	observersCopy := make([]EventObserver, len(gd.observers))
+	copy(observersCopy, gd.observers)
+	gd.observersMu.RUnlock()
+
+	for _, observer := range observersCopy {
 		if gd.config.AsyncEventHandling {
-			// 异步处理事件
-			go observer.OnGameEvent(event)
+			// 异步处理事件，使用 goroutine
+			obs := observer
+			evt := event
+			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						// 捕获 panic，防止崩溃
+						fmt.Printf("[GameDriver] Observer panic for %s: %v\n", evt.Type, r)
+					}
+				}()
+				obs.OnGameEvent(evt)
+			}()
 		} else {
 			// 同步处理事件，确保顺序
-			observer.OnGameEvent(event)
+			// 即使是同步模式也要防止 panic 影响后续观察者
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						fmt.Printf("[GameDriver] Observer panic for %s: %v\n", event.Type, r)
+					}
+				}()
+				observer.OnGameEvent(event)
+			}()
 		}
 	}
 }
@@ -267,24 +303,38 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 		gd.cancelMu.Unlock()
 	}()
 
-	// 注册内部事件处理器，用于通知观察者
-	gd.engine.RegisterEventHandler(EventMatchStarted, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventDealStarted, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventPlayerPlayed, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventPlayerPassed, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventTrickStarted, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventTrickEnded, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventDealEnded, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventMatchEnded, gd.handleEngineEvent)
-
-	// 注册上贡相关事件处理器
-	gd.engine.RegisterEventHandler(EventTributeRulesSet, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventTributeImmunity, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventTributePoolCreated, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventTributeGiven, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventTributeSelected, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventReturnTribute, gd.handleEngineEvent)
-	gd.engine.RegisterEventHandler(EventTributeCompleted, gd.handleEngineEvent)
+	// 注册所有引擎事件，让 GameDriver 作为 EventObserver 统一接收
+	// GameDriver 会将这些事件转发给自己的观察者
+	// 使用一次性注册机制避免重复注册造成的内存泄漏和重复通知
+	gd.registrationMu.Lock()
+	if !gd.registeredWithEngine {
+		allEventTypes := []GameEventType{
+			EventMatchStarted,
+			EventDealStarted,
+			EventCardsDealt, // 添加发牌完成事件（未来可能使用）
+			EventTributeStarted, // 添加贡牌开始事件（未来可能使用）
+			EventPlayerPlayed,
+			EventPlayerPassed,
+			EventTrickStarted,
+			EventTrickEnded,
+			EventDealEnded,
+			EventMatchEnded,
+			EventTributeRulesSet,
+			EventTributeImmunity,
+			EventTributePoolCreated,
+			EventTributeGiven,
+			EventTributeSelected,
+			EventReturnTribute,
+			EventTributeCompleted,
+			EventPlayerDisconnect,
+			EventPlayerReconnect,
+		}
+		for _, eventType := range allEventTypes {
+			gd.engine.RegisterObserver(eventType, gd)
+		}
+		gd.registeredWithEngine = true
+	}
+	gd.registrationMu.Unlock()
 
 	// 开始比赛
 	if err := gd.engine.StartMatch(players); err != nil {
@@ -670,11 +720,6 @@ func (gd *GameDriver) runTrick() error {
 	return nil
 }
 
-// handleEngineEvent 处理引擎事件并转发给观察者
-func (gd *GameDriver) handleEngineEvent(event *GameEvent) {
-	gd.notifyObservers(event)
-}
-
 // handleTimeout 处理玩家超时
 // actionType: "play_decision", "tribute_select", "return_tribute"
 func (gd *GameDriver) handleTimeout(playerSeat int, actionType string) {
@@ -687,13 +732,6 @@ func (gd *GameDriver) handleTimeout(playerSeat int, actionType string) {
 	}
 
 	// 发出超时事件
-	event := &GameEvent{
-		Type:       EventPlayerTimeout,
-		PlayerSeat: playerSeat,
-		Data: map[string]interface{}{
-			"action": actionType, // 与GameEngine保持一致的key
-		},
-		Timestamp: time.Now(),
-	}
+	event := NewPlayerTimeoutEvent(playerSeat, actionType)
 	gd.notifyObservers(event)
 }

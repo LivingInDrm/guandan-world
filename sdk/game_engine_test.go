@@ -20,8 +20,8 @@ func TestNewGameEngine(t *testing.T) {
 		t.Errorf("New GameEngine should have status %v, got %v", GameStatusWaiting, engine.status)
 	}
 
-	if engine.eventHandlers == nil {
-		t.Error("GameEngine should have initialized event handlers map")
+	if engine.observers == nil {
+		t.Error("GameEngine should have initialized observers map")
 	}
 
 	if engine.createdAt.IsZero() {
@@ -32,19 +32,17 @@ func TestNewGameEngine(t *testing.T) {
 func TestGameEngineEventSystem(t *testing.T) {
 	engine := NewGameEngine()
 
-	// Test event handler registration
-	eventReceived := false
-	var receivedEvent *GameEvent
+	// Test event handler registration with channel for synchronization
+	eventChan := make(chan *GameEvent, 1)
 
 	handler := func(event *GameEvent) {
-		eventReceived = true
-		receivedEvent = event
+		eventChan <- event
 	}
 
-	engine.RegisterEventHandler(EventMatchStarted, handler)
+	engine.On(EventMatchStarted, handler)
 
 	// Check that handler was registered
-	if len(engine.eventHandlers[EventMatchStarted]) != 1 {
+	if len(engine.observers[EventMatchStarted]) != 1 {
 		t.Error("Event handler should be registered")
 	}
 
@@ -57,38 +55,36 @@ func TestGameEngineEventSystem(t *testing.T) {
 
 	engine.emitEvent(testEvent)
 
-	// Give goroutine time to execute
-	time.Sleep(10 * time.Millisecond)
-
-	if !eventReceived {
-		t.Error("Event handler should have been called")
-	}
-
-	if receivedEvent == nil {
-		t.Error("Event handler should have received the event")
-	}
-
-	if receivedEvent.Type != EventMatchStarted {
-		t.Errorf("Expected event type %v, got %v", EventMatchStarted, receivedEvent.Type)
+	// Wait for event with timeout
+	select {
+	case receivedEvent := <-eventChan:
+		if receivedEvent == nil {
+			t.Error("Event handler should have received the event")
+		}
+		if receivedEvent.Type != EventMatchStarted {
+			t.Errorf("Expected event type %v, got %v", EventMatchStarted, receivedEvent.Type)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Error("Event handler should have been called within timeout")
 	}
 }
 
 func TestGameEngineMultipleEventHandlers(t *testing.T) {
 	engine := NewGameEngine()
 
-	// Register multiple handlers for the same event
-	callCount := 0
+	// Register multiple handlers for the same event with channel for synchronization
+	callChan := make(chan struct{}, 2)
 
 	handler1 := func(event *GameEvent) {
-		callCount++
+		callChan <- struct{}{}
 	}
 
 	handler2 := func(event *GameEvent) {
-		callCount++
+		callChan <- struct{}{}
 	}
 
-	engine.RegisterEventHandler(EventPlayerPlayed, handler1)
-	engine.RegisterEventHandler(EventPlayerPlayed, handler2)
+	engine.On(EventPlayerPlayed, handler1)
+	engine.On(EventPlayerPlayed, handler2)
 
 	// Emit event
 	testEvent := &GameEvent{
@@ -99,11 +95,16 @@ func TestGameEngineMultipleEventHandlers(t *testing.T) {
 
 	engine.emitEvent(testEvent)
 
-	// Give goroutines time to execute
-	time.Sleep(10 * time.Millisecond)
-
-	if callCount != 2 {
-		t.Errorf("Expected 2 handler calls, got %d", callCount)
+	// Wait for both handlers to be called
+	callCount := 0
+	timeout := time.After(500 * time.Millisecond)
+	for callCount < 2 {
+		select {
+		case <-callChan:
+			callCount++
+		case <-timeout:
+			t.Fatalf("Expected 2 handler calls, got %d within timeout", callCount)
+		}
 	}
 }
 
@@ -286,7 +287,7 @@ func TestGameEngineThreadSafety(t *testing.T) {
 			handler := func(event *GameEvent) {
 				// Do nothing
 			}
-			engine.RegisterEventHandler(EventPlayerPlayed, handler)
+			engine.On(EventPlayerPlayed, handler)
 			done <- true
 		}(i)
 	}
@@ -297,8 +298,8 @@ func TestGameEngineThreadSafety(t *testing.T) {
 	}
 
 	// Check that all handlers were registered
-	if len(engine.eventHandlers[EventPlayerPlayed]) != 10 {
-		t.Errorf("Expected 10 event handlers, got %d", len(engine.eventHandlers[EventPlayerPlayed]))
+	if len(engine.observers[EventPlayerPlayed]) != 10 {
+		t.Errorf("Expected 10 event handlers, got %d", len(engine.observers[EventPlayerPlayed]))
 	}
 }
 
