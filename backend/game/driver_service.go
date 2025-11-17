@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"guandan-world/backend/websocket"
+	eventpb "guandan-world/proto/event"
 	"guandan-world/sdk"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // getEnvironment returns the current environment (test, dev, prod)
@@ -630,16 +632,23 @@ func NewWebSocketObserver(roomID string, wsManager WSManagerInterface, engine sd
 
 // OnGameEvent implements sdk.EventObserver
 func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
+	// Serialize the entire event to JSON for the websocket message
+	eventJSON, err := protojson.Marshal(event)
+	if err != nil {
+		log.Printf("Failed to marshal event to JSON: %v", err)
+		return
+	}
+
 	// Convert SDK event to WebSocket message
 	wsMessage := &websocket.WSMessage{
 		Type: websocket.MSG_GAME_EVENT,
 		Data: map[string]interface{}{
-			"event_type":  string(event.Type),
-			"event_data":  event.Data,
-			"timestamp":   event.Timestamp,
-			"player_seat": event.PlayerSeat,
+			"event_type":  event.Type.String(),
+			"event_data":  string(eventJSON),
+			"timestamp":   time.UnixMilli(event.CreatedAtMs),
+			"player_seat": event.ActorSeat,
 		},
-		Timestamp: event.Timestamp,
+		Timestamp: time.UnixMilli(event.CreatedAtMs),
 	}
 
 	// Broadcast to all players in the room
@@ -648,33 +657,33 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 	// Send player-specific views only for key events
 	// These are events where hand cards change or game phase transitions occur
 	switch event.Type {
-	case sdk.EventMatchStarted, // Match begins
-		sdk.EventDealStarted,      // New deal starts
-		sdk.EventCardsDealt,       // Cards dealt to players
-		sdk.EventTributeGiven,     // Tribute given (hand changes)
-		sdk.EventReturnTribute,    // Return tribute (hand changes)
-		sdk.EventTributeCompleted, // Tribute phase completed
-		sdk.EventTrickStarted,     // New trick starts
-		sdk.EventPlayerPlayed,     // Player played cards (hand changes)
-		sdk.EventPlayerPassed,     // Player passed (turn changes)
-		sdk.EventTrickEnded,       // Trick ends
-		sdk.EventDealEnded,        // Deal ends
-		sdk.EventMatchEnded:       // Match ends
+	case eventpb.EventType_EVENT_TYPE_MATCH_STARTED, // Match begins
+		eventpb.EventType_EVENT_TYPE_DEAL_STARTED,                // New deal starts
+		eventpb.EventType_EVENT_TYPE_CARDS_DEALT,                 // Cards dealt to players
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_SUBMITTED,      // Tribute given (hand changes)
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_RETURNED,       // Return tribute (hand changes)
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_COMPLETED,           // Tribute phase completed
+		eventpb.EventType_EVENT_TYPE_TRICK_STARTED,               // New trick starts
+		eventpb.EventType_EVENT_TYPE_PLAYER_PLAYED,               // Player played cards (hand changes)
+		eventpb.EventType_EVENT_TYPE_PLAYER_PASSED,               // Player passed (turn changes)
+		eventpb.EventType_EVENT_TYPE_TRICK_ENDED,                 // Trick ends
+		eventpb.EventType_EVENT_TYPE_DEAL_ENDED,                  // Deal ends
+		eventpb.EventType_EVENT_TYPE_MATCH_ENDED:                 // Match ends
 		wso.sendPlayerViews(event.Type)
 	}
 
 	// Log significant events
 	switch event.Type {
-	case sdk.EventMatchStarted, sdk.EventMatchEnded,
-		sdk.EventDealStarted, sdk.EventDealEnded,
-		sdk.EventTributeCompleted,
-		sdk.EventPlayerTimeout:
-		log.Printf("Game event %s for room %s", event.Type, wso.roomID)
+	case eventpb.EventType_EVENT_TYPE_MATCH_STARTED, eventpb.EventType_EVENT_TYPE_MATCH_ENDED,
+		eventpb.EventType_EVENT_TYPE_DEAL_STARTED, eventpb.EventType_EVENT_TYPE_DEAL_ENDED,
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_COMPLETED,
+		eventpb.EventType_EVENT_TYPE_PLAYER_TIMEOUT:
+		log.Printf("Game event %s for room %s", event.Type.String(), wso.roomID)
 	}
 }
 
 // sendPlayerViews sends player-specific game state to each player
-func (wso *WebSocketObserver) sendPlayerViews(eventType sdk.GameEventType) {
+func (wso *WebSocketObserver) sendPlayerViews(eventType eventpb.EventType) {
 	if wso.engine == nil {
 		return
 	}
@@ -704,7 +713,7 @@ func (wso *WebSocketObserver) sendPlayerViews(eventType sdk.GameEventType) {
 				Type: websocket.MSG_PLAYER_VIEW,
 				Data: map[string]interface{}{
 					"player_view": playerView,
-					"event_type":  eventType,
+					"event_type":  eventType.String(),
 					"player_seat": playerSeat,
 				},
 				Timestamp: time.Now(),

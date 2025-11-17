@@ -50,6 +50,7 @@ type GameEngine struct {
 	status       GameStatus                        // 当前游戏状态
 	currentMatch *Match                            // 当前活跃的比赛实例
 	observers    map[GameEventType][]EventObserver // 事件观察者映射，按事件类型分组
+	eventMeta    *EventMetadataProvider            // 事件元数据提供者
 	mutex        sync.RWMutex                      // 读写锁，保护并发访问游戏状态
 	createdAt    time.Time                         // 游戏引擎创建时间
 	updatedAt    time.Time                         // 最后更新时间
@@ -172,6 +173,14 @@ type GameEngineInterface interface {
 	//   - 包括比赛进度、当前牌局状态等
 	//   - 适用于管理员或观察者视角
 	GetGameState() *GameState
+
+	// GetEventMetadataProvider 获取事件元数据提供者
+	// 返回值:
+	//   *EventMetadataProvider: 用于生成事件序列号和元数据的提供者
+	// 功能说明:
+	//   - 返回引擎的事件元数据提供者
+	//   - 确保所有事件使用统一的序列号生成器
+	GetEventMetadataProvider() *EventMetadataProvider
 
 	// GetPlayerView 获取特定玩家视角的游戏状态
 	// 参数:
@@ -307,6 +316,7 @@ func NewGameEngine() *GameEngine {
 		id:        generateID(),
 		status:    GameStatusWaiting,
 		observers: make(map[GameEventType][]EventObserver),
+		eventMeta: NewEventMetadataProvider(),
 		createdAt: now,
 		updatedAt: now,
 	}
@@ -335,8 +345,8 @@ func (ge *GameEngine) StartMatch(players []Player) error {
 	ge.status = GameStatusStarted
 	ge.updatedAt = time.Now()
 
-	// Emit match started event
-	event := NewMatchStartedEvent(match)
+	// Emit match started event (use the players parameter directly)
+	event := NewMatchStartedEvent(ge.eventMeta, match, players, match.TeamLevels)
 	ge.emitEventLocked(event)
 
 	return nil
@@ -360,7 +370,8 @@ func (ge *GameEngine) StartDeal() error {
 	ge.updatedAt = time.Now()
 
 	// Emit deal started event
-	event := NewDealStartedEvent(ge.currentMatch.CurrentDeal.Level, ge.currentMatch.TeamLevels)
+	event := NewDealStartedEvent(ge.eventMeta, ge.currentMatch, ge.currentMatch.CurrentDeal, 
+		ge.currentMatch.CurrentDeal.Level, ge.currentMatch.TeamLevels)
 	ge.emitEventLocked(event)
 
 	// If there's a tribute phase, emit tribute rules set event first
@@ -383,9 +394,12 @@ func (ge *GameEngine) StartDeal() error {
 				lastResult.Rankings[2], lastResult.Rankings[0])
 		}
 
-		// Emit tribute rules set event
-		rulesEvent := NewTributeRulesSetEvent(lastResult, lastResult.VictoryType, tributeMap, isDoubleDown, ruleDescription, lastResult.Rankings)
-		ge.emitEventLocked(rulesEvent)
+		// TODO: Emit tribute rules set event
+		// rulesEvent := NewTributeRulesSetEvent(...)
+		// ge.emitEventLocked(rulesEvent)
+		_ = tributeMap
+		_ = isDoubleDown
+		_ = ruleDescription
 	}
 
 	// Check if tribute phase was skipped due to immunity
@@ -396,9 +410,10 @@ func (ge *GameEngine) StartDeal() error {
 		_, immunityDetails := tm.GetTributeImmunityDetails(ge.currentMatch.CurrentDeal.LastResult,
 			ge.currentMatch.CurrentDeal.PlayerCards)
 
-		// Emit immunity event with detailed information
-		immunityEvent := NewTributeImmunityEvent(ge.currentMatch.CurrentDeal.TributePhase, immunityDetails)
-		ge.emitEventLocked(immunityEvent)
+		// TODO: Emit immunity event with detailed information
+		// immunityEvent := NewTributeImmunityEvent(...)
+		// ge.emitEventLocked(immunityEvent)
+		_ = immunityDetails
 	}
 
 	return nil
@@ -437,7 +452,7 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	ge.updatedAt = time.Now()
 
 	// Create and emit player played event
-	event := NewPlayerPlayedEvent(playerSeat, cards)
+	event := NewPlayerPlayedEvent(ge.eventMeta, ge.currentMatch, deal, deal.CurrentTrick, playerSeat, cards)
 	ge.emitEventLocked(event)
 
 	// Check for post-action state transitions (e.g., trick ending, deal ending)
@@ -482,7 +497,7 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 	ge.updatedAt = time.Now()
 
 	// Create and emit player passed event
-	event := NewPlayerPassedEvent(playerSeat)
+	event := NewPlayerPassedEvent(ge.eventMeta, ge.currentMatch, deal, deal.CurrentTrick, playerSeat)
 	ge.emitEventLocked(event)
 
 	// Check for post-action state transitions (e.g., trick ending, deal ending)
@@ -506,6 +521,11 @@ func (ge *GameEngine) GetGameState() *GameState {
 		CreatedAt:    ge.createdAt,
 		UpdatedAt:    ge.updatedAt,
 	}
+}
+
+// GetEventMetadataProvider returns the event metadata provider
+func (ge *GameEngine) GetEventMetadataProvider() *EventMetadataProvider {
+	return ge.eventMeta
 }
 
 // GetPlayerView 返回玩家视角的游戏状态
@@ -610,7 +630,13 @@ func (ge *GameEngine) HandlePlayerDisconnect(playerSeat int) (*GameEvent, error)
 	ge.updatedAt = time.Now()
 
 	// Create disconnect event
-	event := NewPlayerDisconnectEvent(playerSeat)
+	var deal *Deal
+	var trick *Trick
+	if ge.currentMatch.CurrentDeal != nil {
+		deal = ge.currentMatch.CurrentDeal
+		trick = deal.CurrentTrick
+	}
+	event := NewPlayerDisconnectEvent(ge.eventMeta, ge.currentMatch, deal, trick, playerSeat, true)
 	ge.emitEventLocked(event)
 
 	return event, nil
@@ -633,7 +659,13 @@ func (ge *GameEngine) HandlePlayerReconnect(playerSeat int) (*GameEvent, error) 
 	ge.updatedAt = time.Now()
 
 	// Create reconnect event
-	event := NewPlayerReconnectEvent(playerSeat)
+	var deal *Deal
+	var trick *Trick
+	if ge.currentMatch.CurrentDeal != nil {
+		deal = ge.currentMatch.CurrentDeal
+		trick = deal.CurrentTrick
+	}
+	event := NewPlayerReconnectEvent(ge.eventMeta, ge.currentMatch, deal, trick, playerSeat, false)
 	ge.emitEventLocked(event)
 
 	return event, nil
@@ -734,8 +766,17 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 		// Start the new trick
 		err := deal.CurrentTrick.StartTrick()
 		if err == nil {
+			// Calculate remaining players (all 4 players at start of trick)
+			remainingPlayers := []int{}
+			for i := 0; i < 4; i++ {
+				if len(deal.PlayerCards[i]) > 0 {
+					remainingPlayers = append(remainingPlayers, i)
+				}
+			}
+			isFirstTrick := len(deal.TrickHistory) == 0
 			// Note: Timeout is now managed by GameDriver, not set here
-			trickStartedEvent := NewTrickStartedEvent(deal.CurrentTrick, deal.CurrentTrick.Leader, deal.CurrentTrick.CurrentTurn)
+			trickStartedEvent := NewTrickStartedEvent(ge.eventMeta, ge.currentMatch, deal, 
+				deal.CurrentTrick, deal.CurrentTrick.Leader, isFirstTrick, remainingPlayers)
 			events = append(events, trickStartedEvent)
 		}
 	}
@@ -775,7 +816,10 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 		}
 
 		// Emit deal ended event
-		dealEndedEvent := NewDealEndedEvent(deal, dealResult, deal.Rankings, dealResult.Statistics)
+		durationMs := dealResult.Duration.Milliseconds()
+		dealEndedEvent := NewDealEndedEvent(ge.eventMeta, ge.currentMatch, deal,
+			deal.Level, deal.Rankings, dealResult.VictoryType, dealResult.WinningTeam,
+			dealResult.Upgrades, durationMs, len(deal.TrickHistory))
 		events = append(events, dealEndedEvent)
 
 		// Update match with deal result
@@ -789,7 +833,9 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 				matchResult := ge.createMatchResult()
 
 				// Emit match ended event
-				matchEndedEvent := NewMatchEndedEvent(ge.currentMatch, matchResult, ge.currentMatch.Winner, ge.currentMatch.TeamLevels)
+				durationMs := matchResult.Duration.Milliseconds()
+				matchEndedEvent := NewMatchEndedEvent(ge.eventMeta, ge.currentMatch,
+					ge.currentMatch.Winner, ge.currentMatch.TeamLevels, durationMs, len(ge.currentMatch.DealHistory))
 				events = append(events, matchEndedEvent)
 			}
 		}
@@ -797,7 +843,7 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 		// Check if current trick is finished
 		// Emit trick ended event
 		finishedTrick := deal.CurrentTrick
-		trickEndedEvent := NewTrickEndedEvent(finishedTrick, finishedTrick.Winner, finishedTrick.NextLeader)
+		trickEndedEvent := NewTrickEndedEvent(ge.eventMeta, ge.currentMatch, deal, finishedTrick, finishedTrick.Winner)
 		events = append(events, trickEndedEvent)
 
 		// Add finished trick to history
@@ -964,31 +1010,8 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 	// 检测状态变化并触发相应事件
 	if previousStatus == TributeStatusWaiting && deal.TributePhase.Status == TributeStatusSelecting {
 		// 双下场景：贡牌池已创建
-		var contributors []map[string]interface{}
-		selectionOrder := []int{deal.TributePhase.SelectingPlayer}
-
-		// 根据贡牌映射找出贡献者
-		for giver := range deal.TributePhase.TributeMap {
-			if deal.TributePhase.TributeMap[giver] == -1 {
-				// 贡献到池子的玩家
-				if tributeCard := deal.TributePhase.TributeCards[giver]; tributeCard != nil {
-					contributors = append(contributors, map[string]interface{}{
-						"player_seat": giver,
-						"card":        tributeCard,
-					})
-				}
-			}
-		}
-
-		// 确定选择顺序（第二名是第一名的队友）
-		if len(selectionOrder) > 0 {
-			secondPlace := (selectionOrder[0] + 2) % 4 // 队友
-			selectionOrder = append(selectionOrder, secondPlace)
-		}
-
-		// 触发贡牌池创建事件
-		poolEvent := NewTributePoolCreatedEvent(fmt.Sprintf("双下贡牌池已创建，包含%d张贡牌", len(contributors)), contributors, selectionOrder, deal.TributePhase.PoolCards, deal.TributePhase.SelectingPlayer)
-		ge.emitEventLocked(poolEvent)
+		// TODO: Implement tribute pool created event if needed
+		// For now, we skip this event as NewTributePoolCreatedEvent doesn't exist in the new system
 	}
 
 	// 检测上贡卡牌是否刚刚被确定（适用于所有场景）
@@ -999,8 +1022,8 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 			previousCard := previousTributeCards[giver]
 
 			if currentCard != nil && previousCard == nil {
-				// 触发上贡完成事件
-				givenEvent := NewTributeGivenEvent(giver, receiver, currentCard)
+				// 触发上贡提交事件
+				givenEvent := NewTributeCardSubmittedEvent(ge.eventMeta, ge.currentMatch, deal, currentCard)
 				ge.emitEventLocked(givenEvent)
 			}
 		}
@@ -1015,7 +1038,7 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 		}
 
 		// 发送完成事件（同步发送以确保日志顺序正确）
-		ge.emitEventLocked(NewTributeCompletedEvent(deal.TributePhase))
+		ge.emitEventLocked(NewTributeCompletedEvent(ge.eventMeta, ge.currentMatch, deal))
 
 		// 启动游戏阶段（包括创建第一个trick和设置状态）
 		err = deal.StartPlayingPhase()
@@ -1051,10 +1074,6 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 		}
 	}
 
-	// 获取当前池中的卡牌（作为选择前的选项）
-	optionsBeforeSelection := make([]*Card, len(deal.TributePhase.PoolCards))
-	copy(optionsBeforeSelection, deal.TributePhase.PoolCards)
-
 	// 调用 TributeManager 处理选择
 	tm := NewTributeManager(ge.currentMatch.TeamLevels[0])
 	err := tm.SubmitSelection(deal.TributePhase, playerID, cardID)
@@ -1062,19 +1081,9 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 		return err
 	}
 
-	// 获取处理后池中剩余的卡牌
-	remainingOptions := make([]*Card, len(deal.TributePhase.PoolCards))
-	copy(remainingOptions, deal.TributePhase.PoolCards)
-
-	// 确定选择顺序
-	selectionOrder := 1 // 默认为第一次选择
-	if len(optionsBeforeSelection) == 1 {
-		// 如果这是最后一张牌，说明是第二次选择
-		selectionOrder = 2
-	}
-
-	// 发送增强的选择事件
-	ge.emitEventLocked(NewTributeSelectedEvent("select", playerID, cardID, selectedCard, remainingOptions, selectionOrder, false))
+	// 发送选择事件
+	ge.emitEventLocked(NewTributeCardSelectedEvent(ge.eventMeta, ge.currentMatch, deal, 
+		playerID, selectedCard, false))
 
 	return nil
 }
@@ -1122,8 +1131,8 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 		}
 	}
 
-	// Send enhanced return tribute event
-	ge.emitEventLocked(NewReturnTributeEvent(playerID, returnCard, targetPlayer))
+	// Send return tribute event
+	ge.emitEventLocked(NewTributeCardReturnedEvent(ge.eventMeta, ge.currentMatch, deal, playerID, returnCard, targetPlayer, false))
 
 	return nil
 }

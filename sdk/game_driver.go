@@ -89,11 +89,11 @@ func DefaultGameDriverConfig() *GameDriverConfig {
 // GameDriver 游戏驱动器，负责协调游戏引擎和输入提供者
 // 这是新架构的核心组件，将游戏循环逻辑封装在SDK内部
 type GameDriver struct {
-	engine        GameEngineInterface // 游戏引擎接口
-	inputProvider PlayerInputProvider // 玩家输入提供者
-	observers     []EventObserver     // 事件观察者列表
-	observersMu   sync.RWMutex        // 保护观察者列表的读写锁
-	config        *GameDriverConfig   // 驱动器配置
+	engine        GameEngineInterface  // 游戏引擎接口
+	inputProvider PlayerInputProvider  // 玩家输入提供者
+	observers     []EventObserver      // 事件观察者列表
+	observersMu   sync.RWMutex         // 保护观察者列表的读写锁
+	config        *GameDriverConfig    // 驱动器配置
 
 	// 事件系统
 	registeredWithEngine bool       // 标记是否已向引擎注册为观察者（防止重复注册）
@@ -731,7 +731,24 @@ func (gd *GameDriver) handleTimeout(playerSeat int, actionType string) {
 		gd.incrementTributeTimeout(playerSeat)
 	}
 
-	// 发出超时事件
-	event := NewPlayerTimeoutEvent(playerSeat, actionType)
+	// 获取当前游戏状态
+	var match *Match
+	var deal *Deal
+	var trick *Trick
+	
+	gameState := gd.engine.GetGameState()
+	if gameState != nil && gameState.CurrentMatch != nil {
+		match = gameState.CurrentMatch
+		if match.CurrentDeal != nil {
+			deal = match.CurrentDeal
+			if deal.CurrentTrick != nil {
+				trick = deal.CurrentTrick
+			}
+		}
+	}
+
+	// 使用engine的EventMetadataProvider发出超时事件
+	eventMeta := gd.engine.GetEventMetadataProvider()
+	event := NewPlayerTimeoutEvent(eventMeta, match, deal, trick, playerSeat, actionType)
 	gd.notifyObservers(event)
 }

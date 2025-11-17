@@ -1,0 +1,360 @@
+syntax = "proto3";
+
+package guandan.event;
+
+option go_package = "guandan-world/proto/event";
+
+// ========================================
+// 基础类型定义
+// ========================================
+
+// Card 表示一张扑克牌
+// 简化版本，只包含用于前端渲染和逻辑判断的核心字段
+message Card {
+  // 花色编号：0=黑桃(Spade), 1=红桃(Heart), 2=梅花(Club), 3=方块(Diamond), -1=Joker
+  int32 suit = 1;
+  
+  // 牌的数字值，范围 1-16
+  // 1=A, 11=J, 12=Q, 13=K, 14=小王, 15=大王, 16=当前级牌
+  int32 rank = 2;
+  
+  // 牌在整副牌中的唯一索引，范围 0-107
+  // 用于精确定位某张具体的牌（避免相同花色和数字的牌混淆）
+  int32 deck_index = 3;
+}
+
+// PlayerBasicInfo 玩家基本信息（公开信息）
+message PlayerBasicInfo {
+  // 玩家唯一标识符
+  string id = 1;
+  
+  // 玩家用户名
+  string username = 2;
+  
+  // 玩家座位号，范围 0-3
+  int32 seat = 3;
+  
+  // 所属队伍编号，0 或 1
+  int32 team_num = 4;
+}
+
+// VictoryType 胜利类型枚举
+// 定义不同的获胜情况及对应的升级数
+enum VictoryType {
+  // 未指定（默认值）
+  VICTORY_TYPE_UNSPECIFIED = 0;
+  
+  // 双下：同队1、2名（升3级）
+  VICTORY_TYPE_DOUBLE_DOWN = 1;
+  
+  // 单下：同队1、3名（升2级）
+  VICTORY_TYPE_SINGLE_LAST = 2;
+  
+  // 末游：同队1、4名（升1级）
+  VICTORY_TYPE_PARTNER_LAST = 3;
+}
+
+// EventType 游戏事件类型枚举
+// 用于快速识别事件类型，无需检查 payload
+enum EventType {
+  // 未指定（默认值）
+  EVENT_TYPE_UNSPECIFIED = 0;
+  
+  // 比赛级事件
+  EVENT_TYPE_MATCH_STARTED = 1;
+  EVENT_TYPE_MATCH_ENDED = 2;
+  
+  // 局级事件
+  EVENT_TYPE_DEAL_STARTED = 10;
+  EVENT_TYPE_CARDS_DEALT = 11;
+  EVENT_TYPE_DEAL_ENDED = 12;
+  
+  // 进贡阶段事件
+  EVENT_TYPE_TRIBUTE_STARTED = 20;
+  EVENT_TYPE_TRIBUTE_EXEMPTED = 21;
+  EVENT_TYPE_TRIBUTE_CARD_SUBMITTED = 22;
+  EVENT_TYPE_TRIBUTE_CARD_SELECTED = 23;
+  EVENT_TYPE_TRIBUTE_CARD_RETURNED = 24;
+  EVENT_TYPE_TRIBUTE_COMPLETED = 25;
+  
+  // 轮次级事件
+  EVENT_TYPE_TRICK_STARTED = 30;
+  EVENT_TYPE_TRICK_ENDED = 31;
+  
+  // 玩家行为事件
+  EVENT_TYPE_PLAYER_PLAYED = 40;
+  EVENT_TYPE_PLAYER_PASSED = 41;
+  EVENT_TYPE_PLAYER_TIMEOUT = 42;
+  EVENT_TYPE_PLAYER_DISCONNECT = 43;
+  EVENT_TYPE_PLAYER_RECONNECT = 44;
+}
+
+// ========================================
+// 比赛级事件 Payload (Match-level)
+// ========================================
+
+// MatchStartedPayload 比赛开始事件数据
+message MatchStartedPayload {
+  // 4名玩家信息（按座位号0-3顺序）
+  repeated PlayerBasicInfo players = 1;
+  
+  // 初始等级 [team0_level, team1_level]，通常为 [2, 2]
+  repeated int32 initial_levels = 2;
+}
+
+// MatchEndedPayload 比赛结束事件数据
+message MatchEndedPayload {
+  // 获胜队伍编号，0 或 1
+  int32 winner = 1;
+  
+  // 最终等级 [team0_level, team1_level]
+  repeated int32 final_levels = 2;
+  
+  // 比赛总时长（毫秒）
+  int64 duration_ms = 3;
+  
+  // 总局数
+  int32 total_deals = 4;
+}
+
+// ========================================
+// 局级事件 Payload (Deal-level)
+// ========================================
+
+// DealStartedPayload 牌局开始事件数据
+message DealStartedPayload {
+  // 当前打的等级（逢人配的基准牌值）
+  int32 deal_level = 1;
+  
+  // 两队当前等级 [team0_level, team1_level]
+  repeated int32 team_levels = 2;
+}
+
+// CardsDealtPayload 发牌完成事件数据
+message CardsDealtPayload {
+  // 每人分得的牌数（通常为27张）
+  int32 card_count = 1;
+}
+
+// DealEndedPayload 牌局结束事件数据
+message DealEndedPayload {
+
+  // 当前打的等级（逢人配的基准牌值）
+  int32 deal_level = 1;
+
+  // 玩家排名（座位号）[第1名, 第2名, 第3名, 第4名]
+  repeated int32 rankings = 2;
+  
+  // 胜利类型
+  VictoryType victory_type = 3;
+  
+  // 获胜队伍编号，0 或 1
+  int32 winning_team = 4;
+  
+  // 等级变化 [team0_change, team1_change]
+  // 正数表示升级，负数表示降级（通常不会降级）
+  repeated int32 level_change = 5;
+  
+  // 本局耗时（毫秒）
+  int64 duration_ms = 6;
+  
+  // 总轮次数
+  int32 trick_count = 7;
+}
+
+// ========================================
+// 进贡阶段事件 Payload (Tribute-level)
+// ========================================
+
+enum TributeType {
+  TRIBUTE_TYPE_UNSPECIFIED = 0;
+  TRIBUTE_TYPE_DOUBLE_DOWN = 1;
+  TRIBUTE_TYPE_SINGLE_LAST = 2;
+  TRIBUTE_TYPE_PARTNER_LAST = 3;
+  TRIBUTE_TYPE_NONE = 4;
+}
+
+// TributePhaseStartedPayload 进贡阶段开始事件数据
+message TributeStartedPayload {
+  // 进贡类型："double_down"(双下), "single_last"(单下), "partner_last"(末游), "none"(无需进贡)
+  TributeType tribute_type = 1;
+  
+  // 进贡方座位列表（败方玩家座位号）
+  repeated int32 givers = 2;
+  
+  // 收贡方座位列表（胜方玩家座位号）
+  repeated int32 receivers = 3;
+}
+
+// TributeExemptedPayload 免贡事件数据
+// 当败方玩家持有大小王时，可以免除进贡
+message TributeExemptedPayload {
+  // 持有大小王的玩家映射 seat -> joker_count
+  // 仅包含败方玩家的信息
+  map<int32, int32> joker_holders = 1;
+}
+
+// TributeCardSubmittedPayload 贡牌提交事件数据
+message TributeCardSubmittedPayload {
+  // 贡出的牌
+  Card submited_card = 1;
+}
+
+// TributeCardSelectedPayload 选牌事件数据（双下场景）
+// 玩家从贡牌池中选择牌
+message TributeCardSelectedPayload {
+  // 被选中的牌
+  Card selected_card = 1;
+  // 是否自动选择（超时，或仅有贡牌池仅1张牌时，会自动选择）
+  bool is_auto = 2;
+}
+
+// ReturnTributePayload 还贡事件数据
+message TributeCardReturnedPayload {
+  // 还贡的牌
+  Card returned_card = 1;
+  
+  // 还贡目标玩家座位号
+  int32 target_player = 2;
+
+  // 是否自动选择（超时会自动选择）
+  bool is_auto = 3;
+
+}
+
+// TributeCompletedPayload 进贡阶段结束事件数据
+// 空 payload，仅用于标识进贡阶段已完成
+message TributeCompletedPayload {
+  // 预留字段，未来可扩展
+}
+
+// ========================================
+// 轮次级事件 Payload (Trick-level)
+// ========================================
+
+// TrickStartedPayload 轮次开始事件数据
+message TrickStartedPayload {
+  // 本轮领先出牌的玩家座位号
+  int32 leader = 1;
+  
+  // 是否为本局第一轮
+  bool is_first_trick = 2;
+  
+  // 还有手牌的玩家座位号列表
+  repeated int32 remaining_players = 3;
+}
+
+// TrickEndedPayload 轮次结束事件数据
+message TrickEndedPayload {
+  // 本轮获胜玩家座位号（下一轮领先出牌者）
+  int32 trick_winner = 1;
+}
+
+// ========================================
+// 玩家行为事件 Payload (Player-level)
+// ========================================
+
+// PlayerPlayedPayload 玩家出牌事件数据
+message PlayerPlayedPayload {
+  // 玩家出的牌列表
+  repeated Card cards = 1;
+}
+
+// PlayerPassedPayload 玩家过牌事件数据
+// 空 payload，actor_seat 已在 GameEvent 顶层字段标识
+message PlayerPassedPayload {
+  // 预留字段，未来可扩展
+}
+
+// PlayerTimeoutPayload 玩家超时事件数据
+enum PlayerTimeoutActionType {
+  PLAYER_TIMEOUT_ACTION_UNSPECIFIED = 0;
+  PLAYER_TIMEOUT_ACTION_PLAY_DECISION = 1;
+  PLAYER_TIMEOUT_ACTION_TRIBUTE_SELECT = 2;
+  PLAYER_TIMEOUT_ACTION_RETURN_TRIBUTE = 3;
+}
+
+message PlayerTimeoutPayload {
+  PlayerTimeoutActionType action_type = 1;
+}
+
+// PlayerDisconnectPayload 玩家断线事件数据
+message PlayerDisconnectPayload {
+  // 是否启用自动托管
+  bool auto_play = 1;
+}
+
+// PlayerReconnectPayload 玩家重连事件数据
+message PlayerReconnectPayload {
+  // 重连后是否仍处于自动托管状态（通常为 false）
+  bool auto_play = 1;
+}
+
+// ========================================
+// 顶层事件结构
+// ========================================
+
+// GameEvent 游戏事件统一封装
+// 所有游戏事件共用此顶层结构，通过 oneof payload 区分具体事件类型
+message GameEvent {
+  // ===== 元数据字段 =====
+  
+  // 比赛唯一标识符（必填）
+  string match_id = 1;
+  
+  // 局索引（从 0 开始）
+  // 仅在局级及以下事件中填写，其他事件填 -1
+  int32 deal_index = 2;
+  
+  // 轮次索引（从 0 开始）
+  // 仅在轮级及玩家行为事件中填写，其他事件填 -1
+  int32 trick_index = 3;
+  
+  // 行为玩家座位号（0-3）
+  // 仅在玩家行为事件中填写，其他事件填 -1
+  int32 actor_seat = 4;
+  
+  // 事件序列号（全局递增）
+  // 用于事件排序和去重
+  int64 seq = 5;
+  
+  // 事件创建时间戳（毫秒）
+  int64 created_at_ms = 6;
+  
+  // 事件类型（便于快速识别和过滤事件）
+  EventType type = 7;
+  
+  // ===== 事件负载（oneof） =====
+  
+  oneof payload {
+    // 比赛级事件（field number 10-19）
+    MatchStartedPayload match_started = 10;
+    MatchEndedPayload match_ended = 11;
+    
+    // 局级事件（field number 20-29）
+    DealStartedPayload deal_started = 20;
+    CardsDealtPayload cards_dealt = 21;
+    DealEndedPayload deal_ended = 22;
+    
+    // 进贡阶段事件（field number 30-39）
+    TributeStartedPayload tribute_started = 30;
+    TributeExemptedPayload tribute_exempted = 31;
+    TributeCardSubmittedPayload tribute_card_submitted = 32;
+    TributeCardSelectedPayload tribute_card_selected = 33;
+    TributeCardReturnedPayload tribute_card_returned = 34;
+    TributeCompletedPayload tribute_completed = 35;
+    
+    // 轮次级事件（field number 40-49）
+    TrickStartedPayload trick_started = 40;
+    TrickEndedPayload trick_ended = 41;
+    
+    // 玩家行为事件（field number 50-59）
+    PlayerPlayedPayload player_played = 50;
+    PlayerPassedPayload player_passed = 51;
+    PlayerTimeoutPayload player_timeout = 52;
+    PlayerDisconnectPayload player_disconnect = 53;
+    PlayerReconnectPayload player_reconnect = 54;
+    
+    // 预留更多事件类型（field number 60+）
+  }
+}
