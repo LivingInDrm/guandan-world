@@ -66,7 +66,7 @@ enum EventType {
 // MatchStartedPayload 比赛开始事件数据
 message MatchStartedPayload {
   // 4名玩家信息（按座位号0-3顺序）
-  repeated PlayerBasicInfo players = 1;
+  repeated guandan.common.PlayerBasicInfo players = 1;
   
   // 初始等级 [team0_level, team1_level]，通常为 [2, 2]
   repeated int32 initial_levels = 2;
@@ -167,14 +167,14 @@ message TributeExemptedPayload {
 // TributeCardSubmittedPayload 贡牌提交事件数据
 message TributeCardSubmittedPayload {
   // 贡出的牌
-  Card submitted_card = 1;
+  guandan.common.Card submitted_card = 1;
 }
 
 // TributeCardSelectedPayload 选牌事件数据（双下场景）
 // 玩家从贡牌池中选择牌
 message TributeCardSelectedPayload {
   // 被选中的牌
-  Card selected_card = 1;
+  guandan.common.Card selected_card = 1;
   // 是否自动选择（超时，或仅有贡牌池仅1张牌时，会自动选择）
   bool is_auto = 2;
 }
@@ -182,7 +182,7 @@ message TributeCardSelectedPayload {
 // TributeCardReturnedPayload 还贡事件数据
 message TributeCardReturnedPayload {
   // 还贡的牌
-  Card returned_card = 1;
+  guandan.common.Card returned_card = 1;
   
   // 还贡目标玩家座位号
   int32 target_player = 2;
@@ -227,7 +227,7 @@ message TrickEndedPayload {
 // PlayerPlayedPayload 玩家出牌事件数据
 message PlayerPlayedPayload {
   // 玩家出的牌列表
-  repeated Card cards = 1;
+  repeated guandan.common.Card cards = 1;
 }
 
 // PlayerPassedPayload 玩家过牌事件数据

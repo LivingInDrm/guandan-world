@@ -13,14 +13,17 @@ proto: proto-go
 
 proto-go:
 	@echo "🔨 Generating Go proto files..."
-	@mkdir -p proto/event
+	@mkdir -p proto/common proto/event proto/action proto/view
 	protoc --proto_path=proto \
 		--go_out=. \
 		--go_opt=paths=source_relative \
 		--plugin=protoc-gen-go=$$(go env GOPATH)/bin/protoc-gen-go \
-		proto/event.proto
+		proto/common.proto proto/event.proto proto/action.proto proto/player_view.proto
+	@if [ -f common.pb.go ]; then mv common.pb.go proto/common/; fi
 	@if [ -f event.pb.go ]; then mv event.pb.go proto/event/; fi
-	@echo "✅ Go proto files generated at proto/event/event.pb.go"
+	@if [ -f action.pb.go ]; then mv action.pb.go proto/action/; fi
+	@if [ -f player_view.pb.go ]; then mv player_view.pb.go proto/view/; fi
+	@echo "✅ Go proto files generated"
 
 proto-js:
 	@echo "🔨 Generating JavaScript proto files..."

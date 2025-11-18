@@ -9,6 +9,7 @@ package event
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	common "guandan-world/proto/common"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -292,154 +293,11 @@ func (PlayerTimeoutActionType) EnumDescriptor() ([]byte, []int) {
 	return file_event_proto_rawDescGZIP(), []int{3}
 }
 
-// Card 表示一张扑克牌
-// 简化版本，只包含用于前端渲染和逻辑判断的核心字段
-type Card struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 花色编号：0=黑桃(Spade), 1=红桃(Heart), 2=梅花(Club), 3=方块(Diamond), -1=Joker
-	Suit int32 `protobuf:"varint,1,opt,name=suit,proto3" json:"suit,omitempty"`
-	// 牌的数字值，范围 1-16
-	// 2-10=数字牌, 11=J, 12=Q, 13=K, 14=A, 15=小王(黑王), 16=大王(红王)
-	// 注意：级牌不是固定的 rank 值，而是根据 deal_level 动态判断
-	//
-	//	当 rank == deal_level 时，该牌为级牌；其中红桃花色的级牌为逢人配(wildcard)
-	Rank int32 `protobuf:"varint,2,opt,name=rank,proto3" json:"rank,omitempty"`
-	// 牌在整副牌中的唯一索引，范围 0-107
-	// 用于精确定位某张具体的牌（避免相同花色和数字的牌混淆）
-	DeckIndex     int32 `protobuf:"varint,3,opt,name=deck_index,json=deckIndex,proto3" json:"deck_index,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Card) Reset() {
-	*x = Card{}
-	mi := &file_event_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Card) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Card) ProtoMessage() {}
-
-func (x *Card) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Card.ProtoReflect.Descriptor instead.
-func (*Card) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Card) GetSuit() int32 {
-	if x != nil {
-		return x.Suit
-	}
-	return 0
-}
-
-func (x *Card) GetRank() int32 {
-	if x != nil {
-		return x.Rank
-	}
-	return 0
-}
-
-func (x *Card) GetDeckIndex() int32 {
-	if x != nil {
-		return x.DeckIndex
-	}
-	return 0
-}
-
-// PlayerBasicInfo 玩家基本信息（公开信息）
-type PlayerBasicInfo struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 玩家唯一标识符
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// 玩家用户名
-	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	// 玩家座位号，范围 0-3
-	Seat int32 `protobuf:"varint,3,opt,name=seat,proto3" json:"seat,omitempty"`
-	// 所属队伍编号，0 或 1
-	TeamNum       int32 `protobuf:"varint,4,opt,name=team_num,json=teamNum,proto3" json:"team_num,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PlayerBasicInfo) Reset() {
-	*x = PlayerBasicInfo{}
-	mi := &file_event_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PlayerBasicInfo) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PlayerBasicInfo) ProtoMessage() {}
-
-func (x *PlayerBasicInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PlayerBasicInfo.ProtoReflect.Descriptor instead.
-func (*PlayerBasicInfo) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *PlayerBasicInfo) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *PlayerBasicInfo) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *PlayerBasicInfo) GetSeat() int32 {
-	if x != nil {
-		return x.Seat
-	}
-	return 0
-}
-
-func (x *PlayerBasicInfo) GetTeamNum() int32 {
-	if x != nil {
-		return x.TeamNum
-	}
-	return 0
-}
-
 // MatchStartedPayload 比赛开始事件数据
 type MatchStartedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 4名玩家信息（按座位号0-3顺序）
-	Players []*PlayerBasicInfo `protobuf:"bytes,1,rep,name=players,proto3" json:"players,omitempty"`
+	Players []*common.PlayerBasicInfo `protobuf:"bytes,1,rep,name=players,proto3" json:"players,omitempty"`
 	// 初始等级 [team0_level, team1_level]，通常为 [2, 2]
 	InitialLevels []int32 `protobuf:"varint,2,rep,packed,name=initial_levels,json=initialLevels,proto3" json:"initial_levels,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -448,7 +306,7 @@ type MatchStartedPayload struct {
 
 func (x *MatchStartedPayload) Reset() {
 	*x = MatchStartedPayload{}
-	mi := &file_event_proto_msgTypes[2]
+	mi := &file_event_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -460,7 +318,7 @@ func (x *MatchStartedPayload) String() string {
 func (*MatchStartedPayload) ProtoMessage() {}
 
 func (x *MatchStartedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[2]
+	mi := &file_event_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -473,10 +331,10 @@ func (x *MatchStartedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MatchStartedPayload.ProtoReflect.Descriptor instead.
 func (*MatchStartedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{2}
+	return file_event_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *MatchStartedPayload) GetPlayers() []*PlayerBasicInfo {
+func (x *MatchStartedPayload) GetPlayers() []*common.PlayerBasicInfo {
 	if x != nil {
 		return x.Players
 	}
@@ -507,7 +365,7 @@ type MatchEndedPayload struct {
 
 func (x *MatchEndedPayload) Reset() {
 	*x = MatchEndedPayload{}
-	mi := &file_event_proto_msgTypes[3]
+	mi := &file_event_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -519,7 +377,7 @@ func (x *MatchEndedPayload) String() string {
 func (*MatchEndedPayload) ProtoMessage() {}
 
 func (x *MatchEndedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[3]
+	mi := &file_event_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -532,7 +390,7 @@ func (x *MatchEndedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MatchEndedPayload.ProtoReflect.Descriptor instead.
 func (*MatchEndedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{3}
+	return file_event_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *MatchEndedPayload) GetWinner() int32 {
@@ -576,7 +434,7 @@ type DealStartedPayload struct {
 
 func (x *DealStartedPayload) Reset() {
 	*x = DealStartedPayload{}
-	mi := &file_event_proto_msgTypes[4]
+	mi := &file_event_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -588,7 +446,7 @@ func (x *DealStartedPayload) String() string {
 func (*DealStartedPayload) ProtoMessage() {}
 
 func (x *DealStartedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[4]
+	mi := &file_event_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -601,7 +459,7 @@ func (x *DealStartedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DealStartedPayload.ProtoReflect.Descriptor instead.
 func (*DealStartedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{4}
+	return file_event_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *DealStartedPayload) GetDealLevel() int32 {
@@ -629,7 +487,7 @@ type CardsDealtPayload struct {
 
 func (x *CardsDealtPayload) Reset() {
 	*x = CardsDealtPayload{}
-	mi := &file_event_proto_msgTypes[5]
+	mi := &file_event_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -641,7 +499,7 @@ func (x *CardsDealtPayload) String() string {
 func (*CardsDealtPayload) ProtoMessage() {}
 
 func (x *CardsDealtPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[5]
+	mi := &file_event_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -654,7 +512,7 @@ func (x *CardsDealtPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CardsDealtPayload.ProtoReflect.Descriptor instead.
 func (*CardsDealtPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{5}
+	return file_event_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CardsDealtPayload) GetCardCount() int32 {
@@ -688,7 +546,7 @@ type DealEndedPayload struct {
 
 func (x *DealEndedPayload) Reset() {
 	*x = DealEndedPayload{}
-	mi := &file_event_proto_msgTypes[6]
+	mi := &file_event_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -700,7 +558,7 @@ func (x *DealEndedPayload) String() string {
 func (*DealEndedPayload) ProtoMessage() {}
 
 func (x *DealEndedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[6]
+	mi := &file_event_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -713,7 +571,7 @@ func (x *DealEndedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DealEndedPayload.ProtoReflect.Descriptor instead.
 func (*DealEndedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{6}
+	return file_event_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DealEndedPayload) GetDealLevel() int32 {
@@ -780,7 +638,7 @@ type TributeStartedPayload struct {
 
 func (x *TributeStartedPayload) Reset() {
 	*x = TributeStartedPayload{}
-	mi := &file_event_proto_msgTypes[7]
+	mi := &file_event_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -792,7 +650,7 @@ func (x *TributeStartedPayload) String() string {
 func (*TributeStartedPayload) ProtoMessage() {}
 
 func (x *TributeStartedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[7]
+	mi := &file_event_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -805,7 +663,7 @@ func (x *TributeStartedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TributeStartedPayload.ProtoReflect.Descriptor instead.
 func (*TributeStartedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{7}
+	return file_event_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TributeStartedPayload) GetTributeType() TributeType {
@@ -842,7 +700,7 @@ type TributeExemptedPayload struct {
 
 func (x *TributeExemptedPayload) Reset() {
 	*x = TributeExemptedPayload{}
-	mi := &file_event_proto_msgTypes[8]
+	mi := &file_event_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -854,7 +712,7 @@ func (x *TributeExemptedPayload) String() string {
 func (*TributeExemptedPayload) ProtoMessage() {}
 
 func (x *TributeExemptedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[8]
+	mi := &file_event_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -867,7 +725,7 @@ func (x *TributeExemptedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TributeExemptedPayload.ProtoReflect.Descriptor instead.
 func (*TributeExemptedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{8}
+	return file_event_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *TributeExemptedPayload) GetBigJokerHolders() map[int32]int32 {
@@ -881,14 +739,14 @@ func (x *TributeExemptedPayload) GetBigJokerHolders() map[int32]int32 {
 type TributeCardSubmittedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 贡出的牌
-	SubmittedCard *Card `protobuf:"bytes,1,opt,name=submitted_card,json=submittedCard,proto3" json:"submitted_card,omitempty"`
+	SubmittedCard *common.Card `protobuf:"bytes,1,opt,name=submitted_card,json=submittedCard,proto3" json:"submitted_card,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TributeCardSubmittedPayload) Reset() {
 	*x = TributeCardSubmittedPayload{}
-	mi := &file_event_proto_msgTypes[9]
+	mi := &file_event_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -900,7 +758,7 @@ func (x *TributeCardSubmittedPayload) String() string {
 func (*TributeCardSubmittedPayload) ProtoMessage() {}
 
 func (x *TributeCardSubmittedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[9]
+	mi := &file_event_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -913,10 +771,10 @@ func (x *TributeCardSubmittedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TributeCardSubmittedPayload.ProtoReflect.Descriptor instead.
 func (*TributeCardSubmittedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{9}
+	return file_event_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *TributeCardSubmittedPayload) GetSubmittedCard() *Card {
+func (x *TributeCardSubmittedPayload) GetSubmittedCard() *common.Card {
 	if x != nil {
 		return x.SubmittedCard
 	}
@@ -928,7 +786,7 @@ func (x *TributeCardSubmittedPayload) GetSubmittedCard() *Card {
 type TributeCardSelectedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 被选中的牌
-	SelectedCard *Card `protobuf:"bytes,1,opt,name=selected_card,json=selectedCard,proto3" json:"selected_card,omitempty"`
+	SelectedCard *common.Card `protobuf:"bytes,1,opt,name=selected_card,json=selectedCard,proto3" json:"selected_card,omitempty"`
 	// 是否自动选择（超时，或仅有贡牌池仅1张牌时，会自动选择）
 	IsAuto        bool `protobuf:"varint,2,opt,name=is_auto,json=isAuto,proto3" json:"is_auto,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -937,7 +795,7 @@ type TributeCardSelectedPayload struct {
 
 func (x *TributeCardSelectedPayload) Reset() {
 	*x = TributeCardSelectedPayload{}
-	mi := &file_event_proto_msgTypes[10]
+	mi := &file_event_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -949,7 +807,7 @@ func (x *TributeCardSelectedPayload) String() string {
 func (*TributeCardSelectedPayload) ProtoMessage() {}
 
 func (x *TributeCardSelectedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[10]
+	mi := &file_event_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -962,10 +820,10 @@ func (x *TributeCardSelectedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TributeCardSelectedPayload.ProtoReflect.Descriptor instead.
 func (*TributeCardSelectedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{10}
+	return file_event_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *TributeCardSelectedPayload) GetSelectedCard() *Card {
+func (x *TributeCardSelectedPayload) GetSelectedCard() *common.Card {
 	if x != nil {
 		return x.SelectedCard
 	}
@@ -983,7 +841,7 @@ func (x *TributeCardSelectedPayload) GetIsAuto() bool {
 type TributeCardReturnedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 还贡的牌
-	ReturnedCard *Card `protobuf:"bytes,1,opt,name=returned_card,json=returnedCard,proto3" json:"returned_card,omitempty"`
+	ReturnedCard *common.Card `protobuf:"bytes,1,opt,name=returned_card,json=returnedCard,proto3" json:"returned_card,omitempty"`
 	// 还贡目标玩家座位号
 	TargetPlayer int32 `protobuf:"varint,2,opt,name=target_player,json=targetPlayer,proto3" json:"target_player,omitempty"`
 	// 是否自动选择（超时会自动选择）
@@ -994,7 +852,7 @@ type TributeCardReturnedPayload struct {
 
 func (x *TributeCardReturnedPayload) Reset() {
 	*x = TributeCardReturnedPayload{}
-	mi := &file_event_proto_msgTypes[11]
+	mi := &file_event_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1006,7 +864,7 @@ func (x *TributeCardReturnedPayload) String() string {
 func (*TributeCardReturnedPayload) ProtoMessage() {}
 
 func (x *TributeCardReturnedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[11]
+	mi := &file_event_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1019,10 +877,10 @@ func (x *TributeCardReturnedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TributeCardReturnedPayload.ProtoReflect.Descriptor instead.
 func (*TributeCardReturnedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{11}
+	return file_event_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *TributeCardReturnedPayload) GetReturnedCard() *Card {
+func (x *TributeCardReturnedPayload) GetReturnedCard() *common.Card {
 	if x != nil {
 		return x.ReturnedCard
 	}
@@ -1053,7 +911,7 @@ type TributeCompletedPayload struct {
 
 func (x *TributeCompletedPayload) Reset() {
 	*x = TributeCompletedPayload{}
-	mi := &file_event_proto_msgTypes[12]
+	mi := &file_event_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1065,7 +923,7 @@ func (x *TributeCompletedPayload) String() string {
 func (*TributeCompletedPayload) ProtoMessage() {}
 
 func (x *TributeCompletedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[12]
+	mi := &file_event_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1078,7 +936,7 @@ func (x *TributeCompletedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TributeCompletedPayload.ProtoReflect.Descriptor instead.
 func (*TributeCompletedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{12}
+	return file_event_proto_rawDescGZIP(), []int{10}
 }
 
 // TrickStartedPayload 轮次开始事件数据
@@ -1096,7 +954,7 @@ type TrickStartedPayload struct {
 
 func (x *TrickStartedPayload) Reset() {
 	*x = TrickStartedPayload{}
-	mi := &file_event_proto_msgTypes[13]
+	mi := &file_event_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1108,7 +966,7 @@ func (x *TrickStartedPayload) String() string {
 func (*TrickStartedPayload) ProtoMessage() {}
 
 func (x *TrickStartedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[13]
+	mi := &file_event_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1121,7 +979,7 @@ func (x *TrickStartedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrickStartedPayload.ProtoReflect.Descriptor instead.
 func (*TrickStartedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{13}
+	return file_event_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *TrickStartedPayload) GetLeader() int32 {
@@ -1156,7 +1014,7 @@ type TrickEndedPayload struct {
 
 func (x *TrickEndedPayload) Reset() {
 	*x = TrickEndedPayload{}
-	mi := &file_event_proto_msgTypes[14]
+	mi := &file_event_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1168,7 +1026,7 @@ func (x *TrickEndedPayload) String() string {
 func (*TrickEndedPayload) ProtoMessage() {}
 
 func (x *TrickEndedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[14]
+	mi := &file_event_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1181,7 +1039,7 @@ func (x *TrickEndedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrickEndedPayload.ProtoReflect.Descriptor instead.
 func (*TrickEndedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{14}
+	return file_event_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *TrickEndedPayload) GetTrickWinner() int32 {
@@ -1195,14 +1053,14 @@ func (x *TrickEndedPayload) GetTrickWinner() int32 {
 type PlayerPlayedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 玩家出的牌列表
-	Cards         []*Card `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards,omitempty"`
+	Cards         []*common.Card `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PlayerPlayedPayload) Reset() {
 	*x = PlayerPlayedPayload{}
-	mi := &file_event_proto_msgTypes[15]
+	mi := &file_event_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1214,7 +1072,7 @@ func (x *PlayerPlayedPayload) String() string {
 func (*PlayerPlayedPayload) ProtoMessage() {}
 
 func (x *PlayerPlayedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[15]
+	mi := &file_event_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1227,10 +1085,10 @@ func (x *PlayerPlayedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerPlayedPayload.ProtoReflect.Descriptor instead.
 func (*PlayerPlayedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{15}
+	return file_event_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *PlayerPlayedPayload) GetCards() []*Card {
+func (x *PlayerPlayedPayload) GetCards() []*common.Card {
 	if x != nil {
 		return x.Cards
 	}
@@ -1247,7 +1105,7 @@ type PlayerPassedPayload struct {
 
 func (x *PlayerPassedPayload) Reset() {
 	*x = PlayerPassedPayload{}
-	mi := &file_event_proto_msgTypes[16]
+	mi := &file_event_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1259,7 +1117,7 @@ func (x *PlayerPassedPayload) String() string {
 func (*PlayerPassedPayload) ProtoMessage() {}
 
 func (x *PlayerPassedPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[16]
+	mi := &file_event_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1272,7 +1130,7 @@ func (x *PlayerPassedPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerPassedPayload.ProtoReflect.Descriptor instead.
 func (*PlayerPassedPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{16}
+	return file_event_proto_rawDescGZIP(), []int{14}
 }
 
 type PlayerTimeoutPayload struct {
@@ -1284,7 +1142,7 @@ type PlayerTimeoutPayload struct {
 
 func (x *PlayerTimeoutPayload) Reset() {
 	*x = PlayerTimeoutPayload{}
-	mi := &file_event_proto_msgTypes[17]
+	mi := &file_event_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1296,7 +1154,7 @@ func (x *PlayerTimeoutPayload) String() string {
 func (*PlayerTimeoutPayload) ProtoMessage() {}
 
 func (x *PlayerTimeoutPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[17]
+	mi := &file_event_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1309,7 +1167,7 @@ func (x *PlayerTimeoutPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerTimeoutPayload.ProtoReflect.Descriptor instead.
 func (*PlayerTimeoutPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{17}
+	return file_event_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PlayerTimeoutPayload) GetActionType() PlayerTimeoutActionType {
@@ -1330,7 +1188,7 @@ type PlayerDisconnectPayload struct {
 
 func (x *PlayerDisconnectPayload) Reset() {
 	*x = PlayerDisconnectPayload{}
-	mi := &file_event_proto_msgTypes[18]
+	mi := &file_event_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1342,7 +1200,7 @@ func (x *PlayerDisconnectPayload) String() string {
 func (*PlayerDisconnectPayload) ProtoMessage() {}
 
 func (x *PlayerDisconnectPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[18]
+	mi := &file_event_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1355,7 +1213,7 @@ func (x *PlayerDisconnectPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerDisconnectPayload.ProtoReflect.Descriptor instead.
 func (*PlayerDisconnectPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{18}
+	return file_event_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *PlayerDisconnectPayload) GetAutoPlay() bool {
@@ -1376,7 +1234,7 @@ type PlayerReconnectPayload struct {
 
 func (x *PlayerReconnectPayload) Reset() {
 	*x = PlayerReconnectPayload{}
-	mi := &file_event_proto_msgTypes[19]
+	mi := &file_event_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1388,7 +1246,7 @@ func (x *PlayerReconnectPayload) String() string {
 func (*PlayerReconnectPayload) ProtoMessage() {}
 
 func (x *PlayerReconnectPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[19]
+	mi := &file_event_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1401,7 +1259,7 @@ func (x *PlayerReconnectPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerReconnectPayload.ProtoReflect.Descriptor instead.
 func (*PlayerReconnectPayload) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{19}
+	return file_event_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *PlayerReconnectPayload) GetAutoPlay() bool {
@@ -1460,7 +1318,7 @@ type GameEvent struct {
 
 func (x *GameEvent) Reset() {
 	*x = GameEvent{}
-	mi := &file_event_proto_msgTypes[20]
+	mi := &file_event_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1472,7 +1330,7 @@ func (x *GameEvent) String() string {
 func (*GameEvent) ProtoMessage() {}
 
 func (x *GameEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[20]
+	mi := &file_event_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1485,7 +1343,7 @@ func (x *GameEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GameEvent.ProtoReflect.Descriptor instead.
 func (*GameEvent) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{20}
+	return file_event_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GameEvent) GetMatchId() string {
@@ -1827,19 +1685,9 @@ var File_event_proto protoreflect.FileDescriptor
 
 const file_event_proto_rawDesc = "" +
 	"\n" +
-	"\vevent.proto\x12\rguandan.event\"M\n" +
-	"\x04Card\x12\x12\n" +
-	"\x04suit\x18\x01 \x01(\x05R\x04suit\x12\x12\n" +
-	"\x04rank\x18\x02 \x01(\x05R\x04rank\x12\x1d\n" +
-	"\n" +
-	"deck_index\x18\x03 \x01(\x05R\tdeckIndex\"l\n" +
-	"\x0fPlayerBasicInfo\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
-	"\busername\x18\x02 \x01(\tR\busername\x12\x12\n" +
-	"\x04seat\x18\x03 \x01(\x05R\x04seat\x12\x19\n" +
-	"\bteam_num\x18\x04 \x01(\x05R\ateamNum\"v\n" +
-	"\x13MatchStartedPayload\x128\n" +
-	"\aplayers\x18\x01 \x03(\v2\x1e.guandan.event.PlayerBasicInfoR\aplayers\x12%\n" +
+	"\vevent.proto\x12\rguandan.event\x1a\fcommon.proto\"w\n" +
+	"\x13MatchStartedPayload\x129\n" +
+	"\aplayers\x18\x01 \x03(\v2\x1f.guandan.common.PlayerBasicInfoR\aplayers\x12%\n" +
 	"\x0einitial_levels\x18\x02 \x03(\x05R\rinitialLevels\"\x90\x01\n" +
 	"\x11MatchEndedPayload\x12\x16\n" +
 	"\x06winner\x18\x01 \x01(\x05R\x06winner\x12!\n" +
@@ -1875,14 +1723,14 @@ const file_event_proto_rawDesc = "" +
 	"\x11big_joker_holders\x18\x01 \x03(\v2:.guandan.event.TributeExemptedPayload.BigJokerHoldersEntryR\x0fbigJokerHolders\x1aB\n" +
 	"\x14BigJokerHoldersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"Y\n" +
-	"\x1bTributeCardSubmittedPayload\x12:\n" +
-	"\x0esubmitted_card\x18\x01 \x01(\v2\x13.guandan.event.CardR\rsubmittedCard\"o\n" +
-	"\x1aTributeCardSelectedPayload\x128\n" +
-	"\rselected_card\x18\x01 \x01(\v2\x13.guandan.event.CardR\fselectedCard\x12\x17\n" +
-	"\ais_auto\x18\x02 \x01(\bR\x06isAuto\"\x94\x01\n" +
-	"\x1aTributeCardReturnedPayload\x128\n" +
-	"\rreturned_card\x18\x01 \x01(\v2\x13.guandan.event.CardR\freturnedCard\x12#\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"Z\n" +
+	"\x1bTributeCardSubmittedPayload\x12;\n" +
+	"\x0esubmitted_card\x18\x01 \x01(\v2\x14.guandan.common.CardR\rsubmittedCard\"p\n" +
+	"\x1aTributeCardSelectedPayload\x129\n" +
+	"\rselected_card\x18\x01 \x01(\v2\x14.guandan.common.CardR\fselectedCard\x12\x17\n" +
+	"\ais_auto\x18\x02 \x01(\bR\x06isAuto\"\x95\x01\n" +
+	"\x1aTributeCardReturnedPayload\x129\n" +
+	"\rreturned_card\x18\x01 \x01(\v2\x14.guandan.common.CardR\freturnedCard\x12#\n" +
 	"\rtarget_player\x18\x02 \x01(\x05R\ftargetPlayer\x12\x17\n" +
 	"\ais_auto\x18\x03 \x01(\bR\x06isAuto\"\x19\n" +
 	"\x17TributeCompletedPayload\"\x80\x01\n" +
@@ -1891,9 +1739,9 @@ const file_event_proto_rawDesc = "" +
 	"\x0eis_first_trick\x18\x02 \x01(\bR\fisFirstTrick\x12+\n" +
 	"\x11remaining_players\x18\x03 \x03(\x05R\x10remainingPlayers\"6\n" +
 	"\x11TrickEndedPayload\x12!\n" +
-	"\ftrick_winner\x18\x01 \x01(\x05R\vtrickWinner\"@\n" +
-	"\x13PlayerPlayedPayload\x12)\n" +
-	"\x05cards\x18\x01 \x03(\v2\x13.guandan.event.CardR\x05cards\"\x15\n" +
+	"\ftrick_winner\x18\x01 \x01(\x05R\vtrickWinner\"A\n" +
+	"\x13PlayerPlayedPayload\x12*\n" +
+	"\x05cards\x18\x01 \x03(\v2\x14.guandan.common.CardR\x05cards\"\x15\n" +
 	"\x13PlayerPassedPayload\"_\n" +
 	"\x14PlayerTimeoutPayload\x12G\n" +
 	"\vaction_type\x18\x01 \x01(\x0e2&.guandan.event.PlayerTimeoutActionTypeR\n" +
@@ -1991,64 +1839,64 @@ func file_event_proto_rawDescGZIP() []byte {
 }
 
 var file_event_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_event_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_event_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_event_proto_goTypes = []any{
 	(VictoryType)(0),                    // 0: guandan.event.VictoryType
 	(EventType)(0),                      // 1: guandan.event.EventType
 	(TributeType)(0),                    // 2: guandan.event.TributeType
 	(PlayerTimeoutActionType)(0),        // 3: guandan.event.PlayerTimeoutActionType
-	(*Card)(nil),                        // 4: guandan.event.Card
-	(*PlayerBasicInfo)(nil),             // 5: guandan.event.PlayerBasicInfo
-	(*MatchStartedPayload)(nil),         // 6: guandan.event.MatchStartedPayload
-	(*MatchEndedPayload)(nil),           // 7: guandan.event.MatchEndedPayload
-	(*DealStartedPayload)(nil),          // 8: guandan.event.DealStartedPayload
-	(*CardsDealtPayload)(nil),           // 9: guandan.event.CardsDealtPayload
-	(*DealEndedPayload)(nil),            // 10: guandan.event.DealEndedPayload
-	(*TributeStartedPayload)(nil),       // 11: guandan.event.TributeStartedPayload
-	(*TributeExemptedPayload)(nil),      // 12: guandan.event.TributeExemptedPayload
-	(*TributeCardSubmittedPayload)(nil), // 13: guandan.event.TributeCardSubmittedPayload
-	(*TributeCardSelectedPayload)(nil),  // 14: guandan.event.TributeCardSelectedPayload
-	(*TributeCardReturnedPayload)(nil),  // 15: guandan.event.TributeCardReturnedPayload
-	(*TributeCompletedPayload)(nil),     // 16: guandan.event.TributeCompletedPayload
-	(*TrickStartedPayload)(nil),         // 17: guandan.event.TrickStartedPayload
-	(*TrickEndedPayload)(nil),           // 18: guandan.event.TrickEndedPayload
-	(*PlayerPlayedPayload)(nil),         // 19: guandan.event.PlayerPlayedPayload
-	(*PlayerPassedPayload)(nil),         // 20: guandan.event.PlayerPassedPayload
-	(*PlayerTimeoutPayload)(nil),        // 21: guandan.event.PlayerTimeoutPayload
-	(*PlayerDisconnectPayload)(nil),     // 22: guandan.event.PlayerDisconnectPayload
-	(*PlayerReconnectPayload)(nil),      // 23: guandan.event.PlayerReconnectPayload
-	(*GameEvent)(nil),                   // 24: guandan.event.GameEvent
-	nil,                                 // 25: guandan.event.TributeExemptedPayload.BigJokerHoldersEntry
+	(*MatchStartedPayload)(nil),         // 4: guandan.event.MatchStartedPayload
+	(*MatchEndedPayload)(nil),           // 5: guandan.event.MatchEndedPayload
+	(*DealStartedPayload)(nil),          // 6: guandan.event.DealStartedPayload
+	(*CardsDealtPayload)(nil),           // 7: guandan.event.CardsDealtPayload
+	(*DealEndedPayload)(nil),            // 8: guandan.event.DealEndedPayload
+	(*TributeStartedPayload)(nil),       // 9: guandan.event.TributeStartedPayload
+	(*TributeExemptedPayload)(nil),      // 10: guandan.event.TributeExemptedPayload
+	(*TributeCardSubmittedPayload)(nil), // 11: guandan.event.TributeCardSubmittedPayload
+	(*TributeCardSelectedPayload)(nil),  // 12: guandan.event.TributeCardSelectedPayload
+	(*TributeCardReturnedPayload)(nil),  // 13: guandan.event.TributeCardReturnedPayload
+	(*TributeCompletedPayload)(nil),     // 14: guandan.event.TributeCompletedPayload
+	(*TrickStartedPayload)(nil),         // 15: guandan.event.TrickStartedPayload
+	(*TrickEndedPayload)(nil),           // 16: guandan.event.TrickEndedPayload
+	(*PlayerPlayedPayload)(nil),         // 17: guandan.event.PlayerPlayedPayload
+	(*PlayerPassedPayload)(nil),         // 18: guandan.event.PlayerPassedPayload
+	(*PlayerTimeoutPayload)(nil),        // 19: guandan.event.PlayerTimeoutPayload
+	(*PlayerDisconnectPayload)(nil),     // 20: guandan.event.PlayerDisconnectPayload
+	(*PlayerReconnectPayload)(nil),      // 21: guandan.event.PlayerReconnectPayload
+	(*GameEvent)(nil),                   // 22: guandan.event.GameEvent
+	nil,                                 // 23: guandan.event.TributeExemptedPayload.BigJokerHoldersEntry
+	(*common.PlayerBasicInfo)(nil),      // 24: guandan.common.PlayerBasicInfo
+	(*common.Card)(nil),                 // 25: guandan.common.Card
 }
 var file_event_proto_depIdxs = []int32{
-	5,  // 0: guandan.event.MatchStartedPayload.players:type_name -> guandan.event.PlayerBasicInfo
+	24, // 0: guandan.event.MatchStartedPayload.players:type_name -> guandan.common.PlayerBasicInfo
 	0,  // 1: guandan.event.DealEndedPayload.victory_type:type_name -> guandan.event.VictoryType
 	2,  // 2: guandan.event.TributeStartedPayload.tribute_type:type_name -> guandan.event.TributeType
-	25, // 3: guandan.event.TributeExemptedPayload.big_joker_holders:type_name -> guandan.event.TributeExemptedPayload.BigJokerHoldersEntry
-	4,  // 4: guandan.event.TributeCardSubmittedPayload.submitted_card:type_name -> guandan.event.Card
-	4,  // 5: guandan.event.TributeCardSelectedPayload.selected_card:type_name -> guandan.event.Card
-	4,  // 6: guandan.event.TributeCardReturnedPayload.returned_card:type_name -> guandan.event.Card
-	4,  // 7: guandan.event.PlayerPlayedPayload.cards:type_name -> guandan.event.Card
+	23, // 3: guandan.event.TributeExemptedPayload.big_joker_holders:type_name -> guandan.event.TributeExemptedPayload.BigJokerHoldersEntry
+	25, // 4: guandan.event.TributeCardSubmittedPayload.submitted_card:type_name -> guandan.common.Card
+	25, // 5: guandan.event.TributeCardSelectedPayload.selected_card:type_name -> guandan.common.Card
+	25, // 6: guandan.event.TributeCardReturnedPayload.returned_card:type_name -> guandan.common.Card
+	25, // 7: guandan.event.PlayerPlayedPayload.cards:type_name -> guandan.common.Card
 	3,  // 8: guandan.event.PlayerTimeoutPayload.action_type:type_name -> guandan.event.PlayerTimeoutActionType
 	1,  // 9: guandan.event.GameEvent.type:type_name -> guandan.event.EventType
-	6,  // 10: guandan.event.GameEvent.match_started:type_name -> guandan.event.MatchStartedPayload
-	7,  // 11: guandan.event.GameEvent.match_ended:type_name -> guandan.event.MatchEndedPayload
-	8,  // 12: guandan.event.GameEvent.deal_started:type_name -> guandan.event.DealStartedPayload
-	9,  // 13: guandan.event.GameEvent.cards_dealt:type_name -> guandan.event.CardsDealtPayload
-	10, // 14: guandan.event.GameEvent.deal_ended:type_name -> guandan.event.DealEndedPayload
-	11, // 15: guandan.event.GameEvent.tribute_started:type_name -> guandan.event.TributeStartedPayload
-	12, // 16: guandan.event.GameEvent.tribute_exempted:type_name -> guandan.event.TributeExemptedPayload
-	13, // 17: guandan.event.GameEvent.tribute_card_submitted:type_name -> guandan.event.TributeCardSubmittedPayload
-	14, // 18: guandan.event.GameEvent.tribute_card_selected:type_name -> guandan.event.TributeCardSelectedPayload
-	15, // 19: guandan.event.GameEvent.tribute_card_returned:type_name -> guandan.event.TributeCardReturnedPayload
-	16, // 20: guandan.event.GameEvent.tribute_completed:type_name -> guandan.event.TributeCompletedPayload
-	17, // 21: guandan.event.GameEvent.trick_started:type_name -> guandan.event.TrickStartedPayload
-	18, // 22: guandan.event.GameEvent.trick_ended:type_name -> guandan.event.TrickEndedPayload
-	19, // 23: guandan.event.GameEvent.player_played:type_name -> guandan.event.PlayerPlayedPayload
-	20, // 24: guandan.event.GameEvent.player_passed:type_name -> guandan.event.PlayerPassedPayload
-	21, // 25: guandan.event.GameEvent.player_timeout:type_name -> guandan.event.PlayerTimeoutPayload
-	22, // 26: guandan.event.GameEvent.player_disconnect:type_name -> guandan.event.PlayerDisconnectPayload
-	23, // 27: guandan.event.GameEvent.player_reconnect:type_name -> guandan.event.PlayerReconnectPayload
+	4,  // 10: guandan.event.GameEvent.match_started:type_name -> guandan.event.MatchStartedPayload
+	5,  // 11: guandan.event.GameEvent.match_ended:type_name -> guandan.event.MatchEndedPayload
+	6,  // 12: guandan.event.GameEvent.deal_started:type_name -> guandan.event.DealStartedPayload
+	7,  // 13: guandan.event.GameEvent.cards_dealt:type_name -> guandan.event.CardsDealtPayload
+	8,  // 14: guandan.event.GameEvent.deal_ended:type_name -> guandan.event.DealEndedPayload
+	9,  // 15: guandan.event.GameEvent.tribute_started:type_name -> guandan.event.TributeStartedPayload
+	10, // 16: guandan.event.GameEvent.tribute_exempted:type_name -> guandan.event.TributeExemptedPayload
+	11, // 17: guandan.event.GameEvent.tribute_card_submitted:type_name -> guandan.event.TributeCardSubmittedPayload
+	12, // 18: guandan.event.GameEvent.tribute_card_selected:type_name -> guandan.event.TributeCardSelectedPayload
+	13, // 19: guandan.event.GameEvent.tribute_card_returned:type_name -> guandan.event.TributeCardReturnedPayload
+	14, // 20: guandan.event.GameEvent.tribute_completed:type_name -> guandan.event.TributeCompletedPayload
+	15, // 21: guandan.event.GameEvent.trick_started:type_name -> guandan.event.TrickStartedPayload
+	16, // 22: guandan.event.GameEvent.trick_ended:type_name -> guandan.event.TrickEndedPayload
+	17, // 23: guandan.event.GameEvent.player_played:type_name -> guandan.event.PlayerPlayedPayload
+	18, // 24: guandan.event.GameEvent.player_passed:type_name -> guandan.event.PlayerPassedPayload
+	19, // 25: guandan.event.GameEvent.player_timeout:type_name -> guandan.event.PlayerTimeoutPayload
+	20, // 26: guandan.event.GameEvent.player_disconnect:type_name -> guandan.event.PlayerDisconnectPayload
+	21, // 27: guandan.event.GameEvent.player_reconnect:type_name -> guandan.event.PlayerReconnectPayload
 	28, // [28:28] is the sub-list for method output_type
 	28, // [28:28] is the sub-list for method input_type
 	28, // [28:28] is the sub-list for extension type_name
@@ -2061,7 +1909,7 @@ func file_event_proto_init() {
 	if File_event_proto != nil {
 		return
 	}
-	file_event_proto_msgTypes[20].OneofWrappers = []any{
+	file_event_proto_msgTypes[18].OneofWrappers = []any{
 		(*GameEvent_MatchStarted)(nil),
 		(*GameEvent_MatchEnded)(nil),
 		(*GameEvent_DealStarted)(nil),
@@ -2087,7 +1935,7 @@ func file_event_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_event_proto_rawDesc), len(file_event_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   22,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

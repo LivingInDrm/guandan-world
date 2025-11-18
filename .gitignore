@@ -100,3 +100,6 @@ backend/cmd/ai_players/ai_players
 
 # 旧文件/备份文件
 old_doc.md
+
+# Proto编译产出
+*.pb.go
