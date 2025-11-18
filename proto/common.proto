@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package guandan.common;
+
+option go_package = "guandan-world/proto/common";
+
+// Card 表示一张扑克牌
+message Card {
+  // 花色编号：0=黑桃(Spade), 1=红桃(Heart), 2=梅花(Club), 3=方块(Diamond), -1=Joker
+  int32 suit = 1;
+  
+  // 牌的数字值，范围 1-16
+  // 2-10=数字牌, 11=J, 12=Q, 13=K, 14=A, 15=小王, 16=大王
+  int32 rank = 2;
+  
+  // 牌在整副牌中的唯一索引，范围 0-107
+  int32 deck_index = 3;
+}
+
+// PlayerBasicInfo 玩家基本信息（公开信息）
+message PlayerBasicInfo {
+  string id = 1;
+  string username = 2;
+  int32 seat = 3;
+  int32 team_num = 4;
+}

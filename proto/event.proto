@@ -2,43 +2,11 @@ syntax = "proto3";
 
 package guandan.event;
 
+// 引入共享类型
+import "common.proto";
+
 option go_package = "guandan-world/proto/event";
 
-// ========================================
-// 基础类型定义
-// ========================================
-
-// Card 表示一张扑克牌
-// 简化版本，只包含用于前端渲染和逻辑判断的核心字段
-message Card {
-  // 花色编号：0=黑桃(Spade), 1=红桃(Heart), 2=梅花(Club), 3=方块(Diamond), -1=Joker
-  int32 suit = 1;
-  
-  // 牌的数字值，范围 1-16
-  // 2-10=数字牌, 11=J, 12=Q, 13=K, 14=A, 15=小王(黑王), 16=大王(红王)
-  // 注意：级牌不是固定的 rank 值，而是根据 deal_level 动态判断
-  //      当 rank == deal_level 时，该牌为级牌；其中红桃花色的级牌为逢人配(wildcard)
-  int32 rank = 2;
-  
-  // 牌在整副牌中的唯一索引，范围 0-107
-  // 用于精确定位某张具体的牌（避免相同花色和数字的牌混淆）
-  int32 deck_index = 3;
-}
-
-// PlayerBasicInfo 玩家基本信息（公开信息）
-message PlayerBasicInfo {
-  // 玩家唯一标识符
-  string id = 1;
-  
-  // 玩家用户名
-  string username = 2;
-  
-  // 玩家座位号，范围 0-3
-  int32 seat = 3;
-  
-  // 所属队伍编号，0 或 1
-  int32 team_num = 4;
-}
 
 // VictoryType 胜利类型枚举
 // 定义不同的获胜情况及对应的升级数
