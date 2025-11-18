@@ -49,23 +49,20 @@ func (emp *EventMetadataProvider) FillMetadata(
 
 	// Fill deal_index
 	if deal != nil && match != nil {
-		event.DealIndex = int32(len(match.DealHistory))
-	} else {
-		event.DealIndex = -1
+		dealIdx := int32(len(match.DealHistory))
+		event.DealIndex = &dealIdx
 	}
 
 	// Fill trick_index
 	if trick != nil && deal != nil {
-		event.TrickIndex = int32(len(deal.TrickHistory))
-	} else {
-		event.TrickIndex = -1
+		trickIdx := int32(len(deal.TrickHistory))
+		event.TrickIndex = &trickIdx
 	}
 
 	// Fill actor_seat
 	if actorSeat >= 0 && actorSeat < 4 {
-		event.ActorSeat = int32(actorSeat)
-	} else {
-		event.ActorSeat = -1
+		actorSeatInt := int32(actorSeat)
+		event.ActorSeat = &actorSeatInt
 	}
 
 	// Fill seq and timestamp

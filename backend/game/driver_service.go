@@ -646,7 +646,7 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 			"event_type":  event.Type.String(),
 			"event_data":  string(eventJSON),
 			"timestamp":   time.UnixMilli(event.CreatedAtMs),
-			"player_seat": event.ActorSeat,
+			"player_seat": event.GetActorSeat(),
 		},
 		Timestamp: time.UnixMilli(event.CreatedAtMs),
 	}

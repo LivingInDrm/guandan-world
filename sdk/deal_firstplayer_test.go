@@ -67,11 +67,14 @@ func TestDetermineFirstPlayer(t *testing.T) {
 		// Create tribute phase with cards
 		if deal.TributePhase != nil {
 			deal.TributePhase.Status = TributeStatusFinished
-			deal.TributePhase.TributeCards = make(map[int]*Card)
 			// Rank3 (player 1) gives a King
-			deal.TributePhase.TributeCards[1], _ = NewCard(13, "Hearts", 4)
+			card1, _ := NewCard(13, "Hearts", 4)
 			// Rank4 (player 3) gives a Jack
-			deal.TributePhase.TributeCards[3], _ = NewCard(11, "Spades", 4)
+			card3, _ := NewCard(11, "Spades", 4)
+			deal.TributePhase.TributePairs = []*TributePair{
+				{Giver: 1, Receiver: 0, TributeCard: card1, ReturnCard: nil},
+				{Giver: 3, Receiver: 2, TributeCard: card3, ReturnCard: nil},
+			}
 		}
 		
 		firstPlayer := deal.determineFirstPlayer()

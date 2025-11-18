@@ -98,102 +98,6 @@ func TestNewTributePhase(t *testing.T) {
 	}
 }
 
-func TestDetermineTributeRequirements(t *testing.T) {
-	tm := NewTributeManager(5)
-
-	tests := []struct {
-		name         string
-		lastResult   *DealResult
-		expectedMap  map[int]int
-		isDoubleDown bool
-		expectError  bool
-	}{
-		{
-			name:       "No last result",
-			lastResult: nil,
-		},
-		{
-			name: "Partner last tribute - rank1,rank4 same team",
-			lastResult: &DealResult{
-				Rankings:    []int{0, 1, 3, 2}, // Rank1=0, Rank2=1, Rank3=3, Rank4=2
-				WinningTeam: 0,
-				VictoryType: VictoryTypePartnerLast,
-			},
-			expectedMap: map[int]int{
-				3: 0, // Rank3(3) -> Rank1(0)
-			},
-			isDoubleDown: false,
-		},
-		{
-			name: "Single last tribute - rank1,rank3 same team",
-			lastResult: &DealResult{
-				Rankings:    []int{0, 1, 2, 3}, // Rank1=0, Rank2=1, Rank3=2, Rank4=3
-				WinningTeam: 0,
-				VictoryType: VictoryTypeSingleLast,
-			},
-			expectedMap: map[int]int{
-				3: 0, // Rank4(3) -> Rank1(0)
-			},
-			isDoubleDown: false,
-		},
-		{
-			name: "Double down - rank1,rank2 same team",
-			lastResult: &DealResult{
-				Rankings:    []int{1, 3, 0, 2}, // Rank1=1, Rank2=3, Rank3=0, Rank4=2
-				WinningTeam: 1,
-				VictoryType: VictoryTypeDoubleDown,
-			},
-			expectedMap: map[int]int{
-				0: -1, // Rank3(0)贡献到池子
-				2: -1, // Rank4(2)贡献到池子
-			},
-			isDoubleDown: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tributeMap, isDoubleDown, err := tm.DetermineTributeRequirements(tt.lastResult)
-
-			if tt.expectError {
-				if err == nil {
-					t.Error("Expected error, got none")
-				}
-				return
-			}
-
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-				return
-			}
-
-			if tt.lastResult == nil {
-				if tributeMap != nil || isDoubleDown {
-					t.Error("Expected nil tribute map and false isDoubleDown for nil result")
-				}
-				return
-			}
-
-			if isDoubleDown != tt.isDoubleDown {
-				t.Errorf("Expected isDoubleDown %v, got %v", tt.isDoubleDown, isDoubleDown)
-			}
-
-			if len(tributeMap) != len(tt.expectedMap) {
-				t.Errorf("Expected tribute map length %d, got %d", len(tt.expectedMap), len(tributeMap))
-				return
-			}
-
-			for giver, expectedReceiver := range tt.expectedMap {
-				if receiver, exists := tributeMap[giver]; !exists {
-					t.Errorf("Expected giver %d not found in tribute map", giver)
-				} else if receiver != expectedReceiver {
-					t.Errorf("For giver %d, expected receiver %d, got %d", giver, expectedReceiver, receiver)
-				}
-			}
-		})
-	}
-}
-
 func TestCheckTributeImmunity(t *testing.T) {
 	tm := NewTributeManager(5)
 
@@ -399,14 +303,12 @@ func TestTributeProcessComplete(t *testing.T) {
 		// 如果进入还贡阶段，手动添加还贡卡
 		if tributePhase.Status == TributeStatusReturning {
 			// 检查是否需要还贡
-			for giver, receiver := range tributePhase.TributeMap {
-				if receiver != -1 && tributePhase.TributeCards[giver] != nil {
-					if tributePhase.ReturnCards[receiver] == nil {
-						// 选择最小的牌作为还贡
-						if len(playerHands[receiver]) > 0 {
-							returnCard := playerHands[receiver][0] // 选择第一张牌
-							tributePhase.addReturnCard(receiver, returnCard)
-						}
+			for _, pair := range tributePhase.TributePairs {
+				if pair.Receiver != -1 && pair.ReturnCard == nil {
+					// 选择最小的牌作为还贡
+					if len(playerHands[pair.Receiver]) > 0 {
+						returnCard := playerHands[pair.Receiver][0] // 选择第一张牌
+						tributePhase.addReturnCard(pair.Receiver, returnCard)
 					}
 				}
 			}
@@ -421,25 +323,27 @@ func TestTributeProcessComplete(t *testing.T) {
 		t.Fatalf("上贡阶段未完成，当前状态: %s", tributePhase.Status)
 	}
 
-	// 验证上贡映射
+	// 验证上贡映射 - 通过辅助方法获取兼容的 map
+	tributeMap := buildTributeMapFromPairs(tributePhase.TributePairs)
 	expectedTributeMap := map[int]int{3: 0} // rank4(3) → rank1(0)
-	if len(tributePhase.TributeMap) != len(expectedTributeMap) {
-		t.Errorf("上贡映射数量不对，期望 %d，实际 %d", len(expectedTributeMap), len(tributePhase.TributeMap))
+	if len(tributeMap) != len(expectedTributeMap) {
+		t.Errorf("上贡映射数量不对，期望 %d，实际 %d", len(expectedTributeMap), len(tributeMap))
 	}
 
 	for giver, receiver := range expectedTributeMap {
-		if actualReceiver, exists := tributePhase.TributeMap[giver]; !exists || actualReceiver != receiver {
+		if actualReceiver, exists := tributeMap[giver]; !exists || actualReceiver != receiver {
 			t.Errorf("上贡映射错误：期望 %d→%d，实际 %d→%d", giver, receiver, giver, actualReceiver)
 		}
 	}
 
 	// 验证上贡牌选择
-	if len(tributePhase.TributeCards) == 0 {
+	tributeCards := buildTributeCardsFromPairs(tributePhase.TributePairs)
+	if len(tributeCards) == 0 {
 		t.Errorf("未选择上贡牌")
 	}
 
 	// 验证上贡牌是除红桃Trump外最大的牌
-	tributeCard := tributePhase.TributeCards[3]
+	tributeCard := tributeCards[3]
 	if tributeCard == nil {
 		t.Fatalf("玩家3的上贡牌为空")
 	}

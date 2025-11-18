@@ -234,16 +234,20 @@ func TestSubmitTributeSelection(t *testing.T) {
 		t.Errorf("SubmitTributeSelection failed: %v", err)
 	}
 
-	// Verify selection was recorded in SelectionResults
-	if deal.TributePhase.SelectionResults == nil {
-		t.Errorf("SelectionResults was not initialized")
-	} else if originalGiver, exists := deal.TributePhase.SelectionResults[0]; !exists {
-		t.Errorf("Selection was not recorded in SelectionResults")
-	} else {
-		// Verify the selection points to the correct original giver
-		if deal.TributePhase.TributeCards[originalGiver] != selectedCard {
-			t.Errorf("Selection does not point to correct original giver's card")
+	// Verify selection was recorded in TributePairs
+	found := false
+	for _, pair := range deal.TributePhase.TributePairs {
+		if pair.Receiver == 0 {
+			found = true
+			// Verify the selection points to the correct original giver's card
+			if pair.TributeCard != selectedCard {
+				t.Errorf("Selection does not point to correct original giver's card")
+			}
+			break
 		}
+	}
+	if !found {
+		t.Errorf("Selection was not recorded in TributePairs")
 	}
 }
 
@@ -570,19 +574,33 @@ func TestCompleteDoubleDownFlow(t *testing.T) {
 		t.Fatalf("SubmitTributeSelection failed for second selection: %v", err)
 	}
 
-	// Step 5: Verify return tribute relationships were established
-	if len(deal.TributePhase.TributeMap) != 2 {
-		t.Errorf("Expected 2 return tribute relationships, got %d", len(deal.TributePhase.TributeMap))
+	// Step 5: Verify tribute relationships were established
+	if len(deal.TributePhase.TributePairs) != 2 {
+		t.Errorf("Expected 2 tribute pairs, got %d", len(deal.TributePhase.TributePairs))
 	}
 
-	// Player 3 should return to player 0 (who got player 3's Big Joker)
-	if receiver, exists := deal.TributePhase.TributeMap[3]; !exists || receiver != 0 {
-		t.Errorf("Expected player 3 to return tribute to player 0, got %v", receiver)
+	// Player 0 should have received tribute from player 3 (who gave Big Joker)
+	found0 := false
+	for _, pair := range deal.TributePhase.TributePairs {
+		if pair.Giver == 3 && pair.Receiver == 0 {
+			found0 = true
+			break
+		}
+	}
+	if !found0 {
+		t.Errorf("Expected player 0 to receive tribute from player 3")
 	}
 
-	// Player 1 should return to player 2 (who got player 1's Ace)
-	if receiver, exists := deal.TributePhase.TributeMap[1]; !exists || receiver != 2 {
-		t.Errorf("Expected player 1 to return tribute to player 2, got %v", receiver)
+	// Player 2 should have received tribute from player 1 (who gave Ace)
+	found1 := false
+	for _, pair := range deal.TributePhase.TributePairs {
+		if pair.Giver == 1 && pair.Receiver == 2 {
+			found1 = true
+			break
+		}
+	}
+	if !found1 {
+		t.Errorf("Expected player 2 to receive tribute from player 1")
 	}
 
 	// Step 6: Process return tribute phase

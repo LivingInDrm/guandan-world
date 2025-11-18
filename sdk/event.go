@@ -202,7 +202,7 @@ func NewTributeExemptedEvent(
 
 	event.Payload = &eventpb.GameEvent_TributeExempted{
 		TributeExempted: &eventpb.TributeExemptedPayload{
-			JokerHolders: jokerHolders32,
+			BigJokerHolders: jokerHolders32,
 		},
 	}
 
@@ -214,16 +214,17 @@ func NewTributeCardSubmittedEvent(
 	emp *EventMetadataProvider,
 	match *Match,
 	deal *Deal,
+	giverSeat int,
 	card *Card,
 ) *GameEvent {
 	event := emp.CreateBaseEvent(
 		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_SUBMITTED,
-		match, deal, nil, -1,
+		match, deal, nil, giverSeat,
 	)
 
 	event.Payload = &eventpb.GameEvent_TributeCardSubmitted{
 		TributeCardSubmitted: &eventpb.TributeCardSubmittedPayload{
-			SubmitedCard: ConvertCardToProto(card),
+			SubmittedCard: ConvertCardToProto(card),
 		},
 	}
 

@@ -122,6 +122,16 @@ func (c *Card) IsWildcard() bool {
 	return c.Number == c.Level && c.Color == "Heart"
 }
 
+// IsBigJoker 判断是否为大王
+func (c *Card) IsBigJoker() bool {
+	return c.Number == 16 && c.Color == "Joker"
+}
+
+// IsSmallJoker 判断是否为小王
+func (c *Card) IsSmallJoker() bool {
+	return c.Number == 15 && c.Color == "Joker"
+}
+
 // GreaterThan 比较牌的大小
 func (c *Card) GreaterThan(other *Card) bool {
 	// 级别牌：当前级别的特殊数字，作为除了王之外的最大数字

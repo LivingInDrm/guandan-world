@@ -15,7 +15,9 @@ message Card {
   int32 suit = 1;
   
   // 牌的数字值，范围 1-16
-  // 1=A, 11=J, 12=Q, 13=K, 14=小王, 15=大王, 16=当前级牌
+  // 2-10=数字牌, 11=J, 12=Q, 13=K, 14=A, 15=小王(黑王), 16=大王(红王)
+  // 注意：级牌不是固定的 rank 值，而是根据 deal_level 动态判断
+  //      当 rank == deal_level 时，该牌为级牌；其中红桃花色的级牌为逢人配(wildcard)
   int32 rank = 2;
   
   // 牌在整副牌中的唯一索引，范围 0-107
@@ -174,7 +176,7 @@ enum TributeType {
   TRIBUTE_TYPE_NONE = 4;
 }
 
-// TributePhaseStartedPayload 进贡阶段开始事件数据
+// TributeStartedPayload 进贡阶段开始事件数据
 message TributeStartedPayload {
   // 进贡类型："double_down"(双下), "single_last"(单下), "partner_last"(末游), "none"(无需进贡)
   TributeType tribute_type = 1;
@@ -187,17 +189,17 @@ message TributeStartedPayload {
 }
 
 // TributeExemptedPayload 免贡事件数据
-// 当败方玩家持有大小王时，可以免除进贡
+// 当败方玩家持有2张及以上大王时，可以免除进贡
 message TributeExemptedPayload {
-  // 持有大小王的玩家映射 seat -> joker_count
+  // 持有大王的玩家映射 seat -> big_joker_count
   // 仅包含败方玩家的信息
-  map<int32, int32> joker_holders = 1;
+  map<int32, int32> big_joker_holders = 1;
 }
 
 // TributeCardSubmittedPayload 贡牌提交事件数据
 message TributeCardSubmittedPayload {
   // 贡出的牌
-  Card submited_card = 1;
+  Card submitted_card = 1;
 }
 
 // TributeCardSelectedPayload 选牌事件数据（双下场景）
@@ -209,7 +211,7 @@ message TributeCardSelectedPayload {
   bool is_auto = 2;
 }
 
-// ReturnTributePayload 还贡事件数据
+// TributeCardReturnedPayload 还贡事件数据
 message TributeCardReturnedPayload {
   // 还贡的牌
   Card returned_card = 1;
@@ -303,16 +305,16 @@ message GameEvent {
   string match_id = 1;
   
   // 局索引（从 0 开始）
-  // 仅在局级及以下事件中填写，其他事件填 -1
-  int32 deal_index = 2;
+  // 仅在局级及以下事件中填写
+  optional int32 deal_index = 2;
   
   // 轮次索引（从 0 开始）
-  // 仅在轮级及玩家行为事件中填写，其他事件填 -1
-  int32 trick_index = 3;
+  // 仅在轮级及玩家行为事件中填写
+  optional int32 trick_index = 3;
   
   // 行为玩家座位号（0-3）
-  // 仅在玩家行为事件中填写，其他事件填 -1
-  int32 actor_seat = 4;
+  // 仅在玩家行为事件中填写
+  optional int32 actor_seat = 4;
   
   // 事件序列号（全局递增）
   // 用于事件排序和去重

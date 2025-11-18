@@ -168,22 +168,9 @@ func (drc *DealResultCalculator) calculateTributeInfo(tributePhase *TributePhase
 
 	info := &TributeInfo{
 		HasTribute:   true,
-		TributeMap:   make(map[int]int),
-		TributeCards: make(map[int]*Card),
-		ReturnCards:  make(map[int]*Card),
-	}
-
-	// Copy tribute information
-	for giver, receiver := range tributePhase.TributeMap {
-		info.TributeMap[giver] = receiver
-	}
-
-	for giver, card := range tributePhase.TributeCards {
-		info.TributeCards[giver] = card
-	}
-
-	for receiver, card := range tributePhase.ReturnCards {
-		info.ReturnCards[receiver] = card
+		TributeMap:   buildTributeMapFromPairs(tributePhase.TributePairs),
+		TributeCards: buildTributeCardsFromPairs(tributePhase.TributePairs),
+		ReturnCards:  buildReturnCardsFromPairs(tributePhase.TributePairs),
 	}
 
 	return info

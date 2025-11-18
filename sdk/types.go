@@ -90,16 +90,21 @@ type PlayAction struct {
 	IsPass     bool      `json:"is_pass"`
 }
 
+// TributePair records the complete lifecycle of a single tribute card
+type TributePair struct {
+	Giver       int   `json:"giver"`        // Seat number of the player giving tribute
+	Receiver    int   `json:"receiver"`     // Seat number of the player receiving tribute (-1 if pending/pool)
+	TributeCard *Card `json:"tribute_card"` // The tribute card being given
+	ReturnCard  *Card `json:"return_card"`  // The return tribute card (nil if not yet returned)
+}
+
 // TributePhase represents the tribute phase of a deal
 type TributePhase struct {
-	Status           TributeStatus `json:"status"`
-	TributeMap       map[int]int   `json:"tribute_map"`       // giver -> receiver
-	TributeCards     map[int]*Card `json:"tribute_cards"`     // giver -> card
-	ReturnCards      map[int]*Card `json:"return_cards"`      // receiver -> card
-	PoolCards        []*Card       `json:"pool_cards"`        // Cards in tribute pool (for double-down)
-	SelectingPlayer  int           `json:"selecting_player"`  // Player selecting from pool (-1 if none)
-	IsImmune         bool          `json:"is_immune"`         // Whether tribute was skipped due to immunity
-	SelectionResults map[int]int   `json:"selection_results"` // receiver -> original_giver (for double-down tracking)
+	Status          TributeStatus    `json:"status"`
+	TributePairs    []*TributePair   `json:"tribute_pairs"`    // All tribute relationships (single source of truth)
+	PoolCards       []*Card          `json:"pool_cards"`       // Cards in tribute pool (for double-down selection UI)
+	SelectingPlayer int              `json:"selecting_player"` // Player selecting from pool (-1 if none)
+	IsImmune        bool             `json:"is_immune"`        // Whether tribute was skipped due to immunity
 }
 
 // TributeStatus represents the status of tribute phase

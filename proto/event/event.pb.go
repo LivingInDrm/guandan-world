@@ -299,7 +299,10 @@ type Card struct {
 	// 花色编号：0=黑桃(Spade), 1=红桃(Heart), 2=梅花(Club), 3=方块(Diamond), -1=Joker
 	Suit int32 `protobuf:"varint,1,opt,name=suit,proto3" json:"suit,omitempty"`
 	// 牌的数字值，范围 1-16
-	// 1=A, 11=J, 12=Q, 13=K, 14=小王, 15=大王, 16=当前级牌
+	// 2-10=数字牌, 11=J, 12=Q, 13=K, 14=A, 15=小王(黑王), 16=大王(红王)
+	// 注意：级牌不是固定的 rank 值，而是根据 deal_level 动态判断
+	//
+	//	当 rank == deal_level 时，该牌为级牌；其中红桃花色的级牌为逢人配(wildcard)
 	Rank int32 `protobuf:"varint,2,opt,name=rank,proto3" json:"rank,omitempty"`
 	// 牌在整副牌中的唯一索引，范围 0-107
 	// 用于精确定位某张具体的牌（避免相同花色和数字的牌混淆）
@@ -762,7 +765,7 @@ func (x *DealEndedPayload) GetTrickCount() int32 {
 	return 0
 }
 
-// TributePhaseStartedPayload 进贡阶段开始事件数据
+// TributeStartedPayload 进贡阶段开始事件数据
 type TributeStartedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 进贡类型："double_down"(双下), "single_last"(单下), "partner_last"(末游), "none"(无需进贡)
@@ -827,14 +830,14 @@ func (x *TributeStartedPayload) GetReceivers() []int32 {
 }
 
 // TributeExemptedPayload 免贡事件数据
-// 当败方玩家持有大小王时，可以免除进贡
+// 当败方玩家持有2张及以上大王时，可以免除进贡
 type TributeExemptedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 持有大小王的玩家映射 seat -> joker_count
+	// 持有大王的玩家映射 seat -> big_joker_count
 	// 仅包含败方玩家的信息
-	JokerHolders  map[int32]int32 `protobuf:"bytes,1,rep,name=joker_holders,json=jokerHolders,proto3" json:"joker_holders,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	BigJokerHolders map[int32]int32 `protobuf:"bytes,1,rep,name=big_joker_holders,json=bigJokerHolders,proto3" json:"big_joker_holders,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *TributeExemptedPayload) Reset() {
@@ -867,9 +870,9 @@ func (*TributeExemptedPayload) Descriptor() ([]byte, []int) {
 	return file_event_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *TributeExemptedPayload) GetJokerHolders() map[int32]int32 {
+func (x *TributeExemptedPayload) GetBigJokerHolders() map[int32]int32 {
 	if x != nil {
-		return x.JokerHolders
+		return x.BigJokerHolders
 	}
 	return nil
 }
@@ -878,7 +881,7 @@ func (x *TributeExemptedPayload) GetJokerHolders() map[int32]int32 {
 type TributeCardSubmittedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 贡出的牌
-	SubmitedCard  *Card `protobuf:"bytes,1,opt,name=submited_card,json=submitedCard,proto3" json:"submited_card,omitempty"`
+	SubmittedCard *Card `protobuf:"bytes,1,opt,name=submitted_card,json=submittedCard,proto3" json:"submitted_card,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -913,9 +916,9 @@ func (*TributeCardSubmittedPayload) Descriptor() ([]byte, []int) {
 	return file_event_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *TributeCardSubmittedPayload) GetSubmitedCard() *Card {
+func (x *TributeCardSubmittedPayload) GetSubmittedCard() *Card {
 	if x != nil {
-		return x.SubmitedCard
+		return x.SubmittedCard
 	}
 	return nil
 }
@@ -976,7 +979,7 @@ func (x *TributeCardSelectedPayload) GetIsAuto() bool {
 	return false
 }
 
-// ReturnTributePayload 还贡事件数据
+// TributeCardReturnedPayload 还贡事件数据
 type TributeCardReturnedPayload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 还贡的牌
@@ -1415,14 +1418,14 @@ type GameEvent struct {
 	// 比赛唯一标识符（必填）
 	MatchId string `protobuf:"bytes,1,opt,name=match_id,json=matchId,proto3" json:"match_id,omitempty"`
 	// 局索引（从 0 开始）
-	// 仅在局级及以下事件中填写，其他事件填 -1
-	DealIndex int32 `protobuf:"varint,2,opt,name=deal_index,json=dealIndex,proto3" json:"deal_index,omitempty"`
+	// 仅在局级及以下事件中填写
+	DealIndex *int32 `protobuf:"varint,2,opt,name=deal_index,json=dealIndex,proto3,oneof" json:"deal_index,omitempty"`
 	// 轮次索引（从 0 开始）
-	// 仅在轮级及玩家行为事件中填写，其他事件填 -1
-	TrickIndex int32 `protobuf:"varint,3,opt,name=trick_index,json=trickIndex,proto3" json:"trick_index,omitempty"`
+	// 仅在轮级及玩家行为事件中填写
+	TrickIndex *int32 `protobuf:"varint,3,opt,name=trick_index,json=trickIndex,proto3,oneof" json:"trick_index,omitempty"`
 	// 行为玩家座位号（0-3）
-	// 仅在玩家行为事件中填写，其他事件填 -1
-	ActorSeat int32 `protobuf:"varint,4,opt,name=actor_seat,json=actorSeat,proto3" json:"actor_seat,omitempty"`
+	// 仅在玩家行为事件中填写
+	ActorSeat *int32 `protobuf:"varint,4,opt,name=actor_seat,json=actorSeat,proto3,oneof" json:"actor_seat,omitempty"`
 	// 事件序列号（全局递增）
 	// 用于事件排序和去重
 	Seq int64 `protobuf:"varint,5,opt,name=seq,proto3" json:"seq,omitempty"`
@@ -1493,22 +1496,22 @@ func (x *GameEvent) GetMatchId() string {
 }
 
 func (x *GameEvent) GetDealIndex() int32 {
-	if x != nil {
-		return x.DealIndex
+	if x != nil && x.DealIndex != nil {
+		return *x.DealIndex
 	}
 	return 0
 }
 
 func (x *GameEvent) GetTrickIndex() int32 {
-	if x != nil {
-		return x.TrickIndex
+	if x != nil && x.TrickIndex != nil {
+		return *x.TrickIndex
 	}
 	return 0
 }
 
 func (x *GameEvent) GetActorSeat() int32 {
-	if x != nil {
-		return x.ActorSeat
+	if x != nil && x.ActorSeat != nil {
+		return *x.ActorSeat
 	}
 	return 0
 }
@@ -1867,14 +1870,14 @@ const file_event_proto_rawDesc = "" +
 	"\x15TributeStartedPayload\x12=\n" +
 	"\ftribute_type\x18\x01 \x01(\x0e2\x1a.guandan.event.TributeTypeR\vtributeType\x12\x16\n" +
 	"\x06givers\x18\x02 \x03(\x05R\x06givers\x12\x1c\n" +
-	"\treceivers\x18\x03 \x03(\x05R\treceivers\"\xb7\x01\n" +
-	"\x16TributeExemptedPayload\x12\\\n" +
-	"\rjoker_holders\x18\x01 \x03(\v27.guandan.event.TributeExemptedPayload.JokerHoldersEntryR\fjokerHolders\x1a?\n" +
-	"\x11JokerHoldersEntry\x12\x10\n" +
+	"\treceivers\x18\x03 \x03(\x05R\treceivers\"\xc4\x01\n" +
+	"\x16TributeExemptedPayload\x12f\n" +
+	"\x11big_joker_holders\x18\x01 \x03(\v2:.guandan.event.TributeExemptedPayload.BigJokerHoldersEntryR\x0fbigJokerHolders\x1aB\n" +
+	"\x14BigJokerHoldersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"W\n" +
-	"\x1bTributeCardSubmittedPayload\x128\n" +
-	"\rsubmited_card\x18\x01 \x01(\v2\x13.guandan.event.CardR\fsubmitedCard\"o\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"Y\n" +
+	"\x1bTributeCardSubmittedPayload\x12:\n" +
+	"\x0esubmitted_card\x18\x01 \x01(\v2\x13.guandan.event.CardR\rsubmittedCard\"o\n" +
 	"\x1aTributeCardSelectedPayload\x128\n" +
 	"\rselected_card\x18\x01 \x01(\v2\x13.guandan.event.CardR\fselectedCard\x12\x17\n" +
 	"\ais_auto\x18\x02 \x01(\bR\x06isAuto\"\x94\x01\n" +
@@ -1898,15 +1901,15 @@ const file_event_proto_rawDesc = "" +
 	"\x17PlayerDisconnectPayload\x12\x1b\n" +
 	"\tauto_play\x18\x01 \x01(\bR\bautoPlay\"5\n" +
 	"\x16PlayerReconnectPayload\x12\x1b\n" +
-	"\tauto_play\x18\x01 \x01(\bR\bautoPlay\"\x94\r\n" +
+	"\tauto_play\x18\x01 \x01(\bR\bautoPlay\"\xd1\r\n" +
 	"\tGameEvent\x12\x19\n" +
-	"\bmatch_id\x18\x01 \x01(\tR\amatchId\x12\x1d\n" +
+	"\bmatch_id\x18\x01 \x01(\tR\amatchId\x12\"\n" +
 	"\n" +
-	"deal_index\x18\x02 \x01(\x05R\tdealIndex\x12\x1f\n" +
-	"\vtrick_index\x18\x03 \x01(\x05R\n" +
-	"trickIndex\x12\x1d\n" +
+	"deal_index\x18\x02 \x01(\x05H\x01R\tdealIndex\x88\x01\x01\x12$\n" +
+	"\vtrick_index\x18\x03 \x01(\x05H\x02R\n" +
+	"trickIndex\x88\x01\x01\x12\"\n" +
 	"\n" +
-	"actor_seat\x18\x04 \x01(\x05R\tactorSeat\x12\x10\n" +
+	"actor_seat\x18\x04 \x01(\x05H\x03R\tactorSeat\x88\x01\x01\x12\x10\n" +
 	"\x03seq\x18\x05 \x01(\x03R\x03seq\x12\"\n" +
 	"\rcreated_at_ms\x18\x06 \x01(\x03R\vcreatedAtMs\x12,\n" +
 	"\x04type\x18\a \x01(\x0e2\x18.guandan.event.EventTypeR\x04type\x12I\n" +
@@ -1933,7 +1936,10 @@ const file_event_proto_rawDesc = "" +
 	"\x0eplayer_timeout\x184 \x01(\v2#.guandan.event.PlayerTimeoutPayloadH\x00R\rplayerTimeout\x12U\n" +
 	"\x11player_disconnect\x185 \x01(\v2&.guandan.event.PlayerDisconnectPayloadH\x00R\x10playerDisconnect\x12R\n" +
 	"\x10player_reconnect\x186 \x01(\v2%.guandan.event.PlayerReconnectPayloadH\x00R\x0fplayerReconnectB\t\n" +
-	"\apayload*\x86\x01\n" +
+	"\apayloadB\r\n" +
+	"\v_deal_indexB\x0e\n" +
+	"\f_trick_indexB\r\n" +
+	"\v_actor_seat*\x86\x01\n" +
 	"\vVictoryType\x12\x1c\n" +
 	"\x18VICTORY_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18VICTORY_TYPE_DOUBLE_DOWN\x10\x01\x12\x1c\n" +
@@ -2012,14 +2018,14 @@ var file_event_proto_goTypes = []any{
 	(*PlayerDisconnectPayload)(nil),     // 22: guandan.event.PlayerDisconnectPayload
 	(*PlayerReconnectPayload)(nil),      // 23: guandan.event.PlayerReconnectPayload
 	(*GameEvent)(nil),                   // 24: guandan.event.GameEvent
-	nil,                                 // 25: guandan.event.TributeExemptedPayload.JokerHoldersEntry
+	nil,                                 // 25: guandan.event.TributeExemptedPayload.BigJokerHoldersEntry
 }
 var file_event_proto_depIdxs = []int32{
 	5,  // 0: guandan.event.MatchStartedPayload.players:type_name -> guandan.event.PlayerBasicInfo
 	0,  // 1: guandan.event.DealEndedPayload.victory_type:type_name -> guandan.event.VictoryType
 	2,  // 2: guandan.event.TributeStartedPayload.tribute_type:type_name -> guandan.event.TributeType
-	25, // 3: guandan.event.TributeExemptedPayload.joker_holders:type_name -> guandan.event.TributeExemptedPayload.JokerHoldersEntry
-	4,  // 4: guandan.event.TributeCardSubmittedPayload.submited_card:type_name -> guandan.event.Card
+	25, // 3: guandan.event.TributeExemptedPayload.big_joker_holders:type_name -> guandan.event.TributeExemptedPayload.BigJokerHoldersEntry
+	4,  // 4: guandan.event.TributeCardSubmittedPayload.submitted_card:type_name -> guandan.event.Card
 	4,  // 5: guandan.event.TributeCardSelectedPayload.selected_card:type_name -> guandan.event.Card
 	4,  // 6: guandan.event.TributeCardReturnedPayload.returned_card:type_name -> guandan.event.Card
 	4,  // 7: guandan.event.PlayerPlayedPayload.cards:type_name -> guandan.event.Card
