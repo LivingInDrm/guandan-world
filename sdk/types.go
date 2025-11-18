@@ -135,16 +135,6 @@ const (
 	TributeActionReturn TributeActionType = "return" // Return tribute card
 )
 
-// TributeStatusInfo provides detailed information about tribute phase status
-type TributeStatusInfo struct {
-	Phase          TributeStatus    `json:"phase"`
-	TributeCards   map[int]*Card    `json:"tribute_cards"`   // Already determined tribute cards
-	ReturnCards    map[int]*Card    `json:"return_cards"`    // Already determined return cards
-	TributeMap     map[int]int      `json:"tribute_map"`     // Tribute mapping: giver -> receiver
-	PendingActions []*TributeAction `json:"pending_actions"` // Actions waiting for player input
-	IsImmune       bool             `json:"is_immune"`       // Whether tribute was skipped due to immunity
-}
-
 // Methods for Match and Deal are implemented in their respective files
 
 // TurnInfo provides information about the current turn state

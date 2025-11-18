@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"sync/atomic"
 	"time"
+
+	viewpb "guandan-world/proto/view"
 )
 
 // GameState 表示游戏的完整状态
@@ -29,6 +32,7 @@ type PlayerView struct {
 	DealStatus   DealStatus    `json:"deal_status"`             // 当前局的状态
 	TrickID      string        `json:"trick_id,omitempty"`      // 当前Trick的ID（playing阶段）
 	CurrentTurn  *int          `json:"current_turn,omitempty"`  // 当前轮到的玩家座位号（playing阶段，使用指针避免0值被omitempty省略）
+	Leader       *int          `json:"leader,omitempty"`        // 当前Trick的首家玩家座位号（playing阶段，使用指针避免0值被omitempty省略）
 	Plays        []*PlayAction `json:"plays,omitempty"`         // 当前Trick的所有出牌记录（playing阶段）
 	TributePhase *TributePhase `json:"tribute_phase,omitempty"` // 上贡阶段信息（tribute阶段）
 }
@@ -47,14 +51,15 @@ const (
 // GameEngine 是管理完整游戏生命周期的主要游戏引擎
 // 它协调所有游戏组件，处理玩家操作，管理游戏状态，并发送事件通知
 type GameEngine struct {
-	id           string                            // 游戏引擎的唯一标识符
-	status       GameStatus                        // 当前游戏状态
-	currentMatch *Match                            // 当前活跃的比赛实例
-	observers    map[GameEventType][]EventObserver // 事件观察者映射，按事件类型分组
-	eventMeta    *EventMetadataProvider            // 事件元数据提供者
-	mutex        sync.RWMutex                      // 读写锁，保护并发访问游戏状态
-	createdAt    time.Time                         // 游戏引擎创建时间
-	updatedAt    time.Time                         // 最后更新时间
+	id              string                            // 游戏引擎的唯一标识符
+	status          GameStatus                        // 当前游戏状态
+	currentMatch    *Match                            // 当前活跃的比赛实例
+	observers       map[GameEventType][]EventObserver // 事件观察者映射，按事件类型分组
+	eventMeta       *EventMetadataProvider            // 事件元数据提供者
+	currentStateSeq int64                             // 当前状态版本号（由事件seq驱动，用于视图版本控制）
+	mutex           sync.RWMutex                      // 读写锁，保护并发访问游戏状态
+	createdAt       time.Time                         // 游戏引擎创建时间
+	updatedAt       time.Time                         // 最后更新时间
 }
 
 // GameEngineInterface 定义了游戏引擎的公共接口
@@ -155,15 +160,6 @@ type GameEngineInterface interface {
 	//   - 完成牌的交换
 	SubmitReturnTribute(playerID int, cardID string) error
 
-	// GetTributeStatus 获取当前贡牌状态
-	// 返回值:
-	//   *TributeStatusInfo: 当前贡牌阶段的详细信息，如果不在贡牌阶段返回nil
-	// 功能说明:
-	//   - 查询当前贡牌阶段的状态
-	//   - 包含已确定的贡牌、还贡信息
-	//   - 包含待执行的动作列表
-	GetTributeStatus() *TributeStatusInfo
-
 	// 状态查询
 
 	// GetGameState 获取当前完整的游戏状态
@@ -183,20 +179,28 @@ type GameEngineInterface interface {
 	//   - 确保所有事件使用统一的序列号生成器
 	GetEventMetadataProvider() *EventMetadataProvider
 
-	// GetPlayerView 获取特定玩家视角的游戏状态
-	// 参数:
-	//   playerSeat: 玩家座位号(0-3)
-	// 返回值:
 	// GetPlayerView 获取玩家视角的游戏状态
 	// 参数:
 	//   playerSeat: 玩家座位号(0-3)
 	// 返回值:
-	//   *PlayerView: 玩家视角游戏状态
+	//   *viewpb.PlayerView: 玩家视角游戏状态（proto类型）
 	// 功能说明:
 	//   - 返回从指定玩家角度看到的游戏状态
 	//   - 包含玩家手牌、比赛等级、当前局信息、Trick信息等
 	//   - 隐藏其他玩家的手牌信息
-	GetPlayerView(playerSeat int) *PlayerView
+	//   - 返回proto定义的PlayerView消息
+	GetPlayerView(playerSeat int) *viewpb.PlayerView
+
+	// GetTributeView 获取进贡阶段视角的游戏状态
+	// 参数:
+	//   playerSeat: 玩家座位号(0-3)（预留，当前未使用）
+	// 返回值:
+	//   *viewpb.TributeView: 进贡阶段视角游戏状态（proto类型）
+	// 功能说明:
+	//   - 仅在tribute阶段返回有效数据
+	//   - 包含进贡关系、贡牌池、选牌玩家等信息
+	//   - 返回proto定义的TributeView消息
+	GetTributeView(playerSeat int) *viewpb.TributeView
 
 	// IsGameFinished 检查游戏是否已结束
 	// 返回值:
@@ -561,11 +565,35 @@ func (ge *GameEngine) GetEventMetadataProvider() *EventMetadataProvider {
 	return ge.eventMeta
 }
 
-// GetPlayerView 返回玩家视角的游戏状态
-func (ge *GameEngine) GetPlayerView(playerSeat int) *PlayerView {
+// GetPlayerView 返回玩家视角的游戏状态（proto类型）
+func (ge *GameEngine) GetPlayerView(playerSeat int) *viewpb.PlayerView {
 	ge.mutex.RLock()
 	defer ge.mutex.RUnlock()
 
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return nil
+	}
+
+	// 1. 构建SDK内部视图
+	sdkView := ge.buildInternalPlayerView(playerSeat)
+	if sdkView == nil {
+		return nil
+	}
+
+	// 2. 读取当前状态版本号
+	seq := atomic.LoadInt64(&ge.currentStateSeq)
+
+	// 3. 转换为proto
+	return ConvertPlayerViewToProto(
+		sdkView,
+		ge.currentMatch.ID,
+		len(ge.currentMatch.DealHistory),
+		seq,
+	)
+}
+
+// buildInternalPlayerView 构建SDK内部的PlayerView（保留原有逻辑）
+func (ge *GameEngine) buildInternalPlayerView(playerSeat int) *PlayerView {
 	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
 		return nil
 	}
@@ -592,6 +620,8 @@ func (ge *GameEngine) GetPlayerView(playerSeat int) *PlayerView {
 		view.TrickID = deal.CurrentTrick.ID
 		turn := deal.CurrentTrick.CurrentTurn
 		view.CurrentTurn = &turn
+		leader := deal.CurrentTrick.Leader
+		view.Leader = &leader
 		
 		plays := deal.CurrentTrick.Plays
 		if plays == nil {
@@ -603,6 +633,32 @@ func (ge *GameEngine) GetPlayerView(playerSeat int) *PlayerView {
 	}
 
 	return view
+}
+
+// GetTributeView 返回进贡阶段视角的游戏状态（proto类型）
+func (ge *GameEngine) GetTributeView(playerSeat int) *viewpb.TributeView {
+	ge.mutex.RLock()
+	defer ge.mutex.RUnlock()
+
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return nil
+	}
+
+	deal := ge.currentMatch.CurrentDeal
+	if deal.Status != DealStatusTribute || deal.TributePhase == nil {
+		return nil
+	}
+
+	// 读取当前状态版本号
+	seq := atomic.LoadInt64(&ge.currentStateSeq)
+
+	// 转换为proto
+	return ConvertTributeViewToProto(
+		deal.TributePhase,
+		ge.currentMatch.ID,
+		len(ge.currentMatch.DealHistory),
+		seq,
+	)
 }
 
 // IsGameFinished checks if the game is finished
@@ -759,6 +815,11 @@ func (ge *GameEngine) emitEvent(event *GameEvent) {
 // It reads the observers without acquiring additional locks to avoid deadlock
 // Note: All calls to this method must be inside a ge.mutex.Lock() block
 func (ge *GameEngine) emitEventLocked(event *GameEvent) {
+	// 更新当前状态版本号
+	if event != nil && event.Seq > 0 {
+		atomic.StoreInt64(&ge.currentStateSeq, event.Seq)
+	}
+
 	// Caller already holds the lock, so we can safely read observers
 	observers, exists := ge.observers[event.Type]
 	if !exists || len(observers) == 0 {
@@ -1208,26 +1269,6 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 		playerID, returnCard, targetPlayer, false))
 
 	return nil
-}
-
-// GetTributeStatus 获取当前贡牌状态
-func (ge *GameEngine) GetTributeStatus() *TributeStatusInfo {
-	ge.mutex.RLock()
-	defer ge.mutex.RUnlock()
-
-	// 验证基本状态
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return nil
-	}
-
-	deal := ge.currentMatch.CurrentDeal
-	if deal.Status != DealStatusTribute || deal.TributePhase == nil {
-		return nil
-	}
-
-	// 调用 TributeManager 获取状态信息
-	tm := NewTributeManager(deal.Level)
-	return tm.GetTributeStatusInfo(deal.TributePhase, deal.PlayerCards)
 }
 
 // GetCurrentDealStatus 获取当前牌局状态

@@ -239,15 +239,6 @@ export interface TributePhase {
   selection_results: { [receiver: number]: number }; // receiver -> original_giver
 }
 
-export interface TributeStatusInfo {
-  phase: TributeStatus;
-  tribute_cards: { [giver: number]: Card };
-  return_cards: { [receiver: number]: Card };
-  tribute_map: { [giver: number]: number };
-  pending_actions: TributeAction[];
-  is_immune: boolean;
-}
-
 // Deal result related types
 export const VictoryType = {
   DOUBLE_DOWN: 'double_down',   // rank1, rank2 same team (+3 levels)

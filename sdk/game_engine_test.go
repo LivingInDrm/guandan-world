@@ -161,20 +161,38 @@ func TestGameEngineGetPlayerView(t *testing.T) {
 		t.Fatal("GetPlayerView should return a non-nil view when match and deal are active")
 	}
 
-	if playerView.PlayerSeat != 0 {
+	// Verify proto fields using getters
+	if playerView.GetPlayerSeat() != 0 {
 		t.Error("Player view should have correct player seat")
 	}
 
-	if len(playerView.TeamLevels) != 2 {
+	if len(playerView.GetTeamLevels()) != 2 {
 		t.Error("Player view should have team levels")
 	}
 
-	if playerView.PlayerCards == nil {
+	if playerView.GetPlayerCards() == nil {
 		t.Error("Player view should have initialized player cards")
 	}
 	
-	if len(playerView.PlayerCards) != 27 {
-		t.Errorf("Player should have 27 cards, got %d", len(playerView.PlayerCards))
+	if len(playerView.GetPlayerCards()) != 27 {
+		t.Errorf("Player should have 27 cards, got %d", len(playerView.GetPlayerCards()))
+	}
+
+	// Verify metadata fields
+	if playerView.GetMatchId() == "" {
+		t.Error("Player view should have match_id")
+	}
+
+	if playerView.GetSeq() <= 0 {
+		t.Error("Player view should have positive seq")
+	}
+
+	if playerView.GetUpdatedAtMs() <= 0 {
+		t.Error("Player view should have valid updated_at_ms")
+	}
+
+	if playerView.GetDealIndex() != 0 {
+		t.Errorf("Expected deal_index=0, got %d", playerView.GetDealIndex())
 	}
 }
 

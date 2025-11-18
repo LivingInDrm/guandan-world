@@ -280,21 +280,21 @@ func TestGameEngine_PlayerView(t *testing.T) {
 			continue
 		}
 
-		if playerView.PlayerSeat != playerSeat {
-			t.Errorf("Expected player seat %d, got %d", playerSeat, playerView.PlayerSeat)
+		if playerView.GetPlayerSeat() != int32(playerSeat) {
+			t.Errorf("Expected player seat %d, got %d", playerSeat, playerView.GetPlayerSeat())
 		}
 
-		if len(playerView.TeamLevels) != 2 {
+		if len(playerView.GetTeamLevels()) != 2 {
 			t.Errorf("Expected team levels in player view for player %d", playerSeat)
 		}
 
-		if playerView.PlayerCards == nil {
+		if playerView.GetPlayerCards() == nil {
 			t.Errorf("Expected player cards in player view for player %d", playerSeat)
 		}
 
 		// Player should have their cards
-		if len(playerView.PlayerCards) != 27 {
-			t.Errorf("Player %d should have 27 cards in view, got %d", playerSeat, len(playerView.PlayerCards))
+		if len(playerView.GetPlayerCards()) != 27 {
+			t.Errorf("Player %d should have 27 cards in view, got %d", playerSeat, len(playerView.GetPlayerCards()))
 		}
 	}
 }

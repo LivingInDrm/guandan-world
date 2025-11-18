@@ -2,6 +2,7 @@ package game
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -12,7 +13,27 @@ import (
 	eventpb "guandan-world/proto/event"
 	"guandan-world/sdk"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
+
+// protoJSONMarshaler is the configuration for serializing proto messages to JSON
+// Uses snake_case field names and omits zero values for consistency with proto3 JSON mapping
+var protoJSONMarshaler = protojson.MarshalOptions{
+	UseProtoNames:   true,  // Use snake_case field names (match_id, deal_status)
+	EmitUnpopulated: false, // Don't emit zero values
+}
+
+// marshalProtoToRawJSON serializes a proto message to json.RawMessage
+// using the configured protoJSONMarshaler (snake_case fields, no zero values)
+// Returns nil and logs error if marshaling fails
+func marshalProtoToRawJSON(msg proto.Message, logPrefix string) json.RawMessage {
+	jsonBytes, err := protoJSONMarshaler.Marshal(msg)
+	if err != nil {
+		log.Printf("Failed to marshal %s to JSON: %v", logPrefix, err)
+		return nil
+	}
+	return json.RawMessage(jsonBytes)
+}
 
 // getEnvironment returns the current environment (test, dev, prod)
 // Defaults to "prod" if APP_ENV is not set
@@ -632,10 +653,9 @@ func NewWebSocketObserver(roomID string, wsManager WSManagerInterface, engine sd
 
 // OnGameEvent implements sdk.EventObserver
 func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
-	// Serialize the entire event to JSON for the websocket message
-	eventJSON, err := protojson.Marshal(event)
-	if err != nil {
-		log.Printf("Failed to marshal event to JSON: %v", err)
+	// Serialize the entire event to JSON using protojson
+	eventJSON := marshalProtoToRawJSON(event, "GameEvent")
+	if eventJSON == nil {
 		return
 	}
 
@@ -644,7 +664,7 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 		Type: websocket.MSG_GAME_EVENT,
 		Data: map[string]interface{}{
 			"event_type":  event.Type.String(),
-			"event_data":  string(eventJSON),
+			"event_data":  eventJSON,
 			"timestamp":   time.UnixMilli(event.CreatedAtMs),
 			"player_seat": event.GetActorSeat(),
 		},
@@ -708,11 +728,17 @@ func (wso *WebSocketObserver) sendPlayerViews(eventType eventpb.EventType) {
 
 			playerID := gameState.CurrentMatch.Players[playerSeat].ID
 
+			// Serialize PlayerView to JSON using protojson
+			playerViewJSON := marshalProtoToRawJSON(playerView, "PlayerView")
+			if playerViewJSON == nil {
+				continue
+			}
+
 			// Create filtered player view message
 			wsMessage := &websocket.WSMessage{
 				Type: websocket.MSG_PLAYER_VIEW,
 				Data: map[string]interface{}{
-					"player_view": playerView,
+					"player_view": playerViewJSON,
 					"event_type":  eventType.String(),
 					"player_seat": playerSeat,
 				},
@@ -723,6 +749,33 @@ func (wso *WebSocketObserver) sendPlayerViews(eventType eventpb.EventType) {
 			// Send to specific player
 			if err := wso.wsManager.SendToPlayer(playerID, wsMessage); err != nil {
 				log.Printf("Failed to send player view to player %s: %v", playerID, err)
+			}
+
+			// If in tribute phase, also send TributeView
+			if eventType >= eventpb.EventType_EVENT_TYPE_TRIBUTE_STARTED &&
+				eventType <= eventpb.EventType_EVENT_TYPE_TRIBUTE_COMPLETED {
+				
+				tributeView := wso.engine.GetTributeView(playerSeat)
+				if tributeView != nil {
+					// Serialize TributeView to JSON using protojson
+					tributeViewJSON := marshalProtoToRawJSON(tributeView, "TributeView")
+					if tributeViewJSON != nil {
+						tributeMsg := &websocket.WSMessage{
+							Type: "tribute_view",
+							Data: map[string]interface{}{
+								"tribute_view": tributeViewJSON,
+								"event_type":   eventType.String(),
+								"player_seat":  playerSeat,
+							},
+							Timestamp: time.Now(),
+							PlayerID:  playerID,
+						}
+
+						if err := wso.wsManager.SendToPlayer(playerID, tributeMsg); err != nil {
+							log.Printf("Failed to send tribute view to player %s: %v", playerID, err)
+						}
+					}
+				}
 			}
 		}
 	}

@@ -24,3 +24,40 @@ message PlayerBasicInfo {
   int32 seat = 3;
   int32 team_num = 4;
 }
+
+
+// CompType 牌型类型枚举
+enum CompType {
+  COMP_TYPE_UNSPECIFIED = 0;
+  COMP_TYPE_FOLD = 1;          // 弃牌/过牌
+  COMP_TYPE_ILLEGAL = 2;       // 非法牌型
+  COMP_TYPE_SINGLE = 3;        // 单张
+  COMP_TYPE_PAIR = 4;          // 对子
+  COMP_TYPE_TRIPLE = 5;        // 三张
+  COMP_TYPE_FULL_HOUSE = 6;    // 葫芦 (3+2)
+  COMP_TYPE_STRAIGHT = 7;      // 顺子
+  COMP_TYPE_PLATE = 8;         // 钢板 (连对)
+  COMP_TYPE_TUBE = 9;          // 钢管 (三连)
+  COMP_TYPE_JOKER_BOMB = 10;   // 王炸
+  COMP_TYPE_NAIVE_BOMB = 11;   // 普通炸弹 (4+张同牌)
+  COMP_TYPE_STRAIGHT_FLUSH = 12; // 同花顺
+}
+
+
+// PlayAction 玩家出牌动作
+message PlayAction {
+  // 玩家座位号 (0-3)
+  int32 player_seat = 1;
+  
+  // 出的牌（空表示过牌）
+  repeated Card cards = 2;
+  
+  // 牌型组合的类型
+  CompType comp_type = 3;
+  
+  // 时间戳（Unix 毫秒）
+  int64 timestamp_ms = 4;
+  
+  // 是否为过牌
+  bool is_pass = 5;
+}

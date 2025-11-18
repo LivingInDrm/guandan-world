@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package guandan.view;
+
+import "common.proto";
+
+option go_package = "guandan-world/proto/view";
+
+// ========================================
+// 枚举定义
+// ========================================
+
+// DealStatus 牌局状态
+enum DealStatus {
+  DEAL_STATUS_UNSPECIFIED = 0;
+  DEAL_STATUS_WAITING = 1;
+  DEAL_STATUS_DEALING = 2;
+  DEAL_STATUS_TRIBUTE = 3;
+  DEAL_STATUS_PLAYING = 4;
+  DEAL_STATUS_FINISHED = 5;
+}
+
+// TributeStatus 进贡阶段状态
+enum TributeStatus {
+  TRIBUTE_STATUS_UNSPECIFIED = 0;
+  TRIBUTE_STATUS_WAITING = 1;
+  TRIBUTE_STATUS_SELECTING = 2;  // 选牌中 (双下场景)
+  TRIBUTE_STATUS_RETURNING = 3;  // 还贡中
+  TRIBUTE_STATUS_FINISHED = 4;
+}
+
+// ========================================
+// PlayerView 主消息
+// ========================================
+
+// PlayerView 玩家视角游戏状态
+// 扁平化设计，包含玩家私有信息和公开可见信息
+message PlayerView {
+  // ===== 元数据字段 (Field 1-9) =====
+  
+  // 比赛唯一标识符（必填）
+  string match_id = 1;
+  
+  // 局索引（从 0 开始）
+  int32 deal_index = 2;
+  
+  // 轮次索引（从 0 开始）
+  // 仅当 deal_status = PLAYING 时有值
+  optional int32 trick_index = 3;
+  
+  // 状态序列号（全局递增）
+  // 用于状态版本控制和去重
+  int64 seq = 4;
+  
+  // 状态更新时间戳（毫秒）
+  int64 updated_at_ms = 5;
+  
+  // ===== 基础信息 (Field 10-19) =====
+  
+  // 玩家座位号 (0-3)
+  int32 player_seat = 10;
+  
+  // 该玩家的手牌（私有信息，仅对该玩家可见）
+  repeated guandan.common.Card player_cards = 11;
+  
+  // 两队当前等级 [team0_level, team1_level]
+  repeated int32 team_levels = 12;
+  
+  // 当前局的等级（逢人配的基准值）
+  int32 deal_level = 13;
+  
+  // 牌局状态
+  DealStatus deal_status = 14;
+  
+  // ===== 出牌阶段字段 (Field 20-29) =====
+  // 仅当 deal_status = PLAYING 时有值
+  
+  // 当前轮到的玩家座位号 (0-3)
+  optional int32 current_turn = 20;
+  
+  // 当前 Trick 的所有出牌记录（按时间顺序）
+  repeated guandan.common.PlayAction plays = 21;
+  
+  // 当前 Trick 的先出的玩家座位号
+  optional int32 leader = 22;
+  
+  // ===== 保留扩展字段 (Field 30-99) =====
+  reserved 30 to 99;
+}
+
+// ========================================
+// TributeView 进贡视角
+// ========================================
+
+
+// ========================================
+// 进贡相关消息
+// ========================================
+
+
+// TributePair 进贡关系对
+message TributePair {
+  // 进贡方座位号 (0-3)
+  int32 giver = 1;
+  
+  // 收贡方座位号 (0-3)，-1 表示待定或进池
+  int32 receiver = 2;
+  
+  // 进贡的牌（可选，提交后才有）
+  optional guandan.common.Card tribute_card = 3;
+  
+  // 还贡的牌（可选，还贡后才有）
+  optional guandan.common.Card return_card = 4;
+}
+
+// TributeView 进贡阶段状态视图
+message TributeView {
+  // ===== 元数据字段 (Field 1-9) =====
+  
+  // 比赛唯一标识符（必填）
+  string match_id = 1;
+  
+  // 局索引（从 0 开始）
+  int32 deal_index = 2;
+  
+  // 状态序列号（全局递增）
+  // 用于状态版本控制和去重
+  int64 seq = 3;
+  
+  // 状态更新时间戳（毫秒）
+  int64 updated_at_ms = 4;
+  
+  // ===== 进贡阶段信息 (Field 10-19) =====
+  
+  // 进贡阶段状态
+  TributeStatus status = 10;
+  
+  // 进贡关系列表
+  repeated TributePair tribute_pairs = 11;
+  
+  // 贡牌池（双下选牌场景使用）
+  repeated guandan.common.Card pool_cards = 12;
+  
+  // rank1玩家座位号，-1 表示无
+  int32 selecting_player = 13;
+  
+  // 是否免贡
+  bool is_immune = 14;
+  
+  // ===== 保留扩展字段 (Field 20-99) =====
+  reserved 20 to 99;
+}

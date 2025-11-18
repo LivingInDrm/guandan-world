@@ -603,49 +603,7 @@ func (tm *TributeManager) SubmitReturn(phase *TributePhase, playerID int, cardID
 	return nil
 }
 
-// GetTributeStatusInfo returns detailed tribute status information
-func (tm *TributeManager) GetTributeStatusInfo(phase *TributePhase, playerCards [4][]*Card) *TributeStatusInfo {
-	if phase == nil {
-		return nil
-	}
-
-	// Build pending actions list
-	pendingActions := make([]*TributeAction, 0)
-
-	switch phase.Status {
-	case TributeStatusSelecting:
-		if phase.SelectingPlayer >= 0 && len(phase.PoolCards) > 0 {
-			pendingActions = append(pendingActions, &TributeAction{
-				Type:     TributeActionSelect,
-				PlayerID: phase.SelectingPlayer,
-				Options:  phase.PoolCards,
-			})
-		}
-
-	case TributeStatusReturning:
-		for _, pair := range phase.TributePairs {
-			if pair.Receiver != -1 && pair.ReturnCard == nil {
-				pendingActions = append(pendingActions, &TributeAction{
-					Type:         TributeActionReturn,
-					PlayerID:     pair.Receiver,
-					Options:      playerCards[pair.Receiver],
-					TargetPlayer: pair.Giver,
-				})
-			}
-		}
-	}
-
-	return &TributeStatusInfo{
-		Phase:          phase.Status,
-		TributeCards:   buildTributeCardsFromPairs(phase.TributePairs),
-		ReturnCards:    buildReturnCardsFromPairs(phase.TributePairs),
-		TributeMap:     buildTributeMapFromPairs(phase.TributePairs),
-		PendingActions: pendingActions,
-		IsImmune:       phase.IsImmune,
-	}
-}
-
-// buildTributeMapFromPairs builds a tribute map from TributePairs for backward compatibility
+// buildTributeMapFromPairs builds a tribute map from TributePairs
 // Note: Filters out pending assignments (receiver == -1) to avoid client confusion
 func buildTributeMapFromPairs(pairs []*TributePair) map[int]int {
 	result := make(map[int]int)
@@ -658,7 +616,7 @@ func buildTributeMapFromPairs(pairs []*TributePair) map[int]int {
 	return result
 }
 
-// buildTributeCardsFromPairs builds a tribute cards map from TributePairs for backward compatibility
+// buildTributeCardsFromPairs builds a tribute cards map from TributePairs
 func buildTributeCardsFromPairs(pairs []*TributePair) map[int]*Card {
 	result := make(map[int]*Card)
 	for _, pair := range pairs {
@@ -669,7 +627,7 @@ func buildTributeCardsFromPairs(pairs []*TributePair) map[int]*Card {
 	return result
 }
 
-// buildReturnCardsFromPairs builds a return cards map from TributePairs for backward compatibility
+// buildReturnCardsFromPairs builds a return cards map from TributePairs
 func buildReturnCardsFromPairs(pairs []*TributePair) map[int]*Card {
 	result := make(map[int]*Card)
 	for _, pair := range pairs {

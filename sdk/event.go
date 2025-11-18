@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	commonpb "guandan-world/proto/common"
 	eventpb "guandan-world/proto/event"
 )
 
@@ -83,10 +84,10 @@ func NewMatchStartedEvent(
 		match, nil, nil, -1,
 	)
 
-	// Convert []Player to []*eventpb.PlayerBasicInfo
-	protoPlayers := make([]*eventpb.PlayerBasicInfo, len(players))
+	// Convert []Player to []*commonpb.PlayerBasicInfo
+	protoPlayers := make([]*commonpb.PlayerBasicInfo, len(players))
 	for i, p := range players {
-		protoPlayers[i] = &eventpb.PlayerBasicInfo{
+		protoPlayers[i] = &commonpb.PlayerBasicInfo{
 			Id:       p.ID,
 			Username: p.Username,
 			Seat:     int32(p.Seat),

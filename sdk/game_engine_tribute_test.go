@@ -316,62 +316,6 @@ func TestSubmitReturnTribute(t *testing.T) {
 	}
 }
 
-// TestGetTributeStatus tests getting tribute status
-func TestGetTributeStatus(t *testing.T) {
-	engine := NewGameEngine()
-
-	// When no deal is active
-	status := engine.GetTributeStatus()
-	if status != nil {
-		t.Errorf("GetTributeStatus should return nil when no deal is active")
-	}
-
-	// Set up match with tribute
-	players := []Player{
-		{ID: "p1", Username: "Player1", Seat: 0},
-		{ID: "p2", Username: "Player2", Seat: 1},
-		{ID: "p3", Username: "Player3", Seat: 2},
-		{ID: "p4", Username: "Player4", Seat: 3},
-	}
-
-	engine.StartMatch(players)
-
-	lastResult := &DealResult{
-		Rankings:    []int{0, 1, 2, 3},
-		VictoryType: VictoryTypeSingleLast,
-	}
-
-	deal, _ := NewDeal(2, lastResult)
-
-	// Set up all player hands
-	for i := 0; i < 4; i++ {
-		deal.PlayerCards[i] = []*Card{}
-	}
-	deal.PlayerCards[0] = []*Card{{Number: 10, Color: "Heart", Name: "10"}}  // rank1
-	deal.PlayerCards[3] = []*Card{{Number: 14, Color: "Spade", Name: "Ace"}} // rank4
-
-	engine.currentMatch.CurrentDeal = deal
-	deal.Status = DealStatusTribute
-
-	// Reset tribute phase to waiting status
-	if deal.TributePhase != nil {
-		deal.TributePhase.Status = TributeStatusWaiting
-	}
-
-	// Process once to initialize
-	engine.ProcessTributePhase()
-
-	// Get status during tribute phase
-	status = engine.GetTributeStatus()
-	if status == nil {
-		t.Fatal("GetTributeStatus should return status during tribute phase")
-	}
-
-	if status.Phase != deal.TributePhase.Status {
-		t.Errorf("Status phase mismatch: expected %v, got %v", deal.TributePhase.Status, status.Phase)
-	}
-}
-
 // TestTributeEventHandling tests that tribute events are properly sent
 func TestTributeEventHandling(t *testing.T) {
 	engine := NewGameEngine()

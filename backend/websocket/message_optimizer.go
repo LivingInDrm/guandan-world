@@ -214,7 +214,9 @@ func (mo *MessageOptimizer) calculateGameStateDelta(lastState, currentState inte
 
 // calculatePlayerViewDelta 计算玩家视图增量
 func (mo *MessageOptimizer) calculatePlayerViewDelta(lastState, currentState interface{}) interface{} {
-	// 类似的增量计算逻辑
+	// PlayerView is now a proto message with compact structure
+	// Send full message instead of delta for simplicity and reliability
+	// Proto messages are already optimized for size
 	return nil
 }
 
