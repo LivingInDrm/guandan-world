@@ -448,6 +448,20 @@ func (h *RoomHandler) runGamePrepareSequence(roomID string, players [4]*room.Pla
 		}
 	}()
 
+	// Step 0: Send room update to ensure all players have latest room state
+	if roomData, err := h.roomService.GetRoom(roomID); err == nil {
+		h.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
+			Type: "room_update",
+			Data: map[string]interface{}{
+				"action": "game_starting",
+				"room":   roomData,
+			},
+			Timestamp: time.Now(),
+		})
+	} else {
+		log.Printf("Warning: Failed to get room data for room_update in room %s: %v", roomID, err)
+	}
+
 	// Step 1: Send game prepare event
 	h.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
 		Type: "game_prepare",
@@ -509,7 +523,7 @@ func (h *RoomHandler) runGamePrepareSequence(roomID string, players [4]*room.Pla
 						"player_cards":  []interface{}{},
 						"team_levels":   []int{2, 2},
 						"deal_level":    2,
-						"deal_status":   "waiting",
+						"deal_status":   "DEAL_STATUS_WAITING",
 						"trick_id":      "",
 						"current_turn":  nil,
 						"plays":         []interface{}{},

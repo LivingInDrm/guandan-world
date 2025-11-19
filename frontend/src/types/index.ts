@@ -113,6 +113,7 @@ export const WS_MESSAGE_TYPES = {
   // State sync
   GAME_EVENT: 'game_event',
   PLAYER_VIEW: 'player_view',
+  TRIBUTE_VIEW: 'tribute_view',
   ROOM_UPDATE: 'room_update',
   GAME_ACTION: 'game_action',
   
@@ -175,7 +176,7 @@ export interface PlayerView {
   player_cards: Card[];
   team_levels: [number, number];
   deal_level: number;
-  deal_status: string;
+  deal_status: DealStatus;
   trick_id?: string;
   current_turn?: number;
   plays?: PlayAction[];
@@ -185,7 +186,7 @@ export interface PlayerView {
 export interface PlayerGameState {
   team_levels: [number, number];
   deal_level: number;
-  deal_status: string;
+  deal_status: DealStatus;
   trick_id?: string;
   current_turn?: number;
   plays?: PlayAction[];
@@ -201,12 +202,25 @@ export interface GameActionData {
   options?: Card[];
 }
 
+// Deal status (aligned with proto DealStatus enum)
+export const DealStatus = {
+  UNSPECIFIED: 'DEAL_STATUS_UNSPECIFIED',
+  WAITING: 'DEAL_STATUS_WAITING',
+  DEALING: 'DEAL_STATUS_DEALING',
+  TRIBUTE: 'DEAL_STATUS_TRIBUTE',
+  PLAYING: 'DEAL_STATUS_PLAYING',
+  FINISHED: 'DEAL_STATUS_FINISHED'
+} as const;
+
+export type DealStatus = typeof DealStatus[keyof typeof DealStatus];
+
 // Tribute phase related types
 export const TributeStatus = {
-  WAITING: 'waiting',
-  SELECTING: 'selecting',
-  RETURNING: 'returning',
-  FINISHED: 'finished'
+  UNSPECIFIED: 'TRIBUTE_STATUS_UNSPECIFIED',
+  WAITING: 'TRIBUTE_STATUS_WAITING',
+  SELECTING: 'TRIBUTE_STATUS_SELECTING',
+  RETURNING: 'TRIBUTE_STATUS_RETURNING',
+  FINISHED: 'TRIBUTE_STATUS_FINISHED'
 } as const;
 
 export type TributeStatus = typeof TributeStatus[keyof typeof TributeStatus];

@@ -6,13 +6,14 @@ import { useGameStore } from '../../store/gameStore';
 import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
 import type { Room, Player, WSMessage, Card, GameActionData, PlayerView, PlayerGameState } from '../../types';
-import { WS_MESSAGE_TYPES } from '../../types';
+import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
 import TributePhase from './TributePhase';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
+import { convertProtoCardsToFrontend, convertProtoPlaysToFrontend } from '../../utils/cardUtils';
 
 // 游戏页面状态常量
 const GamePageState = {
@@ -152,7 +153,7 @@ const GamePage: React.FC = () => {
       console.log('👤 Player Seat:', player_seat);
       console.log('📦 Payload:', payload);
       console.log('🎮 Current Phase:', currentPhase);
-      
+
       switch (event_type) {
         case 'tribute_started':
           console.log('➡️ Action: Set phase to TRIBUTE_PHASE');
@@ -234,9 +235,9 @@ const GamePage: React.FC = () => {
     const handlePlayerView = (message: WSMessage) => {
       // Get the latest phase value from store instead of using closure
       const latestPhase = useGameStore.getState().currentPhase;
-      
+
       console.log('👁️ [GamePage] Received PLAYER_VIEW, current phase:', latestPhase);
-      
+
       console.log('🎮 [GamePage] Received player_view message', {
         timestamp: new Date().toISOString(),
         messageType: message.type,
@@ -267,14 +268,16 @@ const GamePage: React.FC = () => {
       });
 
       setPlayerSeat(playerView.player_seat);
-      
-      const cards = playerView.player_cards || [];
+
+      // Convert proto cards to frontend format (with id field)
+      const protoCards = playerView.player_cards || [];
+      const cards = convertProtoCardsToFrontend(protoCards);
       console.log('🃏 [GamePage] Setting player hand:', {
         cardCount: cards.length,
         cards: cards.map((c: Card) => ({ id: c.id, suit: c.suit, rank: c.rank }))
       });
       setPlayerHand(cards);
-      
+
       const currentTrickId = playerView.trick_id;
       if (currentTrickId && currentTrickId !== previousTrickId) {
         console.log('🔄 [GamePage] Trick changed:', {
@@ -284,35 +287,35 @@ const GamePage: React.FC = () => {
         });
         setPreviousTrickId(currentTrickId);
       }
-      
+
       if (latestPhase === GamePageState.GAME_PREPARE) {
         console.log('🔄 [GamePage] Currently in GAME_PREPARE, checking phase transition...');
-        
+
         console.log('📊 [GamePage] Phase transition check:', {
           dealStatus: playerView.deal_status,
           hasTributePhase: !!playerView.tribute_phase,
           tributePhaseStatus: playerView.tribute_phase?.status
         });
-        
-        if (playerView.deal_status === 'tribute') {
-          console.log('🔀 [GamePage] ✅ Transitioning to TRIBUTE_PHASE (deal_status=tribute)');
+
+        if (playerView.deal_status === DealStatus.TRIBUTE) {
+          console.log('🔀 [GamePage] ✅ Transitioning to TRIBUTE_PHASE');
           setCurrentPhase(GamePageState.TRIBUTE_PHASE);
-        } else if (playerView.deal_status === 'playing') {
-          console.log('🔀 [GamePage] ✅ Transitioning to PLAYING (deal_status=playing)');
+        } else if (playerView.deal_status === DealStatus.PLAYING) {
+          console.log('🔀 [GamePage] ✅ Transitioning to PLAYING');
           setCurrentPhase(GamePageState.PLAYING);
         } else {
-          console.log('ℹ️ [GamePage] deal_status is neither tribute nor playing:', playerView.deal_status);
+          console.log('ℹ️ [GamePage] deal_status:', playerView.deal_status);
         }
       } else {
         console.log('ℹ️ [GamePage] Not in GAME_PREPARE phase, skipping phase transition. Current phase:', latestPhase);
       }
 
-      const isPlayingPhase = playerView.deal_status === 'playing';
-      const isMyTurnValue = isPlayingPhase && 
-                           playerView.current_turn === playerView.player_seat;
+      const isPlayingPhase = playerView.deal_status === DealStatus.PLAYING;
+      const isMyTurnValue = isPlayingPhase &&
+        playerView.current_turn === playerView.player_seat;
       const handLen = playerView.player_cards?.length ?? 0;
       const canPlayValue = isMyTurnValue && handLen > 0;
-      
+
       console.log('🎯 [GamePage] Player action state:', {
         canPlay: canPlayValue,
         isMyTurn: isMyTurnValue,
@@ -322,11 +325,15 @@ const GamePage: React.FC = () => {
         playerSeat: playerView.player_seat,
         hasCards: handLen > 0
       });
-      
+
       setCanPlay(canPlayValue);
       setMyTurn(isMyTurnValue);
 
       setTributeInfo(playerView.tribute_phase || null);
+
+      // Convert proto plays to frontend format
+      const protoPlays = playerView.plays || [];
+      const convertedPlays = convertProtoPlaysToFrontend(protoPlays);
 
       const playerGameState: PlayerGameState = {
         team_levels: playerView.team_levels,
@@ -334,7 +341,7 @@ const GamePage: React.FC = () => {
         deal_status: playerView.deal_status,
         trick_id: playerView.trick_id,
         current_turn: playerView.current_turn,
-        plays: playerView.plays,
+        plays: convertedPlays,
         tribute_phase: playerView.tribute_phase
       };
       setGameState(playerGameState);
@@ -345,12 +352,12 @@ const GamePage: React.FC = () => {
     const handleGameAction = (message: WSMessage) => {
       console.log('🎮 [GamePage] Received game_action:', message);
       const actionData = message.data as GameActionData;
-      
+
       if (actionData.timeout !== undefined) {
         console.log(`⏱️ [GamePage] Setting timeout to ${actionData.timeout} seconds`);
         setTurnTimeoutSeconds(actionData.timeout);
       }
-      
+
       if (actionData.player_seat === playerSeat) {
         console.log('🎯 [GamePage] This action is for current player');
       }
@@ -497,7 +504,7 @@ const GamePage: React.FC = () => {
 
     setMatchResult(null);
     setCurrentPhase(GamePageState.WAITING_PLAYERS);
-    
+
     // 如果是房主，自动开始游戏
     if (room.owner === user.id) {
       await handleStartGame();
@@ -536,8 +543,8 @@ const GamePage: React.FC = () => {
           key={seatIndex}
           className={`
             relative p-4 rounded-lg border-2 min-h-[120px] flex flex-col items-center justify-center
-            ${isEmpty 
-              ? 'border-dashed border-gray-300 bg-gray-50' 
+            ${isEmpty
+              ? 'border-dashed border-gray-300 bg-gray-50'
               : 'border-solid border-blue-300 bg-blue-50'
             }
             ${isCurrentUser ? 'ring-2 ring-blue-500' : ''}
@@ -572,9 +579,8 @@ const GamePage: React.FC = () => {
               <div className="space-y-1">
                 <div className="font-medium text-gray-800">{player.username}</div>
                 <div className="flex items-center justify-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    player.online ? 'bg-green-500' : 'bg-gray-400'
-                  }`} />
+                  <div className={`w-2 h-2 rounded-full ${player.online ? 'bg-green-500' : 'bg-gray-400'
+                    }`} />
                   <span className="text-xs text-gray-600">
                     {player.online ? '在线' : '离线'}
                   </span>
@@ -605,9 +611,8 @@ const GamePage: React.FC = () => {
                 玩家数量: {getPlayerCount()}/4
               </div>
               <div className="flex items-center justify-end space-x-2 mt-1">
-                <div className={`w-2 h-2 rounded-full ${
-                  isConnected ? 'bg-green-500' : 'bg-red-500'
-                }`} />
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
+                  }`} />
                 <span className="text-xs text-gray-500">
                   {isConnected ? '已连接' : '连接断开'}
                 </span>
@@ -634,11 +639,10 @@ const GamePage: React.FC = () => {
               <button
                 onClick={handleStartGame}
                 disabled={!canStartGame() || isStarting}
-                className={`px-8 py-2 rounded-lg font-medium transition-colors ${
-                  canStartGame()
+                className={`px-8 py-2 rounded-lg font-medium transition-colors ${canStartGame()
                     ? 'bg-green-500 text-white hover:bg-green-600'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 {isStarting ? '开始中...' : '开始游戏'}
               </button>
@@ -676,12 +680,11 @@ const GamePage: React.FC = () => {
             {countdown}
           </div>
           <p className="text-gray-600">请准备好开始游戏...</p>
-          
+
           {/* Connection status indicator */}
           <div className="mt-4 flex items-center justify-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${
-              isConnected ? 'bg-green-500' : 'bg-red-500'
-            }`} />
+            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
+              }`} />
             <span className="text-sm text-gray-600">
               {isConnected ? '连接正常' : '连接断开'}
             </span>
@@ -699,7 +702,7 @@ const GamePage: React.FC = () => {
     const currentLevel = playerGameState.deal_level || 2;
     const plays = playerGameState.plays || [];
     const currentTurn = playerGameState.current_turn ?? -1;
-    
+
     const players = room.players;
 
     return (
@@ -738,7 +741,7 @@ const GamePage: React.FC = () => {
     switch (currentPhase) {
       case GamePageState.WAITING_PLAYERS:
         return renderWaitingPlayers();
-      
+
       case GamePageState.GAME_PREPARE:
         return (
           <>
@@ -746,7 +749,7 @@ const GamePage: React.FC = () => {
             {renderGamePrepare()}
           </>
         );
-      
+
       case GamePageState.TRIBUTE_PHASE:
         return tributeInfo && room ? (
           <TributePhase
@@ -758,10 +761,10 @@ const GamePage: React.FC = () => {
             onReturnTribute={handleReturnTribute}
           />
         ) : null;
-      
+
       case GamePageState.PLAYING:
         return renderPlaying();
-      
+
       case GamePageState.DEAL_RESULT:
         return dealResult && room ? (
           <DealResult
@@ -773,7 +776,7 @@ const GamePage: React.FC = () => {
             isMatchFinished={false}
           />
         ) : null;
-      
+
       case GamePageState.MATCH_RESULT:
         return matchResult ? (
           <MatchResult
@@ -782,7 +785,7 @@ const GamePage: React.FC = () => {
             onPlayAgain={handlePlayAgain}
           />
         ) : null;
-      
+
       default:
         return renderWaitingPlayers();
     }

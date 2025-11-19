@@ -5,7 +5,8 @@ import RoomLobby from './RoomLobby';
 import { useAuthStore } from '../../store/authStore';
 import { useRoomStore } from '../../store/roomStore';
 import { apiClient } from '../../services/api';
-import type { User, RoomListResponse, RoomInfo } from '../../types';
+import type { User, RoomInfo } from '../../types';
+import { RoomStatus } from '../../types';
 
 // Mock the stores
 vi.mock('../../store/authStore');
@@ -20,9 +21,10 @@ const mockUser: User = {
 
 // Create mock data for pagination testing (25 rooms to test pagination)
 const createMockRooms = (count: number): RoomInfo[] => {
+  const statuses = [RoomStatus.WAITING, RoomStatus.READY, RoomStatus.PLAYING];
   return Array.from({ length: count }, (_, index) => ({
     id: `room${index + 1}`,
-    status: index % 3, // Mix of different statuses
+    status: statuses[index % 3], // Mix of different statuses
     player_count: Math.floor(Math.random() * 4) + 1,
     players: [
       { id: `user${index + 1}`, username: `player${index + 1}`, seat: 0, online: true, auto_play: false }

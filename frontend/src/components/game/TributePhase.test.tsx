@@ -1,13 +1,12 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import TributePhase from './TributePhase';
-import { 
+import type { 
   TributePhase as TributePhaseType, 
-  TributeStatus, 
   Player, 
   Card 
 } from '../../types';
+import { TributeStatus } from '../../types';
 
 // Mock data
 const mockPlayers: (Player | null)[] = [
@@ -28,13 +27,6 @@ const mockCard2: Card = {
   id: 'card2',
   suit: 1, // hearts
   rank: 13, // K
-  is_joker: false
-};
-
-const mockCard3: Card = {
-  id: 'card3',
-  suit: 2, // clubs
-  rank: 12, // Q
   is_joker: false
 };
 

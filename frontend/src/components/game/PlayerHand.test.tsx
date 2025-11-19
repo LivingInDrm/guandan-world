@@ -1,8 +1,7 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PlayerHand from './PlayerHand';
-import { Card } from '../../types';
+import type { Card } from '../../types';
 
 // Mock cards for testing
 const mockCards: Card[] = [
@@ -17,10 +16,10 @@ const mockCards: Card[] = [
 ];
 
 describe('PlayerHand', () => {
-  const mockOnCardSelect = vi.fn();
+  let mockOnCardSelect: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockOnCardSelect.mockClear();
+    mockOnCardSelect = vi.fn();
   });
 
   it('renders hand with correct card count', () => {

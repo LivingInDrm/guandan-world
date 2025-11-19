@@ -1,9 +1,7 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import MatchResult from './MatchResult';
-import { MatchResult as MatchResultType, Player } from '../../types';
-import { beforeEach } from 'node:test';
+import type { MatchResult as MatchResultType } from '../../types';
 
 // Mock data
 const mockMatchResult: MatchResultType = {
@@ -25,12 +23,12 @@ const mockMatchResult: MatchResultType = {
 };
 
 describe('MatchResult', () => {
-  const mockOnReturnToLobby = vi.fn();
-  const mockOnPlayAgain = vi.fn();
+  let mockOnReturnToLobby: ReturnType<typeof vi.fn>;
+  let mockOnPlayAgain: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockOnReturnToLobby.mockClear();
-    mockOnPlayAgain.mockClear();
+    mockOnReturnToLobby = vi.fn();
+    mockOnPlayAgain = vi.fn();
   });
 
   it('renders match result correctly', () => {

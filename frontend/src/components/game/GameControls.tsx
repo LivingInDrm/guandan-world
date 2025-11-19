@@ -100,7 +100,18 @@ const GameControls: React.FC<GameControlsProps> = ({
       return { isValid: false, error: '三张牌必须是同点数' };
     }
 
-    // For more complex combinations, we would need more sophisticated validation
+    if (cards.length === 4) {
+      // Check if it's four of a kind (bomb)
+      if (cards.every(card => card.rank === cards[0].rank)) {
+        return { isValid: true, cardType: '炸弹' };
+      }
+      // Could also be three + one, but for now accept any 4-card combination
+      // Backend will do the full validation
+      return { isValid: true, cardType: '四张牌型' };
+    }
+
+    // For 5+ cards, accept and let backend validate
+    // Could be straights, full house, etc.
     if (cards.length >= 5) {
       return { isValid: true, cardType: `${cards.length}张牌型` };
     }

@@ -1,8 +1,7 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import GameControls from './GameControls';
-import { Card } from '../../types';
+import type { Card } from '../../types';
 
 // Mock cards for testing
 const mockCards: Card[] = [
@@ -12,12 +11,12 @@ const mockCards: Card[] = [
 ];
 
 describe('GameControls', () => {
-  const mockOnPlayCards = vi.fn();
-  const mockOnPass = vi.fn();
+  let mockOnPlayCards: ReturnType<typeof vi.fn>;
+  let mockOnPass: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockOnPlayCards.mockClear();
-    mockOnPass.mockClear();
+    mockOnPlayCards = vi.fn();
+    mockOnPass = vi.fn();
   });
 
   it('renders correctly when it is player turn', () => {

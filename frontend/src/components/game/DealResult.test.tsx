@@ -1,8 +1,8 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DealResult from './DealResult';
-import { DealResult as DealResultType, Player, VictoryType } from '../../types';
+import type { DealResult as DealResultType, Player } from '../../types';
+import { VictoryType } from '../../types';
 
 // Mock data
 const mockPlayers: Player[] = [
@@ -67,13 +67,15 @@ const mockDealResult: DealResultType = {
 const mockTeamLevels: [number, number] = [5, 3]; // Team 0 at level 5, Team 1 at level 3
 
 describe('DealResult', () => {
-  const mockOnContinue = vi.fn();
-  const mockOnExit = vi.fn();
+  let mockOnContinue: ReturnType<typeof vi.fn>;
+  let mockOnExit: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockOnContinue.mockClear();
-    mockOnExit.mockClear();
+    mockOnContinue = vi.fn();
+    mockOnExit = vi.fn();
   });
+
+
 
   it('renders deal result correctly', () => {
     render(

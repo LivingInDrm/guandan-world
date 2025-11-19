@@ -17,10 +17,11 @@ import (
 )
 
 // protoJSONMarshaler is the configuration for serializing proto messages to JSON
-// Uses snake_case field names and omits zero values for consistency with proto3 JSON mapping
+// Uses snake_case field names and emits all fields including zero values
+// EmitUnpopulated must be true to ensure player_seat=0 is serialized (seat 0 is valid)
 var protoJSONMarshaler = protojson.MarshalOptions{
-	UseProtoNames:   true,  // Use snake_case field names (match_id, deal_status)
-	EmitUnpopulated: false, // Don't emit zero values
+	UseProtoNames:   true, // Use snake_case field names (match_id, deal_status)
+	EmitUnpopulated: true, // Emit all fields, including zero values (required for player_seat=0)
 }
 
 // marshalProtoToRawJSON serializes a proto message to json.RawMessage

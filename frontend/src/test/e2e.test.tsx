@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import App from '../App'
-import { AuthProvider } from '../components/auth/AuthProvider'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import App from '../App';
+import AuthProvider from '../components/auth/AuthProvider';
 
 // Mock WebSocket
 class MockWebSocket {
@@ -16,8 +16,10 @@ class MockWebSocket {
   onclose: ((event: CloseEvent) => void) | null = null
   onmessage: ((event: MessageEvent) => void) | null = null
   onerror: ((event: Event) => void) | null = null
+  url: string
 
-  constructor(public url: string) {
+  constructor(url: string) {
+    this.url = url;
     setTimeout(() => {
       this.readyState = MockWebSocket.OPEN
       if (this.onopen) {
