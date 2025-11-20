@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DealResult from './DealResult';
 import type { DealResult as DealResultType, Player } from '../../types';
-import { VictoryType } from '../../types';
+import { VictoryType } from '../../types/proto';
 
 // Mock data
 const mockPlayers: Player[] = [
@@ -15,7 +15,7 @@ const mockPlayers: Player[] = [
 const mockDealResult: DealResultType = {
   rankings: [0, 2, 1, 3], // Player1 first, Player3 second, Player2 third, Player4 fourth
   winning_team: 0, // Team 0 (seats 0,2) wins
-  victory_type: VictoryType.DOUBLE_DOWN,
+  victory_type: VictoryType.VICTORY_TYPE_DOUBLE_DOWN,
   upgrades: [3, 0], // Team 0 gets +3, Team 1 gets +0
   duration: 300000, // 5 minutes in milliseconds
   trick_count: 15,
@@ -209,7 +209,7 @@ describe('DealResult', () => {
   it('handles different victory types correctly', () => {
     const singleLastResult = {
       ...mockDealResult,
-      victory_type: VictoryType.SINGLE_LAST,
+      victory_type: VictoryType.VICTORY_TYPE_SINGLE_LAST,
       upgrades: [2, 0] as [number, number]
     };
 

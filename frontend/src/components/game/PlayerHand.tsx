@@ -27,9 +27,9 @@ const CardGroup: React.FC<CardGroupProps> = ({
   const safeCards = Array.isArray(cards) ? cards : [];
 
   const sortedCards = [...safeCards].sort((a, b) => {
-    if (a.is_joker && b.is_joker) return b.rank - a.rank;
-    if (a.is_joker) return -1;
-    if (b.is_joker) return 1;
+    if (a.isJoker && b.isJoker) return b.rank - a.rank;
+    if (a.isJoker) return -1;
+    if (b.isJoker) return 1;
     
     const suitPriority = [3, 1, 2, 0];
     const aPriority = suitPriority.indexOf(a.suit);

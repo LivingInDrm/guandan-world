@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DealResult as DealResultType, Player } from '../../types';
-import { VictoryType } from '../../types';
+import { VictoryType } from '../../types/proto';
 
 interface DealResultProps {
   dealResult: DealResultType;
@@ -53,11 +53,11 @@ const DealResult: React.FC<DealResultProps> = ({
   // Get victory type display text
   const getVictoryTypeText = (victoryType: VictoryType): string => {
     switch (victoryType) {
-      case VictoryType.DOUBLE_DOWN:
+      case VictoryType.VICTORY_TYPE_DOUBLE_DOWN:
         return '双下';
-      case VictoryType.SINGLE_LAST:
+      case VictoryType.VICTORY_TYPE_SINGLE_LAST:
         return '单贡';
-      case VictoryType.PARTNER_LAST:
+      case VictoryType.VICTORY_TYPE_PARTNER_LAST:
         return '对贡';
       default:
         return '胜利';

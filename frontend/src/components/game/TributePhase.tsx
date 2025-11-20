@@ -113,7 +113,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       `}
       onClick={selectable ? onClick : undefined}
     >
-      {card.is_joker ? (
+      {card.isJoker ? (
         <div className="text-center">
           <div className="font-bold text-red-600">{getRankText(card.rank)}</div>
         </div>

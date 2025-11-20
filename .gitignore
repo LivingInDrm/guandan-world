@@ -103,3 +103,6 @@ old_doc.md
 
 # Proto编译产出
 *.pb.go
+
+# Proto 生成的前端文件
+frontend/src/types/generated/*.ts

@@ -5,9 +5,9 @@ import type { Card } from '../../types';
 
 // Mock cards for testing
 const mockCards: Card[] = [
-  { id: '1', suit: 0, rank: 14, is_joker: false }, // A♠
-  { id: '2', suit: 1, rank: 14, is_joker: false }, // A♥
-  { id: '3', suit: 0, rank: 13, is_joker: false }, // K♠
+  { id: '1', suit: 0, rank: 14, isJoker: false, deckIndex: 0 }, // A♠
+  { id: '2', suit: 1, rank: 14, isJoker: false, deckIndex: 1 }, // A♥
+  { id: '3', suit: 0, rank: 13, isJoker: false, deckIndex: 2 }, // K♠
 ];
 
 describe('GameControls', () => {
@@ -299,9 +299,9 @@ describe('GameControls', () => {
 
   it('validates three of a kind correctly', () => {
     const threeCards = [
-      { id: '1', suit: 0, rank: 5, is_joker: false },
-      { id: '2', suit: 1, rank: 5, is_joker: false },
-      { id: '3', suit: 2, rank: 5, is_joker: false },
+      { id: '1', suit: 0, rank: 5, isJoker: false, deckIndex: 0 },
+      { id: '2', suit: 1, rank: 5, isJoker: false, deckIndex: 1 },
+      { id: '3', suit: 2, rank: 5, isJoker: false, deckIndex: 2 },
     ];
 
     render(
@@ -320,9 +320,9 @@ describe('GameControls', () => {
 
   it('shows error for invalid three cards', () => {
     const invalidThreeCards = [
-      { id: '1', suit: 0, rank: 5, is_joker: false },
-      { id: '2', suit: 1, rank: 6, is_joker: false },
-      { id: '3', suit: 2, rank: 7, is_joker: false },
+      { id: '1', suit: 0, rank: 5, isJoker: false, deckIndex: 0 },
+      { id: '2', suit: 1, rank: 6, isJoker: false, deckIndex: 1 },
+      { id: '3', suit: 2, rank: 7, isJoker: false, deckIndex: 2 },
     ];
 
     render(
@@ -341,11 +341,11 @@ describe('GameControls', () => {
 
   it('handles complex card combinations', () => {
     const fiveCards = [
-      { id: '1', suit: 0, rank: 5, is_joker: false },
-      { id: '2', suit: 1, rank: 6, is_joker: false },
-      { id: '3', suit: 2, rank: 7, is_joker: false },
-      { id: '4', suit: 3, rank: 8, is_joker: false },
-      { id: '5', suit: 0, rank: 9, is_joker: false },
+      { id: '1', suit: 0, rank: 5, isJoker: false, deckIndex: 0 },
+      { id: '2', suit: 1, rank: 6, isJoker: false, deckIndex: 1 },
+      { id: '3', suit: 2, rank: 7, isJoker: false, deckIndex: 2 },
+      { id: '4', suit: 3, rank: 8, isJoker: false, deckIndex: 3 },
+      { id: '5', suit: 0, rank: 9, isJoker: false, deckIndex: 4 },
     ];
 
     render(

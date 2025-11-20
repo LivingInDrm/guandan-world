@@ -5,14 +5,14 @@ import type { Card } from '../../types';
 
 // Mock cards for testing
 const mockCards: Card[] = [
-  { id: '1', suit: 0, rank: 14, is_joker: false }, // A♠
-  { id: '2', suit: 1, rank: 14, is_joker: false }, // A♥
-  { id: '3', suit: 0, rank: 13, is_joker: false }, // K♠
-  { id: '4', suit: 1, rank: 13, is_joker: false }, // K♥
-  { id: '5', suit: 2, rank: 5, is_joker: false },  // 5♣
-  { id: '6', suit: 3, rank: 5, is_joker: false },  // 5♦
-  { id: '7', suit: 0, rank: 15, is_joker: true },  // Small Joker
-  { id: '8', suit: 0, rank: 16, is_joker: true },  // Big Joker
+  { id: '1', suit: 0, rank: 14, isJoker: false, deckIndex: 0 }, // A♠
+  { id: '2', suit: 1, rank: 14, isJoker: false, deckIndex: 1 }, // A♥
+  { id: '3', suit: 0, rank: 13, isJoker: false, deckIndex: 2 }, // K♠
+  { id: '4', suit: 1, rank: 13, isJoker: false, deckIndex: 3 }, // K♥
+  { id: '5', suit: 2, rank: 5, isJoker: false, deckIndex: 4 },  // 5♣
+  { id: '6', suit: 3, rank: 5, isJoker: false, deckIndex: 5 },  // 5♦
+  { id: '7', suit: 0, rank: 15, isJoker: true, deckIndex: 6 },  // Small Joker
+  { id: '8', suit: 0, rank: 16, isJoker: true, deckIndex: 7 },  // Big Joker
 ];
 
 describe('PlayerHand', () => {
@@ -193,10 +193,10 @@ describe('PlayerHand', () => {
 
   it('sorts cards within groups by suit priority', () => {
     const sameRankCards: Card[] = [
-      { id: '1', suit: 0, rank: 5, is_joker: false }, // 5♠
-      { id: '2', suit: 1, rank: 5, is_joker: false }, // 5♥
-      { id: '3', suit: 2, rank: 5, is_joker: false }, // 5♣
-      { id: '4', suit: 3, rank: 5, is_joker: false }, // 5♦
+      { id: '1', suit: 0, rank: 5, isJoker: false, deckIndex: 0 }, // 5♠
+      { id: '2', suit: 1, rank: 5, isJoker: false, deckIndex: 1 }, // 5♥
+      { id: '3', suit: 2, rank: 5, isJoker: false, deckIndex: 2 }, // 5♣
+      { id: '4', suit: 3, rank: 5, isJoker: false, deckIndex: 3 }, // 5♦
     ];
 
     const { container } = render(
@@ -217,8 +217,8 @@ describe('PlayerHand', () => {
 
   it('handles joker cards correctly', () => {
     const jokerCards: Card[] = [
-      { id: '1', suit: 0, rank: 15, is_joker: true }, // Small Joker
-      { id: '2', suit: 0, rank: 16, is_joker: true }, // Big Joker
+      { id: '1', suit: 0, rank: 15, isJoker: true, deckIndex: 0 }, // Small Joker
+      { id: '2', suit: 0, rank: 16, isJoker: true, deckIndex: 1 }, // Big Joker
     ];
 
     render(

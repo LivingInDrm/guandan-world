@@ -57,15 +57,18 @@
 git clone https://github.com/your-username/guandan-world.git
 cd guandan-world
 
-# 2. 启动后端服务（Docker）
+# 2. 安装根目录依赖并生成 Proto 文件（首次运行必需）
+npm install      # 会自动运行 make proto-ts 生成 TypeScript 类型
+
+# 3. 启动后端服务（Docker）
 ./deploy.sh dev deploy
 
-# 3. 在新终端启动前端（本地）
+# 4. 在新终端启动前端（本地）
 cd frontend
 npm install      # 首次运行需要
-npm run dev      # 启动Vite开发服务器
+npm run dev      # 启动Vite开发服务器（会自动检查并生成 Proto 文件）
 
-# 4. 访问应用
+# 5. 访问应用
 # 前端: http://localhost:5173 (Vite本地服务)
 # 后端: http://localhost:8080
 ```

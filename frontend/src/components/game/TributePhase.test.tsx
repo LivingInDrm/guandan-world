@@ -20,21 +20,24 @@ const mockCard1: Card = {
   id: 'card1',
   suit: 0, // spades
   rank: 14, // A
-  is_joker: false
+  isJoker: false,
+  deckIndex: 0
 };
 
 const mockCard2: Card = {
   id: 'card2',
   suit: 1, // hearts
   rank: 13, // K
-  is_joker: false
+  isJoker: false,
+  deckIndex: 1
 };
 
 const mockBigJoker: Card = {
   id: 'joker1',
   suit: 0,
   rank: 16,
-  is_joker: true
+  isJoker: true,
+  deckIndex: 2
 };
 
 describe('TributePhase', () => {
@@ -312,7 +315,8 @@ describe('TributePhase', () => {
         id: 'test-card',
         suit: 1, // hearts
         rank: 14, // A
-        is_joker: false
+        isJoker: false,
+        deckIndex: 0
       };
 
       render(

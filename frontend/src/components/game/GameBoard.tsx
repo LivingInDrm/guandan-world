@@ -128,7 +128,7 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position 
     return <div className={getPositionClasses()} />;
   }
 
-  if (play.is_pass) {
+  if (play.isPass) {
     return (
       <div className={getPositionClasses()}>
         <div className="bg-gray-200 px-3 py-1 rounded text-sm text-gray-600 font-medium">
@@ -214,11 +214,11 @@ const GameBoard: React.FC<GameBoardProps> = ({
       return PlayerStatus.PLAYING;
     }
     
-    const playerPlays = plays.filter(p => p.player_seat === seat);
+    const playerPlays = plays.filter(p => p.playerSeat === seat);
     const lastPlay = playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
     
     if (lastPlay) {
-      return lastPlay.is_pass ? PlayerStatus.PASSED : PlayerStatus.PLAYED;
+      return lastPlay.isPass ? PlayerStatus.PASSED : PlayerStatus.PLAYED;
     }
     
     return PlayerStatus.WAITING;
@@ -229,7 +229,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
       return null;
     }
     
-    const playerPlays = plays.filter(p => p.player_seat === seat);
+    const playerPlays = plays.filter(p => p.playerSeat === seat);
     return playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
   };
 

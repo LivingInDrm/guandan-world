@@ -12,9 +12,9 @@ const mockPlayers: (Player | null)[] = [
 
 const mockPlays: PlayAction[] = [
   {
-    player_seat: 0,
-    cards: [{ id: 'card1', suit: 0, rank: 5, is_joker: false }],
-    is_pass: false,
+    playerSeat: 0,
+    cards: [{ id: 'card1', suit: 0, rank: 5, isJoker: false, deckIndex: 0 }],
+    isPass: false,
     timestamp: '2024-01-01T00:00:00Z',
   }
 ];

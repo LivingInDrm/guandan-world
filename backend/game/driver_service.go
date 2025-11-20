@@ -17,15 +17,17 @@ import (
 )
 
 // protoJSONMarshaler is the configuration for serializing proto messages to JSON
-// Uses snake_case field names and emits all fields including zero values
-// EmitUnpopulated must be true to ensure player_seat=0 is serialized (seat 0 is valid)
+// Uses camelCase field names and emits all fields including zero values
+// EmitUnpopulated must be true to ensure playerSeat=0 is serialized (seat 0 is valid)
+// UseEnumNumbers serializes enums as integers instead of strings for type safety and efficiency
 var protoJSONMarshaler = protojson.MarshalOptions{
-	UseProtoNames:   true, // Use snake_case field names (match_id, deal_status)
-	EmitUnpopulated: true, // Emit all fields, including zero values (required for player_seat=0)
+	UseProtoNames:   false, // Use camelCase field names (matchId, dealStatus)
+	EmitUnpopulated: true,  // Emit all fields, including zero values (required for playerSeat=0)
+	UseEnumNumbers:  true,  // Serialize enums as integers (VictoryType: 1 instead of "VICTORY_TYPE_DOUBLE_DOWN")
 }
 
 // marshalProtoToRawJSON serializes a proto message to json.RawMessage
-// using the configured protoJSONMarshaler (snake_case fields, no zero values)
+// using the configured protoJSONMarshaler (camelCase fields, all fields including zero values)
 // Returns nil and logs error if marshaling fails
 func marshalProtoToRawJSON(msg proto.Message, logPrefix string) json.RawMessage {
 	jsonBytes, err := protoJSONMarshaler.Marshal(msg)

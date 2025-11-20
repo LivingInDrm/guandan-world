@@ -1,12 +1,16 @@
-import type { Card, PlayAction } from '../types';
+import type { Card as ProtoCard, PlayAction as ProtoPlayAction } from '../types/proto';
+import type { FrontendCard as FrontendCardType } from '../types/frontend';
+
+// Re-export FrontendCard for convenience
+export type { FrontendCard } from '../types/frontend';
 
 // Convert proto Card format to frontend Card format
-// Proto Card: { suit: number, rank: number, deck_index: number }
-// Frontend Card: { id: string, suit: number, rank: number, is_joker: boolean }
-export function convertProtoCardToFrontend(protoCard: any): Card {
+// Proto Card: { suit: number, rank: number, deckIndex: number }
+// Frontend Card: extends ProtoCard with { id: string, isJoker: boolean }
+export function convertProtoCardToFrontend(protoCard: ProtoCard): FrontendCardType {
   const suit = protoCard.suit ?? -1;
   const rank = protoCard.rank ?? 0;
-  const deckIndex = protoCard.deck_index ?? protoCard.deckIndex ?? 0;
+  const deckIndex = protoCard.deckIndex ?? 0;
   
   // Convert suit number to color string
   let color = '';
@@ -36,33 +40,43 @@ export function convertProtoCardToFrontend(protoCard: any): Card {
   const isJoker = suit === -1 || rank === 15 || rank === 16;
   
   return {
+    ...protoCard,
     id,
-    suit,
-    rank,
-    is_joker: isJoker
+    isJoker
   };
 }
 
 // Convert array of proto cards to frontend cards
-export function convertProtoCardsToFrontend(protoCards: any[]): Card[] {
+export function convertProtoCardsToFrontend(protoCards: ProtoCard[]): FrontendCardType[] {
   if (!protoCards || !Array.isArray(protoCards)) {
     return [];
   }
   return protoCards.map(convertProtoCardToFrontend);
 }
 
-// Convert proto PlayAction to frontend PlayAction
-export function convertProtoPlayActionToFrontend(protoPlay: any): PlayAction {
+// Note: PlayAction from proto now uses camelCase (playerSeat, isPass, timestampMs)
+// We keep it as-is and add frontend Card conversion
+export interface FrontendPlayAction {
+  playerSeat: number;
+  cards: FrontendCardType[];
+  isPass: boolean;
+  timestamp: string;
+  compType?: number;
+}
+
+// Convert proto PlayAction to frontend PlayAction with FrontendCard
+export function convertProtoPlayActionToFrontend(protoPlay: ProtoPlayAction): FrontendPlayAction {
   return {
-    player_seat: protoPlay.player_seat ?? protoPlay.playerSeat ?? 0,
-    cards: convertProtoCardsToFrontend(protoPlay.cards || []),
-    is_pass: protoPlay.is_pass ?? protoPlay.isPass ?? false,
-    timestamp: protoPlay.timestamp || new Date().toISOString()
+    playerSeat: protoPlay.playerSeat,
+    cards: convertProtoCardsToFrontend(protoPlay.cards),
+    isPass: protoPlay.isPass,
+    timestamp: protoPlay.timestampMs ? new Date(Number(protoPlay.timestampMs)).toISOString() : new Date().toISOString(),
+    compType: protoPlay.compType
   };
 }
 
 // Convert array of proto PlayActions to frontend PlayActions
-export function convertProtoPlaysToFrontend(protoPlays: any[]): PlayAction[] {
+export function convertProtoPlaysToFrontend(protoPlays: ProtoPlayAction[]): FrontendPlayAction[] {
   if (!protoPlays || !Array.isArray(protoPlays)) {
     return [];
   }

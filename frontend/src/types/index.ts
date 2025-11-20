@@ -1,3 +1,63 @@
+// ========== Proto 生成的类型 ==========
+// 从 proto 文件自动生成的类型（数据传输格式）
+export type {
+  Card as ProtoCard,
+  PlayAction as ProtoPlayAction,
+  PlayerBasicInfo,
+  CompType,
+} from './proto';
+
+export {
+  DealStatus as ProtoDealStatus,
+  TributeStatus as ProtoTributeStatus,
+} from './generated/view';
+
+// 为前端提供方便的常量（兼容旧代码）
+import { 
+  DealStatus as ProtoDealStatusEnum, 
+  TributeStatus as ProtoTributeStatusEnum 
+} from './generated/view';
+import { VictoryType as ProtoVictoryTypeEnum } from './generated/event';
+
+export const DealStatus = {
+  UNSPECIFIED: ProtoDealStatusEnum.DEAL_STATUS_UNSPECIFIED,
+  WAITING: ProtoDealStatusEnum.DEAL_STATUS_WAITING,
+  DEALING: ProtoDealStatusEnum.DEAL_STATUS_DEALING,
+  TRIBUTE: ProtoDealStatusEnum.DEAL_STATUS_TRIBUTE,
+  PLAYING: ProtoDealStatusEnum.DEAL_STATUS_PLAYING,
+  FINISHED: ProtoDealStatusEnum.DEAL_STATUS_FINISHED,
+} as const;
+
+export const TributeStatus = {
+  UNSPECIFIED: ProtoTributeStatusEnum.TRIBUTE_STATUS_UNSPECIFIED,
+  WAITING: ProtoTributeStatusEnum.TRIBUTE_STATUS_WAITING,
+  SELECTING: ProtoTributeStatusEnum.TRIBUTE_STATUS_SELECTING,
+  RETURNING: ProtoTributeStatusEnum.TRIBUTE_STATUS_RETURNING,
+  FINISHED: ProtoTributeStatusEnum.TRIBUTE_STATUS_FINISHED,
+} as const;
+
+export type {
+  PlayerView as ProtoPlayerView,
+  TributeView as ProtoTributeView,
+  TributePair,
+} from './proto';
+
+export type {
+  GameEvent,
+  EventType,
+  VictoryType as ProtoVictoryType,
+} from './proto';
+
+// ========== 前端扩展类型 ==========
+// 在 proto 基础上添加 UI 需要的额外字段
+export type { FrontendCard } from './frontend';
+export type { FrontendPlayAction } from '../utils/cardUtils';
+
+// ========== 向后兼容的类型别名 ==========
+// 为了保持现有代码兼容，提供旧类型名称的别名
+export type Card = import('./frontend').FrontendCard;
+export type PlayAction = import('../utils/cardUtils').FrontendPlayAction;
+
 // Base types for the application
 
 export interface User {
@@ -125,20 +185,10 @@ export const WS_MESSAGE_TYPES = {
 
 export type WSMessageType = typeof WS_MESSAGE_TYPES[keyof typeof WS_MESSAGE_TYPES];
 
-// Game related types
-export interface Card {
-  id: string;
-  suit: number; // 0=spades, 1=hearts, 2=clubs, 3=diamonds
-  rank: number; // 2-14 (11=J, 12=Q, 13=K, 14=A), 15=small joker, 16=big joker
-  is_joker: boolean;
-}
+// ========== Game Card and Action Types (使用 Proto) ==========
+// Card 和 PlayAction 现在从 proto 生成，见文件顶部导出
 
-export interface PlayAction {
-  player_seat: number;
-  cards: Card[];
-  is_pass: boolean;
-  timestamp: string;
-}
+// Game related types
 
 export interface TrickInfo {
   id: string;
@@ -176,7 +226,7 @@ export interface PlayerView {
   player_cards: Card[];
   team_levels: [number, number];
   deal_level: number;
-  deal_status: DealStatus;
+  deal_status: number;  // 使用 DealStatus 枚举值（数字）
   trick_id?: string;
   current_turn?: number;
   plays?: PlayAction[];
@@ -186,7 +236,7 @@ export interface PlayerView {
 export interface PlayerGameState {
   team_levels: [number, number];
   deal_level: number;
-  deal_status: DealStatus;
+  deal_status: number;  // 使用 DealStatus 枚举值（数字）
   trick_id?: string;
   current_turn?: number;
   plays?: PlayAction[];
@@ -202,28 +252,10 @@ export interface GameActionData {
   options?: Card[];
 }
 
-// Deal status (aligned with proto DealStatus enum)
-export const DealStatus = {
-  UNSPECIFIED: 'DEAL_STATUS_UNSPECIFIED',
-  WAITING: 'DEAL_STATUS_WAITING',
-  DEALING: 'DEAL_STATUS_DEALING',
-  TRIBUTE: 'DEAL_STATUS_TRIBUTE',
-  PLAYING: 'DEAL_STATUS_PLAYING',
-  FINISHED: 'DEAL_STATUS_FINISHED'
-} as const;
+// ========== Deal and Tribute Status (使用 Proto) ==========
+// DealStatus 和 TributeStatus 现在从 proto/view.ts 导出，见文件顶部
 
-export type DealStatus = typeof DealStatus[keyof typeof DealStatus];
-
-// Tribute phase related types
-export const TributeStatus = {
-  UNSPECIFIED: 'TRIBUTE_STATUS_UNSPECIFIED',
-  WAITING: 'TRIBUTE_STATUS_WAITING',
-  SELECTING: 'TRIBUTE_STATUS_SELECTING',
-  RETURNING: 'TRIBUTE_STATUS_RETURNING',
-  FINISHED: 'TRIBUTE_STATUS_FINISHED'
-} as const;
-
-export type TributeStatus = typeof TributeStatus[keyof typeof TributeStatus];
+// Tribute phase related types (保留前端特定类型)
 
 export const TributeActionType = {
   NONE: 'none',
@@ -242,7 +274,7 @@ export interface TributeAction {
 }
 
 export interface TributePhase {
-  status: TributeStatus;
+  status: number;  // 使用 TributeStatus 枚举值（数字）
   tribute_map: { [giver: number]: number }; // giver -> receiver (-1 for pool)
   tribute_cards: { [giver: number]: Card };
   return_cards: { [receiver: number]: Card };
@@ -254,13 +286,7 @@ export interface TributePhase {
 }
 
 // Deal result related types
-export const VictoryType = {
-  DOUBLE_DOWN: 'double_down',   // rank1, rank2 same team (+3 levels)
-  SINGLE_LAST: 'single_last',   // rank1, rank3 same team (+2 levels)
-  PARTNER_LAST: 'partner_last'  // rank1, rank4 same team (+1 level)
-} as const;
-
-export type VictoryType = typeof VictoryType[keyof typeof VictoryType];
+// Note: VictoryType 直接使用 Proto 枚举，与 DealStatus、TributeStatus 保持一致
 
 export interface PlayerDealStats {
   player_seat: number;
@@ -287,7 +313,7 @@ export interface DealStatistics {
 export interface DealResult {
   rankings: number[];        // Order of finishing (seat numbers)
   winning_team: number;      // 0 or 1
-  victory_type: VictoryType;
+  victory_type: ProtoVictoryTypeEnum;
   upgrades: [number, number]; // Level upgrades for each team
   duration: number;          // Duration in milliseconds
   trick_count: number;

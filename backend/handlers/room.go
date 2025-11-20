@@ -494,56 +494,6 @@ func (h *RoomHandler) runGamePrepareSequence(roomID string, players [4]*room.Pla
 		Timestamp: time.Now(),
 	})
 
-	// Step 3.5: Send initial player view to each player
-	// This allows frontend to render game interface immediately
-	// SDK will send updated player views as the game progresses
-	log.Printf("Sending initial player views for room %s", roomID)
-	for i, player := range players {
-		if player != nil {
-			// Create player list for filtered state
-			playersList := make([]map[string]interface{}, 4)
-			for j, p := range players {
-				if p != nil {
-					playersList[j] = map[string]interface{}{
-						"id":         p.ID,
-						"username":   p.Username,
-						"seat":       p.Seat,
-						"online":     p.Online,
-						"hand_count": 0, // No cards dealt yet
-					}
-				}
-			}
-
-			// Send initial player view
-			initialView := &websocket.WSMessage{
-				Type: "player_view",
-				Data: map[string]interface{}{
-					"player_view": map[string]interface{}{
-						"player_seat":   i,
-						"player_cards":  []interface{}{},
-						"team_levels":   []int{2, 2},
-						"deal_level":    2,
-						"deal_status":   "DEAL_STATUS_WAITING",
-						"trick_id":      "",
-						"current_turn":  nil,
-						"plays":         []interface{}{},
-						"tribute_phase": nil,
-					},
-					"event_type":  "match_started",
-					"player_seat": i,
-				},
-				Timestamp: time.Now(),
-				PlayerID:  player.ID,
-			}
-
-			if err := h.wsManager.SendToPlayer(player.ID, initialView); err != nil {
-				log.Printf("Failed to send initial player view to player %s: %v", player.ID, err)
-			} else {
-				log.Printf("Sent initial player view to player %s (seat %d)", player.ID, i)
-			}
-		}
-	}
-
 	// Step 4: Convert room players to SDK players
 	sdkPlayers, err := h.convertToSDKPlayers(players)
 	if err != nil {

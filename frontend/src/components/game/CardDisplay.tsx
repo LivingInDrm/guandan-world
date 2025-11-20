@@ -46,7 +46,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   size = 'normal'
 }) => {
   const getCardBackground = () => {
-    if (card.is_joker) {
+    if (card.isJoker) {
       return card.rank === 16 ? 'bg-red-100' : 'bg-gray-100';
     }
     return 'bg-white';
@@ -74,7 +74,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       onClick={disabled ? undefined : onClick}
     >
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {card.is_joker ? (
+        {card.isJoker ? (
           <div className="text-center font-bold">
             {getRankText(card.rank)}
           </div>

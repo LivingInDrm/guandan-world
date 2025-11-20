@@ -34,11 +34,14 @@ proto-js:
 
 proto-ts:
 	@echo "🔨 Generating TypeScript proto files..."
-	@mkdir -p frontend/src/proto
+	@mkdir -p frontend/src/types/generated
 	protoc --proto_path=proto \
-		--plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
-		--ts_out=frontend/src/proto \
-		proto/event.proto
+		--plugin=./node_modules/.bin/protoc-gen-ts_proto \
+		--ts_proto_out=frontend/src/types/generated \
+		--ts_proto_opt=outputJsonMethods=true \
+		--ts_proto_opt=esModuleInterop=true \
+		--ts_proto_opt=useOptionals=messages \
+		proto/common.proto proto/event.proto proto/view.proto
 	@echo "✅ TypeScript proto files generated"
 
 clean-proto:

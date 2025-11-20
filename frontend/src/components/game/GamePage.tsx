@@ -5,15 +5,16 @@ import { useRoomStore } from '../../store/roomStore';
 import { useGameStore } from '../../store/gameStore';
 import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
-import type { Room, Player, WSMessage, Card, GameActionData, PlayerView, PlayerGameState } from '../../types';
+import type { Room, Player, WSMessage, Card, GameActionData, PlayerGameState, ProtoPlayerView, DealResult as DealResultType } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
+import type { DealEndedPayload } from '../../types/proto';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
 import TributePhase from './TributePhase';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
-import { convertProtoCardsToFrontend, convertProtoPlaysToFrontend } from '../../utils/cardUtils';
+import { convertProtoPlayerView, convertProtoPlayerViewToGameState } from '../../utils/converters';
 
 // 游戏页面状态常量
 const GamePageState = {
@@ -158,7 +159,7 @@ const GamePage: React.FC = () => {
         case 'tribute_started':
           console.log('➡️ Action: Set phase to TRIBUTE_PHASE');
           setCurrentPhase(GamePageState.TRIBUTE_PHASE);
-          setTributeInfo(payload.tribute_info);
+          // TributeInfo will be set from player_view message, not from event
           break;
         case 'tribute_completed':
           console.log('➡️ Action: Set phase to PLAYING');
@@ -169,13 +170,38 @@ const GamePage: React.FC = () => {
         case 'deal_ended':
           console.log('➡️ Action: Set phase to DEAL_RESULT');
           setCurrentPhase(GamePageState.DEAL_RESULT);
-          setDealResult(payload.deal_result || payload);
+          
+          // Parse DealEndedPayload from event_data (payload is GameEvent, need to access dealEnded)
+          const dealEndedPayload = payload.dealEnded as DealEndedPayload;
+          
+          // Construct DealResult with proper type conversion
+          const dealResult: DealResultType = {
+            rankings: dealEndedPayload.rankings || [],
+            winning_team: dealEndedPayload.winningTeam || 0,
+            victory_type: dealEndedPayload.victoryType, // Now receives number directly
+            upgrades: (dealEndedPayload.levelChange || [0, 0]) as [number, number],
+            duration: dealEndedPayload.durationMs || 0,
+            trick_count: dealEndedPayload.trickCount || 0,
+            // Statistics are not provided by backend, use placeholder data
+            statistics: {
+              total_tricks: dealEndedPayload.trickCount || 0,
+              player_stats: [],
+              tribute_info: {
+                has_tribute: tributeInfo !== null,
+                tribute_map: {},
+                tribute_cards: {},
+                return_cards: {}
+              }
+            }
+          };
+          
+          setDealResult(dealResult);
           break;
         case 'match_completed':
         case 'match_ended':
           console.log('➡️ Action: Set phase to MATCH_RESULT');
           setCurrentPhase(GamePageState.MATCH_RESULT);
-          setMatchResult(payload.match_result || payload);
+          setMatchResult(payload.matchEnded);
           break;
         case 'trick_started':
           console.log('🎲 Trick Started:', payload.trick);
@@ -238,43 +264,32 @@ const GamePage: React.FC = () => {
 
       console.log('👁️ [GamePage] Received PLAYER_VIEW, current phase:', latestPhase);
 
-      console.log('🎮 [GamePage] Received player_view message', {
-        timestamp: new Date().toISOString(),
-        messageType: message.type,
-        hasData: !!message.data,
-        closurePhase: currentPhase,
-        latestPhase: latestPhase,
-        roomId
-      });
-
       const data = message.data;
-      if (!data) {
+      if (!data || !data.player_view) {
         console.warn('⚠️ [GamePage] player_view has no data, returning');
         return;
       }
 
-      const playerView: PlayerView = data.player_view;
-      if (!playerView) {
-        console.warn('⚠️ [GamePage] Received player_view message without player_view data:', data);
-        return;
-      }
-
-      console.log('✅ [GamePage] player_view data structure:', {
-        playerSeat: playerView.player_seat,
-        playerCardsCount: playerView.player_cards?.length || 0,
-        dealStatus: playerView.deal_status,
-        teamLevels: playerView.team_levels,
-        eventType: data.event_type
+      // 使用 proto PlayerView 类型
+      const protoPlayerView: ProtoPlayerView = data.player_view;
+      
+      console.log('✅ [GamePage] proto player_view data:', {
+        playerSeat: protoPlayerView.playerSeat,
+        playerCardsCount: protoPlayerView.playerCards?.length || 0,
+        dealStatus: protoPlayerView.dealStatus,
+        teamLevels: protoPlayerView.teamLevels,
       });
 
+      // 转换为前端格式
+      const playerView = convertProtoPlayerView(protoPlayerView);
+      
       setPlayerSeat(playerView.player_seat);
 
-      // Convert proto cards to frontend format (with id field)
-      const protoCards = playerView.player_cards || [];
-      const cards = convertProtoCardsToFrontend(protoCards);
+      // 手牌已经在转换过程中添加了 id 字段
+      const cards = playerView.player_cards;
       console.log('🃏 [GamePage] Setting player hand:', {
         cardCount: cards.length,
-        cards: cards.map((c: Card) => ({ id: c.id, suit: c.suit, rank: c.rank }))
+        cards: cards.slice(0, 3).map((c: Card) => ({ id: c.id, suit: c.suit, rank: c.rank }))
       });
       setPlayerHand(cards);
 
@@ -331,19 +346,8 @@ const GamePage: React.FC = () => {
 
       setTributeInfo(playerView.tribute_phase || null);
 
-      // Convert proto plays to frontend format
-      const protoPlays = playerView.plays || [];
-      const convertedPlays = convertProtoPlaysToFrontend(protoPlays);
-
-      const playerGameState: PlayerGameState = {
-        team_levels: playerView.team_levels,
-        deal_level: playerView.deal_level,
-        deal_status: playerView.deal_status,
-        trick_id: playerView.trick_id,
-        current_turn: playerView.current_turn,
-        plays: convertedPlays,
-        tribute_phase: playerView.tribute_phase
-      };
+      // 使用转换器转换 GameState
+      const playerGameState = convertProtoPlayerViewToGameState(protoPlayerView);
       setGameState(playerGameState);
 
       console.log('✨ [GamePage] player_view processing completed');
