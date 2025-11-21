@@ -176,14 +176,14 @@ class ApiClient {
   }
 
   // Game APIs
-  async playCards(roomId: string, playerSeat: number, cardIds: string[]): Promise<ApiResponse<void>> {
+  async playCards(roomId: string, playerSeat: number, deckIndexes: number[]): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/game/driver/play-decision`, {
       method: 'POST',
       body: JSON.stringify({
         room_id: roomId,
         player_seat: playerSeat,
         action: 'play',
-        card_ids: cardIds
+        deck_indexes: deckIndexes
       }),
     });
   }
@@ -195,29 +195,29 @@ class ApiClient {
         room_id: roomId,
         player_seat: playerSeat,
         action: 'pass',
-        card_ids: []
+        deck_indexes: []
       }),
     });
   }
 
-  async selectTribute(roomId: string, playerSeat: number, cardId: string): Promise<ApiResponse<void>> {
+  async selectTribute(roomId: string, playerSeat: number, deckIndex: number): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/game/driver/tribute-select`, {
       method: 'POST',
       body: JSON.stringify({
         room_id: roomId,
         player_seat: playerSeat,
-        card_id: cardId
+        deck_index: deckIndex
       }),
     });
   }
 
-  async returnTribute(roomId: string, playerSeat: number, cardId: string): Promise<ApiResponse<void>> {
+  async returnTribute(roomId: string, playerSeat: number, deckIndex: number): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/game/driver/tribute-return`, {
       method: 'POST',
       body: JSON.stringify({
         room_id: roomId,
         player_seat: playerSeat,
-        card_id: cardId
+        deck_index: deckIndex
       }),
     });
   }

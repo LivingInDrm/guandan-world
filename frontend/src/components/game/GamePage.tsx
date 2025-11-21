@@ -465,8 +465,8 @@ const GamePage: React.FC = () => {
     if (!room || !user || !canPlay || playerSeat === null) return;
 
     try {
-      const cardIds = cards.map(c => c.id);
-      const response = await apiClient.playCards(room.id, playerSeat, cardIds);
+      const deckIndexes = cards.map(c => c.deckIndex);
+      const response = await apiClient.playCards(room.id, playerSeat, deckIndexes);
       if (response.success) {
         setSelectedCards([]);
       } else {
@@ -494,11 +494,11 @@ const GamePage: React.FC = () => {
   };
 
   // 选择贡牌
-  const handleSelectTribute = async (cardId: string) => {
+  const handleSelectTribute = async (deckIndex: number) => {
     if (!room || playerSeat === null) return;
 
     try {
-      await apiClient.selectTribute(room.id, playerSeat, cardId);
+      await apiClient.selectTribute(room.id, playerSeat, deckIndex);
     } catch (error) {
       console.error('Failed to select tribute:', error);
       setRoomError('选择贡牌失败');
@@ -506,11 +506,11 @@ const GamePage: React.FC = () => {
   };
 
   // 还贡
-  const handleReturnTribute = async (cardId: string) => {
+  const handleReturnTribute = async (deckIndex: number) => {
     if (!room || playerSeat === null) return;
 
     try {
-      await apiClient.returnTribute(room.id, playerSeat, cardId);
+      await apiClient.returnTribute(room.id, playerSeat, deckIndex);
     } catch (error) {
       console.error('Failed to return tribute:', error);
       setRoomError('还贡失败');

@@ -11,8 +11,8 @@ interface TributePhaseProps {
   players: (Player | null)[];
   currentPlayerSeat: number;
   playerHand: Card[];
-  onSelectTribute: (cardId: string) => void;
-  onReturnTribute: (cardId: string) => void;
+  onSelectTribute: (deckIndex: number) => void;
+  onReturnTribute: (deckIndex: number) => void;
 }
 
 interface CountdownTimerProps {
@@ -193,7 +193,7 @@ interface PoolSelectionProps {
   currentPlayerSeat: number;
   players: (Player | null)[];
   selectTimeout: string;
-  onSelectCard: (cardId: string) => void;
+  onSelectCard: (deckIndex: number) => void;
   onTimeout: () => void;
 }
 
@@ -206,16 +206,16 @@ const PoolSelection: React.FC<PoolSelectionProps> = ({
   onSelectCard,
   onTimeout
 }) => {
-  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const isMyTurn = selectingPlayer === currentPlayerSeat;
 
   const handleCardClick = (card: Card) => {
     if (!isMyTurn) return;
-    setSelectedCard(card.id);
+    setSelectedCard(card.deckIndex);
   };
 
   const handleConfirmSelection = () => {
-    if (selectedCard) {
+    if (selectedCard !== null) {
       onSelectCard(selectedCard);
       setSelectedCard(null);
     }
@@ -236,14 +236,14 @@ const PoolSelection: React.FC<PoolSelectionProps> = ({
             key={card.id}
             card={card}
             selectable={isMyTurn}
-            selected={selectedCard === card.id}
+            selected={selectedCard === card.deckIndex}
             onClick={() => handleCardClick(card)}
             size="large"
           />
         ))}
       </div>
 
-      {isMyTurn && selectedCard && (
+      {isMyTurn && selectedCard !== null && (
         <div className="text-center">
           <button
             onClick={handleConfirmSelection}
@@ -261,7 +261,7 @@ interface ReturnTributeProps {
   tributePhase: TributePhaseType;
   currentPlayerSeat: number;
   playerHand: Card[];
-  onReturnCard: (cardId: string) => void;
+  onReturnCard: (deckIndex: number) => void;
 }
 
 const ReturnTribute: React.FC<ReturnTributeProps> = ({
@@ -270,7 +270,7 @@ const ReturnTribute: React.FC<ReturnTributeProps> = ({
   playerHand,
   onReturnCard
 }) => {
-  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
   // Check if current player needs to return tribute
   const needsReturn = Object.values(tributePhase.tribute_map).includes(currentPlayerSeat) &&
@@ -285,11 +285,11 @@ const ReturnTribute: React.FC<ReturnTributeProps> = ({
   }
 
   const handleCardClick = (card: Card) => {
-    setSelectedCard(card.id);
+    setSelectedCard(card.deckIndex);
   };
 
   const handleConfirmReturn = () => {
-    if (selectedCard) {
+    if (selectedCard !== null) {
       onReturnCard(selectedCard);
       setSelectedCard(null);
     }
@@ -308,14 +308,14 @@ const ReturnTribute: React.FC<ReturnTributeProps> = ({
             key={card.id}
             card={card}
             selectable={true}
-            selected={selectedCard === card.id}
+            selected={selectedCard === card.deckIndex}
             onClick={() => handleCardClick(card)}
             size="small"
           />
         ))}
       </div>
 
-      {selectedCard && (
+      {selectedCard !== null && (
         <div className="text-center">
           <button
             onClick={handleConfirmReturn}
