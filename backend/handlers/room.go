@@ -252,6 +252,17 @@ func (h *RoomHandler) JoinRoom(c *gin.Context) {
 		return
 	}
 
+	// Broadcast room update to all room members via WebSocket
+	h.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
+		Type: "room_update",
+		Data: map[string]interface{}{
+			"action":    "player_joined",
+			"room":      updatedRoom,
+			"player_id": userIDStr,
+		},
+		Timestamp: time.Now(),
+	})
+
 	c.JSON(http.StatusOK, RoomResponse{
 		Room: updatedRoom,
 	})
@@ -308,6 +319,19 @@ func (h *RoomHandler) LeaveRoom(c *gin.Context) {
 			Message: err.Error(),
 		})
 		return
+	}
+
+	// If room still exists, broadcast player left event via WebSocket
+	if updatedRoom != nil {
+		h.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
+			Type: "room_update",
+			Data: map[string]interface{}{
+				"action":    "player_left",
+				"room":      updatedRoom,
+				"player_id": userIDStr,
+			},
+			Timestamp: time.Now(),
+		})
 	}
 
 	// If room was closed (updatedRoom is nil), return success message

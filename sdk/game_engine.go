@@ -312,6 +312,23 @@ type GameEngineInterface interface {
 	//   - 包括队伍等级、玩家信息等
 	//   - 替代直接访问match对象的需求
 	GetMatchDetails() *MatchDetails
+
+	// GetPlayerHand 返回玩家当前手牌的原始 SDK Card 对象
+	// 
+	// 用途:
+	//   - SDK 内部（GameDriver）使用，避免 proto 转换损失 Level 字段
+	//   - 保留 Card 对象的完整性（Level、RawNumber 等）
+	//
+	// 与 GetPlayerView 的区别:
+	//   - GetPlayerView: 返回 proto 消息，适合跨进程/序列化传输
+	//   - GetPlayerHand:  返回 SDK 原始类型，适合内部逻辑使用
+	//
+	// 参数:
+	//   playerSeat: 玩家座位号 (0-3)
+	//
+	// 返回值:
+	//   []*Card: 玩家手牌列表（如果无牌局或座位号无效返回 nil 或空切片）
+	GetPlayerHand(playerSeat int) []*Card
 }
 
 // NewGameEngine creates a new game engine instance
@@ -1329,6 +1346,24 @@ func (ge *GameEngine) GetMatchDetails() *MatchDetails {
 		TeamLevels: match.TeamLevels,
 		Players:    players,
 	}
+}
+
+// GetPlayerHand 获取玩家当前手牌（SDK 原生类型）
+func (ge *GameEngine) GetPlayerHand(playerSeat int) []*Card {
+	ge.mutex.RLock()
+	defer ge.mutex.RUnlock()
+	
+	// 边界检查
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		return nil
+	}
+	
+	if playerSeat < 0 || playerSeat >= 4 {
+		return nil
+	}
+	
+	// 返回原始引用（零拷贝）
+	return ge.currentMatch.CurrentDeal.PlayerCards[playerSeat]
 }
 
 // generateID generates a unique ID for the game engine

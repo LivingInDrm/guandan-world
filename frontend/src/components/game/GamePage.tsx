@@ -397,9 +397,6 @@ const GamePage: React.FC = () => {
     wsClient.on(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
     wsClient.on(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
 
-    // 加入房间
-    wsClient.send(WS_MESSAGE_TYPES.JOIN_ROOM, { room_id: roomId });
-
     // 清理函数
     return () => {
       wsClient.off(WS_MESSAGE_TYPES.ROOM_UPDATE, handleRoomUpdate);
@@ -450,7 +447,6 @@ const GamePage: React.FC = () => {
     setIsLeaving(true);
     try {
       await apiClient.leaveRoom(room.id);
-      wsClient.send(WS_MESSAGE_TYPES.LEAVE_ROOM, { room_id: room.id });
       navigate('/lobby', { state: { shouldRefresh: true } });
     } catch (error) {
       console.error('Failed to leave room:', error);

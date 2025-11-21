@@ -162,10 +162,6 @@ class GameService {
       const response = await apiClient.joinRoom(roomId);
       if (response.success && response.data) {
         useRoomStore.getState().setCurrentRoom(response.data);
-        
-        // Send WebSocket join message
-        wsClient.send('join_room', { room_id: roomId });
-        
         return true;
       }
       return false;
@@ -181,10 +177,6 @@ class GameService {
   async leaveRoom(roomId: string): Promise<void> {
     try {
       await apiClient.leaveRoom(roomId);
-      
-      // Send WebSocket leave message
-      wsClient.send('leave_room', { room_id: roomId });
-      
       useRoomStore.getState().setCurrentRoom(null);
     } catch (error) {
       console.error('Failed to leave room:', error);
@@ -195,8 +187,6 @@ class GameService {
     try {
       const response = await apiClient.startGame(roomId);
       if (response.success) {
-        // Send WebSocket start game message
-        wsClient.send('start_game', { room_id: roomId });
         return true;
       }
       return false;

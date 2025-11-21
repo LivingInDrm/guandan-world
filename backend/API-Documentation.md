@@ -379,7 +379,7 @@ These APIs are used during active gameplay to control the game flow.
   "room_id": "room_1234567890",
   "player_seat": 0,  // 0-3
   "action": "play",  // "play" or "pass"
-  "card_ids": ["3H", "3D", "3C"]  // Required if action is "play"
+  "deck_indexes": [0, 1, 2]  // Card indexes in hand (0-based). Required if action is "play"
 }
 ```
 - **Success Response** (200):
@@ -399,7 +399,14 @@ These APIs are used during active gameplay to control the game flow.
 {
   "room_id": "room_1234567890",
   "player_seat": 0,
-  "card_id": "AH"  // Card ID to give as tribute
+  "deck_index": 5  // Card index in hand (0-based)
+}
+```
+- **Success Response** (200):
+```json
+{
+  "success": true,
+  "message": "Tribute selection submitted"
 }
 ```
 
@@ -412,7 +419,14 @@ These APIs are used during active gameplay to control the game flow.
 {
   "room_id": "room_1234567890",
   "player_seat": 0,
-  "card_id": "3H"  // Card ID to return
+  "deck_index": 0  // Card index in hand (0-based)
+}
+```
+- **Success Response** (200):
+```json
+{
+  "success": true,
+  "message": "Return tribute submitted"
 }
 ```
 
@@ -475,6 +489,13 @@ Connect to WebSocket using the authentication token:
 ws://localhost:8080/ws?token=<jwt_token>
 ```
 
+**Purpose**: Real-time server-to-client state synchronization and heartbeat maintenance.
+
+**Architecture Principle - Command-Query Separation**:
+- **WebSocket is read-only from client perspective**: Clients only receive server-pushed updates
+- **All write operations use HTTP REST API**: Room management, game actions, etc.
+- **Benefits**: Clear separation of concerns, better error handling, idempotent operations, easier debugging
+
 ### Message Format
 
 All WebSocket messages follow this format:
@@ -493,61 +514,24 @@ All WebSocket messages follow this format:
 
 #### Incoming Messages (Client → Server)
 
-1. **Join Room**
-```json
-{
-  "type": "join_room",
-  "data": {
-    "room_id": "room_1234567890"
-  }
-}
-```
+**Note**: Following command-query separation principle, all business operations (join room, play cards, etc.) must use HTTP REST API. WebSocket only accepts heartbeat messages from clients.
 
-2. **Leave Room**
-```json
-{
-  "type": "leave_room",
-  "data": {
-    "room_id": "room_1234567890"
-  }
-}
-```
-
-3. **Start Game**
-```json
-{
-  "type": "start_game",
-  "data": {
-    "room_id": "room_1234567890"
-  }
-}
-```
-
-4. **Play Cards** (Not implemented yet)
-```json
-{
-  "type": "play_cards",
-  "data": {
-    "cards": ["3H", "3D", "3C"]
-  }
-}
-```
-
-5. **Pass** (Not implemented yet)
-```json
-{
-  "type": "pass",
-  "data": {}
-}
-```
-
-6. **Ping** (Heartbeat)
+1. **Ping** (Heartbeat)
 ```json
 {
   "type": "ping",
   "data": {}
 }
 ```
+
+**Deprecated Messages** (Use HTTP API instead):
+- `join_room` → Use `POST /api/rooms/:id/join`
+- `leave_room` → Use `POST /api/rooms/:id/leave`
+- `start_game` → Use `POST /api/rooms/:id/start`
+- `play_cards` → Use `POST /api/game/driver/play-decision`
+- `pass` → Use `POST /api/game/driver/play-decision`
+- `tribute_select` → Use `POST /api/game/driver/tribute-select`
+- `tribute_return` → Use `POST /api/game/driver/tribute-return`
 
 #### Outgoing Messages (Server → Client)
 
@@ -556,19 +540,51 @@ All WebSocket messages follow this format:
 {
   "type": "room_update",
   "data": {
-    "action": "player_joined",  // player_joined | player_left | game_started
+    "action": "player_joined",  // player_joined | player_left | game_started | game_starting | game_start_failed
     "room": { /* room object */ },
     "player_id": "user_1234567890"
   }
 }
 ```
 
-2. **Game Event**
+2. **Game Prepare** (Sent after game start is triggered)
+```json
+{
+  "type": "game_prepare",
+  "data": {
+    "room_id": "room_1234567890"
+  }
+}
+```
+
+3. **Countdown** (3-second countdown before game begins)
+```json
+{
+  "type": "countdown",
+  "data": {
+    "countdown": 3,  // 3, 2, 1
+    "room_id": "room_1234567890"
+  }
+}
+```
+
+4. **Game Begin** (Game actually starts)
+```json
+{
+  "type": "game_begin",
+  "data": {
+    "room_id": "room_1234567890",
+    "has_tribute": false  // Whether this deal requires tribute phase
+  }
+}
+```
+
+5. **Game Event**
 ```json
 {
   "type": "game_event",
   "data": {
-    "event_type": "match_started",  // Various game events
+    "event_type": "match_started",  // Various game events (see Game Event Types section)
     "event_data": { /* event-specific data */ },
     "player_seat": 0,
     "timestamp": "2024-01-01T00:00:00Z"
@@ -576,7 +592,20 @@ All WebSocket messages follow this format:
 }
 ```
 
-3. **Game Action Request**
+6. **Player View** (Player-specific game state)
+```json
+{
+  "type": "player_view",
+  "data": {
+    "player_seat": 0,
+    "hand": [/* player's cards */],
+    "valid_plays": [/* valid card combinations */],
+    // Additional player-specific data
+  }
+}
+```
+
+7. **Game Action Request**
 ```json
 {
   "type": "game_action",
@@ -590,7 +619,7 @@ All WebSocket messages follow this format:
 }
 ```
 
-4. **Error**
+8. **Error**
 ```json
 {
   "type": "error",
@@ -601,7 +630,7 @@ All WebSocket messages follow this format:
 }
 ```
 
-5. **Pong** (Heartbeat response)
+9. **Pong** (Heartbeat response)
 ```json
 {
   "type": "pong",
@@ -666,21 +695,85 @@ Common error codes:
 4. **Game Flow**: Use REST APIs for game control actions, receive updates via WebSocket
 5. **Heartbeat**: Send periodic ping messages to keep WebSocket connection alive
 6. **Error Handling**: Always check for error responses and handle appropriately
+7. **Game Start Sequence**: When a game starts, expect the following message sequence:
+   - `room_update` (action: "game_starting")
+   - `game_prepare`
+   - `countdown` (3 times: 3, 2, 1)
+   - `game_begin`
+   - Game events start flowing
+
+## Architecture: Command-Query Separation
+
+### Design Principle
+
+This API follows a **command-query separation** pattern for client-server communication:
+
+**Commands (Write Operations)** → Use **HTTP REST API**
+- Create, join, leave rooms
+- Start game
+- Play cards, pass, select tribute
+- All operations that modify server state
+
+**Queries (Read Operations)** → Use **WebSocket** (Server Push)
+- Real-time room updates
+- Game state changes
+- Player view updates
+- Event notifications
+
+### Client Implementation Pattern
+
+```javascript
+// ✅ CORRECT: Use HTTP API for commands
+async function joinRoom(roomId) {
+  const response = await fetch(`/api/rooms/${roomId}/join`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  // Server will broadcast room_update via WebSocket
+}
+
+// ✅ CORRECT: Listen to WebSocket for updates
+websocket.on('room_update', (message) => {
+  if (message.data.action === 'player_joined') {
+    updateRoomUI(message.data.room);
+  }
+});
+
+// ❌ WRONG: Don't send business commands via WebSocket
+// websocket.send({ type: 'join_room', data: { room_id: roomId } });
+```
+
+### Benefits
+
+1. **Clear Separation of Concerns**: Commands go through HTTP, state updates through WebSocket
+2. **Better Error Handling**: HTTP provides standard status codes and error responses
+3. **Idempotency**: HTTP methods (POST, GET) have well-defined semantics
+4. **Reliability**: HTTP requests can be retried, cached, and monitored easily
+5. **Debugging**: HTTP traffic is easier to inspect and trace
+6. **Scalability**: WebSocket connections are optimized for broadcast, not command processing
+
+### Migration Note
+
+If you have existing code that sends business commands via WebSocket:
+- Update to use corresponding HTTP endpoints (see "Deprecated Messages" section)
+- Keep WebSocket connection for receiving real-time updates
+- Remove WebSocket send calls for join_room, leave_room, start_game, etc.
 
 ## Current Implementation Status
 
 ✅ **Implemented**:
 - All authentication endpoints
 - All room management endpoints
-- Game driver control endpoints
+- Game driver control endpoints (with deck_indexes)
 - WebSocket connection and basic message handling
 - Game event broadcasting
+- Game start sequence (prepare → countdown → begin)
+- Player-specific view updates
 
 🚧 **Partially Implemented**:
-- WebSocket game control messages (play_cards, pass, etc.)
-- Player-specific WebSocket routing
+- WebSocket game control messages (play_cards, pass via WebSocket - use REST API instead)
 
 📋 **Not Implemented**:
-- Direct game control via WebSocket
+- Direct game control via WebSocket (use REST API endpoints)
 - Game replay
 - Statistics and rankings

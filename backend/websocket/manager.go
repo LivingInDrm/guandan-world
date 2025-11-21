@@ -161,15 +161,16 @@ func NewWSManager(authService auth.AuthService, roomService room.RoomService) *W
 }
 
 // registerDefaultHandlers registers the default message handlers
+// Following command-query separation principle:
+// - WebSocket is read-only from client perspective (only receives server pushes)
+// - All write operations (join room, play cards, etc.) use HTTP REST API
+// - Only ping/pong heartbeat is handled via WebSocket
 func (m *WSManager) registerDefaultHandlers() {
 	m.messageHandlers[MSG_PING] = m.handlePing
-	m.messageHandlers[MSG_JOIN_ROOM] = m.handleJoinRoom
-	m.messageHandlers[MSG_LEAVE_ROOM] = m.handleLeaveRoom
-	m.messageHandlers[MSG_START_GAME] = m.handleStartGame
-	m.messageHandlers[MSG_PLAY_CARDS] = m.handlePlayCards
-	m.messageHandlers[MSG_PASS] = m.handlePass
-	m.messageHandlers[MSG_TRIBUTE_SELECT] = m.handleTributeSelect
-	m.messageHandlers[MSG_TRIBUTE_RETURN] = m.handleTributeReturn
+	
+	// Business message handlers removed - use HTTP API instead:
+	// - JOIN_ROOM, LEAVE_ROOM, START_GAME: handled by /api/rooms endpoints
+	// - PLAY_CARDS, PASS, TRIBUTE_SELECT, TRIBUTE_RETURN: handled by /api/game/driver endpoints
 }
 
 // RegisterHandler registers a custom message handler
@@ -514,7 +515,20 @@ func (m *WSManager) handlePing(conn *WSConnection, message *WSMessage) error {
 	}
 }
 
+// ============================================================================
+// DEPRECATED HANDLERS - Use HTTP REST API instead
+// ============================================================================
+// The following WebSocket message handlers are deprecated and no longer registered.
+// Following command-query separation principle:
+// - All write operations (join room, leave room, start game, play cards) should use HTTP REST API
+// - WebSocket is used only for server-to-client state synchronization and heartbeat
+// 
+// Kept here for reference only. These methods are not called since they are not registered
+// in registerDefaultHandlers().
+// ============================================================================
+
 // handleJoinRoom handles room joining requests
+// DEPRECATED: Use POST /api/rooms/:id/join instead
 func (m *WSManager) handleJoinRoom(conn *WSConnection, message *WSMessage) error {
 	// Parse join room data
 	var joinData JoinRoomData
@@ -572,6 +586,7 @@ func (m *WSManager) handleJoinRoom(conn *WSConnection, message *WSMessage) error
 }
 
 // handleLeaveRoom handles room leaving requests
+// DEPRECATED: Use POST /api/rooms/:id/leave instead
 func (m *WSManager) handleLeaveRoom(conn *WSConnection, message *WSMessage) error {
 	// Parse leave room data
 	var leaveData LeaveRoomData
@@ -627,6 +642,7 @@ func (m *WSManager) handleLeaveRoom(conn *WSConnection, message *WSMessage) erro
 }
 
 // handleStartGame handles game start requests
+// DEPRECATED: Use POST /api/rooms/:id/start instead
 func (m *WSManager) handleStartGame(conn *WSConnection, message *WSMessage) error {
 	// Parse start game data
 	var startData StartGameData
@@ -675,6 +691,7 @@ func (m *WSManager) handleStartGame(conn *WSConnection, message *WSMessage) erro
 }
 
 // handlePlayCards handles card playing requests
+// DEPRECATED: Use POST /api/game/driver/play-decision instead
 func (m *WSManager) handlePlayCards(conn *WSConnection, message *WSMessage) error {
 	// Parse play cards data
 	var playData PlayCardsData
@@ -711,6 +728,7 @@ func (m *WSManager) handlePlayCards(conn *WSConnection, message *WSMessage) erro
 }
 
 // handlePass handles pass requests
+// DEPRECATED: Use POST /api/game/driver/play-decision instead
 func (m *WSManager) handlePass(conn *WSConnection, message *WSMessage) error {
 	// Validate player is in a room
 	if conn.roomID == "" {
@@ -735,6 +753,7 @@ func (m *WSManager) handlePass(conn *WSConnection, message *WSMessage) error {
 }
 
 // handleTributeSelect handles tribute selection requests
+// DEPRECATED: Use POST /api/game/driver/tribute-select instead
 func (m *WSManager) handleTributeSelect(conn *WSConnection, message *WSMessage) error {
 	// Parse tribute select data
 	var selectData TributeSelectData
@@ -771,6 +790,7 @@ func (m *WSManager) handleTributeSelect(conn *WSConnection, message *WSMessage) 
 }
 
 // handleTributeReturn handles tribute return requests
+// DEPRECATED: Use POST /api/game/driver/tribute-return instead
 func (m *WSManager) handleTributeReturn(conn *WSConnection, message *WSMessage) error {
 	// Parse tribute return data
 	var returnData TributeReturnData

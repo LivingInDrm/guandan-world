@@ -593,14 +593,14 @@ func (gd *GameDriver) runTrick() error {
 			break
 		}
 
-		// 获取玩家手牌
-		playerView := gd.engine.GetPlayerView(currentPlayer)
-		if playerView == nil {
-			return fmt.Errorf("failed to get player view for player %d", currentPlayer)
+		// 获取玩家手牌（SDK 原生类型，包含完整 Level）
+		hand := gd.engine.GetPlayerHand(currentPlayer)
+		if hand == nil {
+			return fmt.Errorf("failed to get player hand for player %d", currentPlayer)
 		}
 
 		// 如果玩家没有手牌了，检查游戏是否结束
-		if len(playerView.GetPlayerCards()) == 0 {
+		if len(hand) == 0 {
 			// 玩家已出完牌，等待引擎处理状态转换
 			break
 		}
@@ -614,7 +614,7 @@ func (gd *GameDriver) runTrick() error {
 		// 请求玩家决策（带超时检测）
 		// 使用gameCancelCtx作为基础，这样游戏结束时会自动取消所有请求
 		ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.PlayDecisionTimeout)
-		decision, err := gd.inputProvider.RequestPlayDecision(ctx, currentPlayer, ConvertCardsFromProto(playerView.GetPlayerCards()), trickInfo)
+		decision, err := gd.inputProvider.RequestPlayDecision(ctx, currentPlayer, hand, trickInfo)
 		ctxErr := ctx.Err() // 在cancel()之前捕获上下文错误
 		cancel()
 
@@ -624,7 +624,7 @@ func (gd *GameDriver) runTrick() error {
 			case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
 				// 超时，使用默认策略生成决策
 				gd.handleTimeout(currentPlayer, "play_decision")
-				decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(ConvertCardsFromProto(playerView.GetPlayerCards()), trickInfo)
+				decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(hand, trickInfo)
 				if decision == nil {
 					// 如果策略返回nil，使用PASS作为后备
 					decision = &PlayDecision{Action: ActionPass}
@@ -640,7 +640,7 @@ func (gd *GameDriver) runTrick() error {
 
 		// 如果decision仍然为nil（可能是provider返回了nil），使用默认策略
 		if decision == nil {
-			decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(ConvertCardsFromProto(playerView.GetPlayerCards()), trickInfo)
+			decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(hand, trickInfo)
 			if decision == nil {
 				// 如果策略也返回nil，使用PASS作为后备
 				decision = &PlayDecision{Action: ActionPass}
@@ -668,7 +668,7 @@ func (gd *GameDriver) runTrick() error {
 					gd.handleTimeout(currentPlayer, "invalid_play")
 					
 					// 使用超时策略自动生成合法决策
-					autoDecision := gd.config.TimeoutStrategy.GetDefaultPlayDecision(ConvertCardsFromProto(playerView.GetPlayerCards()), trickInfo)
+					autoDecision := gd.config.TimeoutStrategy.GetDefaultPlayDecision(hand, trickInfo)
 					if autoDecision == nil {
 						// 策略返回nil，使用PASS作为后备
 						autoDecision = &PlayDecision{Action: ActionPass}
