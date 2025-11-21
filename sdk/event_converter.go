@@ -24,11 +24,9 @@ func ConvertCardToProto(sdkCard *Card) *commonpb.Card {
 		suit = 2
 	case "Diamond":
 		suit = 3
-	case "":
-		// Joker cards have empty color
+	case "Joker":
 		suit = -1
 	default:
-		// Unknown color - log and use -1
 		suit = -1
 	}
 	
@@ -55,6 +53,8 @@ func ConvertCardFromProto(protoCard *commonpb.Card) *Card {
 		color = "Club"
 	case 3:
 		color = "Diamond"
+	case -1:
+		color = "Joker"
 	}
 	
 	return &Card{

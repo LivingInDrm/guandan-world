@@ -345,15 +345,15 @@ func (c *AIPlayerClient) updateHandFromEvent(eventData map[string]interface{}) {
 func (c *AIPlayerClient) removeCardsFromHand(eventData map[string]interface{}) {
 	if cards, ok := eventData["cards"].([]interface{}); ok {
 		playedCards := ParseCards(cards, c.currentRank)
-		cardIDs := make(map[string]bool)
+		deckIndexes := make(map[int]bool)
 		for _, card := range playedCards {
-			cardIDs[card.GetID()] = true
+			deckIndexes[card.DeckIndex] = true
 		}
 
 		c.mu.Lock()
 		newHand := make([]*sdk.Card, 0, len(c.hand))
 		for _, card := range c.hand {
-			if !cardIDs[card.GetID()] {
+			if !deckIndexes[card.DeckIndex] {
 				newHand = append(newHand, card)
 			}
 		}
@@ -450,11 +450,11 @@ func (c *AIPlayerClient) handlePlayDecisionRequest(data map[string]interface{}) 
 	c.logVerbose(fmt.Sprintf("AI selected %d cards, isLeader=%v, hasLeadComp=%v", 
 		len(selectedCards), isLeader, trickInfo.LeadComp != nil))
 	if len(selectedCards) > 0 {
-		cardIDs := make([]string, len(selectedCards))
+		deckIndexes := make([]int, len(selectedCards))
 		for i, card := range selectedCards {
-			cardIDs[i] = card.GetID()
+			deckIndexes[i] = card.DeckIndex
 		}
-		c.logVerbose(fmt.Sprintf("Selected cards: %v", cardIDs))
+		c.logVerbose(fmt.Sprintf("Selected cards DeckIndexes: %v", deckIndexes))
 	}
 	if trickInfo.LeadComp != nil {
 		c.logVerbose(fmt.Sprintf("LeadComp: type=%v, cards=%v", 
@@ -484,26 +484,26 @@ func (c *AIPlayerClient) handlePlayDecisionRequest(data map[string]interface{}) 
 
 	// 构建决策
 	var action string
-	var cardIDs []string
+	var deckIndexes []int
 
 	if len(selectedCards) == 0 {
 		action = "pass"
 		c.logVerbose("Decision: PASS")
 	} else {
 		action = "play"
-		cardIDs = make([]string, len(selectedCards))
+		deckIndexes = make([]int, len(selectedCards))
 		for i, card := range selectedCards {
-			cardIDs[i] = card.GetID()
+			deckIndexes[i] = card.DeckIndex
 		}
-		c.logVerbose(fmt.Sprintf("Decision: PLAY %d cards", len(cardIDs)))
+		c.logVerbose(fmt.Sprintf("Decision: PLAY %d cards", len(deckIndexes)))
 	}
 
 	// 提交决策
 	req := handlers.PlayDecisionRequest{
-		RoomID:     c.roomID,
-		PlayerSeat: c.playerSeat,
-		Action:     action,
-		CardIDs:    cardIDs,
+		RoomID:      c.roomID,
+		PlayerSeat:  c.playerSeat,
+		Action:      action,
+		DeckIndexes: deckIndexes,
 	}
 
 	if err := c.httpClient.CallAPI("POST", "/api/game/driver/play-decision", req, nil); err != nil {
@@ -532,13 +532,13 @@ func (c *AIPlayerClient) handleTributeSelectionRequest(data map[string]interface
 		return
 	}
 
-	c.logVerbose(fmt.Sprintf("Tribute selection: %s", selectedCard.GetID()))
+	c.logVerbose(fmt.Sprintf("Tribute selection: DeckIndex %d", selectedCard.DeckIndex))
 
 	// 提交选择
 	req := handlers.TributeSelectionRequest{
 		RoomID:     c.roomID,
 		PlayerSeat: c.playerSeat,
-		CardID:     selectedCard.GetID(),
+		DeckIndex:  selectedCard.DeckIndex,
 	}
 
 	if err := c.httpClient.CallAPI("POST", "/api/game/driver/tribute-select", req, nil); err != nil {
@@ -577,13 +577,13 @@ func (c *AIPlayerClient) handleReturnTributeRequest(data map[string]interface{})
 		return
 	}
 
-	c.logVerbose(fmt.Sprintf("Return tribute: %s", returnCard.GetID()))
+	c.logVerbose(fmt.Sprintf("Return tribute: DeckIndex %d", returnCard.DeckIndex))
 
 	// 提交还贡
 	req := handlers.ReturnTributeRequest{
 		RoomID:     c.roomID,
 		PlayerSeat: c.playerSeat,
-		CardID:     returnCard.GetID(),
+		DeckIndex:  returnCard.DeckIndex,
 	}
 
 	if err := c.httpClient.CallAPI("POST", "/api/game/driver/tribute-return", req, nil); err != nil {

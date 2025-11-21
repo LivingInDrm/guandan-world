@@ -99,6 +99,11 @@ func (m *MockRoomService) GetPlayerRoom(playerID string) (*room.Room, error) {
 	return args.Get(0).(*room.Room), args.Error(1)
 }
 
+func (m *MockRoomService) RevertGameStart(roomID string) error {
+	args := m.Called(roomID)
+	return args.Error(0)
+}
+
 func TestNewWSManager(t *testing.T) {
 	mockAuth := &MockAuthService{}
 	mockRoom := &MockRoomService{}

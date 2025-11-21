@@ -208,79 +208,6 @@ func TestContains(t *testing.T) {
 	}
 }
 
-func TestParseCardFromID(t *testing.T) {
-	// Test valid card IDs
-	testCases := []struct {
-		cardID   string
-		level    int
-		expected Card
-	}{
-		{"Heart_5_12", 2, Card{Number: 5, Color: "Heart", Level: 2, Name: "5", RawNumber: 5, DeckIndex: 12}},
-		{"Spade_14_48", 3, Card{Number: 14, Color: "Spade", Level: 3, Name: "Ace", RawNumber: 1, DeckIndex: 48}},
-		{"Joker_15_104", 2, Card{Number: 15, Color: "Joker", Level: 2, Name: "Black Joker", RawNumber: 15, DeckIndex: 104}},
-		{"Joker_16_106", 2, Card{Number: 16, Color: "Joker", Level: 2, Name: "Red Joker", RawNumber: 16, DeckIndex: 106}},
-		{"Club_11_36", 5, Card{Number: 11, Color: "Club", Level: 5, Name: "Jack", RawNumber: 11, DeckIndex: 36}},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.cardID, func(t *testing.T) {
-			card, err := ParseCardFromID(tc.cardID, tc.level)
-			if err != nil {
-				t.Errorf("ParseCardFromID(%s, %d) returned error: %v", tc.cardID, tc.level, err)
-				return
-			}
-
-			if card.Number != tc.expected.Number {
-				t.Errorf("Expected Number %d, got %d", tc.expected.Number, card.Number)
-			}
-			if card.Color != tc.expected.Color {
-				t.Errorf("Expected Color %s, got %s", tc.expected.Color, card.Color)
-			}
-			if card.Level != tc.expected.Level {
-				t.Errorf("Expected Level %d, got %d", tc.expected.Level, card.Level)
-			}
-			if card.Name != tc.expected.Name {
-				t.Errorf("Expected Name %s, got %s", tc.expected.Name, card.Name)
-			}
-			if card.RawNumber != tc.expected.RawNumber {
-				t.Errorf("Expected RawNumber %d, got %d", tc.expected.RawNumber, card.RawNumber)
-			}
-			if card.DeckIndex != tc.expected.DeckIndex {
-				t.Errorf("Expected DeckIndex %d, got %d", tc.expected.DeckIndex, card.DeckIndex)
-			}
-
-			// Test round-trip: ID -> Card -> ID
-			if card.GetID() != tc.cardID {
-				t.Errorf("Round-trip failed: expected %s, got %s", tc.cardID, card.GetID())
-			}
-		})
-	}
-
-	// Test invalid card IDs
-	invalidCases := []struct {
-		cardID string
-		level  int
-	}{
-		{"", 2},                 // Empty ID
-		{"Heart", 2},            // Missing number
-		{"Heart_5", 2},          // Missing deck index (old format)
-		{"Heart_5_12_Extra", 2}, // Too many parts
-		{"Heart_17_0", 2},       // Invalid number
-		{"InvalidColor_5_0", 2}, // Invalid color
-		{"Heart_abc_0", 2},      // Non-numeric number
-		{"Heart_5_abc", 2},      // Non-numeric deck index
-		{"Heart_5_200", 2},      // Deck index out of range
-	}
-
-	for _, tc := range invalidCases {
-		t.Run("invalid_"+tc.cardID, func(t *testing.T) {
-			_, err := ParseCardFromID(tc.cardID, tc.level)
-			if err == nil {
-				t.Errorf("ParseCardFromID(%s, %d) should have returned an error", tc.cardID, tc.level)
-			}
-		})
-	}
-}
 
 func TestCardGetSuitNumber(t *testing.T) {
 	tests := []struct {
@@ -328,10 +255,10 @@ func TestCardMarshalJSON(t *testing.T) {
 			level:     2,
 			deckIndex: 8,
 			expected: map[string]interface{}{
-				"id":       "Spade_5_8",
-				"suit":     float64(0), // JSON unmarshals numbers as float64
-				"rank":     float64(5),
-				"is_joker": false,
+				"deck_index": float64(8), // JSON unmarshals numbers as float64
+				"suit":       float64(0),
+				"rank":       float64(5),
+				"is_joker":   false,
 			},
 		},
 		{
@@ -341,10 +268,10 @@ func TestCardMarshalJSON(t *testing.T) {
 			level:     2,
 			deckIndex: 68,
 			expected: map[string]interface{}{
-				"id":       "Heart_10_68",
-				"suit":     float64(1),
-				"rank":     float64(10),
-				"is_joker": false,
+				"deck_index": float64(68),
+				"suit":       float64(1),
+				"rank":       float64(10),
+				"is_joker":   false,
 			},
 		},
 		{
@@ -354,10 +281,10 @@ func TestCardMarshalJSON(t *testing.T) {
 			level:     2,
 			deckIndex: 104,
 			expected: map[string]interface{}{
-				"id":       "Joker_15_104",
-				"suit":     float64(-1),
-				"rank":     float64(15),
-				"is_joker": true,
+				"deck_index": float64(104),
+				"suit":       float64(-1),
+				"rank":       float64(15),
+				"is_joker":   true,
 			},
 		},
 		{
@@ -367,10 +294,10 @@ func TestCardMarshalJSON(t *testing.T) {
 			level:     2,
 			deckIndex: 106,
 			expected: map[string]interface{}{
-				"id":       "Joker_16_106",
-				"suit":     float64(-1),
-				"rank":     float64(16),
-				"is_joker": true,
+				"deck_index": float64(106),
+				"suit":       float64(-1),
+				"rank":       float64(16),
+				"is_joker":   true,
 			},
 		},
 	}

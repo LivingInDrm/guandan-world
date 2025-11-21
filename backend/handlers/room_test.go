@@ -12,10 +12,27 @@ import (
 
 	"guandan-world/backend/auth"
 	"guandan-world/backend/room"
+	"guandan-world/backend/websocket"
+	"guandan-world/sdk"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
+
+// MockDriverService is a mock implementation for testing
+type MockDriverService struct{}
+
+func (m *MockDriverService) StartGameWithDriver(roomID string, players []sdk.Player) error {
+	return nil
+}
+
+// MockWSManager is a mock implementation for testing
+type MockWSManager struct{}
+
+func (m *MockWSManager) BroadcastToRoom(roomID string, message *websocket.WSMessage) {}
+func (m *MockWSManager) SendToPlayer(playerID string, message *websocket.WSMessage) error {
+	return nil
+}
 
 // Test setup helpers
 func setupRoomTestRouter() (*gin.Engine, *AuthHandler, *RoomHandler, auth.AuthService, room.RoomService) {
@@ -24,15 +41,30 @@ func setupRoomTestRouter() (*gin.Engine, *AuthHandler, *RoomHandler, auth.AuthSe
 	// Create services
 	authService := auth.NewAuthService("test-secret", 24*time.Hour)
 	roomService := room.NewRoomService(authService)
+	mockDriverService := &MockDriverService{}
+	mockWSManager := &MockWSManager{}
 
 	// Create handlers
 	authHandler := NewAuthHandler(authService)
-	roomHandler := NewRoomHandler(roomService, authService)
+	roomHandler := NewRoomHandler(roomService, authService, mockDriverService, mockWSManager)
 
 	// Setup router
 	router := gin.New()
 	authHandler.RegisterRoutes(router)
-	roomHandler.RegisterRoutes(router, authHandler)
+	
+	// Register room routes manually (since RegisterRoutes doesn't exist)
+	rooms := router.Group("/api/rooms")
+	rooms.Use(authHandler.JWTMiddleware())
+	{
+		rooms.GET("", roomHandler.GetRooms)
+		rooms.POST("", roomHandler.CreateRoom)
+		rooms.POST("/create", roomHandler.CreateRoom)
+		rooms.GET("/my", roomHandler.GetMyRoom)
+		rooms.GET("/:id", roomHandler.GetRoom)
+		rooms.POST("/:id/join", roomHandler.JoinRoom)
+		rooms.POST("/:id/leave", roomHandler.LeaveRoom)
+		rooms.POST("/:id/start", roomHandler.StartGame)
+	}
 
 	return router, authHandler, roomHandler, authService, roomService
 }

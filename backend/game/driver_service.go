@@ -135,7 +135,7 @@ func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player
 	driver := sdk.NewGameDriver(engine, config)
 
 	// Create and set input provider for this room
-	provider := NewRoomInputProvider(roomID, ds.wsManager)
+	provider := NewRoomInputProvider(roomID, ds.wsManager, players)
 	driver.SetInputProvider(provider)
 
 	// Add WebSocket observer for real-time events with engine reference
@@ -178,13 +178,36 @@ func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player
 }
 
 // SubmitPlayDecision submits a player's play decision to the driver
-func (ds *DriverService) SubmitPlayDecision(roomID string, playerSeat int, decision *sdk.PlayDecision) error {
+func (ds *DriverService) SubmitPlayDecision(
+	roomID string,
+	playerSeat int,
+	action string,
+	deckIndexes []int,
+) error {
 	ds.mu.RLock()
 	provider, exists := ds.providers[roomID]
 	ds.mu.RUnlock()
 
 	if !exists {
 		return fmt.Errorf("no active game for room %s", roomID)
+	}
+
+	// Convert DeckIndexes to Cards by looking up in player's hand
+	var cards []*sdk.Card
+	if action == "play" && len(deckIndexes) > 0 {
+		for _, deckIndex := range deckIndexes {
+			card, err := ds.findCardByDeckIndex(provider, playerSeat, deckIndex)
+			if err != nil {
+				return fmt.Errorf("failed to find card with deck_index %d: %w", deckIndex, err)
+			}
+			cards = append(cards, card)
+		}
+	}
+
+	// Create SDK PlayDecision object
+	decision := &sdk.PlayDecision{
+		Action: sdk.ActionType(action),
+		Cards:  cards,
 	}
 
 	// Submit decision to the input provider
@@ -192,7 +215,7 @@ func (ds *DriverService) SubmitPlayDecision(roomID string, playerSeat int, decis
 }
 
 // SubmitTributeSelection submits a tribute selection to the driver
-func (ds *DriverService) SubmitTributeSelection(roomID string, playerSeat int, cardID string) error {
+func (ds *DriverService) SubmitTributeSelection(roomID string, playerSeat int, deckIndex int) error {
 	ds.mu.RLock()
 	provider, exists := ds.providers[roomID]
 	ds.mu.RUnlock()
@@ -201,8 +224,8 @@ func (ds *DriverService) SubmitTributeSelection(roomID string, playerSeat int, c
 		return fmt.Errorf("no active game for room %s", roomID)
 	}
 
-	// Find the card by ID
-	card, err := ds.findCardByID(provider, playerSeat, cardID)
+	// Find the card by DeckIndex
+	card, err := ds.findCardByDeckIndex(provider, playerSeat, deckIndex)
 	if err != nil {
 		return err
 	}
@@ -212,7 +235,7 @@ func (ds *DriverService) SubmitTributeSelection(roomID string, playerSeat int, c
 }
 
 // SubmitReturnTribute submits a return tribute to the driver
-func (ds *DriverService) SubmitReturnTribute(roomID string, playerSeat int, cardID string) error {
+func (ds *DriverService) SubmitReturnTribute(roomID string, playerSeat int, deckIndex int) error {
 	ds.mu.RLock()
 	provider, exists := ds.providers[roomID]
 	ds.mu.RUnlock()
@@ -221,8 +244,8 @@ func (ds *DriverService) SubmitReturnTribute(roomID string, playerSeat int, card
 		return fmt.Errorf("no active game for room %s", roomID)
 	}
 
-	// Find the card by ID
-	card, err := ds.findCardByID(provider, playerSeat, cardID)
+	// Find the card by DeckIndex
+	card, err := ds.findCardByDeckIndex(provider, playerSeat, deckIndex)
 	if err != nil {
 		return err
 	}
@@ -309,8 +332,8 @@ func (ds *DriverService) StopGame(roomID string) error {
 	return nil
 }
 
-// findCardByID finds a card by its ID from the provider's context
-func (ds *DriverService) findCardByID(provider *RoomInputProvider, playerSeat int, cardID string) (*sdk.Card, error) {
+// findCardByDeckIndex finds a card by its DeckIndex from the provider's context
+func (ds *DriverService) findCardByDeckIndex(provider *RoomInputProvider, playerSeat int, deckIndex int) (*sdk.Card, error) {
 	// Get the last options provided to this player
 	options := provider.GetLastOptions(playerSeat)
 	if options == nil {
@@ -319,18 +342,19 @@ func (ds *DriverService) findCardByID(provider *RoomInputProvider, playerSeat in
 
 	// Find the card
 	for _, card := range options {
-		if card.GetID() == cardID {
+		if card.DeckIndex == deckIndex {
 			return card, nil
 		}
 	}
 
-	return nil, fmt.Errorf("card %s not found in available options", cardID)
+	return nil, fmt.Errorf("card with deck_index %d not found in available options", deckIndex)
 }
 
 // RoomInputProvider implements sdk.PlayerInputProvider for a specific room
 type RoomInputProvider struct {
-	roomID    string
-	wsManager WSManagerInterface
+	roomID         string
+	wsManager      WSManagerInterface
+	seatToPlayerID map[int]string // Maps seat number to player ID
 
 	// Channels for receiving player decisions
 	playDecisions     map[int]chan *sdk.PlayDecision
@@ -344,10 +368,17 @@ type RoomInputProvider struct {
 }
 
 // NewRoomInputProvider creates a new input provider for a room
-func NewRoomInputProvider(roomID string, wsManager WSManagerInterface) *RoomInputProvider {
+func NewRoomInputProvider(roomID string, wsManager WSManagerInterface, players []sdk.Player) *RoomInputProvider {
+	// Build seat to player ID mapping
+	seatToPlayerID := make(map[int]string)
+	for _, p := range players {
+		seatToPlayerID[p.Seat] = p.ID
+	}
+
 	return &RoomInputProvider{
 		roomID:            roomID,
 		wsManager:         wsManager,
+		seatToPlayerID:    seatToPlayerID,
 		playDecisions:     make(map[int]chan *sdk.PlayDecision),
 		tributeSelections: make(map[int]chan *sdk.Card),
 		returnTributes:    make(map[int]chan *sdk.Card),
@@ -362,8 +393,9 @@ func (rip *RoomInputProvider) RequestPlayDecision(ctx context.Context, playerSea
 		return nil, fmt.Errorf("context must not be nil")
 	}
 	
-	// Create channel for this request
+	// Create channel for this request and store hand for card lookup
 	rip.mu.Lock()
+	rip.lastOptions[playerSeat] = hand  // ✅ 保存SDK的真实Card对象
 	decisionChan := make(chan *sdk.PlayDecision, 1)
 	rip.playDecisions[playerSeat] = decisionChan
 	rip.mu.Unlock()
@@ -624,18 +656,22 @@ func (rip *RoomInputProvider) CancelAll() {
 	rip.tributeSelections = make(map[int]chan *sdk.Card)
 	rip.returnTributes = make(map[int]chan *sdk.Card)
 	rip.lastOptions = make(map[int][]*sdk.Card)
+	rip.seatToPlayerID = make(map[int]string)
 }
 
 // sendToPlayer sends a message to a specific player
-// SECURITY WARNING: Current implementation broadcasts to entire room, exposing private game state.
-// This is a TEMPORARY development-only approach and MUST NOT ship to production.
-// TODO: Implement targeted messaging using WSManagerInterface.SendToPlayer with actual player ID.
 func (rip *RoomInputProvider) sendToPlayer(playerSeat int, message *websocket.WSMessage) error {
-	// For now, broadcast to room with player seat info
-	// In a real implementation, this would send to the specific player
-	message.Data.(map[string]interface{})["room_id"] = rip.roomID
-	rip.wsManager.BroadcastToRoom(rip.roomID, message)
-	return nil
+	// Look up player ID from seat number
+	rip.mu.RLock()
+	playerID, exists := rip.seatToPlayerID[playerSeat]
+	rip.mu.RUnlock()
+
+	if !exists {
+		return fmt.Errorf("player seat %d not found in room %s", playerSeat, rip.roomID)
+	}
+
+	// Send message to specific player
+	return rip.wsManager.SendToPlayer(playerID, message)
 }
 
 // WebSocketObserver implements sdk.EventObserver for WebSocket broadcasting
@@ -662,15 +698,10 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 		return
 	}
 
-	// Convert SDK event to WebSocket message
+	// Send GameEvent directly without wrapping
 	wsMessage := &websocket.WSMessage{
-		Type: websocket.MSG_GAME_EVENT,
-		Data: map[string]interface{}{
-			"event_type":  event.Type.String(),
-			"event_data":  eventJSON,
-			"timestamp":   time.UnixMilli(event.CreatedAtMs),
-			"player_seat": event.GetActorSeat(),
-		},
+		Type:      websocket.MSG_GAME_EVENT,
+		Data:      eventJSON, // Direct GameEvent JSON (flattened structure)
 		Timestamp: time.UnixMilli(event.CreatedAtMs),
 	}
 

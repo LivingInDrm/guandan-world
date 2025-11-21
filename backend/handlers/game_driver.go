@@ -65,10 +65,10 @@ func (h *GameDriverHandler) StartGameWithDriver(c *gin.Context) {
 
 // PlayDecisionRequest represents a play decision request
 type PlayDecisionRequest struct {
-	RoomID     string   `json:"room_id" binding:"required"`
-	PlayerSeat int      `json:"player_seat" binding:"min=0,max=3"`
-	Action     string   `json:"action" binding:"required,oneof=play pass"`
-	CardIDs    []string `json:"card_ids,omitempty"`
+	RoomID      string `json:"room_id" binding:"required"`
+	PlayerSeat  int    `json:"player_seat" binding:"min=0,max=3"`
+	Action      string `json:"action" binding:"required,oneof=play pass"`
+	DeckIndexes []int  `json:"deck_indexes,omitempty"`
 }
 
 // SubmitPlayDecision submits a player's play decision
@@ -91,56 +91,13 @@ func (h *GameDriverHandler) SubmitPlayDecision(c *gin.Context) {
 		return
 	}
 
-	// Get current game level for card parsing
-	gameStatus, err := h.driverService.GetGameStatus(req.RoomID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Failed to get game status: " + err.Error(),
-		})
-		return
-	}
-
-	// Extract level from game status (default to 2 if not found)
-	level := 2
-	if gameStatus != nil {
-		if matchDetails, ok := gameStatus["match_details"]; ok {
-			if matchDetailsMap, ok := matchDetails.(map[string]interface{}); ok {
-				if teamLevels, ok := matchDetailsMap["TeamLevels"]; ok {
-					if teamLevelsMap, ok := teamLevels.(map[int]int); ok {
-						// Use team 0's level as current level
-						if lvl, exists := teamLevelsMap[0]; exists {
-							level = lvl
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// Convert card IDs to cards using SDK function
-	var cards []*sdk.Card
-	if req.Action == "play" && len(req.CardIDs) > 0 {
-		cards = make([]*sdk.Card, len(req.CardIDs))
-		for i, cardID := range req.CardIDs {
-			card, parseErr := sdk.ParseCardFromID(cardID, level)
-			if parseErr != nil {
-				c.JSON(http.StatusBadRequest, ErrorResponse{
-					Error: "Invalid card ID: " + cardID,
-				})
-				return
-			}
-			cards[i] = card
-		}
-	}
-
-	// Create play decision
-	decision := &sdk.PlayDecision{
-		Action: sdk.ActionType(req.Action),
-		Cards:  cards,
-	}
-
-	// Submit to driver service
-	submitErr := h.driverService.SubmitPlayDecision(req.RoomID, req.PlayerSeat, decision)
+	// Submit to driver service with basic types
+	submitErr := h.driverService.SubmitPlayDecision(
+		req.RoomID,
+		req.PlayerSeat,
+		req.Action,
+		req.DeckIndexes,
+	)
 	if submitErr != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: submitErr.Error(),
@@ -158,7 +115,7 @@ func (h *GameDriverHandler) SubmitPlayDecision(c *gin.Context) {
 type TributeSelectionRequest struct {
 	RoomID     string `json:"room_id" binding:"required"`
 	PlayerSeat int    `json:"player_seat" binding:"min=0,max=3"`
-	CardID     string `json:"card_id" binding:"required"`
+	DeckIndex  int    `json:"deck_index" binding:"required"`
 }
 
 // SubmitTributeSelection submits a tribute selection
@@ -181,8 +138,8 @@ func (h *GameDriverHandler) SubmitTributeSelection(c *gin.Context) {
 		return
 	}
 
-	// Submit to driver service
-	err := h.driverService.SubmitTributeSelection(req.RoomID, req.PlayerSeat, req.CardID)
+	// Submit to driver service with basic type (DeckIndex)
+	err := h.driverService.SubmitTributeSelection(req.RoomID, req.PlayerSeat, req.DeckIndex)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: err.Error(),
@@ -200,7 +157,7 @@ func (h *GameDriverHandler) SubmitTributeSelection(c *gin.Context) {
 type ReturnTributeRequest struct {
 	RoomID     string `json:"room_id" binding:"required"`
 	PlayerSeat int    `json:"player_seat" binding:"min=0,max=3"`
-	CardID     string `json:"card_id" binding:"required"`
+	DeckIndex  int    `json:"deck_index" binding:"required"`
 }
 
 // SubmitReturnTribute submits a return tribute
@@ -223,8 +180,8 @@ func (h *GameDriverHandler) SubmitReturnTribute(c *gin.Context) {
 		return
 	}
 
-	// Submit to driver service
-	err := h.driverService.SubmitReturnTribute(req.RoomID, req.PlayerSeat, req.CardID)
+	// Submit to driver service with basic type (DeckIndex)
+	err := h.driverService.SubmitReturnTribute(req.RoomID, req.PlayerSeat, req.DeckIndex)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: err.Error(),

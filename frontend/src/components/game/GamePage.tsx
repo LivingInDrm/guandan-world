@@ -7,7 +7,8 @@ import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
 import type { Room, Player, WSMessage, Card, GameActionData, PlayerGameState, ProtoPlayerView, DealResult as DealResultType } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
-import type { DealEndedPayload } from '../../types/proto';
+import type { GameEvent } from '../../types/proto';
+import { EventType } from '../../types/generated/event';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
@@ -144,114 +145,134 @@ const GamePage: React.FC = () => {
 
     // 游戏事件
     const handleGameEvent = (message: WSMessage) => {
-      const { event_type, event_data, player_seat, ...restData } = message.data || {};
-      // 兼容两种数据结构：优先使用event_data，回退到data本身
-      const payload = event_data || restData;
+      // GameEvent is now sent directly in message.data (flattened structure)
+      const event: GameEvent = message.data as GameEvent;
+      const actorSeat = event.actorSeat ?? 0;
 
       // 🎯 Detailed Game Event Logging for Debug
-      console.group(`🎯 [GamePage] Processing Event: ${event_type}`);
-      console.log('📌 Event Type:', event_type);
-      console.log('👤 Player Seat:', player_seat);
-      console.log('📦 Payload:', payload);
+      console.group(`🎯 [GamePage] Processing Event: ${event.type}`);
+      console.log('📌 Event Type (enum):', event.type);
+      console.log('👤 Actor Seat:', actorSeat);
+      console.log('📦 Game Event:', event);
       console.log('🎮 Current Phase:', currentPhase);
 
-      switch (event_type) {
-        case 'tribute_started':
+      switch (event.type) {
+        case EventType.EVENT_TYPE_TRIBUTE_STARTED:
           console.log('➡️ Action: Set phase to TRIBUTE_PHASE');
           setCurrentPhase(GamePageState.TRIBUTE_PHASE);
-          // TributeInfo will be set from player_view message, not from event
           break;
-        case 'tribute_completed':
+          
+        case EventType.EVENT_TYPE_TRIBUTE_COMPLETED:
           console.log('➡️ Action: Set phase to PLAYING');
           setCurrentPhase(GamePageState.PLAYING);
           setTributeInfo(null);
           break;
-        case 'deal_completed':
-        case 'deal_ended':
+          
+        case EventType.EVENT_TYPE_DEAL_ENDED:
           console.log('➡️ Action: Set phase to DEAL_RESULT');
           setCurrentPhase(GamePageState.DEAL_RESULT);
           
-          // Parse DealEndedPayload from event_data (payload is GameEvent, need to access dealEnded)
-          const dealEndedPayload = payload.dealEnded as DealEndedPayload;
-          
-          // Construct DealResult with proper type conversion
-          const dealResult: DealResultType = {
-            rankings: dealEndedPayload.rankings || [],
-            winning_team: dealEndedPayload.winningTeam || 0,
-            victory_type: dealEndedPayload.victoryType, // Now receives number directly
-            upgrades: (dealEndedPayload.levelChange || [0, 0]) as [number, number],
-            duration: dealEndedPayload.durationMs || 0,
-            trick_count: dealEndedPayload.trickCount || 0,
-            // Statistics are not provided by backend, use placeholder data
-            statistics: {
-              total_tricks: dealEndedPayload.trickCount || 0,
-              player_stats: [],
-              tribute_info: {
-                has_tribute: tributeInfo !== null,
-                tribute_map: {},
-                tribute_cards: {},
-                return_cards: {}
+          // Access DealEndedPayload directly from event
+          if (event.dealEnded) {
+            const dealEndedPayload = event.dealEnded;
+            
+            // Construct DealResult with proper type conversion
+            const dealResult: DealResultType = {
+              rankings: dealEndedPayload.rankings || [],
+              winning_team: dealEndedPayload.winningTeam || 0,
+              victory_type: dealEndedPayload.victoryType,
+              upgrades: (dealEndedPayload.levelChange || [0, 0]) as [number, number],
+              duration: dealEndedPayload.durationMs || 0,
+              trick_count: dealEndedPayload.trickCount || 0,
+              statistics: {
+                total_tricks: dealEndedPayload.trickCount || 0,
+                player_stats: [],
+                tribute_info: {
+                  has_tribute: tributeInfo !== null,
+                  tribute_map: {},
+                  tribute_cards: {},
+                  return_cards: {}
+                }
               }
-            }
-          };
-          
-          setDealResult(dealResult);
+            };
+            
+            setDealResult(dealResult);
+          }
           break;
-        case 'match_completed':
-        case 'match_ended':
+          
+        case EventType.EVENT_TYPE_MATCH_ENDED:
           console.log('➡️ Action: Set phase to MATCH_RESULT');
           setCurrentPhase(GamePageState.MATCH_RESULT);
-          setMatchResult(payload.matchEnded);
+          if (event.matchEnded) {
+            setMatchResult(event.matchEnded);
+          }
           break;
-        case 'trick_started':
-          console.log('🎲 Trick Started:', payload.trick);
-          // Note: Game state is updated from player_view messages, not from game_events
-          // game_events are just notifications and don't contain full game state
+          
+        case EventType.EVENT_TYPE_TRICK_STARTED:
+          if (event.trickStarted) {
+            console.log('🎲 Trick Started:', event.trickStarted);
+          }
           break;
-        case 'player_played':
-          console.log('🃏 Player Played:', {
-            player: player_seat,
-            cards: payload.cards
-          });
+          
+        case EventType.EVENT_TYPE_PLAYER_PLAYED:
+          if (event.playerPlayed) {
+            console.log('🃏 Player Played:', {
+              player: actorSeat,
+              cards: event.playerPlayed.cards
+            });
+          }
           break;
-        case 'player_passed':
-          console.log('⏭️ Player Passed:', player_seat);
+          
+        case EventType.EVENT_TYPE_PLAYER_PASSED:
+          console.log('⏭️ Player Passed:', actorSeat);
           break;
-        case 'trick_ended':
-        case 'trick_completed':
-          console.log('✅ Trick Ended:', {
-            winner: payload.winner,
-            next_leader: payload.next_leader
-          });
+          
+        case EventType.EVENT_TYPE_TRICK_ENDED:
+          if (event.trickEnded) {
+            console.log('✅ Trick Ended:', {
+              winner: event.trickEnded.trickWinner
+            });
+          }
           break;
-        case 'deal_started':
-          console.log('🎴 Deal Started:', {
-            level: payload.deal_level,
-            team0_level: payload.team0_level,
-            team1_level: payload.team1_level
-          });
+          
+        case EventType.EVENT_TYPE_DEAL_STARTED:
+          if (event.dealStarted) {
+            console.log('🎴 Deal Started:', {
+              deal_level: event.dealStarted.dealLevel,
+              team_levels: event.dealStarted.teamLevels
+            });
+          }
           break;
-        case 'tribute_rules_set':
-          console.log('📜 Tribute Rules:', payload);
+          
+        case EventType.EVENT_TYPE_TRIBUTE_EXEMPTED:
+          if (event.tributeExempted) {
+            console.log('🛡️ Tribute Exempted:', event.tributeExempted);
+          }
           break;
-        case 'tribute_immunity':
-          console.log('🛡️ Tribute Immunity:', payload);
+          
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_SUBMITTED:
+          if (event.tributeCardSubmitted) {
+            console.log('⬆️ Tribute Card Submitted:', {
+              actor: actorSeat,
+              card: event.tributeCardSubmitted.submittedCard
+            });
+          }
           break;
-        case 'tribute_given':
-          console.log('⬆️ Tribute Given:', {
-            giver: payload.giver,
-            receiver: payload.receiver,
-            card: payload.card
-          });
+          
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_SELECTED:
+          if (event.tributeCardSelected) {
+            console.log('✅ Tribute Card Selected:', event.tributeCardSelected);
+          }
           break;
-        case 'tribute_selected':
-          console.log('✅ Tribute Selected:', payload);
+          
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_RETURNED:
+          if (event.tributeCardReturned) {
+            console.log('⬇️ Tribute Card Returned:', event.tributeCardReturned);
+          }
           break;
-        case 'return_tribute':
-          console.log('⬇️ Return Tribute:', payload);
-          break;
+          
         default:
-          console.log('ℹ️ Unhandled event type');
+          console.log('ℹ️ Unhandled event type:', event.type);
           break;
       }
       console.groupEnd();

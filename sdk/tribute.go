@@ -140,18 +140,17 @@ func (tm *TributeManager) countBigJokers(hand []*Card) int {
 func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHands [4][]*Card) error {
 	// 统一处理所有上贡类型：自动选择贡牌并放入贡牌池
 	poolCards := make([]*Card, 0)
-	seenCardIDs := make(map[string]bool) // 防御性检查：确保不重复
+	seenDeckIndexes := make(map[int]bool) // 防御性检查：确保不重复
 
 	for _, pair := range tributePhase.TributePairs {
 		// 自动选择贡牌（除红桃级牌外的最大牌）
 		tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[pair.Giver])
 		if tributeCard != nil {
-			// 防御性检查：确保卡 ID 不重复
-			cardID := tributeCard.GetID()
-			if seenCardIDs[cardID] {
-				return fmt.Errorf("duplicate card ID in tribute pool: %s", cardID)
+			// 防御性检查：确保DeckIndex不重复
+			if seenDeckIndexes[tributeCard.DeckIndex] {
+				return fmt.Errorf("duplicate card deck_index in tribute pool: %d", tributeCard.DeckIndex)
 			}
-			seenCardIDs[cardID] = true
+			seenDeckIndexes[tributeCard.DeckIndex] = true
 
 			// 填充 TributePair
 			pair.TributeCard = tributeCard
@@ -185,7 +184,7 @@ func (tm *TributeManager) processSelectingPhase(tributePhase *TributePhase, last
 		// 找到对应的 TributePair 并更新 Receiver
 		found := false
 		for _, pair := range tributePhase.TributePairs {
-			if pair.TributeCard != nil && pair.TributeCard.GetID() == selectedCard.GetID() {
+			if pair.TributeCard != nil && pair.TributeCard.DeckIndex == selectedCard.DeckIndex {
 				pair.Receiver = rank1
 				found = true
 				break
@@ -194,19 +193,19 @@ func (tm *TributeManager) processSelectingPhase(tributePhase *TributePhase, last
 
 		if !found {
 			// 提供详细调试信息
-			poolCardIDs := make([]string, len(tributePhase.PoolCards))
+			poolDeckIndexes := make([]int, len(tributePhase.PoolCards))
 			for i, card := range tributePhase.PoolCards {
-				poolCardIDs[i] = card.GetID()
+				poolDeckIndexes[i] = card.DeckIndex
 			}
-			pairCardIDs := make([]string, len(tributePhase.TributePairs))
+			pairDeckIndexes := make([]int, len(tributePhase.TributePairs))
 			for i, pair := range tributePhase.TributePairs {
 				if pair.TributeCard != nil {
-					pairCardIDs[i] = pair.TributeCard.GetID()
+					pairDeckIndexes[i] = pair.TributeCard.DeckIndex
 				} else {
-					pairCardIDs[i] = "nil"
+					pairDeckIndexes[i] = -1
 				}
 			}
-			return fmt.Errorf("could not find tribute pair for pool card: pool=%v, pairs=%v", poolCardIDs, pairCardIDs)
+			return fmt.Errorf("could not find tribute pair for pool card: pool=%v, pairs=%v", poolDeckIndexes, pairDeckIndexes)
 		}
 
 		// 清空贡牌池
@@ -358,7 +357,7 @@ func (tp *TributePhase) selectTribute(playerSeat int, card *Card) error {
 			cardIndex = i
 			// Find the corresponding TributePair
 			for _, pair := range tp.TributePairs {
-				if pair.TributeCard != nil && pair.TributeCard.GetID() == poolCard.GetID() {
+				if pair.TributeCard != nil && pair.TributeCard.DeckIndex == poolCard.DeckIndex {
 					selectedPair = pair
 					found = true
 					break
@@ -386,7 +385,7 @@ func (tp *TributePhase) selectTribute(playerSeat int, card *Card) error {
 		
 		// Find the remaining TributePair
 		for _, pair := range tp.TributePairs {
-			if pair.TributeCard != nil && pair.TributeCard.GetID() == remainingCard.GetID() {
+			if pair.TributeCard != nil && pair.TributeCard.DeckIndex == remainingCard.DeckIndex {
 				pair.Receiver = rank2
 				break
 			}
@@ -513,7 +512,7 @@ func (tm *TributeManager) ProcessTributePhaseAction(phase *TributePhase, playerC
 }
 
 // SubmitSelection handles tribute selection from pool (double down scenario)
-func (tm *TributeManager) SubmitSelection(phase *TributePhase, playerID int, cardID string) error {
+func (tm *TributeManager) SubmitSelection(phase *TributePhase, playerID int, selectedCard *Card) error {
 	if phase == nil {
 		return errors.New("no tribute phase")
 	}
@@ -526,16 +525,20 @@ func (tm *TributeManager) SubmitSelection(phase *TributePhase, playerID int, car
 		return fmt.Errorf("not player %d's turn to select", playerID)
 	}
 
-	// Find the card in pool
-	var selectedCard *Card
+	if selectedCard == nil {
+		return errors.New("selected card is nil")
+	}
+
+	// Verify the card is in the pool
+	cardFound := false
 	for _, card := range phase.PoolCards {
-		if card.GetID() == cardID {
-			selectedCard = card
+		if card.DeckIndex == selectedCard.DeckIndex {
+			cardFound = true
 			break
 		}
 	}
 
-	if selectedCard == nil {
+	if !cardFound {
 		return errors.New("card not found in tribute pool")
 	}
 
@@ -544,7 +547,7 @@ func (tm *TributeManager) SubmitSelection(phase *TributePhase, playerID int, car
 }
 
 // SubmitReturn handles return tribute submission
-func (tm *TributeManager) SubmitReturn(phase *TributePhase, playerID int, cardID string, playerCards []*Card) error {
+func (tm *TributeManager) SubmitReturn(phase *TributePhase, playerID int, returnCard *Card, playerCards []*Card) error {
 	if phase == nil {
 		return errors.New("no tribute phase")
 	}
@@ -571,21 +574,25 @@ func (tm *TributeManager) SubmitReturn(phase *TributePhase, playerID int, cardID
 		return fmt.Errorf("player %d has already returned tribute", playerID)
 	}
 
-	// Find the card in player's hand
-	var selectedCard *Card
+	if returnCard == nil {
+		return errors.New("return card is nil")
+	}
+
+	// Verify the card is in player's hand
+	cardFound := false
 	for _, card := range playerCards {
-		if card.GetID() == cardID {
-			selectedCard = card
+		if card.DeckIndex == returnCard.DeckIndex {
+			cardFound = true
 			break
 		}
 	}
 
-	if selectedCard == nil {
+	if !cardFound {
 		return errors.New("card not found in player's hand")
 	}
 
 	// Record the return
-	phase.addReturnCard(playerID, selectedCard)
+	phase.addReturnCard(playerID, returnCard)
 
 	// Check if all returns are complete
 	allReturned := true

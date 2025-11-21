@@ -253,15 +253,15 @@ class GameService {
   }
 
   private handleGameEvent(message: WSMessage): void {
-    const { event_type, event_data, player_seat, timestamp } = message.data || {};
+    // GameEvent is now sent directly in message.data (flattened structure)
+    const gameEvent = message.data;
     
     // 🎮 Enhanced Game Event Logging
-    console.group(`🎮 GAME_EVENT: ${event_type}`);
-    console.log('🎯 Event Type:', event_type);
-    console.log('👤 Player Seat:', player_seat);
-    console.log('📊 Event Data:', event_data);
-    console.log('⏰ Timestamp:', timestamp);
-    console.log('📋 Full Message:', message);
+    console.group(`🎮 GAME_EVENT: ${gameEvent.type}`);
+    console.log('🎯 Event Type (enum):', gameEvent.type);
+    console.log('👤 Actor Seat:', gameEvent.actorSeat);
+    console.log('📊 Game Event:', gameEvent);
+    console.log('⏰ Timestamp:', gameEvent.createdAtMs);
     console.groupEnd();
     
     // Note: Do NOT set gameState here - it should only be updated from player_view messages

@@ -78,16 +78,37 @@ func (c *HTTPClient) CallAPI(method, path string, body interface{}, result inter
 
 // ParseCard 解析卡牌数据（从WebSocket消息）
 func ParseCard(cardMap map[string]interface{}, currentRank int) *sdk.Card {
-	cardID, ok := cardMap["id"].(string)
-	if !ok {
+	// 新格式：使用 deck_index, suit, rank, is_joker
+	deckIndex, ok1 := cardMap["deck_index"].(float64)
+	rank, ok2 := cardMap["rank"].(float64)
+	isJoker, ok3 := cardMap["is_joker"].(bool)
+	
+	if !ok1 || !ok2 || !ok3 {
 		return nil
 	}
-
-	card, err := sdk.ParseCardFromID(cardID, currentRank)
+	
+	var color string
+	if isJoker {
+		color = "Joker"
+	} else {
+		suit, ok := cardMap["suit"].(float64)
+		if !ok {
+			return nil
+		}
+		// suit: 0=Spade, 1=Heart, 2=Club, 3=Diamond
+		suits := []string{"Spade", "Heart", "Club", "Diamond"}
+		if int(suit) < 0 || int(suit) >= len(suits) {
+			return nil
+		}
+		color = suits[int(suit)]
+	}
+	
+	card, err := sdk.NewCard(int(rank), color, currentRank)
 	if err != nil {
 		return nil
 	}
-
+	
+	card.DeckIndex = int(deckIndex)
 	return card
 }
 

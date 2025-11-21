@@ -99,7 +99,7 @@ func TestDefaultTimeoutStrategy_GetDefaultPlayDecision(t *testing.T) {
 				for _, card := range tt.hand {
 					if card != nil && card.LessThan(playedCard) {
 						t.Errorf("Played card is not the smallest: played %v but %v is smaller", 
-							playedCard.GetID(), card.GetID())
+							playedCard.ToShortString(), card.ToShortString())
 					}
 				}
 			}
@@ -155,7 +155,7 @@ func TestDefaultTimeoutStrategy_GetDefaultTributeCard(t *testing.T) {
 
 			if tt.wantNil {
 				if result != nil {
-					t.Errorf("Expected nil, got %v", result.GetID())
+					t.Errorf("Expected nil, got %v", result.ToShortString())
 				}
 				return
 			}
@@ -169,7 +169,7 @@ func TestDefaultTimeoutStrategy_GetDefaultTributeCard(t *testing.T) {
 				for _, card := range tt.options {
 					if card != nil && card.GreaterThan(result) {
 						t.Errorf("Result is not the largest: got %v but %v is larger", 
-							result.GetID(), card.GetID())
+							result.ToShortString(), card.ToShortString())
 					}
 				}
 			}
@@ -220,7 +220,7 @@ func TestDefaultTimeoutStrategy_GetDefaultReturnCard(t *testing.T) {
 
 			if tt.wantNil {
 				if result != nil {
-					t.Errorf("Expected nil, got %v", result.GetID())
+					t.Errorf("Expected nil, got %v", result.ToShortString())
 				}
 				return
 			}
@@ -234,7 +234,7 @@ func TestDefaultTimeoutStrategy_GetDefaultReturnCard(t *testing.T) {
 				for _, card := range tt.hand {
 					if card != nil && card.LessThan(result) {
 						t.Errorf("Result is not the smallest: got %v but %v is smaller", 
-							result.GetID(), card.GetID())
+							result.ToShortString(), card.ToShortString())
 					}
 				}
 			}
@@ -282,7 +282,7 @@ func TestDefaultTimeoutStrategy_findSmallestCard(t *testing.T) {
 
 			if tt.wantNil {
 				if result != nil {
-					t.Errorf("Expected nil, got %v", result.GetID())
+					t.Errorf("Expected nil, got %v", result.ToShortString())
 				}
 				return
 			}
@@ -295,7 +295,7 @@ func TestDefaultTimeoutStrategy_findSmallestCard(t *testing.T) {
 			for _, card := range tt.hand {
 				if card != nil && card.LessThan(result) {
 					t.Errorf("Result is not the smallest: got %v but %v is smaller", 
-						result.GetID(), card.GetID())
+						result.ToShortString(), card.ToShortString())
 				}
 			}
 		})

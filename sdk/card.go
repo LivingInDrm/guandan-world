@@ -29,11 +29,7 @@ type Card struct {
 	DeckIndex int    // 牌在整副牌中的唯一索引 (0-107)
 }
 
-// GetID 返回牌的唯一标识符
-// 格式: Color_Number_DeckIndex (例如: "Club_14_52")
-func (c *Card) GetID() string {
-	return fmt.Sprintf("%s_%d_%d", c.Color, c.Number, c.DeckIndex)
-}
+
 
 // GetSuitNumber 将花色字符串转换为数字
 // 返回值: 0=Spade(黑桃), 1=Heart(红桃), 2=Club(梅花), 3=Diamond(方块)
@@ -59,10 +55,10 @@ func (c *Card) GetSuitNumber() int {
 // 将后端的 Card 结构转换为前端期望的格式
 func (c *Card) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"id":       c.GetID(),
-		"suit":     c.GetSuitNumber(),
-		"rank":     c.Number,
-		"is_joker": c.Color == "Joker",
+		"deck_index": c.DeckIndex,
+		"suit":       c.GetSuitNumber(),
+		"rank":       c.Number,
+		"is_joker":   c.Color == "Joker",
 	})
 }
 
@@ -239,107 +235,4 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-// ParseCardFromID 从cardID字符串解析创建Card对象
-// cardID格式：'Color_Number_DeckIndex' (例如: "Heart_5_12", "Joker_15_104")
-// 参数:
-//
-//	cardID: 卡牌ID字符串
-//	level: 当前游戏级别，用于变化牌判断
-//
-// 返回值:
-//
-//	*Card: 解析得到的卡牌对象
-//	error: 如果解析失败，返回错误
-func ParseCardFromID(cardID string, level int) (*Card, error) {
-	if cardID == "" {
-		return nil, fmt.Errorf("empty card ID")
-	}
 
-	// 分割字符串 - 手动实现避免引入strings包
-	parts := make([]string, 0, 3)
-	lastIndex := 0
-	for i, char := range cardID {
-		if char == '_' {
-			if i > lastIndex {
-				parts = append(parts, cardID[lastIndex:i])
-			}
-			lastIndex = i + 1
-		}
-	}
-	if lastIndex < len(cardID) {
-		parts = append(parts, cardID[lastIndex:])
-	}
-
-	if len(parts) != 3 {
-		return nil, fmt.Errorf("invalid card ID format, expected 'Color_Number_DeckIndex', got: %s", cardID)
-	}
-
-	color := parts[0]
-	numberStr := parts[1]
-	deckIndexStr := parts[2]
-
-	// 解析数字 - 手动实现避免引入strconv包
-	var number int
-
-	// 简单的字符串到整数转换
-	if numberStr == "1" {
-		number = 1
-	} else if numberStr == "2" {
-		number = 2
-	} else if numberStr == "3" {
-		number = 3
-	} else if numberStr == "4" {
-		number = 4
-	} else if numberStr == "5" {
-		number = 5
-	} else if numberStr == "6" {
-		number = 6
-	} else if numberStr == "7" {
-		number = 7
-	} else if numberStr == "8" {
-		number = 8
-	} else if numberStr == "9" {
-		number = 9
-	} else if numberStr == "10" {
-		number = 10
-	} else if numberStr == "11" {
-		number = 11
-	} else if numberStr == "12" {
-		number = 12
-	} else if numberStr == "13" {
-		number = 13
-	} else if numberStr == "14" {
-		number = 14
-	} else if numberStr == "15" {
-		number = 15
-	} else if numberStr == "16" {
-		number = 16
-	} else {
-		return nil, fmt.Errorf("invalid card number: %s", numberStr)
-	}
-
-	// 解析 DeckIndex
-	var deckIndex int
-	// 手动解析 deckIndex (0-107)
-	for _, char := range deckIndexStr {
-		if char < '0' || char > '9' {
-			return nil, fmt.Errorf("invalid deck index: %s", deckIndexStr)
-		}
-		deckIndex = deckIndex*10 + int(char-'0')
-	}
-	
-	if deckIndex < 0 || deckIndex > 107 {
-		return nil, fmt.Errorf("deck index out of range (0-107): %d", deckIndex)
-	}
-
-	// 使用现有的NewCard函数创建卡牌
-	card, err := NewCard(number, color, level)
-	if err != nil {
-		return nil, err
-	}
-	
-	// 设置 DeckIndex
-	card.DeckIndex = deckIndex
-	
-	return card, nil
-}

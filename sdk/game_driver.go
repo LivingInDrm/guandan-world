@@ -19,7 +19,7 @@ const (
 // PlayDecision 表示玩家的出牌决策
 type PlayDecision struct {
 	Action ActionType `json:"action"`          // 动作类型：出牌或过牌
-	Cards  []*Card    `json:"cards,omitempty"` // 如果是出牌，包含要出的牌
+	Cards  []*Card    `json:"cards,omitempty"` // 出牌时包含的Card对象
 }
 
 // PlayerInputProvider 定义玩家输入提供者接口
@@ -481,7 +481,7 @@ func (gd *GameDriver) runTributePhase() error {
 				}
 			}
 
-			if err := gd.engine.SubmitTributeSelection(action.PlayerID, selectedCard.GetID()); err != nil {
+			if err := gd.engine.SubmitTributeSelection(action.PlayerID, selectedCard); err != nil {
 				return fmt.Errorf("failed to submit tribute selection: %w", err)
 			}
 
@@ -517,7 +517,7 @@ func (gd *GameDriver) runTributePhase() error {
 				}
 			}
 
-			if err := gd.engine.SubmitReturnTribute(action.PlayerID, returnCard.GetID()); err != nil {
+			if err := gd.engine.SubmitReturnTribute(action.PlayerID, returnCard); err != nil {
 				return fmt.Errorf("failed to submit return tribute: %w", err)
 			}
 		default:

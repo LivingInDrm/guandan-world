@@ -137,7 +137,7 @@ type GameEngineInterface interface {
 	// SubmitTributeSelection 提交贡牌选择（用于双下选牌）
 	// 参数:
 	//   playerID: 选择的玩家座位号(0-3)
-	//   cardID: 选择的牌ID
+	//   selectedCard: 选择的牌对象
 	// 返回值:
 	//   error: 如果选择无效或不是该玩家的选择回合，返回错误
 	// 功能说明:
@@ -145,12 +145,12 @@ type GameEngineInterface interface {
 	//   - 验证玩家是否有权选择
 	//   - 验证选择的牌是否在贡牌池中
 	//   - 自动将剩余的牌分配给rank2
-	SubmitTributeSelection(playerID int, cardID string) error
+	SubmitTributeSelection(playerID int, selectedCard *Card) error
 
 	// SubmitReturnTribute 提交还贡
 	// 参数:
 	//   playerID: 还贡的玩家座位号(0-3)
-	//   cardID: 还贡的牌ID
+	//   returnCard: 还贡的牌对象
 	// 返回值:
 	//   error: 如果还贡无效或不是该玩家的还贡回合，返回错误
 	// 功能说明:
@@ -158,7 +158,7 @@ type GameEngineInterface interface {
 	//   - 验证玩家是否需要还贡
 	//   - 验证选择的牌是否在该玩家手中
 	//   - 完成牌的交换
-	SubmitReturnTribute(playerID int, cardID string) error
+	SubmitReturnTribute(playerID int, returnCard *Card) error
 
 	// 状态查询
 
@@ -1156,7 +1156,7 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 }
 
 // SubmitTributeSelection 提交贡牌选择（用于双下选牌）
-func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error {
+func (ge *GameEngine) SubmitTributeSelection(playerID int, selectedCard *Card) error {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
@@ -1170,13 +1170,8 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 		return errors.New("not in tribute phase")
 	}
 
-	// 收集选择事件数据（在处理之前）
-	var selectedCard *Card
-	for _, card := range deal.TributePhase.PoolCards {
-		if card.GetID() == cardID {
-			selectedCard = card
-			break
-		}
+	if selectedCard == nil {
+		return errors.New("selected card is nil")
 	}
 
 	// 记录选择前的已分配贡牌数量，用于检测 rank2 的自动分配
@@ -1189,7 +1184,7 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 
 	// 调用 TributeManager 处理选择
 	tm := NewTributeManager(deal.Level)
-	err := tm.SubmitSelection(deal.TributePhase, playerID, cardID)
+	err := tm.SubmitSelection(deal.TributePhase, playerID, selectedCard)
 	if err != nil {
 		return err
 	}
@@ -1222,7 +1217,7 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, cardID string) error 
 }
 
 // SubmitReturnTribute 提交还贡
-func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
+func (ge *GameEngine) SubmitReturnTribute(playerID int, returnCard *Card) error {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
@@ -1234,6 +1229,10 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 	deal := ge.currentMatch.CurrentDeal
 	if deal.Status != DealStatusTribute || deal.TributePhase == nil {
 		return errors.New("not in tribute phase")
+	}
+
+	if returnCard == nil {
+		return errors.New("return card is nil")
 	}
 
 	// 从 TributePairs 获取 target_player（原贡者）
@@ -1248,18 +1247,9 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, cardID string) error {
 		return fmt.Errorf("player %d is not a tribute receiver", playerID)
 	}
 
-	// 收集还贡事件数据（在处理之前）
-	var returnCard *Card
-	for _, card := range deal.PlayerCards[playerID] {
-		if card.GetID() == cardID {
-			returnCard = card
-			break
-		}
-	}
-
 	// 调用 TributeManager 处理还贡
 	tm := NewTributeManager(deal.Level)
-	err := tm.SubmitReturn(deal.TributePhase, playerID, cardID, deal.PlayerCards[playerID])
+	err := tm.SubmitReturn(deal.TributePhase, playerID, returnCard, deal.PlayerCards[playerID])
 	if err != nil {
 		return err
 	}

@@ -377,7 +377,21 @@ func (d *Deal) getNextPlayer(currentPlayer int) int {
 
 // isDealFinished checks if the deal is finished
 func (d *Deal) isDealFinished() bool {
-	// Deal is finished when 3 players have finished (4th is automatic)
+	// 双下判断：前两名是否是同一队
+	// 如果前两名都完成且属于同一队，Deal立即结束（双下胜利）
+	if len(d.Rankings) >= 2 {
+		rank1 := d.Rankings[0]
+		rank2 := d.Rankings[1]
+		// Team 0: seats 0, 2; Team 1: seats 1, 3
+		team1 := rank1 % 2
+		team2 := rank2 % 2
+		if team1 == team2 {
+			// 双下：同一队的两名玩家分别获得第1、第2名
+			return true
+		}
+	}
+	
+	// 常规判断：3个玩家完成（第4个自动完成）
 	return len(d.Rankings) >= 3
 }
 

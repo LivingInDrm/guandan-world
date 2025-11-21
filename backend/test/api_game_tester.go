@@ -258,24 +258,24 @@ func (t *APIGameTester) handlePlayDecisionRequest(playerSeat int, data map[strin
 
 	// 构建决策
 	var action string
-	var cardIDs []string
+	var deckIndexes []int
 
 	if selectedCards == nil || len(selectedCards) == 0 {
 		action = "pass"
 	} else {
 		action = "play"
-		cardIDs = make([]string, len(selectedCards))
+		deckIndexes = make([]int, len(selectedCards))
 		for i, card := range selectedCards {
-			cardIDs[i] = card.GetID()
+			deckIndexes[i] = card.DeckIndex
 		}
 	}
 
 	// 提交决策
 	req := handlers.PlayDecisionRequest{
-		RoomID:     t.roomID,
-		PlayerSeat: playerSeat,
-		Action:     action,
-		CardIDs:    cardIDs,
+		RoomID:      t.roomID,
+		PlayerSeat:  playerSeat,
+		Action:      action,
+		DeckIndexes: deckIndexes,
 	}
 
 	go func() {
@@ -317,7 +317,7 @@ func (t *APIGameTester) handleTributeSelectionRequest(playerSeat int, data map[s
 	req := handlers.TributeSelectionRequest{
 		RoomID:     t.roomID,
 		PlayerSeat: playerSeat,
-		CardID:     selectedCard.GetID(),
+		DeckIndex:  selectedCard.DeckIndex,
 	}
 
 	go func() {
@@ -362,7 +362,7 @@ func (t *APIGameTester) handleReturnTributeRequest(playerSeat int, data map[stri
 	req := handlers.ReturnTributeRequest{
 		RoomID:     t.roomID,
 		PlayerSeat: playerSeat,
-		CardID:     returnCard.GetID(),
+		DeckIndex:  returnCard.DeckIndex,
 	}
 
 	go func() {

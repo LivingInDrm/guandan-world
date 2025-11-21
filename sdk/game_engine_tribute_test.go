@@ -229,7 +229,7 @@ func TestSubmitTributeSelection(t *testing.T) {
 
 	// Submit selection
 	selectedCard := deal.TributePhase.PoolCards[0]
-	err := engine.SubmitTributeSelection(0, selectedCard.GetID())
+	err := engine.SubmitTributeSelection(0, selectedCard)
 	if err != nil {
 		t.Errorf("SubmitTributeSelection failed: %v", err)
 	}
@@ -310,7 +310,7 @@ func TestSubmitReturnTribute(t *testing.T) {
 
 	// Submit return tribute
 	returnCard := deal.PlayerCards[0][2] // Return the 3 of Diamond
-	err := engine.SubmitReturnTribute(0, returnCard.GetID())
+	err := engine.SubmitReturnTribute(0, returnCard)
 	if err != nil {
 		t.Errorf("SubmitReturnTribute failed: %v", err)
 	}
@@ -375,7 +375,7 @@ func TestTributeEventHandling(t *testing.T) {
 
 	// Submit return tribute
 	returnCard := deal.PlayerCards[0][1]
-	engine.SubmitReturnTribute(0, returnCard.GetID())
+	engine.SubmitReturnTribute(0, returnCard)
 
 	// Process again to complete
 	engine.ProcessTributePhase()
@@ -475,19 +475,19 @@ func TestCompleteDoubleDownFlow(t *testing.T) {
 	}
 
 	// Step 2: Player 0 selects Big Joker
-	var selectedCardID string
+	var selectedCard *Card
 	for _, card := range deal.TributePhase.PoolCards {
 		if card.Number == 16 && card.Color == "Joker" {
-			selectedCardID = card.GetID()
+			selectedCard = card
 			break
 		}
 	}
 
-	if selectedCardID == "" {
+	if selectedCard == nil {
 		t.Fatal("Big Joker not found in pool")
 	}
 
-	err = engine.SubmitTributeSelection(0, selectedCardID)
+	err = engine.SubmitTributeSelection(0, selectedCard)
 	if err != nil {
 		t.Fatalf("SubmitTributeSelection failed: %v", err)
 	}
@@ -507,13 +507,13 @@ func TestCompleteDoubleDownFlow(t *testing.T) {
 	}
 
 	// Step 4: Player 2 gets the remaining card (Ace)
-	var remainingCardID string
+	var remainingCard *Card
 	for _, card := range deal.TributePhase.PoolCards {
-		remainingCardID = card.GetID()
+		remainingCard = card
 		break // Should only be one card left
 	}
 
-	err = engine.SubmitTributeSelection(2, remainingCardID)
+	err = engine.SubmitTributeSelection(2, remainingCard)
 	if err != nil {
 		t.Fatalf("SubmitTributeSelection failed for second selection: %v", err)
 	}
@@ -568,8 +568,8 @@ func TestCompleteDoubleDownFlow(t *testing.T) {
 			t.Fatalf("Player %d has no cards to return", action.PlayerID)
 		}
 
-		returnCardID := deal.PlayerCards[action.PlayerID][0].GetID() // Return first card
-		err = engine.SubmitReturnTribute(action.PlayerID, returnCardID)
+		returnCard := deal.PlayerCards[action.PlayerID][0] // Return first card
+		err = engine.SubmitReturnTribute(action.PlayerID, returnCard)
 		if err != nil {
 			t.Fatalf("SubmitReturnTribute failed for player %d: %v", action.PlayerID, err)
 		}

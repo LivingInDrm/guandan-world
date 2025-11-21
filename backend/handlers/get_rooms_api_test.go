@@ -250,13 +250,21 @@ func TestGetRoomsAPI_ExpiredToken(t *testing.T) {
 	// 创建一个很短过期时间的auth service
 	authService := auth.NewAuthService("test-secret", 1*time.Millisecond)
 	roomService := room.NewRoomService(authService)
+	mockDriverService := &MockDriverService{}
+	mockWSManager := &MockWSManager{}
 
 	authHandler := NewAuthHandler(authService)
-	roomHandler := NewRoomHandler(roomService, authService)
+	roomHandler := NewRoomHandler(roomService, authService, mockDriverService, mockWSManager)
 
 	router := gin.New()
 	authHandler.RegisterRoutes(router)
-	roomHandler.RegisterRoutes(router, authHandler)
+	
+	// Register room routes manually
+	rooms := router.Group("/api/rooms")
+	rooms.Use(authHandler.JWTMiddleware())
+	{
+		rooms.GET("", roomHandler.GetRooms)
+	}
 
 	// 注册并登录用户获取token
 	_, _ = authService.Register("expireduser", "password123")
