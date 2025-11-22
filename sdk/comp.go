@@ -455,14 +455,12 @@ func NewFullHouse(cards []*Card) *FullHouse {
 	var normalizedCards []*Card
 
 	if len(cards) == 5 {
-		// 使用Python的satisfy逻辑
 		var ok bool
-		ok, sortedCards = fullHouseSatisfy(cards)
+		ok, sortedCards = FullHouseSatisfyNew(cards)
 		valid = ok
 		
-		// 如果有效，创建规范化牌组
 		if valid {
-			normalizedCards = normalizeFullHouse(sortedCards)
+			normalizedCards = sortedCards
 		}
 	} else {
 		sortedCards = sortCards(cards)
@@ -478,113 +476,6 @@ func NewFullHouse(cards []*Card) *FullHouse {
 	}
 }
 
-// fullHouseSatisfy 实现Python的FullHouse.satisfy逻辑
-func fullHouseSatisfy(cards []*Card) (bool, []*Card) {
-	if len(cards) != FULL_HOUSE_CARD_COUNT {
-		return failWithSortedCards(cards)
-	}
-
-	// 排序卡片
-	sortedCards := sortCards(cards)
-
-	// 如果最大的卡片是王牌，它必须是一对王牌
-	if sortedCards[4].Color == "Joker" {
-		if !sortedCards[3].Equals(sortedCards[4]) {
-			return false, sortedCards
-		}
-		// 检查剩余的是否是一个三张
-		triple := NewTriple(sortedCards[:3])
-		if !triple.Valid {
-			return false, sortedCards
-		}
-		return true, append(triple.Cards, sortedCards[3:]...)
-	}
-
-	// 统计变化牌数量
-	wildcardCount := countWildcards(sortedCards)
-
-	// 如果有两个变化牌
-	if wildcardCount == 2 && sortedCards[3].IsWildcard() && sortedCards[4].IsWildcard() {
-		// 检查 1 + 2 优先选择更大的葫芦
-		pair := NewPair(sortedCards[1:3])
-		if pair.Valid && !sortedCards[0].Equals(pair.Cards[0]) {
-			result := createResult()
-			result = append(result, sortedCards[0])
-			result = append(result, sortedCards[3:]...)
-			result = append(result, pair.Cards...)
-			return true, result
-		}
-		// 检查 2 + 1
-		pair = NewPair(sortedCards[:2])
-		if pair.Valid && !sortedCards[2].Equals(pair.Cards[0]) {
-			result := createResult()
-			result = append(result, sortedCards[2])
-			result = append(result, sortedCards[3:]...)
-			result = append(result, pair.Cards...)
-			return true, result
-		}
-		// 检查 3
-		triple := NewTriple(sortedCards[:3])
-		if triple.Valid {
-			return true, append(triple.Cards, sortedCards[3:]...)
-		}
-		return failWithSortedCards(sortedCards)
-	}
-
-	// 如果没有变化牌
-	if wildcardCount == 0 {
-		// 可以是 3 + 2 或 2 + 3
-		// 检查 2 + 3 优先选择更大的葫芦
-		triple := NewTriple(sortedCards[2:])
-		pair := NewPair(sortedCards[:2])
-		if triple.Valid && pair.Valid && !triple.Cards[0].Equals(pair.Cards[0]) {
-			return true, append(triple.Cards, pair.Cards...)
-		}
-		// 检查 3 + 2
-		triple = NewTriple(sortedCards[:3])
-		pair = NewPair(sortedCards[3:])
-		if triple.Valid && pair.Valid && !triple.Cards[0].Equals(pair.Cards[0]) {
-			return true, append(triple.Cards, pair.Cards...)
-		}
-		return failWithSortedCards(sortedCards)
-	}
-
-	// 如果有一个变化牌
-	if wildcardCount == 1 {
-		// 可以是 2 + 2, 3 + 1, 1 + 3
-		// 检查 2 + 2
-		pair1 := NewPair(sortedCards[:2])
-		pair2 := NewPair(sortedCards[2:4])
-		if pair1.Valid && pair2.Valid && !pair1.Cards[0].Equals(pair2.Cards[0]) {
-			result := createResult()
-			result = append(result, pair2.Cards...)
-			result = append(result, sortedCards[4])
-			result = append(result, pair1.Cards...)
-			return true, result
-		}
-		// 检查 1 + 3 优先选择更大的葫芦
-		triple := NewTriple(sortedCards[1:4])
-		if triple.Valid && !triple.Cards[0].Equals(sortedCards[0]) {
-			result := createResult()
-			result = append(result, triple.Cards...)
-			result = append(result, sortedCards[0])
-			result = append(result, sortedCards[4])
-			return true, result
-		}
-		// 检查 3 + 1
-		triple = NewTriple(sortedCards[:3])
-		if triple.Valid && !triple.Cards[0].Equals(sortedCards[3]) {
-			result := createResult()
-			result = append(result, triple.Cards...)
-			result = append(result, sortedCards[3])
-			result = append(result, sortedCards[4])
-			return true, result
-		}
-		return failWithSortedCards(sortedCards)
-	}
-
-	return failWithSortedCards(sortedCards)
-}
 
 func (f *FullHouse) GreaterThan(other CardComp) bool {
 	if other.GetType() != TypeFullHouse {
@@ -1041,133 +932,6 @@ func getMostCommonColor(cards []*Card) string {
 	return mostCommon
 }
 
-// normalizeFullHouse 规范化葫芦牌组
-// 葫芦按照 3+2 的顺序排列，万能牌替换为使三张部分最大
-func normalizeFullHouse(cards []*Card) []*Card {
-	if len(cards) != 5 {
-		return cards
-	}
-	
-	result := cloneCards(cards)
-	// 葫芦已经按照 3+2 的顺序排列
-	// 前3张是三张，后2张是对子
-	
-	// 处理三张部分的万能牌
-	var tripleBase *Card
-	for i := 0; i < 3; i++ {
-		if !result[i].IsWildcard() {
-			tripleBase = result[i]
-			break
-		}
-	}
-	if tripleBase != nil {
-		for i := 0; i < 3; i++ {
-			if result[i].IsWildcard() {
-				result[i] = cloneCard(tripleBase)
-			}
-		}
-	}
-	
-	// 处理对子部分的万能牌
-	var pairBase *Card
-	for i := 3; i < 5; i++ {
-		if !result[i].IsWildcard() {
-			pairBase = result[i]
-			break
-		}
-	}
-	if pairBase != nil {
-		for i := 3; i < 5; i++ {
-			if result[i].IsWildcard() {
-				result[i] = cloneCard(pairBase)
-			}
-		}
-	}
-	
-	return result
-}
-
-// normalizeStraight 规范化顺子牌组
-// 万能牌替换为使顺子最大的牌
-func normalizeStraight(cards []*Card) []*Card {
-	if len(cards) != 5 {
-		return cards
-	}
-	
-	result := cloneCards(cards)
-	
-	// 找出万能牌的位置
-	wildcardIndices := []int{}
-	for i, card := range result {
-		if card.IsWildcard() {
-			wildcardIndices = append(wildcardIndices, i)
-		}
-	}
-	
-	if len(wildcardIndices) == 0 {
-		return result
-	}
-	
-	// 获取非万能牌的数字，确定顺子的范围
-	numbers := []int{}
-	for _, card := range result {
-		if !card.IsWildcard() {
-			numbers = append(numbers, card.RawNumber)
-		}
-	}
-	
-	// 顺子已经是排好序的，万能牌需要填补空缺
-	// 根据顺子的实际值来确定万能牌应该是什么
-	for _, idx := range wildcardIndices {
-		originalDeckIndex := result[idx].DeckIndex  // 保存原索引
-		// 根据位置确定万能牌应该的值
-		if idx == 0 {
-			// 第一张，应该是第二张-1
-			if result[1].IsWildcard() {
-				// 如果第二张也是万能牌，看第三张
-				result[idx] = createReplacementCard(result[2].RawNumber-2, "Spade", result[idx].Level, originalDeckIndex)
-			} else {
-				result[idx] = createReplacementCard(result[1].RawNumber-1, "Spade", result[idx].Level, originalDeckIndex)
-			}
-		} else if idx == 4 {
-			// 最后一张，应该是倒数第二张+1
-			if result[3].IsWildcard() {
-				// 如果倒数第二张也是万能牌，看倒数第三张
-				result[idx] = createReplacementCard(result[2].RawNumber+2, "Spade", result[idx].Level, originalDeckIndex)
-			} else {
-				result[idx] = createReplacementCard(result[3].RawNumber+1, "Spade", result[idx].Level, originalDeckIndex)
-			}
-		} else {
-			// 中间的牌，根据前后推断
-			expectedValue := 0
-			if !result[idx-1].IsWildcard() {
-				expectedValue = result[idx-1].RawNumber + 1
-			} else if !result[idx+1].IsWildcard() {
-				expectedValue = result[idx+1].RawNumber - 1
-			}
-			result[idx] = createReplacementCard(expectedValue, "Spade", result[idx].Level, originalDeckIndex)
-		}
-	}
-	
-	// 特殊处理A高位顺子(10-J-Q-K-A)
-	// 如果最后一张是A(RawNumber=1)，说明是A高位顺子
-	if result[4].RawNumber == 1 {
-		// A在高位顺子中相当于14
-		for _, idx := range wildcardIndices {
-			originalDeckIndex := result[idx].DeckIndex  // 保存原索引
-			if idx == 4 {
-				result[idx] = createReplacementCard(1, "Spade", result[idx].Level, originalDeckIndex) // A保持为1
-			} else {
-				// 重新计算其他位置的值：10, 11, 12, 13, 1(A)
-				positionValues := []int{10, 11, 12, 13, 1}
-				result[idx] = createReplacementCard(positionValues[idx], "Spade", result[idx].Level, originalDeckIndex)
-			}
-		}
-	}
-	
-	return result
-}
-
 
 // normalizeNaiveBomb 规范化普通炸弹牌组
 // 万能牌全部替换为与其他牌相同的牌
@@ -1202,31 +966,4 @@ func normalizeNaiveBomb(cards []*Card) []*Card {
 	
 	return result
 }
-
-// normalizeStraightFlush 规范化同花顺牌组
-// 万能牌替换时需要同时满足顺子和同花色要求
-func normalizeStraightFlush(cards []*Card) []*Card {
-	if len(cards) != 5 {
-		return cards
-	}
-	
-	// 先按照顺子规则规范化
-	result := normalizeStraight(cards)
-	
-	// 然后调整花色，使所有牌同花色
-	mostCommonColor := getMostCommonColor(cards)
-	for i, card := range result {
-		// 保留原始的RawNumber，只改变花色
-		result[i] = &Card{
-			Number:    card.Number,
-			RawNumber: card.RawNumber,
-			Color:     mostCommonColor,
-			Level:     card.Level,
-			Name:      card.Name,
-		}
-	}
-	
-	return result
-}
-
 

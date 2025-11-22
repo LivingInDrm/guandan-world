@@ -1,0 +1,109 @@
+package sdk
+
+import "fmt"
+
+// ManualTestFullHouseSatisfyNew 手动测试 fullHouseSatisfyNew 函数
+func ManualTestFullHouseSatisfyNew() {
+	fmt.Println("=== FullHouse Manual Test ===\n")
+
+	// 测试用例1: 情况1 - 0 wildcard, triple + pair
+	fmt.Println("Test 1: 333 + 22 (情况1)")
+	cards1 := []*Card{
+		mustNewCard(3, "Spade", 5),
+		mustNewCard(3, "Heart", 5),
+		mustNewCard(3, "Diamond", 5),
+		mustNewCard(2, "Spade", 5),
+		mustNewCard(2, "Heart", 5),
+	}
+	valid1, norm1, key1 := fullHouseSatisfyNew(cards1)
+	fmt.Printf("Valid: %v, ComparisonKey: %d\n", valid1, key1)
+	fmt.Printf("Normalized: %v\n\n", norm1)
+
+	// 测试用例2: 情况2 - 1 wildcard, triple + single
+	fmt.Println("Test 2: KKK + 2 + 1wildcard (情况2)")
+	cards2 := []*Card{
+		mustNewCard(13, "Spade", 5),
+		mustNewCard(13, "Heart", 5),
+		mustNewCard(13, "Diamond", 5),
+		mustNewCard(2, "Spade", 5),
+		mustNewCard(5, "Heart", 5), // 5是变化牌
+	}
+	valid2, norm2, key2 := fullHouseSatisfyNew(cards2)
+	fmt.Printf("Valid: %v, ComparisonKey: %d\n", valid2, key2)
+	fmt.Printf("Normalized: %v\n\n", norm2)
+
+	// 测试用例3: 情况3 - 1 wildcard, 2 pairs
+	fmt.Println("Test 3: 77 + 55 + 1wildcard (情况3)")
+	cards3 := []*Card{
+		mustNewCard(7, "Spade", 8),
+		mustNewCard(7, "Heart", 8),
+		mustNewCard(8, "Spade", 8), // 8是变化牌
+		mustNewCard(5, "Diamond", 8),
+		mustNewCard(5, "Club", 8),
+	}
+	valid3, norm3, key3 := fullHouseSatisfyNew(cards3)
+	fmt.Printf("Valid: %v, ComparisonKey: %d (应该是7)\n", valid3, key3)
+	fmt.Printf("Normalized: %v\n\n", norm3)
+
+	// 测试用例4: 情况4 - 2 wildcard, pair + single
+	fmt.Println("Test 4: 22 + 3 + 2wildcard (情况4)")
+	cards4 := []*Card{
+		mustNewCard(2, "Spade", 5),
+		mustNewCard(2, "Heart", 5),
+		mustNewCard(3, "Spade", 5),
+		mustNewCard(5, "Heart", 5), // 5是变化牌
+		mustNewCard(5, "Diamond", 5), // 5是变化牌
+	}
+	valid4, norm4, key4 := fullHouseSatisfyNew(cards4)
+	fmt.Printf("Valid: %v, ComparisonKey: %d (应该是3)\n", valid4, key4)
+	fmt.Printf("Normalized: %v\n\n", norm4)
+
+	// 测试用例5: 王对作为pair
+	fmt.Println("Test 5: 222 + 大王大王 (王对作为pair)")
+	bigJoker1, _ := NewCard(16, "Joker", 5)
+	bigJoker2, _ := NewCard(16, "Joker", 5)
+	cards5 := []*Card{
+		mustNewCard(2, "Spade", 5),
+		mustNewCard(2, "Heart", 5),
+		mustNewCard(2, "Diamond", 5),
+		bigJoker1,
+		bigJoker2,
+	}
+	valid5, norm5, key5 := fullHouseSatisfyNew(cards5)
+	fmt.Printf("Valid: %v, ComparisonKey: %d\n", valid5, key5)
+	fmt.Printf("Normalized: %v\n\n", norm5)
+
+	// 测试用例6: 非法 - 1大王+1小王（不能配对）
+	fmt.Println("Test 6: 333 + 大王小王 (非法-王不能混合配对)")
+	bigJoker, _ := NewCard(16, "Joker", 5)
+	smallJoker, _ := NewCard(15, "Joker", 5)
+	cards6 := []*Card{
+		mustNewCard(3, "Spade", 5),
+		mustNewCard(3, "Heart", 5),
+		mustNewCard(3, "Diamond", 5),
+		bigJoker,
+		smallJoker,
+	}
+	valid6, _, key6 := fullHouseSatisfyNew(cards6)
+	fmt.Printf("Valid: %v (应该是false), ComparisonKey: %d\n\n", valid6, key6)
+
+	// 测试用例7: 情况3 - 王对不能升级为triple
+	fmt.Println("Test 7: 王王 + 33 + 1wildcard (王对只能作pair)")
+	cards7 := []*Card{
+		bigJoker1,
+		bigJoker2,
+		mustNewCard(3, "Spade", 5),
+		mustNewCard(3, "Heart", 5),
+		mustNewCard(5, "Diamond", 5), // 5是变化牌
+	}
+	valid7, norm7, key7 := fullHouseSatisfyNew(cards7)
+	fmt.Printf("Valid: %v, ComparisonKey: %d (应该是3，不是16)\n", valid7, key7)
+	fmt.Printf("Normalized: %v\n\n", norm7)
+
+	fmt.Println("=== Test Complete ===")
+}
+
+func mustNewCard(number int, color string, level int) *Card {
+	card, _ := NewCard(number, color, level)
+	return card
+}
