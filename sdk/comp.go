@@ -5,13 +5,7 @@ import (
 	"sort"
 )
 
-// 常量定义
-const (
-	STRAIGHT_CARD_COUNT   = 5
-	PLATE_CARD_COUNT      = 6
-	TUBE_CARD_COUNT       = 6
-	FULL_HOUSE_CARD_COUNT = 5
-)
+
 
 // 预定义的数组模式常量
 var (
@@ -30,6 +24,8 @@ var (
 	STRAIGHT_PATTERN_014 = []int{0, 1, 4}
 
 	// 钢管模式
+	// Deprecated: 新的枚举验证方案（tubeSatisfyNew）不再使用模式匹配常量
+	// 这些常量将在后续版本中移除
 	TUBE_PATTERN_TRIPLET  = []int{0, 0, 1, 1, 2, 2}
 	TUBE_PATTERN_0112     = []int{0, 0, 1, 1, 2}
 	TUBE_PATTERN_0122     = []int{0, 0, 1, 2, 2}
@@ -159,58 +155,7 @@ func (ct CompType) String() string {
 
 // 公共工具函数
 
-// sortCards 对卡片进行排序
-func sortCards(cards []*Card) []*Card {
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].LessThan(sortedCards[j])
-	})
-	return sortedCards
-}
 
-// sortCardsForConsecutive 专门用于连续性判断的排序（按RawNumber排序）
-// 用于顺子、钢板、钢管等需要数字连续性的牌型
-func sortCardsForConsecutive(cards []*Card) []*Card {
-	sortedCards := make([]*Card, len(cards))
-	copy(sortedCards, cards)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		// 变化牌排在最后，便于处理
-		if sortedCards[i].IsWildcard() && !sortedCards[j].IsWildcard() {
-			return false
-		}
-		if !sortedCards[i].IsWildcard() && sortedCards[j].IsWildcard() {
-			return true
-		}
-		if sortedCards[i].IsWildcard() && sortedCards[j].IsWildcard() {
-			return false // 变化牌之间顺序不重要
-		}
-		// 普通牌按RawNumber排序（保持数学连续性）
-		return sortedCards[i].RawNumber < sortedCards[j].RawNumber
-	})
-	return sortedCards
-}
-
-// countWildcards 统计变化牌数量
-func countWildcards(cards []*Card) int {
-	count := 0
-	for _, card := range cards {
-		if card.IsWildcard() {
-			count++
-		}
-	}
-	return count
-}
-
-// hasJokers 检查是否有王牌
-func hasJokers(cards []*Card) bool {
-	for _, card := range cards {
-		if card.Color == "Joker" {
-			return true
-		}
-	}
-	return false
-}
 
 // getNormalCards 获取非变化牌
 func getNormalCards(cards []*Card) []*Card {
@@ -1531,22 +1476,24 @@ func (p *Plate) IsBomb() bool {
 // Tube 钢管（连续对子）
 type Tube struct {
 	BaseComp
+	ComparisonKey int // 比较键值（1-12），在构造时预计算
 }
 
 func NewTube(cards []*Card) *Tube {
 	valid := false
 	var sortedCards []*Card
 	var normalizedCards []*Card
+	var comparisonKey int
 
 	if len(cards) == 6 {
-		// 使用Python的satisfy逻辑
+		// 使用新的枚举验证逻辑
 		var ok bool
-		ok, sortedCards = tubeSatisfy(cards)
+		ok, sortedCards, comparisonKey = tubeSatisfyNew(cards)
 		valid = ok
 		
-		// 如果有效，创建规范化牌组
+		// 如果有效，新逻辑已返回规范化结果
 		if valid {
-			normalizedCards = normalizeTube(sortedCards)
+			normalizedCards = sortedCards
 		}
 	} else {
 		sortedCards = sortCards(cards)
@@ -1554,15 +1501,19 @@ func NewTube(cards []*Card) *Tube {
 
 	return &Tube{
 		BaseComp: BaseComp{
-			Cards:           sortedCards,
+			Cards:           cards,
 			NormalizedCards: normalizedCards,
 			Valid:           valid,
 			Type:            TypeTube,
 		},
+		ComparisonKey: comparisonKey,
 	}
 }
 
 // tubeSatisfy 实现Python的Tube.satisfy逻辑
+// Deprecated: 使用 tubeSatisfyNew 替代（位于 tube_comp.go）
+// 新的枚举验证方案可以正确处理所有循环情况（A-2-3、Q-K-A）
+// 此函数将在后续版本中移除
 func tubeSatisfy(cards []*Card) (bool, []*Card) {
 	if len(cards) != TUBE_CARD_COUNT {
 		return failWithSortedCards(cards)
@@ -1706,25 +1657,15 @@ func (t *Tube) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherTube := other.(*Tube)
-
-	// 使用规范化牌组进行比较
-	myCards := t.NormalizedCards
-	if myCards == nil {
-		myCards = t.Cards
-	}
-	otherCards := otherTube.NormalizedCards
-	if otherCards == nil {
-		otherCards = otherTube.Cards
-	}
-
-	// 使用getTubeComparisonKey来正确比较钢管大小
-	myKey := getTubeComparisonKey(myCards)
-	otherKey := getTubeComparisonKey(otherCards)
-
-	return myKey > otherKey
+	
+	// 直接比较预计算的 ComparisonKey
+	return t.ComparisonKey > otherTube.ComparisonKey
 }
 
 // getTubeComparisonKey 获取钢管的比较键值
+// Deprecated: ComparisonKey 已在 NewTube() 中预计算并存储到结构体字段
+// 使用 Tube.ComparisonKey 字段替代直接调用此函数
+// 此函数将在后续版本中移除
 func getTubeComparisonKey(cards []*Card) int {
 	if len(cards) != TUBE_CARD_COUNT {
 		return 0
@@ -1781,6 +1722,8 @@ func getTubeComparisonKey(cards []*Card) int {
 }
 
 // isA2Tube 检查是否为A-2钢管
+// Deprecated: 新的枚举验证方案（tubeSatisfyNew）不再需要此辅助函数
+// 此函数将在后续版本中移除
 func isA2Tube(numbers []int) bool {
 	// 对于钢管，检查是否包含A(1)、2、3，但不包含K(13)
 	// A-2-3是最小的钢管
@@ -1809,6 +1752,8 @@ func isA2Tube(numbers []int) bool {
 }
 
 // isAKTube 检查是否为A-K钢管
+// Deprecated: 新的枚举验证方案（tubeSatisfyNew）不再需要此辅助函数
+// 此函数将在后续版本中移除
 func isAKTube(numbers []int) bool {
 	// 对于钢管，检查是否包含A(1)、K(13)、Q(12)或2
 	// Q-K-A 或 A-K-2 都是最大的钢管
@@ -2379,6 +2324,9 @@ func normalizeStraightFlush(cards []*Card) []*Card {
 
 // normalizeTube 规范化钢管牌组（连续对子）
 // 万能牌替换为使钢管最大的牌
+// Deprecated: 使用 tubeSatisfyNew 返回的规范化结果
+// 新逻辑在验证的同时完成规范化，无需单独调用此函数
+// 此函数将在后续版本中移除
 func normalizeTube(cards []*Card) []*Card {
 	if len(cards) != 6 {
 		return cards
