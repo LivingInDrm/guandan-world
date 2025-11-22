@@ -5,80 +5,13 @@ import (
 	"sort"
 )
 
-
-
-// 预定义的数组模式常量
-var (
-	// 顺子模式（4张牌的相对位置）
-	STRAIGHT_PATTERN_0123 = []int{0, 1, 2, 3}
-	STRAIGHT_PATTERN_0124 = []int{0, 1, 2, 4}
-	STRAIGHT_PATTERN_0134 = []int{0, 1, 3, 4}
-	STRAIGHT_PATTERN_0234 = []int{0, 2, 3, 4}
-
-	// 顺子模式（3张牌的相对位置）
-	STRAIGHT_PATTERN_012 = []int{0, 1, 2}
-	STRAIGHT_PATTERN_023 = []int{0, 2, 3}
-	STRAIGHT_PATTERN_013 = []int{0, 1, 3}
-	STRAIGHT_PATTERN_024 = []int{0, 2, 4}
-	STRAIGHT_PATTERN_034 = []int{0, 3, 4}
-	STRAIGHT_PATTERN_014 = []int{0, 1, 4}
-
-)
-
 // 辅助函数
 func failWithSortedCards(cards []*Card) (bool, []*Card) {
 	return false, sortCards(cards)
 }
 
-func matchesPattern(diffs []int, pattern []int) bool {
-	return isArrayEqual(diffs, pattern)
-}
-
-func createNewOrder(size int) []*Card {
-	return make([]*Card, size)
-}
-
 func createResult() []*Card {
 	return make([]*Card, 0)
-}
-
-func combineCardArrays(arrays ...[]*Card) []*Card {
-	result := createResult()
-	for _, arr := range arrays {
-		result = append(result, arr...)
-	}
-	return result
-}
-
-func combineCardsAndSlices(cards []*Card, slices ...[]int) []*Card {
-	result := createResult()
-	for _, slice := range slices {
-		start, end := slice[0], slice[1]
-		if end >= 0 {
-			result = append(result, cards[start:end+1]...)
-		} else {
-			result = append(result, cards[start])
-		}
-	}
-	return result
-}
-
-func computeRelativeDiffs(numbers []int, count int) []int {
-	diffs := make([]int, count)
-	baseValue := numbers[0]
-	for i := 0; i < count; i++ {
-		diffs[i] = numbers[i] - baseValue
-	}
-	return diffs
-}
-
-func anyPatternMatches(diffs []int, patterns ...[]int) bool {
-	for _, pattern := range patterns {
-		if matchesPattern(diffs, pattern) {
-			return true
-		}
-	}
-	return false
 }
 
 // CardComp 牌组接口
@@ -176,17 +109,6 @@ func getMaxCardNumber(cards []*Card) int {
 		}
 	}
 	return maxNumber
-}
-
-// getMaxCardRawNumber 获取最大卡片原始数字（用于连续性检查）
-func getMaxCardRawNumber(cards []*Card) int {
-	maxRawNumber := 0
-	for _, card := range cards {
-		if !card.IsWildcard() && card.RawNumber > maxRawNumber {
-			maxRawNumber = card.RawNumber
-		}
-	}
-	return maxRawNumber
 }
 
 // BaseComp 基础牌组结构
@@ -688,22 +610,24 @@ func (f *FullHouse) IsBomb() bool {
 // Straight 顺子
 type Straight struct {
 	BaseComp
+	ComparisonKey int // 比较键值（1-10），在构造时预计算
 }
 
 func NewStraight(cards []*Card) *Straight {
 	valid := false
 	var sortedCards []*Card
 	var normalizedCards []*Card
+	var comparisonKey int
 
 	if len(cards) == 5 {
-		// 使用Python的satisfy逻辑
+		// 使用新的枚举验证逻辑
 		var ok bool
-		ok, sortedCards = straightSatisfy(cards)
+		ok, sortedCards, comparisonKey = straightSatisfyNew(cards)
 		valid = ok
 		
-		// 如果有效，创建规范化牌组
+		// 如果有效，新逻辑已返回规范化结果
 		if valid {
-			normalizedCards = normalizeStraight(sortedCards)
+			normalizedCards = sortedCards
 		}
 	} else {
 		sortedCards = sortCards(cards)
@@ -711,417 +635,13 @@ func NewStraight(cards []*Card) *Straight {
 
 	return &Straight{
 		BaseComp: BaseComp{
-			Cards:           sortedCards,
+			Cards:           cards,
 			NormalizedCards: normalizedCards,
 			Valid:           valid,
 			Type:            TypeStraight,
 		},
+		ComparisonKey: comparisonKey,
 	}
-}
-
-// straightSatisfy 实现Python的Straight.satisfy逻辑
-func straightSatisfy(cards []*Card) (bool, []*Card) {
-	if len(cards) != STRAIGHT_CARD_COUNT {
-		return failWithSortedCards(cards)
-	}
-
-	// 使用连续性排序卡片
-	sortedCards := sortCardsForConsecutive(cards)
-
-	// 统计变化牌数量
-	numWildcards := countWildcards(sortedCards)
-
-	// 获取卡片数字（使用RawNumber进行连续性判断）
-	cardNumbers := make([]int, len(sortedCards))
-	for i, card := range sortedCards {
-		if card.IsWildcard() {
-			cardNumbers[i] = -1 // 变化牌标记为-1，后续处理
-		} else {
-			cardNumbers[i] = card.RawNumber
-		}
-	}
-
-	// 最大牌不能超过A（使用RawNumber检查）
-	if getMaxCardRawNumber(sortedCards) > 13 {
-		return failWithSortedCards(cards)
-	}
-
-	// 没有变化牌
-	if numWildcards == 0 {
-		// 过滤掉变化牌标记(-1)并获取实际数字
-		actualNumbers := []int{}
-		for _, num := range cardNumbers {
-			if num != -1 {
-				actualNumbers = append(actualNumbers, num)
-			}
-		}
-
-		if len(actualNumbers) == 5 && len(removeDuplicates(actualNumbers)) == 5 {
-			// 检查常规顺子：如2-3-4-5-6
-			if actualNumbers[4]-actualNumbers[0] == 4 {
-				return true, sortedCards
-			}
-
-			// 检查A高位顺子：如10-J-Q-K-A (10,11,12,13,1)
-			if len(actualNumbers) == 5 && actualNumbers[0] == 1 &&
-				actualNumbers[1] == 10 && actualNumbers[2] == 11 &&
-				actualNumbers[3] == 12 && actualNumbers[4] == 13 {
-				// 重新排序为10-J-Q-K-A
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				for _, card := range sortedCards {
-					if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 10 {
-						newOrder[0] = card
-					} else if card.RawNumber == 11 {
-						newOrder[1] = card
-					} else if card.RawNumber == 12 {
-						newOrder[2] = card
-					} else if card.RawNumber == 13 {
-						newOrder[3] = card
-					}
-				}
-				return true, newOrder
-			}
-		}
-		return failWithSortedCards(cards)
-	}
-
-	// 一个变化牌
-	if numWildcards == 1 {
-		firstFour := computeRelativeDiffs(cardNumbers, 4)
-
-		// 过滤掉变化牌标记(-1)并获取实际数字
-		actualNumbers := []int{}
-		for _, num := range cardNumbers {
-			if num != -1 {
-				actualNumbers = append(actualNumbers, num)
-			}
-		}
-
-		if len(actualNumbers) == 4 && len(removeDuplicates(actualNumbers)) == 4 {
-			// 检查各种A高位顺子的情况
-
-			// J-Q-K-A + 变化牌 (填入10)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 11 && actualNumbers[2] == 12 && actualNumbers[3] == 13 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardPlaced := false
-				for _, card := range sortedCards {
-					if card.IsWildcard() && !wildcardPlaced {
-						newOrder[0] = card // 变化牌作为10
-						wildcardPlaced = true
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 11 {
-						newOrder[1] = card
-					} else if card.RawNumber == 12 {
-						newOrder[2] = card
-					} else if card.RawNumber == 13 {
-						newOrder[3] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			// 10-Q-K-A + 变化牌 (填入J)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 10 && actualNumbers[2] == 12 && actualNumbers[3] == 13 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardPlaced := false
-				for _, card := range sortedCards {
-					if card.IsWildcard() && !wildcardPlaced {
-						newOrder[1] = card // 变化牌作为J
-						wildcardPlaced = true
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 10 {
-						newOrder[0] = card
-					} else if card.RawNumber == 12 {
-						newOrder[2] = card
-					} else if card.RawNumber == 13 {
-						newOrder[3] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			// 10-J-K-A + 变化牌 (填入Q)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 10 && actualNumbers[2] == 11 && actualNumbers[3] == 13 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardPlaced := false
-				for _, card := range sortedCards {
-					if card.IsWildcard() && !wildcardPlaced {
-						newOrder[2] = card // 变化牌作为Q
-						wildcardPlaced = true
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 10 {
-						newOrder[0] = card
-					} else if card.RawNumber == 11 {
-						newOrder[1] = card
-					} else if card.RawNumber == 13 {
-						newOrder[3] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			// 10-J-Q-A + 变化牌 (填入K)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 10 && actualNumbers[2] == 11 && actualNumbers[3] == 12 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardPlaced := false
-				for _, card := range sortedCards {
-					if card.IsWildcard() && !wildcardPlaced {
-						newOrder[3] = card // 变化牌作为K
-						wildcardPlaced = true
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 10 {
-						newOrder[0] = card
-					} else if card.RawNumber == 11 {
-						newOrder[1] = card
-					} else if card.RawNumber == 12 {
-						newOrder[2] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			firstFour := computeRelativeDiffs(actualNumbers, 4)
-
-			// i, i+1, i+2, i+3 wild
-			if matchesPattern(firstFour, STRAIGHT_PATTERN_0123) {
-				if actualNumbers[3] <= 12 {
-					return true, sortedCards
-				}
-			}
-		}
-
-		// i, i+1, i+2, i+4 wild
-		if matchesPattern(firstFour, STRAIGHT_PATTERN_0124) {
-			newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-			copy(newOrder[0:3], sortedCards[0:3])
-			newOrder[3] = sortedCards[4] // 变化牌
-			newOrder[4] = sortedCards[3]
-			return true, newOrder
-		}
-
-		// i, i+1, i+3, i+4 wild
-		if matchesPattern(firstFour, STRAIGHT_PATTERN_0134) {
-			newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-			copy(newOrder[0:2], sortedCards[0:2])
-			newOrder[2] = sortedCards[4] // 变化牌
-			copy(newOrder[3:], sortedCards[2:4])
-			return true, newOrder
-		}
-
-		// i, i+2, i+3, i+4 wild
-		if matchesPattern(firstFour, STRAIGHT_PATTERN_0234) {
-			newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-			newOrder[0] = sortedCards[0]
-			newOrder[1] = sortedCards[4] // 变化牌
-			copy(newOrder[2:], sortedCards[1:4])
-			return true, newOrder
-		}
-
-		return failWithSortedCards(cards)
-	}
-
-	// 两个变化牌
-	if numWildcards == 2 {
-		// 过滤掉变化牌标记(-1)并获取实际数字
-		actualNumbers := []int{}
-		for _, num := range cardNumbers {
-			if num != -1 {
-				actualNumbers = append(actualNumbers, num)
-			}
-		}
-
-		if len(actualNumbers) == 3 && len(removeDuplicates(actualNumbers)) == 3 {
-			// 检查各种A高位顺子的情况
-
-			// Q-K-A + 两个变化牌 (填入J和10)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 12 && actualNumbers[2] == 13 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardIndex := 0
-				for _, card := range sortedCards {
-					if card.IsWildcard() {
-						if wildcardIndex == 0 {
-							newOrder[0] = card // 第一个变化牌作为10
-						} else {
-							newOrder[1] = card // 第二个变化牌作为J
-						}
-						wildcardIndex++
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 12 {
-						newOrder[2] = card
-					} else if card.RawNumber == 13 {
-						newOrder[3] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			// J-K-A + 两个变化牌 (填入10和Q)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 11 && actualNumbers[2] == 13 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardIndex := 0
-				for _, card := range sortedCards {
-					if card.IsWildcard() {
-						if wildcardIndex == 0 {
-							newOrder[0] = card // 第一个变化牌作为10
-						} else {
-							newOrder[2] = card // 第二个变化牌作为Q
-						}
-						wildcardIndex++
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 11 {
-						newOrder[1] = card
-					} else if card.RawNumber == 13 {
-						newOrder[3] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			// J-Q-A + 两个变化牌 (填入10和K)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 11 && actualNumbers[2] == 12 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardIndex := 0
-				for _, card := range sortedCards {
-					if card.IsWildcard() {
-						if wildcardIndex == 0 {
-							newOrder[0] = card // 第一个变化牌作为10
-						} else {
-							newOrder[3] = card // 第二个变化牌作为K
-						}
-						wildcardIndex++
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 11 {
-						newOrder[1] = card
-					} else if card.RawNumber == 12 {
-						newOrder[2] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			// 10-K-A + 两个变化牌 (填入J和Q)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 10 && actualNumbers[2] == 13 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardIndex := 0
-				for _, card := range sortedCards {
-					if card.IsWildcard() {
-						if wildcardIndex == 0 {
-							newOrder[1] = card // 第一个变化牌作为J
-						} else {
-							newOrder[2] = card // 第二个变化牌作为Q
-						}
-						wildcardIndex++
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 10 {
-						newOrder[0] = card
-					} else if card.RawNumber == 13 {
-						newOrder[3] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			// 10-J-A + 两个变化牌 (填入Q和K)
-			if actualNumbers[0] == 1 && actualNumbers[1] == 10 && actualNumbers[2] == 11 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardIndex := 0
-				for _, card := range sortedCards {
-					if card.IsWildcard() {
-						if wildcardIndex == 0 {
-							newOrder[2] = card // 第一个变化牌作为Q
-						} else {
-							newOrder[3] = card // 第二个变化牌作为K
-						}
-						wildcardIndex++
-					} else if card.RawNumber == 1 { // A
-						newOrder[4] = card
-					} else if card.RawNumber == 10 {
-						newOrder[0] = card
-					} else if card.RawNumber == 11 {
-						newOrder[1] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			// J-Q-K + 两个变化牌 (填入10和A，构成10-J-Q-K-A)
-			if actualNumbers[0] == 11 && actualNumbers[1] == 12 && actualNumbers[2] == 13 {
-				newOrder := createNewOrder(STRAIGHT_CARD_COUNT)
-				wildcardIndex := 0
-				for _, card := range sortedCards {
-					if card.IsWildcard() {
-						if wildcardIndex == 0 {
-							newOrder[0] = card // 第一个变化牌作为10
-						} else {
-							newOrder[4] = card // 第二个变化牌作为A
-						}
-						wildcardIndex++
-					} else if card.RawNumber == 11 { // J
-						newOrder[1] = card
-					} else if card.RawNumber == 12 { // Q
-						newOrder[2] = card
-					} else if card.RawNumber == 13 { // K
-						newOrder[3] = card
-					}
-				}
-				return true, newOrder
-			}
-
-			firstThree := computeRelativeDiffs(actualNumbers, 3)
-
-			// i, i+1, i+2, wild, wild
-			if matchesPattern(firstThree, STRAIGHT_PATTERN_012) {
-				if actualNumbers[2] <= 11 {
-					return true, sortedCards
-				}
-			}
-
-			// 处理其他二变化牌的情况
-			if anyPatternMatches(firstThree, STRAIGHT_PATTERN_023, STRAIGHT_PATTERN_013, STRAIGHT_PATTERN_024, STRAIGHT_PATTERN_034, STRAIGHT_PATTERN_014) {
-				return true, sortedCards
-			}
-		}
-
-		return failWithSortedCards(cards)
-	}
-
-	return failWithSortedCards(cards)
-}
-
-// removeDuplicates 移除重复元素
-func removeDuplicates(arr []int) []int {
-	seen := make(map[int]bool)
-	result := []int{}
-	for _, num := range arr {
-		if !seen[num] {
-			seen[num] = true
-			result = append(result, num)
-		}
-	}
-	return result
-}
-
-// isArrayEqual 检查两个数组是否相等
-func isArrayEqual(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }
 
 func (s *Straight) GreaterThan(other CardComp) bool {
@@ -1129,102 +649,9 @@ func (s *Straight) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherStraight := other.(*Straight)
-
-	// 使用规范化牌组进行比较
-	myCards := s.NormalizedCards
-	if myCards == nil {
-		myCards = s.Cards
-	}
-	otherCards := otherStraight.NormalizedCards
-	if otherCards == nil {
-		otherCards = otherStraight.Cards
-	}
-
-	// 使用getStraightComparisonKey来正确比较顺子大小
-	myKey := getStraightComparisonKey(myCards)
-	otherKey := getStraightComparisonKey(otherCards)
-
-	return myKey > otherKey
-}
-
-// getStraightComparisonKey 获取顺子的比较键值
-func getStraightComparisonKey(cards []*Card) int {
-	if len(cards) != STRAIGHT_CARD_COUNT {
-		return 0
-	}
-
-	// cards已经通过straightSatisfy重构，直接分析重构后的序列
-	// 构建数字序列，万能牌用前后推导的值填充
-	sequence := make([]int, STRAIGHT_CARD_COUNT)
-	hasWildcard := false
-
-	// 先填入所有非万能牌的值
-	for i, card := range cards {
-		if card.IsWildcard() {
-			hasWildcard = true
-			sequence[i] = -1 // 标记为待填充
-		} else {
-			sequence[i] = card.Number
-		}
-	}
-
-	// 如果有万能牌，通过前后推导填充
-	if hasWildcard {
-		for i := 0; i < STRAIGHT_CARD_COUNT; i++ {
-			if sequence[i] == -1 {
-				// 查找最近的非万能牌来推导
-				expectedValue := -1
-				if i > 0 && sequence[i-1] != -1 {
-					expectedValue = sequence[i-1] + 1
-				} else if i < STRAIGHT_CARD_COUNT-1 && sequence[i+1] != -1 {
-					expectedValue = sequence[i+1] - 1
-				}
-
-				// 如果还是推导不出，使用位置推导
-				if expectedValue == -1 {
-					// 找到第一个非万能牌作为参考点
-					for j := 0; j < STRAIGHT_CARD_COUNT; j++ {
-						if sequence[j] != -1 {
-							expectedValue = sequence[j] + (i - j)
-							break
-						}
-					}
-				}
-
-				sequence[i] = expectedValue
-			}
-		}
-	}
-
-	// 处理A的循环性
-	// 如果序列包含A(14)和小牌，判断是否为A-2-3-4-5类型
-	hasAce := false
-	hasSmallCard := false
-	for _, num := range sequence {
-		if num == 14 || num == 1 { // A可能被表示为1或14
-			hasAce = true
-		}
-		if num >= 2 && num <= 5 {
-			hasSmallCard = true
-		}
-	}
-
-	if hasAce && hasSmallCard {
-		// A-2-3-4-5 低端顺子
-		return 1
-	} else if hasAce {
-		// 包含A的高端顺子，统一返回相同键值
-		return 10
-	}
-
-	// 普通顺子，返回最小值
-	minNum := sequence[0]
-	for _, num := range sequence {
-		if num < minNum {
-			minNum = num
-		}
-	}
-	return minNum
+	
+	// 直接比较预计算的 ComparisonKey
+	return s.ComparisonKey > otherStraight.ComparisonKey
 }
 
 func (s *Straight) IsBomb() bool {
@@ -1464,46 +891,49 @@ func (n *NaiveBomb) IsBomb() bool {
 // StraightFlush 同花顺
 type StraightFlush struct {
 	BaseComp
+	ComparisonKey int // 比较键值（1-10），在构造时预计算
 }
 
 func NewStraightFlush(cards []*Card) *StraightFlush {
 	valid := false
-	sortedCards := make([]*Card, len(cards))
+	var sortedCards []*Card
 	var normalizedCards []*Card
+	var comparisonKey int
 
 	if len(cards) == 5 {
-		// 首先检查是否为顺子
-		straight := NewStraight(cards)
-		if straight.IsValid() {
-			sortedCards = straight.Cards
-			wildcardCount := countWildcards(sortedCards)
+		// 先用 straightSatisfyNew 检查顺子并获取 comparisonKey
+		var isValidStraight bool
+		isValidStraight, sortedCards, comparisonKey = straightSatisfyNew(cards)
+		
+		if isValidStraight {
+			// 再检查花色
 			colors := make(map[string]int)
-
+			
 			for _, card := range sortedCards {
 				if !card.IsWildcard() {
 					colors[card.Color]++
 				}
 			}
-
-			// 检查是否为同花（根据变化牌数量）
-			valid = (wildcardCount == 0 && len(colors) == 1) ||
-				(wildcardCount == 1 && len(colors) == 1) ||
-				(wildcardCount == 2 && len(colors) == 1)
-				
-			// 如果有效，创建规范化牌组
+			
+			// 同花条件：所有非万能牌同花色
+			valid = (len(colors) == 1)
+			
 			if valid {
-				normalizedCards = normalizeStraightFlush(sortedCards)
+				normalizedCards = sortedCards
 			}
 		}
+	} else {
+		sortedCards = sortCards(cards)
 	}
 
 	return &StraightFlush{
 		BaseComp: BaseComp{
-			Cards:           sortedCards,
+			Cards:           cards,
 			NormalizedCards: normalizedCards,
 			Valid:           valid,
 			Type:            TypeStraightFlush,
 		},
+		ComparisonKey: comparisonKey,
 	}
 }
 
@@ -1518,23 +948,12 @@ func (s *StraightFlush) GreaterThan(other CardComp) bool {
 		return false
 	}
 
-	// 如果对方是同花顺，比较数值
+	// 如果对方是同花顺，直接比较预计算的 ComparisonKey
 	if other.GetType() == TypeStraightFlush {
 		otherStraightFlush := other.(*StraightFlush)
-		// 使用规范化牌组进行比较
-		myCards := s.NormalizedCards
-		if myCards == nil {
-			myCards = s.Cards
-		}
-		otherCards := otherStraightFlush.NormalizedCards
-		if otherCards == nil {
-			otherCards = otherStraightFlush.Cards
-		}
-		// 使用顺子的比较方式
-		myKey := getStraightComparisonKey(myCards)
-		otherKey := getStraightComparisonKey(otherCards)
-		return myKey > otherKey
+		return s.ComparisonKey > otherStraightFlush.ComparisonKey
 	}
+	
 	// 如果对方是炸弹，5张以下的炸弹 < 同花顺
 	if other.GetType() == TypeNaiveBomb {
 		return len(other.GetCards()) <= 5
