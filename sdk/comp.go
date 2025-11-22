@@ -23,18 +23,6 @@ var (
 	STRAIGHT_PATTERN_034 = []int{0, 3, 4}
 	STRAIGHT_PATTERN_014 = []int{0, 1, 4}
 
-	// 钢管模式
-	// Deprecated: 新的枚举验证方案（tubeSatisfyNew）不再使用模式匹配常量
-	// 这些常量将在后续版本中移除
-	TUBE_PATTERN_TRIPLET  = []int{0, 0, 1, 1, 2, 2}
-	TUBE_PATTERN_0112     = []int{0, 0, 1, 1, 2}
-	TUBE_PATTERN_0122     = []int{0, 0, 1, 2, 2}
-	TUBE_PATTERN_1122     = []int{0, 1, 1, 2, 2}
-	TUBE_PATTERN_0011     = []int{0, 0, 1, 1}
-	TUBE_PATTERN_0022     = []int{0, 0, 2, 2}
-	TUBE_PATTERN_0012     = []int{0, 0, 1, 2}
-	TUBE_PATTERN_0112_ALT = []int{0, 1, 1, 2}
-	TUBE_PATTERN_0122_ALT = []int{0, 1, 2, 2}
 )
 
 // 辅助函数
@@ -1246,22 +1234,24 @@ func (s *Straight) IsBomb() bool {
 // Plate 钢板（连续三张）
 type Plate struct {
 	BaseComp
+	ComparisonKey int // 比较键值（1-13），在构造时预计算
 }
 
 func NewPlate(cards []*Card) *Plate {
 	valid := false
 	var sortedCards []*Card
 	var normalizedCards []*Card
+	var comparisonKey int
 
 	if len(cards) == 6 {
-		// 使用Python的satisfy逻辑
+		// 使用新的枚举验证逻辑
 		var ok bool
-		ok, sortedCards = plateSatisfy(cards)
+		ok, sortedCards, comparisonKey = plateSatisfyNew(cards)
 		valid = ok
 		
-		// 如果有效，创建规范化牌组
+		// 如果有效，新逻辑已返回规范化结果
 		if valid {
-			normalizedCards = normalizePlate(sortedCards)
+			normalizedCards = sortedCards
 		}
 	} else {
 		sortedCards = sortCards(cards)
@@ -1269,132 +1259,13 @@ func NewPlate(cards []*Card) *Plate {
 
 	return &Plate{
 		BaseComp: BaseComp{
-			Cards:           sortedCards,
+			Cards:           cards,
 			NormalizedCards: normalizedCards,
 			Valid:           valid,
 			Type:            TypePlate,
 		},
+		ComparisonKey: comparisonKey,
 	}
-}
-
-// plateSatisfy 实现Python的Plate.satisfy逻辑
-func plateSatisfy(cards []*Card) (bool, []*Card) {
-	if len(cards) != PLATE_CARD_COUNT {
-		return failWithSortedCards(cards)
-	}
-
-	// 使用连续性排序卡片
-	sortedCards := sortCardsForConsecutive(cards)
-
-	// 检查是否有王牌
-	if hasJokers(sortedCards) {
-		return false, sortedCards
-	}
-
-	// 统计变化牌数量
-	wildcardCount := countWildcards(sortedCards)
-
-	// 如果没有变化牌
-	if wildcardCount == 0 {
-		// 检查 3 + 3 模式
-		triple1 := NewTriple(sortedCards[:3])
-		triple2 := NewTriple(sortedCards[3:])
-		if triple1.Valid && triple2.Valid {
-			// 使用RawNumber进行连续性判断
-			card1Num := triple1.Cards[0].RawNumber
-			card2Num := triple2.Cards[0].RawNumber
-
-			// 普通连续情况：如3-4
-			if card1Num+1 == card2Num {
-				return true, append(triple1.Cards, triple2.Cards...)
-			}
-
-			// A的特殊情况：A(1)-2，需要重新排序为A-2
-			if card1Num == 1 && card2Num == 2 {
-				return true, append(triple1.Cards, triple2.Cards...)
-			}
-
-			// K-A的特殊情况：K(13)-A(1)
-			if card1Num == 13 && card2Num == 1 {
-				return true, append(triple1.Cards, triple2.Cards...)
-			}
-
-			// A-K的特殊情况：A(1)-K(13) (连续性排序后的情况)
-			if card1Num == 1 && card2Num == 13 {
-				return true, append(triple1.Cards, triple2.Cards...)
-			}
-		}
-		return failWithSortedCards(sortedCards)
-	}
-
-	// 如果有至少1个变化牌
-	if wildcardCount >= 1 {
-		// 检查前5张牌是否能构成葫芦
-		fullhouse := NewFullHouse(sortedCards[:5])
-		if fullhouse.Valid {
-			// fullhouse的前3张是triple，后2张是pair
-			triple := fullhouse.Cards[:3]
-			pair := fullhouse.Cards[3:5]
-
-			// 使用RawNumber进行连续性判断
-			tripleNum := triple[0].RawNumber
-			pairNum := pair[0].RawNumber
-
-			// 普通连续情况
-			if tripleNum+1 == pairNum {
-				result := createResult()
-				result = append(result, triple...)
-				result = append(result, pair...)
-				result = append(result, sortedCards[5]) // 变化牌
-				return true, result
-			}
-
-			if tripleNum-1 == pairNum {
-				result := createResult()
-				result = append(result, pair...)
-				result = append(result, sortedCards[5]) // 变化牌
-				result = append(result, triple...)
-				return true, result
-			}
-
-			// A的特殊情况：A(1)和2
-			if tripleNum == 1 && pairNum == 2 {
-				result := createResult()
-				result = append(result, triple...)
-				result = append(result, pair...)
-				result = append(result, sortedCards[5]) // 变化牌
-				return true, result
-			}
-
-			if tripleNum == 2 && pairNum == 1 {
-				result := createResult()
-				result = append(result, pair...)
-				result = append(result, sortedCards[5]) // 变化牌
-				result = append(result, triple...)
-				return true, result
-			}
-
-			// K-A的特殊情况：K(13)和A(1)
-			if tripleNum == 13 && pairNum == 1 {
-				result := createResult()
-				result = append(result, triple...)
-				result = append(result, pair...)
-				result = append(result, sortedCards[5]) // 变化牌
-				return true, result
-			}
-
-			if tripleNum == 1 && pairNum == 13 {
-				result := createResult()
-				result = append(result, pair...)
-				result = append(result, sortedCards[5]) // 变化牌
-				result = append(result, triple...)
-				return true, result
-			}
-		}
-		return failWithSortedCards(sortedCards)
-	}
-
-	return failWithSortedCards(sortedCards)
 }
 
 func (p *Plate) GreaterThan(other CardComp) bool {
@@ -1402,71 +1273,9 @@ func (p *Plate) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherPlate := other.(*Plate)
-
-	// 使用规范化牌组进行比较
-	myCards := p.NormalizedCards
-	if myCards == nil {
-		myCards = p.Cards
-	}
-	otherCards := otherPlate.NormalizedCards
-	if otherCards == nil {
-		otherCards = otherPlate.Cards
-	}
-
-	// 使用getPlateComparisonKey来正确比较钢板大小
-	myKey := getPlateComparisonKey(myCards)
-	otherKey := getPlateComparisonKey(otherCards)
-
-	return myKey > otherKey
-}
-
-// getPlateComparisonKey 获取钢板的比较键值
-func getPlateComparisonKey(cards []*Card) int {
-	if len(cards) != PLATE_CARD_COUNT {
-		return 0
-	}
-
-	// 钢板结构：两个三张的连续牌型
-	// cards已经通过plateSatisfy重构，前3张为第一个三张，后3张为第二个三张
-	firstTriple := cards[:3]
-	secondTriple := cards[3:]
-
-	// 获取两个三张的主牌
-	firstCard := firstTriple[0]
-	secondCard := secondTriple[0]
-
-	// 检查A-2钢板的特殊情况（最小的钢板）
-	if isA2Plate(firstCard, secondCard) {
-		return 1 // A-2钢板是最小的钢板
-	}
-
-	// 检查K-A（A-K）钢板的特殊情况（最大的钢板）
-	if isAKPlate(firstCard, secondCard) {
-		return 15 // K-A（A-K）钢板是最大的钢板
-	}
-
-	// 对于普通钢板，使用第一张牌的Number作为比较键值
-	return firstCard.Number
-}
-
-// isA2Plate 检查是否为A-2钢板
-func isA2Plate(card1, card2 *Card) bool {
-	// 检查是否为A-2组合（不管顺序）
-	num1 := card1.RawNumber
-	num2 := card2.RawNumber
-
-	// A-2或2-A的组合
-	return (num1 == 1 && num2 == 2) || (num1 == 2 && num2 == 1)
-}
-
-// isAKPlate 检查是否为A-K钢板
-func isAKPlate(card1, card2 *Card) bool {
-	// 检查是否为A-K组合（不管顺序）
-	num1 := card1.RawNumber
-	num2 := card2.RawNumber
-
-	// A-K或K-A的组合
-	return (num1 == 1 && num2 == 13) || (num1 == 13 && num2 == 1)
+	
+	// 直接比较预计算的 ComparisonKey
+	return p.ComparisonKey > otherPlate.ComparisonKey
 }
 
 func (p *Plate) IsBomb() bool {
@@ -1510,148 +1319,6 @@ func NewTube(cards []*Card) *Tube {
 	}
 }
 
-// tubeSatisfy 实现Python的Tube.satisfy逻辑
-// Deprecated: 使用 tubeSatisfyNew 替代（位于 tube_comp.go）
-// 新的枚举验证方案可以正确处理所有循环情况（A-2-3、Q-K-A）
-// 此函数将在后续版本中移除
-func tubeSatisfy(cards []*Card) (bool, []*Card) {
-	if len(cards) != TUBE_CARD_COUNT {
-		return failWithSortedCards(cards)
-	}
-
-	// 使用连续性排序卡片
-	sortedCards := sortCardsForConsecutive(cards)
-	wildcardCount := countWildcards(sortedCards)
-
-	// 获取牌的数字（使用RawNumber进行连续性判断）
-	cardNumbers := make([]int, len(sortedCards))
-	for i, card := range sortedCards {
-		if card.IsWildcard() {
-			cardNumbers[i] = -1 // 变化牌标记为-1，后续处理
-		} else {
-			cardNumbers[i] = card.RawNumber
-		}
-	}
-
-	// 检查最大牌数不超过A（使用RawNumber检查）
-	if getMaxCardRawNumber(sortedCards) > 13 {
-		return failWithSortedCards(cards)
-	}
-
-	// 没有变化牌的情况
-	if wildcardCount == 0 {
-		// 必须是 i, i, i+1, i+1, i+2, i+2
-		uniqueNumbers := make(map[int]bool)
-		for _, num := range cardNumbers {
-			uniqueNumbers[num] = true
-		}
-		if len(uniqueNumbers) == 3 {
-			temp := computeRelativeDiffs(cardNumbers, len(cardNumbers))
-			if matchesPattern(temp, TUBE_PATTERN_TRIPLET) {
-				return true, sortedCards
-			}
-		}
-		return failWithSortedCards(cards)
-	}
-
-	// 一个变化牌的情况
-	if wildcardCount == 1 {
-		firstFive := computeRelativeDiffs(cardNumbers, 5)
-
-		// i, i, i+1, i+1, i+2 wild
-		if matchesPattern(firstFive, TUBE_PATTERN_0112) {
-			return true, sortedCards
-		}
-		// i, i, i+1, i+2, i+2 wild
-		if matchesPattern(firstFive, TUBE_PATTERN_0122) {
-			result := createResult()
-			result = append(result, sortedCards[0:3]...)
-			result = append(result, sortedCards[5])
-			result = append(result, sortedCards[3:5]...)
-			return true, result
-		}
-		// i, i+1, i+1, i+2, i+2 wild
-		if matchesPattern(firstFive, TUBE_PATTERN_1122) {
-			result := createResult()
-			result = append(result, sortedCards[0:1]...)
-			result = append(result, sortedCards[5])
-			result = append(result, sortedCards[1:5]...)
-			return true, result
-		}
-		return failWithSortedCards(cards)
-	}
-
-	// 两个变化牌的情况
-	if wildcardCount == 2 {
-		firstFour := computeRelativeDiffs(cardNumbers, 4)
-
-		// A-K循环连续性的特殊情况：A(1)-A(1)-K(13)-K(13) + 两个变化牌
-		// 构成A-K-A钢管或类似的循环连续结构
-		actualNumbers := []int{}
-		for _, num := range cardNumbers {
-			if num != -1 {
-				actualNumbers = append(actualNumbers, num)
-			}
-		}
-		if len(actualNumbers) == 4 {
-			uniqueActual := removeDuplicates(actualNumbers)
-			if len(uniqueActual) == 2 &&
-				((uniqueActual[0] == 1 && uniqueActual[1] == 13) || (uniqueActual[0] == 13 && uniqueActual[1] == 1)) {
-				// A-K循环钢管：AA + KK + 两个变化牌
-				return true, sortedCards
-			}
-		}
-
-		// i, i, i+1, i+1, wild wild
-		if matchesPattern(firstFour, TUBE_PATTERN_0011) {
-			if sortedCards[3].Number < 14 { // i+1 smaller than Ace
-				return true, sortedCards
-			} else {
-				// 重新排序：将后面的变化牌移到前面
-				result := createResult()
-				result = append(result, sortedCards[4:6]...)
-				result = append(result, sortedCards[0:4]...)
-				return true, result
-			}
-		}
-		// i, i, i+2, i+2, wild, wild
-		if matchesPattern(firstFour, TUBE_PATTERN_0022) {
-			result := createResult()
-			result = append(result, sortedCards[0:2]...)
-			result = append(result, sortedCards[4:6]...)
-			result = append(result, sortedCards[2:4]...)
-			return true, result
-		}
-		// i i i+1 i+2 wild wild
-		if matchesPattern(firstFour, TUBE_PATTERN_0012) {
-			result := createResult()
-			result = append(result, sortedCards[0:2]...)
-			result = append(result, sortedCards[2], sortedCards[5])
-			result = append(result, sortedCards[3], sortedCards[4])
-			return true, result
-		}
-		// i i+1 i+1 i+2 wild wild
-		if matchesPattern(firstFour, TUBE_PATTERN_0112_ALT) {
-			result := createResult()
-			result = append(result, sortedCards[0], sortedCards[5])
-			result = append(result, sortedCards[1:3]...)
-			result = append(result, sortedCards[3], sortedCards[4])
-			return true, result
-		}
-		// i i+1 i+2 i+2 wild wild
-		if matchesPattern(firstFour, TUBE_PATTERN_0122_ALT) {
-			result := createResult()
-			result = append(result, sortedCards[0], sortedCards[5])
-			result = append(result, sortedCards[1], sortedCards[4])
-			result = append(result, sortedCards[2:4]...)
-			return true, result
-		}
-		return failWithSortedCards(cards)
-	}
-
-	return failWithSortedCards(cards)
-}
-
 func (t *Tube) GreaterThan(other CardComp) bool {
 	if other.GetType() != TypeTube {
 		return false
@@ -1660,125 +1327,6 @@ func (t *Tube) GreaterThan(other CardComp) bool {
 	
 	// 直接比较预计算的 ComparisonKey
 	return t.ComparisonKey > otherTube.ComparisonKey
-}
-
-// getTubeComparisonKey 获取钢管的比较键值
-// Deprecated: ComparisonKey 已在 NewTube() 中预计算并存储到结构体字段
-// 使用 Tube.ComparisonKey 字段替代直接调用此函数
-// 此函数将在后续版本中移除
-func getTubeComparisonKey(cards []*Card) int {
-	if len(cards) != TUBE_CARD_COUNT {
-		return 0
-	}
-
-	// 钢管结构：三个连续对子
-	// cards已经通过tubeSatisfy重构，按照连续对子的结构排列
-
-	// 提取所有非变化牌的RawNumber，用于确定钢管的基础数值
-	uniqueNumbers := make(map[int]bool)
-	for _, card := range cards {
-		if card != nil && !card.IsWildcard() {
-			uniqueNumbers[card.RawNumber] = true
-		}
-	}
-
-	// 将唯一数字转换为切片并排序
-	numbers := make([]int, 0, len(uniqueNumbers))
-	for num := range uniqueNumbers {
-		numbers = append(numbers, num)
-	}
-
-	if len(numbers) == 0 {
-		// 全是变化牌的情况，使用第一张牌的Number
-		return cards[0].Number
-	}
-
-	// 检查A-2钢管的特殊情况（最小的钢管）
-	if isA2Tube(numbers) {
-		return 1 // A-2钢管是最小的钢管
-	}
-
-	// 检查K-A（A-K）钢管的特殊情况（最大的钢管）
-	if isAKTube(numbers) {
-		return 15 // K-A（A-K）钢管是最大的钢管
-	}
-
-	// 对于普通钢管，使用最小的RawNumber对应的Number作为比较键值
-	minRawNumber := numbers[0]
-	for _, num := range numbers {
-		if num < minRawNumber {
-			minRawNumber = num
-		}
-	}
-
-	// 将RawNumber转换为Number用于比较
-	for _, card := range cards {
-		if !card.IsWildcard() && card.RawNumber == minRawNumber {
-			return card.Number
-		}
-	}
-
-	return 0
-}
-
-// isA2Tube 检查是否为A-2钢管
-// Deprecated: 新的枚举验证方案（tubeSatisfyNew）不再需要此辅助函数
-// 此函数将在后续版本中移除
-func isA2Tube(numbers []int) bool {
-	// 对于钢管，检查是否包含A(1)、2、3，但不包含K(13)
-	// A-2-3是最小的钢管
-	hasA := false
-	has2 := false
-	has3 := false
-	hasK := false
-
-	for _, num := range numbers {
-		if num == 1 {
-			hasA = true
-		}
-		if num == 2 {
-			has2 = true
-		}
-		if num == 3 {
-			has3 = true
-		}
-		if num == 13 {
-			hasK = true
-		}
-	}
-
-	// A-2-3钢管：必须有A、2、3，且不能有K
-	return hasA && has2 && has3 && !hasK
-}
-
-// isAKTube 检查是否为A-K钢管
-// Deprecated: 新的枚举验证方案（tubeSatisfyNew）不再需要此辅助函数
-// 此函数将在后续版本中移除
-func isAKTube(numbers []int) bool {
-	// 对于钢管，检查是否包含A(1)、K(13)、Q(12)或2
-	// Q-K-A 或 A-K-2 都是最大的钢管
-	hasA := false
-	hasK := false
-	hasQ := false
-	has2 := false
-
-	for _, num := range numbers {
-		if num == 1 {
-			hasA = true
-		}
-		if num == 13 {
-			hasK = true
-		}
-		if num == 12 {
-			hasQ = true
-		}
-		if num == 2 {
-			has2 = true
-		}
-	}
-
-	// Q-K-A 或 A-K-2 钢管
-	return hasA && hasK && (hasQ || has2)
 }
 
 func (t *Tube) IsBomb() bool {
@@ -2120,66 +1668,6 @@ func normalizeFullHouse(cards []*Card) []*Card {
 	return result
 }
 
-// normalizePlate 规范化钢板牌组（连续三张）
-// 万能牌替换为使钢板最大的牌
-func normalizePlate(cards []*Card) []*Card {
-	if len(cards) != 6 {
-		return cards
-	}
-	
-	result := cloneCards(cards)
-	
-	// 钢板是按照三张为一组排列的：[AAA, BBB]
-	// 处理第一组三张
-	var firstGroupBase *Card
-	for i := 0; i < 3; i++ {
-		if !result[i].IsWildcard() {
-			firstGroupBase = result[i]
-			break
-		}
-	}
-	if firstGroupBase != nil {
-		for i := 0; i < 3; i++ {
-			if result[i].IsWildcard() {
-				result[i] = cloneCard(firstGroupBase)
-			}
-		}
-	}
-	
-	// 处理第二组三张
-	var secondGroupBase *Card
-	for i := 3; i < 6; i++ {
-		if !result[i].IsWildcard() {
-			secondGroupBase = result[i]
-			break
-		}
-	}
-	if secondGroupBase != nil {
-		for i := 3; i < 6; i++ {
-			if result[i].IsWildcard() {
-				result[i] = cloneCard(secondGroupBase)
-			}
-		}
-	}
-	
-	// 如果某组全是万能牌，需要根据另一组推断
-	if firstGroupBase == nil && secondGroupBase != nil {
-		// 第一组全是万能牌，应该是第二组-1
-		expectedRawNumber := secondGroupBase.RawNumber - 1
-		for i := 0; i < 3; i++ {
-			result[i] = createReplacementCard(expectedRawNumber, "Spade", result[i].Level, result[i].DeckIndex)
-		}
-	} else if secondGroupBase == nil && firstGroupBase != nil {
-		// 第二组全是万能牌，应该是第一组+1
-		expectedRawNumber := firstGroupBase.RawNumber + 1
-		for i := 3; i < 6; i++ {
-			result[i] = createReplacementCard(expectedRawNumber, "Spade", result[i].Level, result[i].DeckIndex)
-		}
-	}
-	
-	return result
-}
-
 // normalizeStraight 规范化顺子牌组
 // 万能牌替换为使顺子最大的牌
 func normalizeStraight(cards []*Card) []*Card {
@@ -2322,132 +1810,4 @@ func normalizeStraightFlush(cards []*Card) []*Card {
 	return result
 }
 
-// normalizeTube 规范化钢管牌组（连续对子）
-// 万能牌替换为使钢管最大的牌
-// Deprecated: 使用 tubeSatisfyNew 返回的规范化结果
-// 新逻辑在验证的同时完成规范化，无需单独调用此函数
-// 此函数将在后续版本中移除
-func normalizeTube(cards []*Card) []*Card {
-	if len(cards) != 6 {
-		return cards
-	}
-	
-	result := cloneCards(cards)
-	
-	// 钢管是三个连续的对子，例如：[3,3,4,4,5,5]
-	// 找出所有非万能牌的数字，确定钢管的基础值
-	baseNumbers := []int{}
-	wildcardCount := 0
-	wildcardIndices := []int{}
-	
-	for i, card := range result {
-		if card.IsWildcard() {
-			wildcardCount++
-			wildcardIndices = append(wildcardIndices, i)
-		} else {
-			baseNumbers = append(baseNumbers, card.RawNumber)
-		}
-	}
-	
-	if wildcardCount == 0 {
-		return result
-	}
-	
-	// 统计每个数字出现的次数
-	numberCount := make(map[int]int)
-	for _, num := range baseNumbers {
-		numberCount[num]++
-	}
-	
-	// 找出已有的对子和单张
-	pairs := []int{}
-	singles := []int{}
-	for num, count := range numberCount {
-		if count >= 2 {
-			pairs = append(pairs, num)
-		} else if count == 1 {
-			singles = append(singles, num)
-		}
-	}
-	
-	// 排序以便处理
-	sort.Ints(pairs)
-	sort.Ints(singles)
-	
-	// 根据万能牌数量和现有牌的分布，确定如何替换万能牌
-	if wildcardCount == 1 {
-		// 一个万能牌：应该与某个单张组成对子
-		if len(singles) > 0 {
-			// 替换为最大的单张，使钢管尽可能大
-			targetNum := singles[len(singles)-1]
-			for _, idx := range wildcardIndices {
-				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level, result[idx].DeckIndex)
-			}
-		}
-	} else if wildcardCount == 2 {
-		// 两个万能牌
-		if len(singles) == 2 {
-			// 两个单张，每个万能牌与一个单张配对
-			// 替换为较大的单张，使钢管更大
-			targetNum := singles[1] // 第二大的单张
-			for _, idx := range wildcardIndices {
-				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level, result[idx].DeckIndex)
-			}
-		} else if len(pairs) == 2 {
-			// 已有两个对子，万能牌应该组成第三个对子
-			// 确定缺失的数字
-			minPair := pairs[0]
-			maxPair := pairs[1]
-			var targetNum int
-			
-			if maxPair - minPair == 2 {
-				// 缺中间的对子
-				targetNum = minPair + 1
-			} else if maxPair - minPair == 1 {
-				// 缺最大或最小的对子，选择最大的
-				targetNum = maxPair + 1
-				if targetNum > 13 {
-					targetNum = minPair - 1
-				}
-			} else if minPair == 1 && maxPair == 13 {
-				// A-K 特殊情况，缺中间的2
-				targetNum = 2
-			} else {
-				// 其他情况，默认使用较大值+1
-				targetNum = maxPair + 1
-				if targetNum > 13 {
-					targetNum = 1 // 循环到A
-				}
-			}
-			
-			for _, idx := range wildcardIndices {
-				result[idx] = createReplacementCard(targetNum, "Spade", result[idx].Level, result[idx].DeckIndex)
-			}
-		}
-	}
-	
-	// 处理更多万能牌的情况
-	if wildcardCount > 2 {
-		// 确定钢管的最大可能值
-		// 从最大的非万能牌开始，构建连续对子
-		maxNum := 0
-		for _, card := range result {
-			if !card.IsWildcard() && card.RawNumber > maxNum {
-				maxNum = card.RawNumber
-			}
-		}
-		
-		// 根据已有的牌构建最优的钢管
-		wildcardIdx := 0
-		for i := range result {
-			if result[i].IsWildcard() && wildcardIdx < len(wildcardIndices) {
-				// 根据位置确定应该替换的数字
-				// 这里需要更复杂的逻辑来确定最优替换
-				result[i] = createReplacementCard(maxNum, "Spade", result[i].Level, result[i].DeckIndex)
-				wildcardIdx++
-			}
-		}
-	}
-	
-	return result
-}
+
