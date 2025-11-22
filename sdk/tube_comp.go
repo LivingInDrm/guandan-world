@@ -158,10 +158,11 @@ func normalizeTubeWithTriple(sortedCards []*Card, bestTriple []int) []*Card {
 // 返回值:
 //   isValid: 是否为合法的钢管
 //   normalizedCards: 规范化后的卡牌列表
-func tubeSatisfyNew(cards []*Card) (bool, []*Card) {
+//   comparisonKey: 比较键值（1-12），仅在 isValid=true 时有效，无效时为 0
+func tubeSatisfyNew(cards []*Card) (bool, []*Card, int) {
 	// 检查输入有效性
 	if cards == nil || len(cards) != TUBE_CARD_COUNT {
-		return failWithSortedCards(cards)
+		return false, sortCards(cards), 0
 	}
 	
 	// 排序
@@ -169,7 +170,7 @@ func tubeSatisfyNew(cards []*Card) (bool, []*Card) {
 	
 	// 检查大小王
 	if hasJokers(sortedCards) {
-		return false, sortedCards
+		return false, sortedCards, 0
 	}
 	
 	// 统计变化牌数量
@@ -187,7 +188,7 @@ func tubeSatisfyNew(cards []*Card) (bool, []*Card) {
 	// 因此任何数字超过2张都不可能构成合法钢管
 	for _, count := range cardCounts {
 		if count > TUBE_CARDS_PER_NUMBER {
-			return false, sortedCards
+			return false, sortedCards, 0
 		}
 	}
 	
@@ -195,7 +196,7 @@ func tubeSatisfyNew(cards []*Card) (bool, []*Card) {
 	validTriples := findAllValidTubeTriples(cardCounts, wildcardCount)
 	
 	if len(validTriples) == 0 {
-		return false, sortedCards
+		return false, sortedCards, 0
 	}
 	
 	// 选择最大的组合
@@ -203,11 +204,14 @@ func tubeSatisfyNew(cards []*Card) (bool, []*Card) {
 	
 	// 防御性检查：理论上不应该为 nil，但为了鲁棒性进行检查
 	if bestTriple == nil {
-		return false, sortedCards
+		return false, sortedCards, 0
 	}
+	
+	// 计算比较键值
+	comparisonKey := getTubeTripleComparisonKey(bestTriple)
 	
 	// 用最佳组合规范化卡牌
 	normalizedCards := normalizeTubeWithTriple(sortedCards, bestTriple)
 	
-	return true, normalizedCards
+	return true, normalizedCards, comparisonKey
 }
