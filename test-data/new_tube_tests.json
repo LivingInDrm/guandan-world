@@ -1,0 +1,32 @@
+[
+  {
+    "test_id": 816,
+    "comparison_type": "intra_type",
+    "comp_type": "Tube",
+    "comp1": {
+      "cards": [[12,"Spade"],[12,"Heart"],[13,"Club"],[13,"Diamond"],[14,"Spade"],[14,"Heart"]],
+      "type": "Tube"
+    },
+    "comp2": {
+      "cards": [[11,"Spade"],[11,"Heart"],[12,"Club"],[12,"Diamond"],[13,"Spade"],[13,"Heart"]],
+      "type": "Tube"
+    },
+    "comp1_greater_than_comp2": true,
+    "comp2_greater_than_comp1": false
+  },
+  {
+    "test_id": 817,
+    "comparison_type": "intra_type",
+    "comp_type": "Tube",
+    "comp1": {
+      "cards": [[14,"Spade"],[14,"Heart"],[2,"Club"],[2,"Diamond"],[3,"Spade"],[3,"Heart"]],
+      "type": "Tube"
+    },
+    "comp2": {
+      "cards": [[2,"Spade"],[2,"Heart"],[3,"Club"],[3,"Diamond"],[4,"Spade"],[4,"Heart"]],
+      "type": "Tube"
+    },
+    "comp1_greater_than_comp2": false,
+    "comp2_greater_than_comp1": true
+  }
+]

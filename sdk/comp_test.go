@@ -260,6 +260,65 @@ func TestNewTube(t *testing.T) {
 	}
 }
 
+func TestQKATube(t *testing.T) {
+	// 测试 Q-K-A 钢管（纯牌，无变化牌）
+	level := 5 // 级别设为5，避免Q/K/A是变化牌
+
+	// 创建 QQ, KK, AA
+	cardQ1, _ := NewCard(12, "Spade", level)   // Q♠
+	cardQ2, _ := NewCard(12, "Club", level)    // Q♣
+	cardK1, _ := NewCard(13, "Heart", level)   // K♥
+	cardK2, _ := NewCard(13, "Diamond", level) // K♦
+	cardA1, _ := NewCard(14, "Spade", level)   // A♠
+	cardA2, _ := NewCard(14, "Club", level)    // A♣
+
+	cards := []*Card{cardQ1, cardQ2, cardK1, cardK2, cardA1, cardA2}
+
+	t.Log("=== 测试 Q-K-A 钢管 ===")
+	t.Logf("级别: %d", level)
+	for i, c := range cards {
+		t.Logf("  牌[%d]: %s (Number=%d, RawNumber=%d, IsWildcard=%v)",
+			i, c.Name, c.Number, c.RawNumber, c.IsWildcard())
+	}
+
+	tube := NewTube(cards)
+
+	t.Logf("结果: IsValid=%v, Type=%v", tube.IsValid(), tube.GetType())
+	if tube.Cards != nil {
+		t.Log("排序后的牌:")
+		for i, c := range tube.Cards {
+			t.Logf("  [%d]: %s (Number=%d, RawNumber=%d)", i, c.Name, c.Number, c.RawNumber)
+		}
+	}
+
+	if !tube.IsValid() {
+		t.Error("QQ,KK,AA 应该是合法的 Q-K-A 钢管，但被判定为无效")
+		t.Error("这是一个SDK bug：Q-K-A钢管应该被识别为合法牌型")
+	}
+
+	if tube.GetType() != TypeTube {
+		t.Errorf("Type should be Tube, got %v", tube.GetType())
+	}
+
+	// 对比测试：J-Q-K 钢管（应该合法）
+	t.Log("\n=== 对比测试：J-Q-K 钢管 ===")
+	cardJ1, _ := NewCard(11, "Spade", level)
+	cardJ2, _ := NewCard(11, "Club", level)
+	cardQ3, _ := NewCard(12, "Heart", level)
+	cardQ4, _ := NewCard(12, "Diamond", level)
+	cardK3, _ := NewCard(13, "Spade", level)
+	cardK4, _ := NewCard(13, "Club", level)
+
+	jqkCards := []*Card{cardJ1, cardJ2, cardQ3, cardQ4, cardK3, cardK4}
+	jqkTube := NewTube(jqkCards)
+
+	t.Logf("J-Q-K 钢管: IsValid=%v", jqkTube.IsValid())
+
+	if !jqkTube.IsValid() {
+		t.Error("J-Q-K 钢管应该合法")
+	}
+}
+
 func TestFromCardList(t *testing.T) {
 	// 测试从牌列表生成牌组
 
