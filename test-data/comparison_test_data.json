@@ -11300,7 +11300,7 @@
       "test_id": 190,
       "comparison_type": "intra_type_cross_wildcard",
       "comp_type": "Plate",
-      "wildcard_count_2": 2,
+      "wildcard_count_2": 1,
       "comp1": {
         "cards": [
           [
@@ -11341,7 +11341,7 @@
             "Club"
           ],
           [
-            5,
+            2,
             "Heart"
           ],
           [
@@ -11366,7 +11366,7 @@
       "test_id": 191,
       "comparison_type": "intra_type_cross_wildcard",
       "comp_type": "Plate",
-      "wildcard_count_2": 2,
+      "wildcard_count_2": 1,
       "comp1": {
         "cards": [
           [
@@ -11411,7 +11411,7 @@
             "Heart"
           ],
           [
-            5,
+            2,
             "Heart"
           ],
           [
@@ -11432,7 +11432,7 @@
       "test_id": 192,
       "comparison_type": "intra_type_cross_wildcard",
       "comp_type": "Plate",
-      "wildcard_count_2": 2,
+      "wildcard_count_2": 1,
       "comp1": {
         "cards": [
           [
@@ -11473,7 +11473,7 @@
             "Club"
           ],
           [
-            5,
+            1,
             "Heart"
           ],
           [
@@ -11499,7 +11499,7 @@
       "comparison_type": "intra_type_cross_wildcard",
       "comp_type": "Plate",
       "wildcard_count_1": 1,
-      "wildcard_count_2": 2,
+      "wildcard_count_2": 1,
       "comp1": {
         "cards": [
           [
@@ -11540,7 +11540,7 @@
             "Club"
           ],
           [
-            5,
+            2,
             "Heart"
           ],
           [
@@ -11566,7 +11566,7 @@
       "comparison_type": "intra_type_cross_wildcard",
       "comp_type": "Plate",
       "wildcard_count_1": 1,
-      "wildcard_count_2": 2,
+      "wildcard_count_2": 1,
       "comp1": {
         "cards": [
           [
@@ -11607,7 +11607,7 @@
             "Club"
           ],
           [
-            5,
+            1,
             "Heart"
           ],
           [
@@ -11633,7 +11633,7 @@
       "comparison_type": "intra_type_cross_wildcard",
       "comp_type": "Plate",
       "wildcard_count_1": 1,
-      "wildcard_count_2": 2,
+      "wildcard_count_2": 1,
       "comp1": {
         "cards": [
           [
@@ -11674,7 +11674,7 @@
             "Club"
           ],
           [
-            5,
+            1,
             "Heart"
           ],
           [

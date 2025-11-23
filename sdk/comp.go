@@ -67,8 +67,6 @@ func (ct CompType) String() string {
 
 // 公共工具函数
 
-
-
 // getNormalCards 获取非变化牌
 func getNormalCards(cards []*Card) []*Card {
 	normalCards := []*Card{}
@@ -79,7 +77,6 @@ func getNormalCards(cards []*Card) []*Card {
 	}
 	return normalCards
 }
-
 
 // sortNormalFirst 排序：普通牌在前，wildcard 在后
 // 普通牌按 LessThan 排序，wildcard 按 LessThan 排序
@@ -133,8 +130,8 @@ func buildSameNumberComp(cards []*Card, minLen, maxLen int) (bool, []*Card) {
 
 // BaseComp 基础牌组结构
 type BaseComp struct {
-	Cards           []*Card  `json:"cards"`            // 原始牌组（包含万能牌）
-	NormalizedCards []*Card  `json:"-"`                // 规范化牌组（万能牌已替换为具体牌）- 不序列化
+	Cards           []*Card  `json:"cards"` // 原始牌组（包含万能牌）
+	NormalizedCards []*Card  `json:"-"`     // 规范化牌组（万能牌已替换为具体牌）- 不序列化
 	Valid           bool     `json:"valid"`
 	Type            CompType `json:"type"`
 }
@@ -210,7 +207,7 @@ func FromCardList(cards []*Card, prev CardComp) CardComp {
 		if comp := NewNaiveBomb(cards); comp.IsValid() {
 			return comp
 		}
-		// 优先级处理：如果前一个牌组不是顺子，优先尝试葫芦
+		// 优先级处理：如果前一个牌组为空，或存在但类型不是顺子，优先尝试葫芦
 		if prev == nil || prev.GetType() != TypeStraight {
 			if comp := NewFullHouse(cards); comp.IsValid() {
 				return comp
@@ -232,7 +229,7 @@ func FromCardList(cards []*Card, prev CardComp) CardComp {
 			return comp
 		}
 
-		// 优先级处理：如果前一个牌组不是钢板，优先尝试钢管
+		// 优先级处理：如果前面的牌组为空，或存在但类型不是钢板，则优先尝试钢管
 		if prev == nil || prev.GetType() != TypePlate {
 			if comp := NewTube(cards); comp.IsValid() {
 				return comp
@@ -244,7 +241,7 @@ func FromCardList(cards []*Card, prev CardComp) CardComp {
 			return comp
 		}
 
-		// 如果钢板失败，再试钢管（防止错过）
+		// 前面的牌组为钢板，这里识别出的Tube应该后续没用
 		if comp := NewTube(cards); comp.IsValid() {
 			return comp
 		}
@@ -388,7 +385,7 @@ func NewFullHouse(cards []*Card) *FullHouse {
 		var ok bool
 		ok, sortedCards = FullHouseSatisfyNew(cards)
 		valid = ok
-		
+
 		if valid {
 			normalizedCards = sortedCards
 		}
@@ -405,7 +402,6 @@ func NewFullHouse(cards []*Card) *FullHouse {
 		},
 	}
 }
-
 
 func (f *FullHouse) GreaterThan(other CardComp) bool {
 	if other.GetType() != TypeFullHouse {
@@ -441,7 +437,7 @@ func NewStraight(cards []*Card) *Straight {
 		var ok bool
 		ok, sortedCards, comparisonKey = straightSatisfyNew(cards)
 		valid = ok
-		
+
 		// 如果有效，新逻辑已返回规范化结果
 		if valid {
 			normalizedCards = sortedCards
@@ -466,7 +462,7 @@ func (s *Straight) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherStraight := other.(*Straight)
-	
+
 	// 直接比较预计算的 ComparisonKey
 	return s.ComparisonKey > otherStraight.ComparisonKey
 }
@@ -488,7 +484,7 @@ func NewPlate(cards []*Card) *Plate {
 		var ok bool
 		ok, sortedCards, comparisonKey = plateSatisfyNew(cards)
 		valid = ok
-		
+
 		// 如果有效，新逻辑已返回规范化结果
 		if valid {
 			normalizedCards = sortedCards
@@ -513,7 +509,7 @@ func (p *Plate) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherPlate := other.(*Plate)
-	
+
 	// 直接比较预计算的 ComparisonKey
 	return p.ComparisonKey > otherPlate.ComparisonKey
 }
@@ -535,7 +531,7 @@ func NewTube(cards []*Card) *Tube {
 		var ok bool
 		ok, sortedCards, comparisonKey = tubeSatisfyNew(cards)
 		valid = ok
-		
+
 		// 如果有效，新逻辑已返回规范化结果
 		if valid {
 			normalizedCards = sortedCards
@@ -560,7 +556,7 @@ func (t *Tube) GreaterThan(other CardComp) bool {
 		return false
 	}
 	otherTube := other.(*Tube)
-	
+
 	// 直接比较预计算的 ComparisonKey
 	return t.ComparisonKey > otherTube.ComparisonKey
 }
@@ -676,20 +672,20 @@ func NewStraightFlush(cards []*Card) *StraightFlush {
 		// 先用 straightSatisfyNew 检查顺子并获取 comparisonKey
 		var isValidStraight bool
 		isValidStraight, sortedCards, comparisonKey = straightSatisfyNew(cards)
-		
+
 		if isValidStraight {
 			// 再检查花色
 			colors := make(map[string]int)
-			
+
 			for _, card := range sortedCards {
 				if !card.IsWildcard() {
 					colors[card.Color]++
 				}
 			}
-			
+
 			// 同花条件：所有非万能牌同花色
 			valid = (len(colors) == 1)
-			
+
 			if valid {
 				normalizedCards = sortedCards
 			}
@@ -725,7 +721,7 @@ func (s *StraightFlush) GreaterThan(other CardComp) bool {
 		otherStraightFlush := other.(*StraightFlush)
 		return s.ComparisonKey > otherStraightFlush.ComparisonKey
 	}
-	
+
 	// 如果对方是炸弹，5张以下的炸弹 < 同花顺
 	if other.GetType() == TypeNaiveBomb {
 		return len(other.GetCards()) <= 5
@@ -733,6 +729,3 @@ func (s *StraightFlush) GreaterThan(other CardComp) bool {
 
 	return false
 }
-
-
-
