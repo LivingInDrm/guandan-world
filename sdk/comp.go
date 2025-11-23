@@ -5,15 +5,6 @@ import (
 	"sort"
 )
 
-// 辅助函数
-func failWithSortedCards(cards []*Card) (bool, []*Card) {
-	return false, sortCards(cards)
-}
-
-func createResult() []*Card {
-	return make([]*Card, 0)
-}
-
 // CardComp 牌组接口
 type CardComp interface {
 	GreaterThan(other CardComp) bool
@@ -89,26 +80,55 @@ func getNormalCards(cards []*Card) []*Card {
 	return normalCards
 }
 
-// countCardNumbers 统计卡片数字出现次数
-func countCardNumbers(cards []*Card) map[int]int {
-	cardCounts := make(map[int]int)
-	for _, card := range cards {
-		if !card.IsWildcard() {
-			cardCounts[card.Number]++
+
+// sortNormalFirst 排序：普通牌在前，wildcard 在后
+// 普通牌按 LessThan 排序，wildcard 按 LessThan 排序
+func sortNormalFirst(cards []*Card) []*Card {
+	sortedCards := make([]*Card, len(cards))
+	copy(sortedCards, cards)
+	sort.Slice(sortedCards, func(i, j int) bool {
+		// 普通牌在前，wildcard 在后
+		if !sortedCards[i].IsWildcard() && sortedCards[j].IsWildcard() {
+			return true
 		}
-	}
-	return cardCounts
+		if sortedCards[i].IsWildcard() && !sortedCards[j].IsWildcard() {
+			return false
+		}
+		// 同类内部按 LessThan 排序
+		return sortedCards[i].LessThan(sortedCards[j])
+	})
+	return sortedCards
 }
 
-// getMaxCardNumber 获取最大卡片数字
-func getMaxCardNumber(cards []*Card) int {
-	maxNumber := 0
-	for _, card := range cards {
-		if card.Number > maxNumber {
-			maxNumber = card.Number
+// buildSameNumberComp 验证并规范化"同数字"牌型
+// 规则：
+// 1. 非 wildcard 必须同一 number
+// 2. wildcard 不能代替 Joker
+// 返回: (valid, normalizedCards)
+func buildSameNumberComp(cards []*Card, minLen, maxLen int) (bool, []*Card) {
+	if len(cards) < minLen || len(cards) > maxLen {
+		return false, nil
+	}
+
+	normalCards := getNormalCards(cards)
+	wildcardCount := countWildcards(cards)
+
+	// 检查非 wildcard 是否同一 number
+	if len(normalCards) > 0 {
+		baseNumber := normalCards[0].Number
+		for _, card := range normalCards {
+			if card.Number != baseNumber {
+				return false, nil
+			}
+		}
+
+		// wildcard 不能代替 Joker
+		if normalCards[0].Color == "Joker" && wildcardCount > 0 {
+			return false, nil
 		}
 	}
-	return maxNumber
+
+	return true, sortNormalFirst(cards)
 }
 
 // BaseComp 基础牌组结构
@@ -137,6 +157,13 @@ func (b *BaseComp) GetType() CompType {
 // String 字符串表示
 func (b *BaseComp) String() string {
 	return fmt.Sprintf("%v: %v", b.Type, b.Cards)
+}
+
+// IsBomb 判断是否为炸弹类型（王炸、炸弹、同花顺）
+func (b *BaseComp) IsBomb() bool {
+	return b.Type == TypeJokerBomb ||
+		b.Type == TypeNaiveBomb ||
+		b.Type == TypeStraightFlush
 }
 
 // FromCardList 从牌列表生成牌组
@@ -242,20 +269,12 @@ func (f *Fold) GreaterThan(other CardComp) bool {
 	return false
 }
 
-func (f *Fold) IsBomb() bool {
-	return false
-}
-
 // IllegalComp 非法牌组
 type IllegalComp struct {
 	BaseComp
 }
 
 func (i *IllegalComp) GreaterThan(other CardComp) bool {
-	return false
-}
-
-func (i *IllegalComp) IsBomb() bool {
 	return false
 }
 
@@ -283,51 +302,14 @@ func (s *Single) GreaterThan(other CardComp) bool {
 	return s.Cards[0].GreaterThan(otherSingle.Cards[0])
 }
 
-func (s *Single) IsBomb() bool {
-	return false
-}
-
 // Pair 对子
 type Pair struct {
 	BaseComp
 }
 
 func NewPair(cards []*Card) *Pair {
-	valid := false
 	sortedCards := sortCards(cards)
-	var normalizedCards []*Card
-	
-	if len(cards) == 2 {
-		levelCond0 := cards[0].IsWildcard() && cards[1].Color != "Joker"
-		levelCond1 := cards[1].IsWildcard() && cards[0].Color != "Joker"
-		valid = cards[0].Equals(cards[1]) || levelCond0 || levelCond1
-		
-		// 如果有效，创建规范化牌组
-		if valid {
-			normalizedCards = cloneCards(sortedCards)
-			// 找到非万能牌作为基准
-			var baseCard *Card
-			for _, card := range normalizedCards {
-				if !card.IsWildcard() {
-					baseCard = card
-					break
-				}
-			}
-			// 将所有万能牌替换为基准牌
-			if baseCard != nil {
-				for i, card := range normalizedCards {
-					if card.IsWildcard() {
-						normalizedCards[i] = createReplacementCard(
-							baseCard.Number,
-							baseCard.Color,
-							card.Level,
-							card.DeckIndex,  // 复用原万能牌的索引
-						)
-					}
-				}
-			}
-		}
-	}
+	valid, normalizedCards := buildSameNumberComp(sortedCards, 2, 2)
 
 	return &Pair{
 		BaseComp: BaseComp{
@@ -356,62 +338,14 @@ func (p *Pair) GreaterThan(other CardComp) bool {
 	return myCards[0].GreaterThan(otherCards[0])
 }
 
-func (p *Pair) IsBomb() bool {
-	return false
-}
-
 // Triple 三张
 type Triple struct {
 	BaseComp
 }
 
 func NewTriple(cards []*Card) *Triple {
-	valid := false
 	sortedCards := sortCards(cards)
-	var normalizedCards []*Card
-
-	if len(cards) == 3 {
-		// 如果有王，则非法
-		if hasJokers(sortedCards) {
-			valid = false
-		} else {
-			// 检查是否为三张相同或包含变化牌
-			valid = true
-			baseCard := sortedCards[0]
-			for i := 1; i < len(sortedCards); i++ {
-				if !sortedCards[i].Equals(baseCard) && !sortedCards[i].IsWildcard() {
-					valid = false
-					break
-				}
-			}
-
-			// 如果有效，创建规范化牌组
-			if valid {
-				normalizedCards = cloneCards(sortedCards)
-				// 找到非万能牌作为基准
-				var baseNormalCard *Card
-				for _, card := range normalizedCards {
-					if !card.IsWildcard() {
-						baseNormalCard = card
-						break
-					}
-				}
-				// 将所有万能牌替换为基准牌
-				if baseNormalCard != nil {
-					for i, card := range normalizedCards {
-						if card.IsWildcard() {
-							normalizedCards[i] = createReplacementCard(
-								baseNormalCard.Number,
-								baseNormalCard.Color,
-								card.Level,
-								card.DeckIndex,  // 复用原万能牌的索引
-							)
-						}
-					}
-				}
-			}
-		}
-	}
+	valid, normalizedCards := buildSameNumberComp(sortedCards, 3, 3)
 
 	return &Triple{
 		BaseComp: BaseComp{
@@ -438,10 +372,6 @@ func (t *Triple) GreaterThan(other CardComp) bool {
 		otherCards = otherTriple.Cards
 	}
 	return myCards[0].GreaterThan(otherCards[0])
-}
-
-func (t *Triple) IsBomb() bool {
-	return false
 }
 
 // FullHouse 葫芦（三带二）
@@ -494,10 +424,6 @@ func (f *FullHouse) GreaterThan(other CardComp) bool {
 	return myCards[0].GreaterThan(otherCards[0])
 }
 
-func (f *FullHouse) IsBomb() bool {
-	return false
-}
-
 // Straight 顺子
 type Straight struct {
 	BaseComp
@@ -543,10 +469,6 @@ func (s *Straight) GreaterThan(other CardComp) bool {
 	
 	// 直接比较预计算的 ComparisonKey
 	return s.ComparisonKey > otherStraight.ComparisonKey
-}
-
-func (s *Straight) IsBomb() bool {
-	return false
 }
 
 // Plate 钢板（连续三张）
@@ -596,10 +518,6 @@ func (p *Plate) GreaterThan(other CardComp) bool {
 	return p.ComparisonKey > otherPlate.ComparisonKey
 }
 
-func (p *Plate) IsBomb() bool {
-	return false
-}
-
 // Tube 钢管（连续对子）
 type Tube struct {
 	BaseComp
@@ -647,10 +565,6 @@ func (t *Tube) GreaterThan(other CardComp) bool {
 	return t.ComparisonKey > otherTube.ComparisonKey
 }
 
-func (t *Tube) IsBomb() bool {
-	return false
-}
-
 // JokerBomb 王炸
 type JokerBomb struct {
 	BaseComp
@@ -685,43 +599,14 @@ func (j *JokerBomb) GreaterThan(other CardComp) bool {
 	return other.GetType() != TypeJokerBomb
 }
 
-func (j *JokerBomb) IsBomb() bool {
-	return true
-}
-
 // NaiveBomb 炸弹
 type NaiveBomb struct {
 	BaseComp
 }
 
 func NewNaiveBomb(cards []*Card) *NaiveBomb {
-	valid := false
 	sortedCards := sortCards(cards)
-	var normalizedCards []*Card
-
-	if len(cards) >= 4 {
-		normalCards := getNormalCards(sortedCards)
-
-		// 检查是否所有正常牌都是同一数字
-		if len(normalCards) > 0 {
-			baseNumber := normalCards[0].Number
-			allSame := true
-			for _, card := range normalCards {
-				if card.Number != baseNumber {
-					allSame = false
-					break
-				}
-			}
-			valid = allSame
-		} else {
-			valid = countWildcards(sortedCards) >= 4
-		}
-		
-		// 如果有效，创建规范化牌组
-		if valid {
-			normalizedCards = normalizeNaiveBomb(sortedCards)
-		}
-	}
+	valid, normalizedCards := buildSameNumberComp(sortedCards, 4, 8)
 
 	return &NaiveBomb{
 		BaseComp: BaseComp{
@@ -773,10 +658,6 @@ func (n *NaiveBomb) GreaterThan(other CardComp) bool {
 	}
 
 	return false
-}
-
-func (n *NaiveBomb) IsBomb() bool {
-	return true
 }
 
 // StraightFlush 同花顺
@@ -853,117 +734,5 @@ func (s *StraightFlush) GreaterThan(other CardComp) bool {
 	return false
 }
 
-func (s *StraightFlush) IsBomb() bool {
-	return true
-}
 
-// 万能牌替换相关工具函数
-
-// cloneCard 克隆一张牌
-func cloneCard(card *Card) *Card {
-	return &Card{
-		Number:    card.Number,
-		RawNumber: card.RawNumber,
-		Color:     card.Color,
-		Level:     card.Level,
-		Name:      card.Name,
-		DeckIndex: card.DeckIndex,
-	}
-}
-
-// cloneCards 克隆牌组
-func cloneCards(cards []*Card) []*Card {
-	result := make([]*Card, len(cards))
-	for i, card := range cards {
-		result[i] = cloneCard(card)
-	}
-	return result
-}
-
-// createReplacementCard 创建一张替换牌
-// deckIndex: 使用原万能牌的 DeckIndex 保持唯一性
-func createReplacementCard(rawNumber int, color string, level int, deckIndex int) *Card {
-	// 使用NewCard来正确创建牌，确保Number和RawNumber都被正确设置
-	number := rawNumber
-	if rawNumber == 1 {
-		number = 14 // Ace conversion
-	}
-	card, _ := NewCard(number, color, level)
-	card.DeckIndex = deckIndex  // 复用原万能牌的索引
-	return card
-}
-
-// replaceWildcardInPlace 在克隆的牌组中原地替换万能牌
-func replaceWildcardInPlace(cards []*Card, wildcardIndex int, rawNumber int, color string) {
-	if wildcardIndex >= 0 && wildcardIndex < len(cards) && cards[wildcardIndex].IsWildcard() {
-		originalDeckIndex := cards[wildcardIndex].DeckIndex  // 保存原万能牌的索引
-		cards[wildcardIndex] = createReplacementCard(rawNumber, color, cards[wildcardIndex].Level, originalDeckIndex)
-	}
-}
-
-// findWildcardIndices 找出所有万能牌的索引
-func findWildcardIndices(cards []*Card) []int {
-	indices := []int{}
-	for i, card := range cards {
-		if card.IsWildcard() {
-			indices = append(indices, i)
-		}
-	}
-	return indices
-}
-
-// getMostCommonColor 获取牌组中最常见的花色（用于同花顺）
-func getMostCommonColor(cards []*Card) string {
-	colorCount := make(map[string]int)
-	for _, card := range cards {
-		if !card.IsWildcard() && card.Color != "Joker" {
-			colorCount[card.Color]++
-		}
-	}
-	
-	maxCount := 0
-	mostCommon := "Spade" // 默认黑桃
-	for color, count := range colorCount {
-		if count > maxCount {
-			maxCount = count
-			mostCommon = color
-		}
-	}
-	return mostCommon
-}
-
-
-// normalizeNaiveBomb 规范化普通炸弹牌组
-// 万能牌全部替换为与其他牌相同的牌
-func normalizeNaiveBomb(cards []*Card) []*Card {
-	result := cloneCards(cards)
-	
-	// 找到非万能牌作为基准
-	var baseCard *Card
-	for _, card := range result {
-		if !card.IsWildcard() {
-			baseCard = card
-			break
-		}
-	}
-	
-	// 如果没有非万能牌（全是万能牌），则不需要替换
-	if baseCard == nil {
-		return result
-	}
-	
-	// 将所有万能牌替换为基准牌
-	for i, card := range result {
-		if card.IsWildcard() {
-			result[i] = createReplacementCard(
-				baseCard.Number,
-				baseCard.Color,
-				card.Level,
-				card.DeckIndex,  // 复用原万能牌的索引
-			)
-		}
-	}
-	
-	return result
-}
 

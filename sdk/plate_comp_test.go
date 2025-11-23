@@ -349,6 +349,36 @@ func TestPlateSatisfyNew_A2_Plate(t *testing.T) {
 		}
 		fmt.Printf("✓ A-2钢板+2万能牌(缺2个A): valid=%v, key=%d\n", isValid, key)
 	})
+	
+	t.Run("A2_2wild_case3_missing_1A_1x2", func(t *testing.T) {
+		level := 5 // 5♥是万能牌
+		wild1 := mustNewCard(level, "Heart", level)
+		wild1.DeckIndex = 0
+		wild2 := mustNewCard(level, "Heart", level)
+		wild2.DeckIndex = 1
+		
+		cards := []*Card{
+			mustNewCard(1, "Spade", level),    // A♠
+			mustNewCard(1, "Club", level),     // A♣
+			wild1,                              // 5♥ 万能牌1
+			wild2,                              // 5♥ 万能牌2
+			mustNewCard(2, "Heart", level),    // 2♥
+			mustNewCard(2, "Diamond", level),  // 2♦
+		}
+		
+		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		
+		if !isValid {
+			t.Errorf("A-2钢板+2个万能牌应该有效")
+		}
+		if key != 1 {
+			t.Errorf("A-2钢板的键值应该是1，实际是%d", key)
+		}
+		if isValid {
+			verifyNormalizedPlate(t, normalizedCards, 1, 2, "A-2钢板+2万能牌(缺1个A和1个2)")
+		}
+		fmt.Printf("✓ A-2钢板+2万能牌(缺1个A和1个2): valid=%v, key=%d\n", isValid, key)
+	})
 }
 
 // ============================================================================

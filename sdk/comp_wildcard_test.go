@@ -45,11 +45,16 @@ func TestWildcardNormalization(t *testing.T) {
 				i, card.Number, card.RawNumber, card.Color, card.Level)
 		}
 
-		// Both cards should be 5s in normalized version
-		for i, card := range pair.NormalizedCards {
-			if card.Number != 5 {
-				t.Errorf("Expected normalized card %d to be 5, got %d", i, card.Number)
-			}
+		// Verify normal card is first, wildcard is last
+		if pair.NormalizedCards[0].IsWildcard() {
+			t.Error("First card should be normal card, not wildcard")
+		}
+		if pair.NormalizedCards[0].Number != 5 {
+			t.Errorf("Expected normal card to be 5, got %d", pair.NormalizedCards[0].Number)
+		}
+		// Verify wildcard is last
+		if !pair.NormalizedCards[1].IsWildcard() {
+			t.Error("Second card should be wildcard")
 		}
 	})
 
@@ -70,11 +75,16 @@ func TestWildcardNormalization(t *testing.T) {
 			t.Error("NormalizedCards should not be nil")
 		}
 
-		// All cards should be 7s in normalized version
-		for _, card := range triple.NormalizedCards {
-			if card.Number != 7 {
-				t.Errorf("Expected normalized card to be 7, got %d", card.Number)
-			}
+		// Verify normal card is first, wildcards are last
+		if triple.NormalizedCards[0].IsWildcard() {
+			t.Error("First card should be normal card")
+		}
+		if triple.NormalizedCards[0].Number != 7 {
+			t.Errorf("Expected normal card to be 7, got %d", triple.NormalizedCards[0].Number)
+		}
+		// Verify wildcards are last
+		if !triple.NormalizedCards[1].IsWildcard() || !triple.NormalizedCards[2].IsWildcard() {
+			t.Error("Last two cards should be wildcards")
 		}
 	})
 
@@ -158,11 +168,16 @@ func TestWildcardNormalization(t *testing.T) {
 			t.Error("NormalizedCards should not be nil")
 		}
 
-		// All cards should be Kings
-		for _, card := range bomb.NormalizedCards {
-			if card.Number != 13 {
-				t.Errorf("Expected normalized card to be K (13), got %d", card.Number)
-			}
+		// Verify first three cards are normal Kings, last is wildcard
+		if bomb.NormalizedCards[0].IsWildcard() || bomb.NormalizedCards[1].IsWildcard() || bomb.NormalizedCards[2].IsWildcard() {
+			t.Error("First three cards should be normal cards")
+		}
+		if bomb.NormalizedCards[0].Number != 13 || bomb.NormalizedCards[1].Number != 13 || bomb.NormalizedCards[2].Number != 13 {
+			t.Error("Normal cards should be Kings (13)")
+		}
+		// Verify wildcard is last
+		if !bomb.NormalizedCards[3].IsWildcard() {
+			t.Error("Last card should be wildcard")
 		}
 	})
 
@@ -184,6 +199,51 @@ func TestWildcardNormalization(t *testing.T) {
 		// (4,4) should not be greater than (5,5)
 		if pairWithoutWildcard.GreaterThan(pairWithWildcard) {
 			t.Error("Pair (4,4) should not be greater than (5,5)")
+		}
+	})
+
+	t.Run("Wildcard cannot replace Joker", func(t *testing.T) {
+		// Test Pair: wildcard + Joker should be invalid
+		wildcard, _ := NewCard(3, "Heart", level)
+		smallJoker, _ := NewCard(15, "Joker", level)
+
+		pair := NewPair([]*Card{wildcard, smallJoker})
+		if pair.Valid {
+			t.Error("Pair with wildcard + Joker should be invalid")
+		}
+
+		// Test Triple: wildcard + Joker + Joker should be invalid
+		triple := NewTriple([]*Card{wildcard, smallJoker, smallJoker})
+		if triple.Valid {
+			t.Error("Triple with wildcard + Joker should be invalid")
+		}
+
+		// Test NaiveBomb: wildcard + Joker should be invalid
+		bomb := NewNaiveBomb([]*Card{wildcard, smallJoker, smallJoker, smallJoker})
+		if bomb.Valid {
+			t.Error("NaiveBomb with wildcard + Joker should be invalid")
+		}
+	})
+
+	t.Run("All wildcard valid", func(t *testing.T) {
+		// Create all-wildcard pair
+		wild1, _ := NewCard(3, "Heart", level)
+		wild2, _ := NewCard(3, "Spade", level)
+
+		pair := NewPair([]*Card{wild1, wild2})
+		if !pair.Valid {
+			t.Error("All-wildcard pair should be valid")
+		}
+	})
+
+	t.Run("Joker pair valid", func(t *testing.T) {
+		// Create Joker pair
+		joker1, _ := NewCard(15, "Joker", level)
+		joker2, _ := NewCard(15, "Joker", level)
+
+		pair := NewPair([]*Card{joker1, joker2})
+		if !pair.Valid {
+			t.Error("Joker pair should be valid")
 		}
 	})
 }
