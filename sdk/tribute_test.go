@@ -35,7 +35,7 @@ func TestNewTributePhase(t *testing.T) {
 				WinningTeam: 0,
 				VictoryType: VictoryTypeSingleLast, // rank1(0), rank3(2) 同队
 			},
-			expectedStatus: TributeStatusReturning,
+			expectedStatus: TributeStatusWaiting,
 		},
 		{
 			name: "Double down scenario",
@@ -53,7 +53,7 @@ func TestNewTributePhase(t *testing.T) {
 				WinningTeam: 0,
 				VictoryType: VictoryTypePartnerLast, // rank1(0), rank4(2) 同队
 			},
-			expectedStatus: TributeStatusReturning,
+			expectedStatus: TributeStatusWaiting,
 		},
 		{
 			name: "Invalid rankings",
@@ -382,7 +382,7 @@ func TestTributeProcessComplete(t *testing.T) {
 	}
 
 	t.Logf("✅ 上贡过程验证成功")
-	t.Logf("   上贡映射: %v", tributePhase.TributeMap)
+	t.Logf("   上贡映射: %v", buildTributeMapFromPairs(tributePhase.TributePairs))
 	t.Logf("   上贡牌: 玩家3 → 玩家0, 牌: %s", formatCardForTest(tributeCard))
 	t.Logf("   玩家3剩余手牌: %d张", len(playerHands[3]))
 	t.Logf("   玩家0手牌: %d张", len(playerHands[0]))

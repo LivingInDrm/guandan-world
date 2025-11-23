@@ -28,7 +28,7 @@ func TestDealResultCalculator_CalculateDealResult(t *testing.T) {
 
 	// Set up finished deal
 	deal.Status = DealStatusFinished
-	deal.Rankings = []int{0, 1, 2, 3} // Team 0 gets 1st(0) and 3rd(2), should be double down
+	deal.Rankings = []int{0, 2, 1, 3} // Team 0 gets 1st(0) and 2nd(2), double down
 	now := time.Now()
 	deal.EndTime = &now
 	deal.StartTime = now.Add(-30 * time.Minute)
@@ -64,8 +64,8 @@ func TestDealResultCalculator_CalculateDealResult(t *testing.T) {
 		t.Errorf("Expected double down victory, got %v", result.VictoryType)
 	}
 
-	if result.Upgrades[0] != 2 {
-		t.Errorf("Expected 2 upgrades for winning team, got %d", result.Upgrades[0])
+	if result.Upgrades[0] != 3 {
+		t.Errorf("Expected 3 upgrades for winning team, got %d", result.Upgrades[0])
 	}
 
 	if result.Upgrades[1] != 0 {
@@ -287,15 +287,20 @@ func TestDealResultCalculator_TributeInfo(t *testing.T) {
 
 	// Test with tribute phase
 	tributePhase := &TributePhase{
-		Status:     TributeStatusFinished,
-		TributeMap: map[int]int{0: 1, 2: 3},
-		TributeCards: map[int]*Card{
-			0: {Number: 14, Color: "Spades"},
-			2: {Number: 13, Color: "Hearts"},
-		},
-		ReturnCards: map[int]*Card{
-			1: {Number: 3, Color: "Clubs"},
-			3: {Number: 4, Color: "Diamonds"},
+		Status: TributeStatusFinished,
+		TributePairs: []*TributePair{
+			{
+				Giver:       0,
+				Receiver:    1,
+				TributeCard: &Card{Number: 14, Color: "Spades"},
+				ReturnCard:  &Card{Number: 3, Color: "Clubs"},
+			},
+			{
+				Giver:       2,
+				Receiver:    3,
+				TributeCard: &Card{Number: 13, Color: "Hearts"},
+				ReturnCard:  &Card{Number: 4, Color: "Diamonds"},
+			},
 		},
 	}
 

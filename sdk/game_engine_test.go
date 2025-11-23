@@ -31,6 +31,7 @@ func TestNewGameEngine(t *testing.T) {
 
 func TestGameEngineEventSystem(t *testing.T) {
 	engine := NewGameEngine()
+	emp := NewEventMetadataProvider()
 
 	// Test event handler registration with channel for synchronization
 	eventChan := make(chan *GameEvent, 1)
@@ -47,11 +48,10 @@ func TestGameEngineEventSystem(t *testing.T) {
 	}
 
 	// Test event emission
-	testEvent := &GameEvent{
-		Type:      EventMatchStarted,
-		Data:      "test data",
-		Timestamp: time.Now(),
-	}
+	testEvent := emp.CreateBaseEvent(
+		EventMatchStarted,
+		nil, nil, nil, -1,
+	)
 
 	engine.emitEvent(testEvent)
 
@@ -71,6 +71,7 @@ func TestGameEngineEventSystem(t *testing.T) {
 
 func TestGameEngineMultipleEventHandlers(t *testing.T) {
 	engine := NewGameEngine()
+	emp := NewEventMetadataProvider()
 
 	// Register multiple handlers for the same event with channel for synchronization
 	callChan := make(chan struct{}, 2)
@@ -87,11 +88,10 @@ func TestGameEngineMultipleEventHandlers(t *testing.T) {
 	engine.On(EventPlayerPlayed, handler2)
 
 	// Emit event
-	testEvent := &GameEvent{
-		Type:      EventPlayerPlayed,
-		Data:      nil,
-		Timestamp: time.Now(),
-	}
+	testEvent := emp.CreateBaseEvent(
+		EventPlayerPlayed,
+		nil, nil, nil, -1,
+	)
 
 	engine.emitEvent(testEvent)
 
