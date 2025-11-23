@@ -22,7 +22,7 @@ func TestTubeSatisfyNew_QKA_NoWildcard(t *testing.T) {
 		t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 	}
 
-	isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+	isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 	t.Logf("结果: IsValid=%v", isValid)
 	if normalized != nil {
@@ -66,7 +66,7 @@ func TestTubeSatisfyNew_QKA_OneWildcard(t *testing.T) {
 		t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 	}
 
-	isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+	isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 	t.Logf("结果: IsValid=%v", isValid)
 	if normalized != nil {
@@ -106,7 +106,7 @@ func TestTubeSatisfyNew_QKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardQ1, cardQ2, cardK1, cardK2, wild1, wild2}
 
 		t.Log("QQ+KK+2wild (应该补两张A)")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -141,7 +141,7 @@ func TestTubeSatisfyNew_QKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardQ1, cardQ2, cardA1, cardA2, wild1, wild2}
 
 		t.Log("QQ+AA+2wild (应该补两张K)")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -176,7 +176,7 @@ func TestTubeSatisfyNew_QKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardK1, cardK2, cardA1, cardA2, wild1, wild2}
 
 		t.Log("KK+AA+2wild (应该补两张Q)")
-		isValid, normalized, _ := tubeSatisfyNew(cards)
+		isValid, normalized, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -215,7 +215,7 @@ func TestTubeSatisfyNew_A23_NoWildcard(t *testing.T) {
 		t.Logf("  牌[%d]: %s (Number=%d, RawNumber=%d, IsWildcard=%v)", i, c.Name, c.Number, c.RawNumber, c.IsWildcard())
 	}
 
-	isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+	isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 	t.Logf("结果: IsValid=%v", isValid)
 	if normalized != nil {
@@ -258,7 +258,7 @@ func TestTubeSatisfyNew_A23_OneWildcard(t *testing.T) {
 		t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 	}
 
-	isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+	isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 	t.Logf("结果: IsValid=%v", isValid)
 	if normalized != nil {
@@ -297,7 +297,7 @@ func TestTubeSatisfyNew_A23_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardA1, cardA2, card21, card22, wild1, wild2}
 
 		t.Log("AA+22+2wild (应该补两张3)")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -332,7 +332,7 @@ func TestTubeSatisfyNew_A23_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardA1, cardA2, card31, card32, wild1, wild2}
 
 		t.Log("AA+33+2wild (应该补两张2)")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -367,7 +367,7 @@ func TestTubeSatisfyNew_A23_TwoWildcards(t *testing.T) {
 		cards := []*Card{card21, card22, card31, card32, wild1, wild2}
 
 		t.Log("22+33+2wild (可以补两张A凑成A-2-3，或补两张4凑成2-3-4，应选更大的2-3-4)")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -407,7 +407,7 @@ func TestTubeSatisfyNew_Regular(t *testing.T) {
 		cards := []*Card{cardJ1, cardJ2, cardQ1, cardQ2, cardK1, cardK2}
 
 		t.Log("JJ+QQ+KK (普通钢管)")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -446,7 +446,7 @@ func TestTubeSatisfyNew_Regular(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, RawNumber=%d, IsWildcard=%v)", i, c.Name, c.Number, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -485,7 +485,7 @@ func TestTubeSatisfyNew_RegularWithWildcards(t *testing.T) {
 			t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -524,7 +524,7 @@ func TestTubeSatisfyNew_RegularWithWildcards(t *testing.T) {
 			t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -564,7 +564,7 @@ func TestTubeSatisfyNew_EdgeCases(t *testing.T) {
 		cards := []*Card{card21, card22, card31, card32, card41, card42}
 
 		t.Log("22+33+44 (最小的普通钢管)")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -599,7 +599,7 @@ func TestTubeSatisfyNew_EdgeCases(t *testing.T) {
 		cards := []*Card{card101, card102, cardJ1, cardJ2, cardQ1, cardQ2}
 
 		t.Log("10+JJ+QQ (包含10的钢管)")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -643,7 +643,7 @@ func TestTubeSatisfyNew_MissingPair(t *testing.T) {
 			t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -678,7 +678,7 @@ func TestTubeSatisfyNew_MissingPair(t *testing.T) {
 		cards := []*Card{card41, card42, card61, card71, card72, wildcard}
 
 		t.Log("44+6+77+wild (缺失6，不能凑成钢管)")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -703,7 +703,7 @@ func TestTubeSatisfyNew_MoreInvalidCases(t *testing.T) {
 		cards := []*Card{card21, card22, card41, card42, card61, card62}
 
 		t.Log("22+44+66 (三对不连续)")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -723,7 +723,7 @@ func TestTubeSatisfyNew_MoreInvalidCases(t *testing.T) {
 		cards := []*Card{cardQ1, cardQ2, cardQ3, cardK1, cardK2, cardA1}
 
 		t.Log("QQQ+KK+A (同数字超过2张)")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -744,7 +744,7 @@ func TestTubeSatisfyNew_MoreInvalidCases(t *testing.T) {
 		cards := []*Card{cardQ1, cardQ2, cardQ3, cardK1, cardK2, cardA1, cardA2}
 
 		t.Log("QQQ+KK+AA (同数字超过2张，7张牌)")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -764,7 +764,7 @@ func TestTubeSatisfyNew_MoreInvalidCases(t *testing.T) {
 		cards := []*Card{cardQ1, cardQ2, cardQ3, cardQ4, cardK1, cardK2}
 
 		t.Log("QQQQ+KK (4张Q)")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -784,7 +784,7 @@ func TestTubeSatisfyNew_MoreInvalidCases(t *testing.T) {
 		cards := []*Card{cardQ1, cardQ2, cardQ3, cardK1, cardK2, cardK3}
 
 		t.Log("QQQ+KKK (两个数字都超过2张)")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -804,7 +804,7 @@ func TestTubeSatisfyNew_MoreInvalidCases(t *testing.T) {
 		cards := []*Card{wild1, wild2, wild3, wild4, wild5, wild6}
 
 		t.Log("6个变化牌（应该可以凑成任意钢管）")
-		isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+		isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -846,7 +846,7 @@ func TestTubeSatisfyNew_MultipleChoicesMinimum(t *testing.T) {
 	cards := []*Card{card21, card22, card31, card32, wild1, wild2}
 
 	t.Log("=== 22+33+2wild (可以凑成 A-2-3 或 2-3-4) ===")
-	isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+	isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 	t.Logf("结果: IsValid=%v", isValid)
 	if normalized != nil {
@@ -900,7 +900,7 @@ func TestTubeSatisfyNew_BestTripleSelection(t *testing.T) {
 	cards := []*Card{cardQ1, cardQ2, cardK1, cardK2, wild1, wild2}
 
 	t.Log("=== QQ+KK+2wild (应该选择 Q-K-A 而不是 J-Q-K) ===")
-	isValid, normalized, comparisonKey := tubeSatisfyNew(cards)
+	isValid, normalized, comparisonKey := TubeSatisfy(cards)
 
 	t.Logf("结果: IsValid=%v", isValid)
 	if normalized != nil {
@@ -952,7 +952,7 @@ func TestTubeSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{cardQ1, cardQ2, card91, card92, wild1, wild2}
 
 		t.Log("QQ+99+2wild (间隔太大，无法凑成)")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -968,7 +968,7 @@ func TestTubeSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card1, card2}
 
 		t.Log("长度不对（只有2张）")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -988,7 +988,7 @@ func TestTubeSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card1, card2, card3, card4, joker1, joker2}
 
 		t.Log("含大王")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1008,7 +1008,7 @@ func TestTubeSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card1, card2, card3, card4, joker1, joker2}
 
 		t.Log("含小王")
-		isValid, _, _ := tubeSatisfyNew(cards)
+		isValid, _, _ := TubeSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 

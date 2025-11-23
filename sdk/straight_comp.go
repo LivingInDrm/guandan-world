@@ -155,7 +155,7 @@ func normalizeStraightWithFive(sortedCards []*Card, bestFive []int) []*Card {
 	return result
 }
 
-// straightSatisfyNew 新版顺子验证逻辑（枚举方案）
+// StraightSatisfy 新版顺子验证逻辑（枚举方案）
 // 通过枚举所有可能的5连续数字组合来验证顺子，修复循环情况识别问题
 // 参数:
 //   cards: 待验证的卡牌列表
@@ -163,7 +163,7 @@ func normalizeStraightWithFive(sortedCards []*Card, bestFive []int) []*Card {
 //   isValid: 是否为合法的顺子
 //   normalizedCards: 规范化后的卡牌列表
 //   comparisonKey: 比较键值（1-10），仅在 isValid=true 时有效，无效时为 0
-func straightSatisfyNew(cards []*Card) (bool, []*Card, int) {
+func StraightSatisfy(cards []*Card) (bool, []*Card, int) {
 	// 检查输入有效性
 	if cards == nil || len(cards) != STRAIGHT_CARD_COUNT {
 		return false, sortCards(cards), 0

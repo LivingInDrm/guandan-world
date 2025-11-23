@@ -383,7 +383,7 @@ func NewFullHouse(cards []*Card) *FullHouse {
 
 	if len(cards) == 5 {
 		var ok bool
-		ok, sortedCards = FullHouseSatisfyNew(cards)
+		ok, sortedCards = FullHouseSatisfy(cards)
 		valid = ok
 
 		if valid {
@@ -435,7 +435,7 @@ func NewStraight(cards []*Card) *Straight {
 	if len(cards) == 5 {
 		// 使用新的枚举验证逻辑
 		var ok bool
-		ok, sortedCards, comparisonKey = straightSatisfyNew(cards)
+		ok, sortedCards, comparisonKey = StraightSatisfy(cards)
 		valid = ok
 
 		// 如果有效，新逻辑已返回规范化结果
@@ -482,7 +482,7 @@ func NewPlate(cards []*Card) *Plate {
 	if len(cards) == 6 {
 		// 使用新的枚举验证逻辑
 		var ok bool
-		ok, sortedCards, comparisonKey = plateSatisfyNew(cards)
+		ok, sortedCards, comparisonKey = PlateSatisfy(cards)
 		valid = ok
 
 		// 如果有效，新逻辑已返回规范化结果
@@ -529,7 +529,7 @@ func NewTube(cards []*Card) *Tube {
 	if len(cards) == 6 {
 		// 使用新的枚举验证逻辑
 		var ok bool
-		ok, sortedCards, comparisonKey = tubeSatisfyNew(cards)
+		ok, sortedCards, comparisonKey = TubeSatisfy(cards)
 		valid = ok
 
 		// 如果有效，新逻辑已返回规范化结果
@@ -669,9 +669,9 @@ func NewStraightFlush(cards []*Card) *StraightFlush {
 	var comparisonKey int
 
 	if len(cards) == 5 {
-		// 先用 straightSatisfyNew 检查顺子并获取 comparisonKey
+		// 先用 StraightSatisfy 检查顺子并获取 comparisonKey
 		var isValidStraight bool
-		isValidStraight, sortedCards, comparisonKey = straightSatisfyNew(cards)
+		isValidStraight, sortedCards, comparisonKey = StraightSatisfy(cards)
 
 		if isValidStraight {
 			// 再检查花色

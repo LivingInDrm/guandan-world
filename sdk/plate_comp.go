@@ -149,7 +149,7 @@ func normalizePlateWithPair(sortedCards []*Card, bestPair []int) []*Card {
 	return result
 }
 
-// plateSatisfyNew 新版钢板验证逻辑（枚举方案）
+// PlateSatisfy 新版钢板验证逻辑（枚举方案）
 // 通过枚举所有可能的2连续数字组合来验证钢板，统一处理循环情况（A-2, K-A）
 // 参数:
 //   cards: 待验证的卡牌列表
@@ -157,7 +157,7 @@ func normalizePlateWithPair(sortedCards []*Card, bestPair []int) []*Card {
 //   isValid: 是否为合法的钢板
 //   normalizedCards: 规范化后的卡牌列表
 //   comparisonKey: 比较键值（1-13），仅在 isValid=true 时有效，无效时为 0
-func plateSatisfyNew(cards []*Card) (bool, []*Card, int) {
+func PlateSatisfy(cards []*Card) (bool, []*Card, int) {
 	// 1. 检查输入有效性
 	if cards == nil || len(cards) != PLATE_CARD_COUNT {
 		return false, sortCards(cards), 0

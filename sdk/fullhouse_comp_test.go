@@ -23,7 +23,7 @@ func TestFullHouseSatisfyNew_Invalid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -52,7 +52,7 @@ func TestFullHouseSatisfyNew_Invalid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, _ := FullHouseSatisfyNew(cards)
+		isValid, _ := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -77,7 +77,7 @@ func TestFullHouseSatisfyNew_Invalid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, _ := FullHouseSatisfyNew(cards)
+		isValid, _ := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -102,7 +102,7 @@ func TestFullHouseSatisfyNew_Invalid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, _ := FullHouseSatisfyNew(cards)
+		isValid, _ := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -127,7 +127,7 @@ func TestFullHouseSatisfyNew_Invalid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, _ := FullHouseSatisfyNew(cards)
+		isValid, _ := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -155,7 +155,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -192,7 +192,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -229,7 +229,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -266,7 +266,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -303,7 +303,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -340,7 +340,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -377,7 +377,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -414,7 +414,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -451,7 +451,7 @@ func TestFullHouseSatisfyNew_Valid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (Number=%d, IsWildcard=%v)", i, c.Name, c.Number, c.IsWildcard())
 		}
 
-		isValid, normalized := FullHouseSatisfyNew(cards)
+		isValid, normalized := FullHouseSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {

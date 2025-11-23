@@ -11,13 +11,13 @@ package sdk
 // normalizedCards排序规则：
 // - triple普通牌 → triple wildcard → pair普通牌 → pair wildcard
 
-// FullHouseSatisfyNew 新版葫芦验证逻辑（枚举方案）
+// FullHouseSatisfy 新版葫芦验证逻辑（枚举方案）
 // 参数:
 //   cards: 待验证的卡牌列表
 // 返回值:
 //   isValid: 是否为合法的葫芦
 //   normalizedCards: 规范化后的卡牌列表（3张+2张顺序，普通牌优先）
-func FullHouseSatisfyNew(cards []*Card) (bool, []*Card) {
+func FullHouseSatisfy(cards []*Card) (bool, []*Card) {
 	// Step 1: 输入验证
 	if cards == nil || len(cards) != FULL_HOUSE_CARD_COUNT {
 		return false, sortCards(cards)

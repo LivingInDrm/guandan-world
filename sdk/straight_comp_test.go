@@ -21,7 +21,7 @@ func TestStraightSatisfyNew_TJQKA_NoWildcard(t *testing.T) {
 		t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 	}
 
-	isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+	isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 	t.Logf("结果: IsValid=%v", isValid)
 	if normalized != nil {
@@ -60,7 +60,7 @@ func TestStraightSatisfyNew_TJQKA_OneWildcard(t *testing.T) {
 		cards := []*Card{cardJ, cardQ, cardK, cardA, wildcard}
 
 		t.Log("J-Q-K-A + wild (补10)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 		if normalized != nil {
@@ -94,7 +94,7 @@ func TestStraightSatisfyNew_TJQKA_OneWildcard(t *testing.T) {
 		cards := []*Card{card10, cardQ, cardK, cardA, wildcard}
 
 		t.Log("10-Q-K-A + wild (补J)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -123,7 +123,7 @@ func TestStraightSatisfyNew_TJQKA_OneWildcard(t *testing.T) {
 		cards := []*Card{card10, cardJ, cardK, cardA, wildcard}
 
 		t.Log("10-J-K-A + wild (补Q)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -152,7 +152,7 @@ func TestStraightSatisfyNew_TJQKA_OneWildcard(t *testing.T) {
 		cards := []*Card{card10, cardJ, cardQ, cardA, wildcard}
 
 		t.Log("10-J-Q-A + wild (补K)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -181,7 +181,7 @@ func TestStraightSatisfyNew_TJQKA_OneWildcard(t *testing.T) {
 		cards := []*Card{card10, cardJ, cardQ, cardK, wildcard}
 
 		t.Log("10-J-Q-K + wild (补A)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -215,7 +215,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardQ, cardK, cardA, wild1, wild2}
 
 		t.Log("Q-K-A + 2wild (补10和J)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -244,7 +244,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardJ, cardK, cardA, wild1, wild2}
 
 		t.Log("J-K-A + 2wild (补10和Q)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -273,7 +273,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardJ, cardQ, cardA, wild1, wild2}
 
 		t.Log("J-Q-A + 2wild (补10和K)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -302,7 +302,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardJ, cardQ, cardK, wild1, wild2}
 
 		t.Log("J-Q-K + 2wild (补10和A)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -331,7 +331,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{card10, cardK, cardA, wild1, wild2}
 
 		t.Log("10-K-A + 2wild (补J和Q)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -360,7 +360,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{card10, cardQ, cardA, wild1, wild2}
 
 		t.Log("10-Q-A + 2wild (补J和K)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -389,7 +389,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{card10, cardQ, cardK, wild1, wild2}
 
 		t.Log("10-Q-K + 2wild (补J和A)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -418,7 +418,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{card10, cardJ, cardA, wild1, wild2}
 
 		t.Log("10-J-A + 2wild (补Q和K)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -447,7 +447,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{card10, cardJ, cardK, wild1, wild2}
 
 		t.Log("10-J-K + 2wild (补Q和A)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -476,7 +476,7 @@ func TestStraightSatisfyNew_TJQKA_TwoWildcards(t *testing.T) {
 		cards := []*Card{card10, cardJ, cardQ, wild1, wild2}
 
 		t.Log("10-J-Q + 2wild (补K和A)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -513,7 +513,7 @@ func TestStraightSatisfyNew_A2345_NoWildcard(t *testing.T) {
 		t.Logf("  牌[%d]: %s (Number=%d, RawNumber=%d, IsWildcard=%v)", i, c.Name, c.Number, c.RawNumber, c.IsWildcard())
 	}
 
-	isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+	isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 	t.Logf("结果: IsValid=%v", isValid)
 	if normalized != nil {
@@ -552,7 +552,7 @@ func TestStraightSatisfyNew_A2345_OneWildcard(t *testing.T) {
 		cards := []*Card{card2, card3, card4, card5, wildcard}
 
 		t.Log("2-3-4-5 + wild (可以补A或补6，应选更大的2-3-4-5-6)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -581,7 +581,7 @@ func TestStraightSatisfyNew_A2345_OneWildcard(t *testing.T) {
 		cards := []*Card{cardA, card3, card4, card5, wildcard}
 
 		t.Log("A-3-4-5 + wild (补2)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -610,7 +610,7 @@ func TestStraightSatisfyNew_A2345_OneWildcard(t *testing.T) {
 		cards := []*Card{cardA, card2, card4, card5, wildcard}
 
 		t.Log("A-2-4-5 + wild (补3)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -639,7 +639,7 @@ func TestStraightSatisfyNew_A2345_OneWildcard(t *testing.T) {
 		cards := []*Card{cardA, card2, card3, card5, wildcard}
 
 		t.Log("A-2-3-5 + wild (补4)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -668,7 +668,7 @@ func TestStraightSatisfyNew_A2345_OneWildcard(t *testing.T) {
 		cards := []*Card{cardA, card2, card3, card4, wildcard}
 
 		t.Log("A-2-3-4 + wild (补5)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -702,7 +702,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{card3, card4, card5, wild1, wild2}
 
 		t.Log("3-4-5 + 2wild (可补A+2, 2+6, 6+7，应选最大的3-4-5-6-7)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -731,7 +731,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{card2, card4, card5, wild1, wild2}
 
 		t.Log("2-4-5 + 2wild (可补A+3或3+6，应选更大的2-3-4-5-6)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -760,7 +760,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{card2, card3, card5, wild1, wild2}
 
 		t.Log("2-3-5 + 2wild (可补A+4或4+6，应选更大的2-3-4-5-6)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -789,7 +789,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{card2, card3, card4, wild1, wild2}
 
 		t.Log("2-3-4 + 2wild (可补A+5或5+6，应选更大的2-3-4-5-6)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -818,7 +818,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardA, card4, card5, wild1, wild2}
 
 		t.Log("A-4-5 + 2wild (补2和3)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -847,7 +847,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardA, card3, card5, wild1, wild2}
 
 		t.Log("A-3-5 + 2wild (补2和4)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -876,7 +876,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardA, card3, card4, wild1, wild2}
 
 		t.Log("A-3-4 + 2wild (补2和5)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -905,7 +905,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardA, card2, card5, wild1, wild2}
 
 		t.Log("A-2-5 + 2wild (补3和4)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -934,7 +934,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardA, card2, card4, wild1, wild2}
 
 		t.Log("A-2-4 + 2wild (补3和5)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -963,7 +963,7 @@ func TestStraightSatisfyNew_A2345_TwoWildcards(t *testing.T) {
 		cards := []*Card{cardA, card2, card3, wild1, wild2}
 
 		t.Log("A-2-3 + 2wild (补4和5)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -997,7 +997,7 @@ func TestStraightSatisfyNew_Regular_NoWildcard(t *testing.T) {
 		cards := []*Card{card2, card3, card4, card5, card6}
 
 		t.Log("2-3-4-5-6 (普通顺子)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1026,7 +1026,7 @@ func TestStraightSatisfyNew_Regular_NoWildcard(t *testing.T) {
 		cards := []*Card{card3, card4, card5, card6, card7}
 
 		t.Log("3-4-5-6-7")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1055,7 +1055,7 @@ func TestStraightSatisfyNew_Regular_NoWildcard(t *testing.T) {
 		cards := []*Card{card5, card6, card7, card8, card9}
 
 		t.Log("5-6-7-8-9")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1084,7 +1084,7 @@ func TestStraightSatisfyNew_Regular_NoWildcard(t *testing.T) {
 		cards := []*Card{card7, card8, card9, card10, cardJ}
 
 		t.Log("7-8-9-10-J")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1113,7 +1113,7 @@ func TestStraightSatisfyNew_Regular_NoWildcard(t *testing.T) {
 		cards := []*Card{card9, card10, cardJ, cardQ, cardK}
 
 		t.Log("9-10-J-Q-K")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1147,7 +1147,7 @@ func TestStraightSatisfyNew_Regular_OneWildcard(t *testing.T) {
 		cards := []*Card{card2, card3, card5, card6, wildcard}
 
 		t.Log("2-3-5-6 + wild (补4)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1180,7 +1180,7 @@ func TestStraightSatisfyNew_Regular_OneWildcard(t *testing.T) {
 			t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1209,7 +1209,7 @@ func TestStraightSatisfyNew_Regular_OneWildcard(t *testing.T) {
 		cards := []*Card{card5, card6, card8, card9, wildcard}
 
 		t.Log("5-6-8-9 + wild (补7)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1238,7 +1238,7 @@ func TestStraightSatisfyNew_Regular_OneWildcard(t *testing.T) {
 		cards := []*Card{card7, card8, card10, cardJ, wildcard}
 
 		t.Log("7-8-10-J + wild (补9)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1267,7 +1267,7 @@ func TestStraightSatisfyNew_Regular_OneWildcard(t *testing.T) {
 		cards := []*Card{card9, card10, cardJ, cardK, wildcard}
 
 		t.Log("9-10-J-K + wild (补Q)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1301,7 +1301,7 @@ func TestStraightSatisfyNew_Regular_TwoWildcards(t *testing.T) {
 		cards := []*Card{card2, card4, card6, wild1, wild2}
 
 		t.Log("2-4-6 + 2wild (补3和5)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1334,7 +1334,7 @@ func TestStraightSatisfyNew_Regular_TwoWildcards(t *testing.T) {
 			t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1367,7 +1367,7 @@ func TestStraightSatisfyNew_Regular_TwoWildcards(t *testing.T) {
 			t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1396,7 +1396,7 @@ func TestStraightSatisfyNew_Regular_TwoWildcards(t *testing.T) {
 		cards := []*Card{card7, card9, cardJ, wild1, wild2}
 
 		t.Log("7-9-J + 2wild (补8和10)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1425,7 +1425,7 @@ func TestStraightSatisfyNew_Regular_TwoWildcards(t *testing.T) {
 		cards := []*Card{card9, cardJ, cardQ, wild1, wild2}
 
 		t.Log("9-J-Q + 2wild (补10和K)")
-		isValid, normalized, comparisonKey := straightSatisfyNew(cards)
+		isValid, normalized, comparisonKey := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1459,7 +1459,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card31, card32, card4, card5, card6}
 
 		t.Log("3-3-4-5-6 (重复数字)")
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1478,7 +1478,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card2, card3, card5, card6, card7}
 
 		t.Log("2-3-5-6-7 (不连续，缺4)")
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1497,7 +1497,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card2, card4, card6, card8, card10}
 
 		t.Log("2-4-6-8-10 (间隔太大)")
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1516,7 +1516,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card2, card3, card4, card5, joker}
 
 		t.Log("2-3-4-5-大王")
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1535,7 +1535,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card2, card3, card4, card5, joker}
 
 		t.Log("2-3-4-5-小王")
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1553,7 +1553,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card2, card3, card4, card5}
 
 		t.Log("长度不对: 只有4张")
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1573,7 +1573,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{card2, card3, card4, card5, card6, card7}
 
 		t.Log("长度不对: 6张")
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1596,7 +1596,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1615,7 +1615,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 		cards := []*Card{cardQ, cardK, cardA, card2, card3}
 
 		t.Log("Q-K-A-2-3 (跨度超范围)")
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 
@@ -1638,7 +1638,7 @@ func TestStraightSatisfyNew_Invalid(t *testing.T) {
 			t.Logf("  牌[%d]: %s (RawNumber=%d, IsWildcard=%v)", i, c.Name, c.RawNumber, c.IsWildcard())
 		}
 
-		isValid, _, _ := straightSatisfyNew(cards)
+		isValid, _, _ := StraightSatisfy(cards)
 
 		t.Logf("结果: IsValid=%v", isValid)
 

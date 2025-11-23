@@ -24,7 +24,7 @@ func TestPlateSatisfyNew_KA_Plate(t *testing.T) {
 			mustNewCard(14, "Club", level),    // A♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("K-A钢板应该有效")
@@ -49,7 +49,7 @@ func TestPlateSatisfyNew_KA_Plate(t *testing.T) {
 			mustNewCard(14, "Heart", level),   // A♥ (第二副)
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("K-A钢板应该有效")
@@ -76,7 +76,7 @@ func TestPlateSatisfyNew_KA_Plate(t *testing.T) {
 			mustNewCard(14, "Club", level),    // A♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("K-A钢板+1个万能牌应该有效")
@@ -101,7 +101,7 @@ func TestPlateSatisfyNew_KA_Plate(t *testing.T) {
 			mustNewCard(level, "Heart", level), // 3♥ 万能牌
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("K-A钢板+1个万能牌应该有效")
@@ -134,7 +134,7 @@ func TestPlateSatisfyNew_KA_Plate(t *testing.T) {
 			mustNewCard(14, "Club", level),    // A♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("K-A钢板+2个万能牌应该有效")
@@ -164,7 +164,7 @@ func TestPlateSatisfyNew_KA_Plate(t *testing.T) {
 			wild2,                              // 3♥ 万能牌2
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("K-A钢板+2个万能牌应该有效")
@@ -197,7 +197,7 @@ func TestPlateSatisfyNew_A2_Plate(t *testing.T) {
 			mustNewCard(2, "Club", level),     // 2♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("A-2钢板应该有效")
@@ -222,7 +222,7 @@ func TestPlateSatisfyNew_A2_Plate(t *testing.T) {
 			mustNewCard(2, "Heart", level),    // 2♥ (第二副)
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("A-2钢板应该有效")
@@ -249,7 +249,7 @@ func TestPlateSatisfyNew_A2_Plate(t *testing.T) {
 			mustNewCard(level, "Heart", level), // 3♥ 万能牌
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("A-2钢板+1个万能牌应该有效")
@@ -274,7 +274,7 @@ func TestPlateSatisfyNew_A2_Plate(t *testing.T) {
 			mustNewCard(2, "Diamond", level),  // 2♦
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("A-2钢板+1个万能牌应该有效")
@@ -306,7 +306,7 @@ func TestPlateSatisfyNew_A2_Plate(t *testing.T) {
 			wild2,                              // 3♥ 万能牌2
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("A-2钢板+2个万能牌应该有效")
@@ -336,7 +336,7 @@ func TestPlateSatisfyNew_A2_Plate(t *testing.T) {
 			mustNewCard(2, "Club", level),     // 2♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("A-2钢板+2个万能牌应该有效")
@@ -366,7 +366,7 @@ func TestPlateSatisfyNew_A2_Plate(t *testing.T) {
 			mustNewCard(2, "Diamond", level),  // 2♦
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("A-2钢板+2个万能牌应该有效")
@@ -399,7 +399,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			mustNewCard(4, "Club", level),     // 4♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("3-4钢板应该有效")
@@ -424,7 +424,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			mustNewCard(8, "Club", level),     // 8♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("7-8钢板应该有效")
@@ -449,7 +449,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			mustNewCard(11, "Club", level),    // J♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("10-J钢板应该有效")
@@ -476,7 +476,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			mustNewCard(level, "Heart", level), // 5♥ 万能牌
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("4-5钢板+1个万能牌应该有效")
@@ -501,7 +501,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			mustNewCard(7, "Club", level),     // 7♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("6-7钢板+1个万能牌应该有效")
@@ -526,7 +526,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			mustNewCard(level, "Heart", level), // 10♥ 万能牌
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("9-10钢板+1个万能牌应该有效")
@@ -558,7 +558,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			wild2,                              // 6♥ 万能牌2
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("5-6钢板+2个万能牌应该有效")
@@ -588,7 +588,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			wild2,                              // 3♥ 万能牌2
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("8-9钢板+2个万能牌应该有效")
@@ -618,7 +618,7 @@ func TestPlateSatisfyNew_Normal_Plate(t *testing.T) {
 			mustNewCard(12, "Club", level),    // Q♣
 		}
 		
-		isValid, normalizedCards, key := plateSatisfyNew(cards)
+		isValid, normalizedCards, key := PlateSatisfy(cards)
 		
 		if !isValid {
 			t.Errorf("J-Q钢板+2个万能牌应该有效")
@@ -651,7 +651,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			mustNewCard(5, "Club", level),     // 5♣
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("3-5不连续，应该无效")
@@ -670,7 +670,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			mustNewCard(6, "Heart", level),    // 6♥
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("5有4张，超过3张限制，应该无效")
@@ -689,7 +689,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			mustNewCard(6, "Spade", level),    // 6♠
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("包含王牌，应该无效")
@@ -707,7 +707,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			mustNewCard(6, "Heart", level),    // 6♥
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("只有5张牌，应该无效")
@@ -727,7 +727,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			mustNewCard(6, "Diamond", level),  // 6♦ (第7张)
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("有7张牌，应该无效")
@@ -736,7 +736,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 	})
 	
 	t.Run("Invalid_0wild_case6_nil_input", func(t *testing.T) {
-		isValid, _, _ := plateSatisfyNew(nil)
+		isValid, _, _ := PlateSatisfy(nil)
 		
 		if isValid {
 			t.Errorf("nil输入，应该无效")
@@ -746,7 +746,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 	
 	t.Run("Invalid_0wild_case7_empty_array", func(t *testing.T) {
 		cards := []*Card{}
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("空数组，应该无效")
@@ -767,7 +767,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			mustNewCard(level, "Heart", level), // 4♥ 万能牌
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("3-5不连续，即使有万能牌也应该无效（需要3张4，只有1个万能牌）")
@@ -786,7 +786,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			mustNewCard(level, "Heart", level), // 7♥ 万能牌
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("3有4张，即使有万能牌也应该无效")
@@ -808,7 +808,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			wild,                               // 7♥ 万能牌
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("包含王牌，即使有万能牌也应该无效")
@@ -834,7 +834,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			wild2,                              // 3♥ 万能牌2
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("2-5不连续，即使有2个万能牌也应该无效（需要3张3或3张4）")
@@ -858,7 +858,7 @@ func TestPlateSatisfyNew_Invalid_Cases(t *testing.T) {
 			wild2,                              // 7♥ 万能牌2
 		}
 		
-		isValid, _, _ := plateSatisfyNew(cards)
+		isValid, _, _ := PlateSatisfy(cards)
 		
 		if isValid {
 			t.Errorf("5有4张，即使有2个万能牌也应该无效")
