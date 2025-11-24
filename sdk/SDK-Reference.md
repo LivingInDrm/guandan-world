@@ -27,7 +27,6 @@
 |---------|---------|---------|------|
 | **types.go** | 核心类型定义 | `Player`, `Match`, `Deal`, `Trick` | 定义所有核心数据结构和枚举类型 |
 | **card.go** | 卡牌系统 | `Card` | 实现掼蛋卡牌的完整体系，包含变化牌逻辑 |
-| **dealer.go** | 发牌器 | `Dealer` | 负责洗牌、发牌等操作 |
 | **comp.go** | 牌型组合 | `CardComp`, `CompType` | 识别和比较所有掼蛋牌型 |
 | **validator.go** | 规则验证 | `PlayValidator` | 验证出牌和游戏规则的合法性 |
 | **trick.go** | 轮次管理 | `Trick`, `PlayAction` | 管理单个出牌轮次的生命周期 |
@@ -53,9 +52,9 @@
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────────────┐ │
 │  │  Card   │  │ Tribute │  │ Trick   │  │     Match       │ │
 │  └─────────┘  └─────────┘  └─────────┘  └─────────────────┘ │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────────────┐ │
-│  │ Dealer  │  │ Comp    │  │  Deal   │  │   Validator     │ │
-│  └─────────┘  └─────────┘  └─────────┘  └─────────────────┘ │
+│  ┌─────────┐  ┌─────────┐  ┌─────────────────────────────┐ │
+│  │ Comp    │  │  Deal   │  │         Validator           │ │
+│  └─────────┘  └─────────┘  └─────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -191,50 +190,9 @@ func (c *Card) ToShortString() string
 - 返回简化的字符串表示
 - 格式：`9H`(红桃9), `QS`(黑桃Q), `BJ`(大王)
 
-### 3. 发牌器 (dealer.go)
+### 3. 牌型组合系统 (comp.go)
 
-负责洗牌和发牌操作。
-
-#### Dealer 发牌器
-```go
-type Dealer struct {
-    level int     // 当前级别
-    deck  []*Card // 牌堆
-}
-```
-
-#### 核心方法
-
-##### NewDealer 创建发牌器
-```go
-func NewDealer(level int) (*Dealer, error)
-```
-
-##### CreateFullDeck 创建完整牌堆
-```go
-func (d *Dealer) CreateFullDeck() []*Card
-```
-- 创建108张牌的完整牌堆
-- 每种花色2-A各2张，共104张
-- 大小王各2张，共4张
-
-##### ShuffleDeck 洗牌
-```go
-func (d *Dealer) ShuffleDeck()
-```
-- 使用Fisher-Yates算法洗牌
-- 保证随机性
-
-##### DealCards 发牌
-```go
-func (d *Dealer) DealCards() ([4][]*Card, error)
-```
-- 给4个玩家各发27张牌
-- 自动对每个玩家的手牌排序
-
-### 4. 牌型组合系统 (comp.go)
-
-实现掼蛋游戏的所有牌型识别和比较。
+实现掼蛋游戏的所有牌型识别和比较。发牌功能已集成到 `Deal` 结构体中。
 
 #### CardComp 牌型接口
 ```go
@@ -274,7 +232,7 @@ const (
 - 实现完整的牌型比较逻辑
 - 处理各种炸弹类型的优先级
 
-### 5. 轮次管理 (trick.go)
+### 4. 轮次管理 (trick.go)
 
 管理单个出牌轮次的完整生命周期。
 
@@ -309,7 +267,7 @@ func (t *Trick) ProcessTimeout() error
 ```
 - 自动过牌处理超时
 
-### 6. 上贡系统 (tribute.go)
+### 5. 上贡系统 (tribute.go)
 
 实现完整的掼蛋上贡规则。
 
@@ -379,7 +337,7 @@ func (tm *TributeManager) ApplyTributeToHands(tributePhase *TributePhase,
     playerHands *[4][]*Card) error
 ```
 
-### 7. 牌局管理 (deal.go)
+### 6. 牌局管理 (deal.go)
 
 管理单个牌局的完整生命周期。
 
@@ -399,7 +357,8 @@ func NewDeal(level int, lastResult *DealResult) (*Deal, error)
 ```go
 func (d *Deal) StartDeal() error
 ```
-- 发牌给所有玩家
+- 创建108张牌的完整牌堆并洗牌
+- 发牌给所有玩家（每人27张）
 - 处理上贡阶段
 - 开始首轮出牌
 
@@ -416,7 +375,7 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error
 func (d *Deal) PassTurn(playerSeat int) error
 ```
 
-### 8. 比赛管理 (match.go)
+### 7. 比赛管理 (match.go)
 
 管理完整比赛的生命周期。
 
@@ -453,7 +412,7 @@ func (m *Match) GetTeamForPlayer(playerSeat int) int
 - 返回玩家所属队伍(0或1)
 - 队伍分配：0,2为一队，1,3为一队
 
-### 9. 结果处理 (result.go)
+### 8. 结果处理 (result.go)
 
 计算和统计游戏结果。
 
@@ -496,7 +455,7 @@ func (drc *DealResultCalculator) CalculateDealResult(deal *Deal,
 - 计算胜利类型和升级数
 - 生成详细统计数据
 
-### 10. 游戏引擎 (game_engine.go)
+### 9. 游戏引擎 (game_engine.go)
 
 游戏的核心控制器，协调所有组件。
 
@@ -564,7 +523,7 @@ type GameEvent struct {
 - `EventDealEnded` - 牌局结束
 - `EventMatchEnded` - 比赛结束
 
-### 11. 游戏驱动器 (game_driver.go)
+### 10. 游戏驱动器 (game_driver.go)
 
 高级封装，提供完整的游戏循环管理。
 

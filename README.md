@@ -124,7 +124,7 @@ guandan-world/
 │   └── public/
 ├── sdk/                    # 掼蛋游戏引擎
 │   ├── game_engine.go      # 游戏引擎
-│   ├── dealer.go           # 发牌系统
+│   ├── deal.go             # 牌局管理（包含发牌逻辑）
 │   ├── trick.go            # 出牌逻辑
 │   └── result.go           # 结算系统
 ├── monitoring/             # 监控配置

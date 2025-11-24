@@ -1,6 +1,9 @@
 package sdk
 
 import (
+	"sync/atomic"
+	"time"
+
 	commonpb "guandan-world/proto/common"
 	eventpb "guandan-world/proto/event"
 )
@@ -69,6 +72,86 @@ func (f EventHandlerFunc) OnGameEvent(event *GameEvent) {
 // GameEventHandler 是处理游戏事件的函数类型（向后兼容旧 API）
 // Deprecated: 使用 EventHandlerFunc 代替
 type GameEventHandler = EventHandlerFunc
+
+// ==================== 事件元数据提供者 ====================
+
+// EventMetadataProvider manages event metadata generation
+type EventMetadataProvider struct {
+	seqCounter int64
+}
+
+// NewEventMetadataProvider creates a new metadata provider
+func NewEventMetadataProvider() *EventMetadataProvider {
+	return &EventMetadataProvider{
+		seqCounter: 0,
+	}
+}
+
+// NextSeq returns the next sequence number
+func (emp *EventMetadataProvider) NextSeq() int64 {
+	return atomic.AddInt64(&emp.seqCounter, 1)
+}
+
+// FillMetadata fills event metadata fields
+// Parameters:
+//   - event: the proto event to fill
+//   - match: current match (required for match_id)
+//   - deal: current deal (optional, for deal_index)
+//   - trick: current trick (optional, for trick_index)
+//   - actorSeat: actor seat (-1 if not applicable)
+func (emp *EventMetadataProvider) FillMetadata(
+	event *eventpb.GameEvent,
+	match *Match,
+	deal *Deal,
+	trick *Trick,
+	actorSeat int,
+) {
+	if event == nil {
+		return
+	}
+
+	// Fill match_id
+	if match != nil {
+		event.MatchId = match.ID
+	}
+
+	// Fill deal_index
+	if deal != nil && match != nil {
+		dealIdx := int32(len(match.DealHistory))
+		event.DealIndex = &dealIdx
+	}
+
+	// Fill trick_index
+	if trick != nil && deal != nil {
+		trickIdx := int32(len(deal.TrickHistory))
+		event.TrickIndex = &trickIdx
+	}
+
+	// Fill actor_seat
+	if actorSeat >= 0 && actorSeat < 4 {
+		actorSeatInt := int32(actorSeat)
+		event.ActorSeat = &actorSeatInt
+	}
+
+	// Fill seq and timestamp
+	event.Seq = emp.NextSeq()
+	event.CreatedAtMs = time.Now().UnixMilli()
+}
+
+// CreateBaseEvent creates a base event with type and metadata
+func (emp *EventMetadataProvider) CreateBaseEvent(
+	eventType eventpb.EventType,
+	match *Match,
+	deal *Deal,
+	trick *Trick,
+	actorSeat int,
+) *eventpb.GameEvent {
+	event := &eventpb.GameEvent{
+		Type: eventType,
+	}
+	emp.FillMetadata(event, match, deal, trick, actorSeat)
+	return event
+}
 
 // ==================== 事件工厂方法 ====================
 
