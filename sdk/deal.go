@@ -141,14 +141,27 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 		d.CurrentTrick.Leader = playerSeat
 	}
 
-	// Check if player finished (no more cards)
-	if len(d.PlayerCards[playerSeat]) == 0 {
-		d.Rankings = append(d.Rankings, playerSeat)
-
-		// Check if deal is finished
-		if d.isDealFinished() {
-			return d.finishDeal()
+	// Update PlayState: current player → Played, others → Waiting
+	for i := 0; i < 4; i++ {
+		if i == playerSeat {
+			// Check if this player finished all cards
+			if len(d.PlayerCards[i]) == 0 {
+				d.PlayState[i] = PlayStateFinished
+				d.ActivePlayers[i] = false
+				d.Rankings = append(d.Rankings, playerSeat)
+				
+				// Check if deal is finished
+				if d.isDealFinished() {
+					return d.finishDeal()
+				}
+			} else {
+				d.PlayState[i] = PlayStatePlayed
+			}
+		} else if d.ActivePlayers[i] {
+			// Other active players reset to waiting (need to respond to new lead)
+			d.PlayState[i] = PlayStateWaiting
 		}
+		// Already-finished players remain PlayStateFinished
 	}
 
 	// Move to next player
@@ -194,6 +207,9 @@ func (d *Deal) PassTurn(playerSeat int) error {
 		IsPass:     true,
 	}
 	d.CurrentTrick.Plays = append(d.CurrentTrick.Plays, play)
+
+	// Update state: this player has passed
+	d.PlayState[playerSeat] = PlayStatePassed
 
 	// Move to next player
 	d.CurrentTrick.CurrentTurn = d.getNextPlayer(playerSeat)
@@ -293,6 +309,14 @@ func (d *Deal) StartPlayingPhase() error {
 
 // startFirstTrick starts the first trick of the deal
 func (d *Deal) startFirstTrick() error {
+	// Initialize ActivePlayers (all players have cards at start)
+	d.ActivePlayers = [4]bool{true, true, true, true}
+
+	// Initialize PlayState (all active players are waiting)
+	for i := 0; i < 4; i++ {
+		d.PlayState[i] = PlayStateWaiting
+	}
+
 	// Determine first player (usually the player with lowest level card or specific rule)
 	firstPlayer := d.determineFirstPlayer()
 
@@ -368,10 +392,10 @@ func (d *Deal) cardsEqual(card1, card2 *Card) bool {
 
 // getNextPlayer returns the next player in turn order
 func (d *Deal) getNextPlayer(currentPlayer int) int {
-	// Find next player who still has cards
+	// Find next player who is still active
 	for i := 1; i <= 4; i++ {
 		nextPlayer := (currentPlayer + i) % 4
-		if len(d.PlayerCards[nextPlayer]) > 0 {
+		if d.ActivePlayers[nextPlayer] {
 			return nextPlayer
 		}
 	}
@@ -400,45 +424,21 @@ func (d *Deal) isDealFinished() bool {
 }
 
 // isTrickFinished checks if the current trick is finished
+// Trick ends when there are no players in "waiting" state
 func (d *Deal) isTrickFinished() bool {
 	if d.CurrentTrick == nil {
 		return false
 	}
 
-	playCount := len(d.CurrentTrick.Plays)
-
-	// Need at least 4 plays for a trick to be finished
-	if playCount < 4 {
-		return false
-	}
-
-	// Case 1: Last 3 plays were all passes (everyone passed after leader)
-	passCount := 0
-	for i := playCount - 3; i < playCount; i++ {
-		if d.CurrentTrick.Plays[i].IsPass {
-			passCount++
-		}
-	}
-	if passCount == 3 {
-		return true
-	}
-
-	// Case 2: Current turn is back to the current leading player and everyone has played
-	// This means a complete round has happened and it's back to the leader
-	if d.CurrentTrick.CurrentTurn == d.CurrentTrick.Leader && playCount >= 4 {
-		// Check if all 4 players have played at least once
-		playersPlayed := make(map[int]bool)
-		for _, play := range d.CurrentTrick.Plays {
-			playersPlayed[play.PlayerSeat] = true
-		}
-
-		// If all 4 players have played and we're back to the leader, trick is finished
-		if len(playersPlayed) == 4 {
-			return true
+	// Check if any player is still waiting
+	for i := 0; i < 4; i++ {
+		if d.PlayState[i] == PlayStateWaiting {
+			return false // Still has waiting players, trick not finished
 		}
 	}
 
-	return false
+	// No waiting players, trick is finished
+	return true
 }
 
 // finishCurrentTrick finishes the current trick and sets it up for GameEngine to handle
@@ -462,7 +462,7 @@ func (d *Deal) finishCurrentTrick() error {
 	nextLeader := d.CurrentTrick.Winner
 
 	// Check if the winner finished their cards and no one followed
-	if len(d.PlayerCards[nextLeader]) == 0 {
+	if !d.ActivePlayers[nextLeader] {
 		// Check if anyone followed (played non-pass after the winner)
 		anyoneFollowed := false
 		winnerPlayIndex := -1
@@ -489,13 +489,13 @@ func (d *Deal) finishCurrentTrick() error {
 		if !anyoneFollowed {
 			// Find teammate (0<->2, 1<->3)
 			teammate := (d.CurrentTrick.Winner + 2) % 4
-			if len(d.PlayerCards[teammate]) > 0 {
+			if d.ActivePlayers[teammate] {
 				nextLeader = teammate
 			} else {
 				// Teammate has no cards, find next player with cards
 				for i := 1; i < 4; i++ {
 					candidate := (d.CurrentTrick.Winner + i) % 4
-					if len(d.PlayerCards[candidate]) > 0 {
+					if d.ActivePlayers[candidate] {
 						nextLeader = candidate
 						break
 					}
@@ -505,7 +505,7 @@ func (d *Deal) finishCurrentTrick() error {
 			// Someone followed, use default order
 			for i := 1; i < 4; i++ {
 				candidate := (d.CurrentTrick.Winner + i) % 4
-				if len(d.PlayerCards[candidate]) > 0 {
+				if d.ActivePlayers[candidate] {
 					nextLeader = candidate
 					break
 				}
@@ -515,6 +515,15 @@ func (d *Deal) finishCurrentTrick() error {
 
 	// Store next leader info for GameEngine to use
 	d.CurrentTrick.NextLeader = nextLeader
+
+	// Reset PlayState for next trick
+	for i := 0; i < 4; i++ {
+		if d.ActivePlayers[i] {
+			d.PlayState[i] = PlayStateWaiting
+		} else {
+			d.PlayState[i] = PlayStateFinished
+		}
+	}
 
 	// Don't create new trick here - let GameEngine handle the transition
 	// This ensures TrickEnded event can be properly fired
@@ -609,4 +618,28 @@ func (d *Deal) determineFirstPlayer() int {
 
 	// Default: rank1 player starts (covers any edge cases)
 	return d.LastResult.Rankings[0]
+}
+
+// NewTrick creates a new trick with the specified leader
+func NewTrick(leader int) (*Trick, error) {
+	if leader < 0 || leader > 3 {
+		return nil, fmt.Errorf("invalid leader seat: %d", leader)
+	}
+
+	return &Trick{
+		ID:          generateTrickID(),
+		Leader:      leader,
+		CurrentTurn: leader,
+		Plays:       make([]*PlayAction, 0),
+		Winner:      -1,
+		LeadComp:    nil,
+		Status:      TrickStatusWaiting,
+		StartTime:   time.Now(),
+		NextLeader:  -1,
+	}, nil
+}
+
+// generateTrickID generates a unique ID for a trick
+func generateTrickID() string {
+	return fmt.Sprintf("trick_%d", time.Now().UnixNano())
 }

@@ -40,7 +40,6 @@ const RoomLobby: React.FC = () => {
       const response = await apiClient.getMyRoom();
       if (response.success && response.data) {
         // User is already in a room, auto-redirect
-        console.log('User is already in room:', response.data.id);
         // Set current room before navigation to avoid blank page
         setCurrentRoom(response.data);
         navigate(`/game/${response.data.id}`, { replace: true });
@@ -115,7 +114,6 @@ const RoomLobby: React.FC = () => {
         // Set current room before navigation to avoid blank page
         setCurrentRoom(response.data);
         // Navigate to the game page
-        console.log('Successfully joined room:', roomId);
         navigate(`/game/${roomId}`);
       } else {
         setError(response.error || '加入房间失败');

@@ -401,7 +401,6 @@ const TributePhase: React.FC<TributePhaseProps> = ({
   const handleTimeout = () => {
     // Handle timeout - this would typically be handled by the parent component
     // or through WebSocket communication
-    console.log('Tribute phase timeout');
   };
 
   const renderPhaseContent = () => {

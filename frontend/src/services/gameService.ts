@@ -214,17 +214,14 @@ class GameService {
   }
 
   private handleJoinRoom(message: WSMessage): void {
-    console.log('Player joined room:', message.data);
     // Room update will be handled by room_update message
   }
 
   private handleLeaveRoom(message: WSMessage): void {
-    console.log('Player left room:', message.data);
     // Room update will be handled by room_update message
   }
 
   private handleGamePrepare(message: WSMessage): void {
-    console.log('Game prepare:', message.data);
     useGameStore.getState().setInGame(true);
     useGameStore.getState().setLastMessage(message);
   }
@@ -237,7 +234,6 @@ class GameService {
   }
 
   private handleGameBegin(message: WSMessage): void {
-    console.log('Game begin:', message.data);
     useGameStore.getState().setCountdown(null);
     useGameStore.getState().setLastMessage(message);
   }
@@ -245,14 +241,6 @@ class GameService {
   private handleGameEvent(message: WSMessage): void {
     // GameEvent is now sent directly in message.data (flattened structure)
     const gameEvent = message.data;
-    
-    // 🎮 Enhanced Game Event Logging
-    console.group(`🎮 GAME_EVENT: ${gameEvent.type}`);
-    console.log('🎯 Event Type (enum):', gameEvent.type);
-    console.log('👤 Actor Seat:', gameEvent.actorSeat);
-    console.log('📊 Game Event:', gameEvent);
-    console.log('⏰ Timestamp:', gameEvent.createdAtMs);
-    console.groupEnd();
     
     // Note: Do NOT set gameState here - it should only be updated from player_view messages
     // game_event is just a notification, not the full game state
@@ -263,17 +251,14 @@ class GameService {
   // GamePage has better context for handling player view updates and game phase transitions
 
   private handlePlayerTimeout(message: WSMessage): void {
-    console.log('Player timeout:', message.data);
     useGameStore.getState().setLastMessage(message);
   }
 
   private handleAutoPlay(message: WSMessage): void {
-    console.log('Auto play:', message.data);
     useGameStore.getState().setLastMessage(message);
   }
 
   private handleReconnect(message: WSMessage): void {
-    console.log('Reconnect:', message.data);
     useGameStore.getState().setLastMessage(message);
   }
 

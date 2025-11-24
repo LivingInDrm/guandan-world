@@ -775,45 +775,6 @@ func (ge *GameEngine) SetPlayerAutoPlay(playerSeat int, enabled bool) error {
 	return ge.currentMatch.SetPlayerAutoPlay(playerSeat, enabled)
 }
 
-// emitEvent emits an event to all registered observers
-func (ge *GameEngine) emitEvent(event *GameEvent) {
-	// Safely read and copy the observer list to avoid holding the lock during callback execution
-	ge.mutex.RLock()
-	observers, exists := ge.observers[event.Type]
-	if !exists || len(observers) == 0 {
-		ge.mutex.RUnlock()
-		return
-	}
-	// Create a copy of the observer slice to prevent race conditions
-	observersCopy := make([]EventObserver, len(observers))
-	copy(observersCopy, observers)
-	ge.mutex.RUnlock()
-
-	// Call all observers for this event type asynchronously to avoid deadlock
-	// Each observer runs in its own goroutine to prevent blocking the engine
-	// This is crucial to avoid deadlock when observers call back into the engine
-	for _, observer := range observersCopy {
-		// Create a copy of observer for the goroutine closure
-		obs := observer
-		go func() {
-			// Use defer to recover from any panic in the observer
-			defer func() {
-				if r := recover(); r != nil {
-					// Log the panic but don't crash the engine
-					// TODO: Replace with pluggable logger interface
-					fmt.Printf("[GameEngine] Event observer panic for %s: %v\n", event.Type, r)
-				}
-			}()
-			obs.OnGameEvent(event)
-		}()
-	}
-}
-
-// Note: Observer contract
-// - Observers run asynchronously and should be non-blocking
-// - Observers should not re-enter engine methods that depend on immediate state changes while locks are held
-// - Event delivery is not guaranteed to be ordered across different event types
-
 // emitEventLocked is called when the caller already holds ge.mutex lock
 // It reads the observers without acquiring additional locks to avoid deadlock
 // Note: All calls to this method must be inside a ge.mutex.Lock() block
@@ -861,21 +822,20 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 	// Check if there's a waiting trick that needs to be started
 	if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
 		// Start the new trick
-		err := deal.CurrentTrick.StartTrick()
-		if err == nil {
-			// Calculate remaining players (all 4 players at start of trick)
-			remainingPlayers := []int{}
-			for i := 0; i < 4; i++ {
-				if len(deal.PlayerCards[i]) > 0 {
-					remainingPlayers = append(remainingPlayers, i)
-				}
+		deal.CurrentTrick.Status = TrickStatusPlaying
+		
+		// Calculate remaining players (all 4 players at start of trick)
+		remainingPlayers := []int{}
+		for i := 0; i < 4; i++ {
+			if len(deal.PlayerCards[i]) > 0 {
+				remainingPlayers = append(remainingPlayers, i)
 			}
-			isFirstTrick := len(deal.TrickHistory) == 0
-			// Note: Timeout is now managed by GameDriver, not set here
-			trickStartedEvent := NewTrickStartedEvent(ge.eventMeta, ge.currentMatch, deal, 
-				deal.CurrentTrick, deal.CurrentTrick.Leader, isFirstTrick, remainingPlayers)
-			events = append(events, trickStartedEvent)
 		}
+		isFirstTrick := len(deal.TrickHistory) == 0
+		// Note: Timeout is now managed by GameDriver, not set here
+		trickStartedEvent := NewTrickStartedEvent(ge.eventMeta, ge.currentMatch, deal, 
+			deal.CurrentTrick, deal.CurrentTrick.Leader, isFirstTrick, remainingPlayers)
+		events = append(events, trickStartedEvent)
 	}
 
 	return events
@@ -957,22 +917,6 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 	return events
 }
 
-// checkStateTransitions checks for and handles automatic state transitions (legacy method)
-// Now delegates to pre-action and post-action methods for backward compatibility
-func (ge *GameEngine) checkStateTransitions() []*GameEvent {
-	events := make([]*GameEvent, 0)
-
-	// Check pre-action transitions first
-	preEvents := ge.checkPreActionStateTransitions()
-	events = append(events, preEvents...)
-
-	// Then check post-action transitions
-	postEvents := ge.checkPostActionStateTransitions()
-	events = append(events, postEvents...)
-
-	return events
-}
-
 // createMatchResult creates a MatchResult from a finished match
 func (ge *GameEngine) createMatchResult() *MatchResult {
 	if ge.currentMatch == nil || ge.currentMatch.Status != MatchStatusFinished {
@@ -1032,43 +976,6 @@ func (ge *GameEngine) createMatchResult() *MatchResult {
 		Duration:    duration,
 		Statistics:  stats,
 	}
-}
-
-// AutoPlayForPlayer executes an automatic play for a player (used for disconnected/timeout players)
-func (ge *GameEngine) AutoPlayForPlayer(playerSeat int) (*GameEvent, error) {
-	// Don't lock here since we'll call PlayCards or PassTurn which will lock
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return nil, errors.New("no active deal")
-	}
-
-	deal := ge.currentMatch.CurrentDeal
-
-	// Check if it's the player's turn
-	if deal.CurrentTrick == nil || deal.CurrentTrick.CurrentTurn != playerSeat {
-		return nil, errors.New("not player's turn")
-	}
-
-	// Auto-play strategy: if trick leader, play smallest card; otherwise pass
-	if deal.CurrentTrick.LeadComp == nil {
-		// Player is trick leader - play smallest single card
-		playerCards := deal.PlayerCards[playerSeat]
-		if len(playerCards) > 0 {
-			// Find smallest card
-			smallestCard := playerCards[0]
-			for _, card := range playerCards {
-				if card.LessThan(smallestCard) {
-					smallestCard = card
-				}
-			}
-
-			return ge.PlayCards(playerSeat, []*Card{smallestCard})
-		}
-	} else {
-		// Player is not leader - pass
-		return ge.PassTurn(playerSeat)
-	}
-
-	return nil, errors.New("unable to auto-play")
 }
 
 // ProcessTributePhase 处理贡牌阶段

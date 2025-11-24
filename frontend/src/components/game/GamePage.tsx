@@ -8,7 +8,7 @@ import { apiClient } from '../../services/api';
 import type { Room, Player, WSMessage, Card, GameActionData, PlayerGameState, ProtoPlayerView, DealResult as DealResultType } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import type { GameEvent } from '../../types/proto';
-import { EventType } from '../../types/generated/event';
+import { EventType, eventTypeToJSON } from '../../types/generated/event';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
@@ -145,38 +145,25 @@ const GamePage: React.FC = () => {
 
     // 游戏事件
     const handleGameEvent = (message: WSMessage) => {
-      // GameEvent is now sent directly in message.data (flattened structure)
       const event: GameEvent = message.data as GameEvent;
-      const actorSeat = event.actorSeat ?? 0;
-
-      // 🎯 Detailed Game Event Logging for Debug
-      console.group(`🎯 [GamePage] Processing Event: ${event.type}`);
-      console.log('📌 Event Type (enum):', event.type);
-      console.log('👤 Actor Seat:', actorSeat);
-      console.log('📦 Game Event:', event);
-      console.log('🎮 Current Phase:', currentPhase);
+      console.log('[game_event]', eventTypeToJSON(event.type), event);
 
       switch (event.type) {
         case EventType.EVENT_TYPE_TRIBUTE_STARTED:
-          console.log('➡️ Action: Set phase to TRIBUTE_PHASE');
           setCurrentPhase(GamePageState.TRIBUTE_PHASE);
           break;
           
         case EventType.EVENT_TYPE_TRIBUTE_COMPLETED:
-          console.log('➡️ Action: Set phase to PLAYING');
           setCurrentPhase(GamePageState.PLAYING);
           setTributeInfo(null);
           break;
           
         case EventType.EVENT_TYPE_DEAL_ENDED:
-          console.log('➡️ Action: Set phase to DEAL_RESULT');
           setCurrentPhase(GamePageState.DEAL_RESULT);
           
-          // Access DealEndedPayload directly from event
           if (event.dealEnded) {
             const dealEndedPayload = event.dealEnded;
             
-            // Construct DealResult with proper type conversion
             const dealResult: DealResultType = {
               rankings: dealEndedPayload.rankings || [],
               winning_team: dealEndedPayload.winningTeam || 0,
@@ -201,149 +188,42 @@ const GamePage: React.FC = () => {
           break;
           
         case EventType.EVENT_TYPE_MATCH_ENDED:
-          console.log('➡️ Action: Set phase to MATCH_RESULT');
           setCurrentPhase(GamePageState.MATCH_RESULT);
           if (event.matchEnded) {
             setMatchResult(event.matchEnded);
           }
           break;
-          
-        case EventType.EVENT_TYPE_TRICK_STARTED:
-          if (event.trickStarted) {
-            console.log('🎲 Trick Started:', event.trickStarted);
-          }
-          break;
-          
-        case EventType.EVENT_TYPE_PLAYER_PLAYED:
-          if (event.playerPlayed) {
-            console.log('🃏 Player Played:', {
-              player: actorSeat,
-              cards: event.playerPlayed.cards
-            });
-          }
-          break;
-          
-        case EventType.EVENT_TYPE_PLAYER_PASSED:
-          console.log('⏭️ Player Passed:', actorSeat);
-          break;
-          
-        case EventType.EVENT_TYPE_TRICK_ENDED:
-          if (event.trickEnded) {
-            console.log('✅ Trick Ended:', {
-              winner: event.trickEnded.trickWinner
-            });
-          }
-          break;
-          
-        case EventType.EVENT_TYPE_DEAL_STARTED:
-          if (event.dealStarted) {
-            console.log('🎴 Deal Started:', {
-              deal_level: event.dealStarted.dealLevel,
-              team_levels: event.dealStarted.teamLevels
-            });
-          }
-          break;
-          
-        case EventType.EVENT_TYPE_TRIBUTE_EXEMPTED:
-          if (event.tributeExempted) {
-            console.log('🛡️ Tribute Exempted:', event.tributeExempted);
-          }
-          break;
-          
-        case EventType.EVENT_TYPE_TRIBUTE_CARD_SUBMITTED:
-          if (event.tributeCardSubmitted) {
-            console.log('⬆️ Tribute Card Submitted:', {
-              actor: actorSeat,
-              card: event.tributeCardSubmitted.submittedCard
-            });
-          }
-          break;
-          
-        case EventType.EVENT_TYPE_TRIBUTE_CARD_SELECTED:
-          if (event.tributeCardSelected) {
-            console.log('✅ Tribute Card Selected:', event.tributeCardSelected);
-          }
-          break;
-          
-        case EventType.EVENT_TYPE_TRIBUTE_CARD_RETURNED:
-          if (event.tributeCardReturned) {
-            console.log('⬇️ Tribute Card Returned:', event.tributeCardReturned);
-          }
-          break;
-          
-        default:
-          console.log('ℹ️ Unhandled event type:', event.type);
-          break;
       }
-      console.groupEnd();
     };
 
     // 玩家视角
     const handlePlayerView = (message: WSMessage) => {
-      // Get the latest phase value from store instead of using closure
       const latestPhase = useGameStore.getState().currentPhase;
-
-      console.log('👁️ [GamePage] Received PLAYER_VIEW, current phase:', latestPhase);
+      console.log('[player_view]', message.data);
 
       const data = message.data;
       if (!data || !data.player_view) {
-        console.warn('⚠️ [GamePage] player_view has no data, returning');
+        console.warn('[player_view] no data, returning');
         return;
       }
 
-      // 使用 proto PlayerView 类型
       const protoPlayerView: ProtoPlayerView = data.player_view;
-      
-      console.log('✅ [GamePage] proto player_view data:', {
-        playerSeat: protoPlayerView.playerSeat,
-        playerCardsCount: protoPlayerView.playerCards?.length || 0,
-        dealStatus: protoPlayerView.dealStatus,
-        teamLevels: protoPlayerView.teamLevels,
-      });
-
-      // 转换为前端格式
       const playerView = convertProtoPlayerView(protoPlayerView);
       
       setPlayerSeat(playerView.player_seat);
-
-      // 手牌已经在转换过程中添加了 id 字段
-      const cards = playerView.player_cards;
-      console.log('🃏 [GamePage] Setting player hand:', {
-        cardCount: cards.length,
-        cards: cards.slice(0, 3).map((c: Card) => ({ id: c.id, suit: c.suit, rank: c.rank }))
-      });
-      setPlayerHand(cards);
+      setPlayerHand(playerView.player_cards);
 
       const currentTrickId = playerView.trick_id;
       if (currentTrickId && currentTrickId !== previousTrickId) {
-        console.log('🔄 [GamePage] Trick changed:', {
-          previousTrickId,
-          currentTrickId,
-          playsCount: playerView.plays?.length || 0
-        });
         setPreviousTrickId(currentTrickId);
       }
 
       if (latestPhase === GamePageState.GAME_PREPARE) {
-        console.log('🔄 [GamePage] Currently in GAME_PREPARE, checking phase transition...');
-
-        console.log('📊 [GamePage] Phase transition check:', {
-          dealStatus: playerView.deal_status,
-          hasTributePhase: !!playerView.tribute_phase,
-          tributePhaseStatus: playerView.tribute_phase?.status
-        });
-
         if (playerView.deal_status === DealStatus.TRIBUTE) {
-          console.log('🔀 [GamePage] ✅ Transitioning to TRIBUTE_PHASE');
           setCurrentPhase(GamePageState.TRIBUTE_PHASE);
         } else if (playerView.deal_status === DealStatus.PLAYING) {
-          console.log('🔀 [GamePage] ✅ Transitioning to PLAYING');
           setCurrentPhase(GamePageState.PLAYING);
-        } else {
-          console.log('ℹ️ [GamePage] deal_status:', playerView.deal_status);
         }
-      } else {
-        console.log('ℹ️ [GamePage] Not in GAME_PREPARE phase, skipping phase transition. Current phase:', latestPhase);
       }
 
       const isPlayingPhase = playerView.deal_status === DealStatus.PLAYING;
@@ -352,39 +232,20 @@ const GamePage: React.FC = () => {
       const handLen = playerView.player_cards?.length ?? 0;
       const canPlayValue = isMyTurnValue && handLen > 0;
 
-      console.log('🎯 [GamePage] Player action state:', {
-        canPlay: canPlayValue,
-        isMyTurn: isMyTurnValue,
-        dealStatus: playerView.deal_status,
-        isPlayingPhase: isPlayingPhase,
-        currentTurn: playerView.current_turn,
-        playerSeat: playerView.player_seat,
-        hasCards: handLen > 0
-      });
-
       setCanPlay(canPlayValue);
       setMyTurn(isMyTurnValue);
-
       setTributeInfo(playerView.tribute_phase || null);
 
-      // 使用转换器转换 GameState
       const playerGameState = convertProtoPlayerViewToGameState(protoPlayerView);
       setGameState(playerGameState);
-
-      console.log('✨ [GamePage] player_view processing completed');
     };
 
     const handleGameAction = (message: WSMessage) => {
-      console.log('🎮 [GamePage] Received game_action:', message);
+      console.log('[game_action]', message);
       const actionData = message.data as GameActionData;
 
       if (actionData.timeout !== undefined) {
-        console.log(`⏱️ [GamePage] Setting timeout to ${actionData.timeout} seconds`);
         setTurnTimeoutSeconds(actionData.timeout);
-      }
-
-      if (actionData.player_seat === playerSeat) {
-        console.log('🎯 [GamePage] This action is for current player');
       }
     };
 

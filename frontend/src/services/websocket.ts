@@ -125,7 +125,6 @@ class WebSocketClient {
 
   // WebSocket event handlers
   private handleOpen(): void {
-    console.log('WebSocket connected');
     this.isConnected = true;
     this.isReconnecting = false;
     this.reconnectAttempts = 0;
@@ -144,13 +143,6 @@ class WebSocketClient {
         return;
       }
       
-      // 🔍 Debug: Log all incoming WebSocket messages
-      console.group(`📨 WS Message: ${message.type}`);
-      console.log('📋 Full Message:', message);
-      console.log('📦 Data:', message.data);
-      console.log('⏰ Timestamp:', message.timestamp);
-      console.groupEnd();
-      
       // Dispatch to registered handlers
       const handlers = this.messageHandlers.get(message.type as WSMessageType);
       if (handlers) {
@@ -168,7 +160,6 @@ class WebSocketClient {
   }
 
   private handleClose(event: CloseEvent): void {
-    console.log('WebSocket disconnected:', event.code, event.reason);
     this.isConnected = false;
     this.clearTimers();
     
@@ -197,8 +188,6 @@ class WebSocketClient {
 
     this.isReconnecting = true;
     this.reconnectAttempts++;
-    
-    console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
     
     this.reconnectTimer = setTimeout(() => {
       this.connect();

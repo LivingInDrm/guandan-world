@@ -40,6 +40,16 @@ const (
 	TrickStatusFinished TrickStatus = "finished"
 )
 
+// PlayState represents a player's state in the current trick
+type PlayState int
+
+const (
+	PlayStateWaiting  PlayState = 0 // Waiting to play or pass
+	PlayStatePlayed   PlayState = 1 // Has played cards (current leader)
+	PlayStatePassed   PlayState = 2 // Has passed
+	PlayStateFinished PlayState = 3 // Finished all cards (no longer participating)
+)
+
 // Match represents a complete match (multiple deals until someone reaches A level)
 type Match struct {
 	ID          string      `json:"id"`
@@ -55,17 +65,19 @@ type Match struct {
 
 // Deal represents a single deal (one round of the game)
 type Deal struct {
-	ID           string        `json:"id"`
-	Level        int           `json:"level"`        // Current level for this deal
-	Status       DealStatus    `json:"status"`
-	CurrentTrick *Trick        `json:"current_trick"`
-	TrickHistory []*Trick      `json:"trick_history"`
-	TributePhase *TributePhase `json:"tribute_phase,omitempty"`
-	PlayerCards  [4][]*Card    `json:"player_cards"` // Each player's current hand
-	Rankings     []int         `json:"rankings"`     // Order of players finishing (seat numbers)
-	StartTime    time.Time     `json:"start_time"`
-	EndTime      *time.Time    `json:"end_time,omitempty"`
-	LastResult   *DealResult   `json:"-"` // Previous deal result (not serialized)
+	ID            string        `json:"id"`
+	Level         int           `json:"level"`         // Current level for this deal
+	Status        DealStatus    `json:"status"`
+	CurrentTrick  *Trick        `json:"current_trick"`
+	TrickHistory  []*Trick      `json:"trick_history"`
+	TributePhase  *TributePhase `json:"tribute_phase,omitempty"`
+	PlayerCards   [4][]*Card    `json:"player_cards"`   // Each player's current hand
+	Rankings      []int         `json:"rankings"`       // Order of players finishing (seat numbers)
+	StartTime     time.Time     `json:"start_time"`
+	EndTime       *time.Time    `json:"end_time,omitempty"`
+	LastResult    *DealResult   `json:"-"`              // Previous deal result (not serialized)
+	ActivePlayers [4]bool       `json:"active_players"` // Whether each seat still has cards
+	PlayState     [4]PlayState  `json:"play_state"`     // Each player's state in current trick
 }
 
 // Trick represents a single trick (one round of card plays)
