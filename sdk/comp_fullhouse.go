@@ -1,6 +1,6 @@
 package sdk
 
-// fullhouse_comp_new.go - 葫芦（FullHouse）新验证方案
+// comp_fullhouse.go - 葫芦（FullHouse）验证方案
 //
 // 核心思想：
 // 1. 必须有至少2种不同number的牌（排除炸弹情况）

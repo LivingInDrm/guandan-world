@@ -484,13 +484,6 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 
 	deal := ge.currentMatch.CurrentDeal
 
-	// Use validator to validate the play
-	validator := NewPlayValidator(deal.Level)
-	err := validator.ValidatePlay(playerSeat, cards, deal.PlayerCards[playerSeat], deal.CurrentTrick)
-	if err != nil {
-		return nil, err
-	}
-
 	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the play
 	preEvents := ge.checkPreActionStateTransitions()
 	for _, evt := range preEvents {
@@ -498,7 +491,7 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	}
 
 	// Execute the play
-	err = deal.PlayCards(playerSeat, cards)
+	err := deal.PlayCards(playerSeat, cards)
 	if err != nil {
 		return nil, fmt.Errorf("failed to play cards: %w", err)
 	}
@@ -529,13 +522,6 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 
 	deal := ge.currentMatch.CurrentDeal
 
-	// Use validator to validate the pass
-	validator := NewPlayValidator(deal.Level)
-	err := validator.ValidatePass(playerSeat, deal.CurrentTrick)
-	if err != nil {
-		return nil, fmt.Errorf("invalid pass: %w", err)
-	}
-
 	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the pass
 	preEvents := ge.checkPreActionStateTransitions()
 	for _, evt := range preEvents {
@@ -543,7 +529,7 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 	}
 
 	// Execute the pass
-	err = deal.PassTurn(playerSeat)
+	err := deal.PassTurn(playerSeat)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pass turn: %w", err)
 	}

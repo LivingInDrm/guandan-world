@@ -1,6 +1,6 @@
 package sdk
 
-// tube_comp.go - 钢管（Tube）枚举验证方案
+// comp_tube.go - 钢管（Tube）枚举验证方案
 // 使用枚举所有可能的3连续数字组合来验证钢管，统一处理循环情况（Q-K-A, A-2-3）
 
 const (

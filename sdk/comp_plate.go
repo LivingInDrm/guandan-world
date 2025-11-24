@@ -1,6 +1,6 @@
 package sdk
 
-// plate_comp.go - 钢板（Plate）枚举验证方案
+// comp_plate.go - 钢板（Plate）枚举验证方案
 // 使用枚举所有可能的2连续数字组合来验证钢板，统一处理循环情况（A-2, K-A）
 
 const (

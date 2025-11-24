@@ -1,6 +1,6 @@
 package sdk
 
-// straight_comp.go - 顺子（Straight）枚举验证方案
+// comp_straight.go - 顺子（Straight）枚举验证方案
 // 使用枚举所有可能的5连续数字组合来验证顺子，统一处理循环情况（A-2-3-4-5, 10-J-Q-K-A）
 
 const (

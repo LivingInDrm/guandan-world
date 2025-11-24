@@ -91,6 +91,10 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 		return errors.New("no active trick")
 	}
 
+	if len(cards) == 0 {
+		return errors.New("cannot play empty cards")
+	}
+
 	// Validate it's the player's turn
 	if d.CurrentTrick.CurrentTurn != playerSeat {
 		return fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, d.CurrentTrick.CurrentTurn)

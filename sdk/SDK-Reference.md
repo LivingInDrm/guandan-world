@@ -274,37 +274,7 @@ const (
 - 实现完整的牌型比较逻辑
 - 处理各种炸弹类型的优先级
 
-### 5. 验证器 (validator.go)
-
-提供游戏规则验证功能。
-
-#### PlayValidator 出牌验证器
-```go
-type PlayValidator struct {
-    level int // 当前级别
-}
-```
-
-#### 核心方法
-
-##### ValidatePlay 验证出牌
-```go
-func (pv *PlayValidator) ValidatePlay(playerSeat int, cards []*Card, 
-    playerCards []*Card, currentTrick *Trick) error
-```
-- 验证出牌合法性
-- 检查卡牌归属
-- 验证牌型有效性
-- 验证是否能压过当前牌型
-
-##### ValidatePass 验证过牌
-```go
-func (pv *PlayValidator) ValidatePass(playerSeat int, currentTrick *Trick) error
-```
-- 验证过牌的合法性
-- 首家不能过牌
-
-### 6. 轮次管理 (trick.go)
+### 5. 轮次管理 (trick.go)
 
 管理单个出牌轮次的完整生命周期。
 
@@ -339,7 +309,7 @@ func (t *Trick) ProcessTimeout() error
 ```
 - 自动过牌处理超时
 
-### 7. 上贡系统 (tribute.go)
+### 6. 上贡系统 (tribute.go)
 
 实现完整的掼蛋上贡规则。
 
@@ -409,7 +379,7 @@ func (tm *TributeManager) ApplyTributeToHands(tributePhase *TributePhase,
     playerHands *[4][]*Card) error
 ```
 
-### 8. 牌局管理 (deal.go)
+### 7. 牌局管理 (deal.go)
 
 管理单个牌局的完整生命周期。
 
@@ -446,7 +416,7 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error
 func (d *Deal) PassTurn(playerSeat int) error
 ```
 
-### 9. 比赛管理 (match.go)
+### 8. 比赛管理 (match.go)
 
 管理完整比赛的生命周期。
 
@@ -483,7 +453,7 @@ func (m *Match) GetTeamForPlayer(playerSeat int) int
 - 返回玩家所属队伍(0或1)
 - 队伍分配：0,2为一队，1,3为一队
 
-### 10. 结果处理 (result.go)
+### 9. 结果处理 (result.go)
 
 计算和统计游戏结果。
 
@@ -526,7 +496,7 @@ func (drc *DealResultCalculator) CalculateDealResult(deal *Deal,
 - 计算胜利类型和升级数
 - 生成详细统计数据
 
-### 11. 游戏引擎 (game_engine.go)
+### 10. 游戏引擎 (game_engine.go)
 
 游戏的核心控制器，协调所有组件。
 
@@ -594,7 +564,7 @@ type GameEvent struct {
 - `EventDealEnded` - 牌局结束
 - `EventMatchEnded` - 比赛结束
 
-### 12. 游戏驱动器 (game_driver.go)
+### 11. 游戏驱动器 (game_driver.go)
 
 高级封装，提供完整的游戏循环管理。
 
