@@ -602,7 +602,6 @@ const GamePage: React.FC = () => {
           cards={playerHand}
           selectedCards={selectedCards}
           onCardSelect={setSelectedCards}
-          disabled={!canPlay}
         />
 
         <GameControls

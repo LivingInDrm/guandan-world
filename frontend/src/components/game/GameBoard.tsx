@@ -146,7 +146,7 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position 
             <CardDisplay
               key={card.id}
               card={card}
-              size="small"
+              size="xs"
               stackIndex={index}
             />
           ))}

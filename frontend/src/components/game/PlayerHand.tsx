@@ -6,7 +6,6 @@ interface PlayerHandProps {
   cards: Card[];
   selectedCards: Card[];
   onCardSelect: (cards: Card[]) => void;
-  disabled?: boolean;
 }
 
 interface CardGroupProps {
@@ -14,15 +13,13 @@ interface CardGroupProps {
   cards: Card[];
   selectedCards: Card[];
   onCardSelect: (cards: Card[]) => void;
-  disabled?: boolean;
 }
 
 const CardGroup: React.FC<CardGroupProps> = ({ 
   rank, 
   cards, 
   selectedCards, 
-  onCardSelect, 
-  disabled = false 
+  onCardSelect
 }) => {
   const safeCards = Array.isArray(cards) ? cards : [];
 
@@ -61,7 +58,6 @@ const CardGroup: React.FC<CardGroupProps> = ({
             card={card}
             isSelected={selectedCards.some(c => c.id === card.id)}
             onClick={() => handleCardClick(card)}
-            disabled={disabled}
             stackIndex={index}
           />
         ))}
@@ -73,8 +69,7 @@ const CardGroup: React.FC<CardGroupProps> = ({
 const PlayerHand: React.FC<PlayerHandProps> = ({ 
   cards, 
   selectedCards, 
-  onCardSelect, 
-  disabled = false 
+  onCardSelect
 }) => {
   // Ensure cards is an array
   const safeCards = Array.isArray(cards) ? cards : [];
@@ -117,7 +112,6 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
           {selectedCards.length > 0 && (
             <button
               onClick={handleClearSelection}
-              disabled={disabled}
               className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50"
             >
               清空选择
@@ -125,7 +119,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
           )}
           <button
             onClick={handleSelectAll}
-            disabled={disabled || safeCards.length === 0}
+            disabled={safeCards.length === 0}
             className="text-xs px-2 py-1 bg-blue-200 text-blue-700 rounded hover:bg-blue-300 disabled:opacity-50"
           >
             全选
@@ -141,7 +135,6 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
             cards={groupedCards[rank] || []}
             selectedCards={selectedCards}
             onCardSelect={onCardSelect}
-            disabled={disabled}
           />
         ))}
       </div>

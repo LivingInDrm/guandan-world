@@ -1,96 +1,198 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import type { Card } from '../../types';
-
-export const getSuitSymbol = (suit: number) => {
-  switch (suit) {
-    case 0: return '♠';
-    case 1: return '♥';
-    case 2: return '♣';
-    case 3: return '♦';
-    default: return '';
-  }
-};
-
-export const getSuitColor = (suit: number) => {
-  return suit === 1 || suit === 3 ? 'text-red-600' : 'text-black';
-};
-
-export const getRankText = (rank: number) => {
-  if (rank === 15) return '小王';
-  if (rank === 16) return '大王';
-  if (rank <= 10) return rank.toString();
-  switch (rank) {
-    case 11: return 'J';
-    case 12: return 'Q';
-    case 13: return 'K';
-    case 14: return 'A';
-    default: return rank.toString();
-  }
-};
+import { 
+  SUIT_SYMBOLS, 
+  JOKER_CONFIG, 
+  ANIMATIONS,
+  type CardSize,
+  type SizeConfig,
+  getCardSizeStyle,
+  getSuitColorClass,
+  getSuitShadowClass,
+  getRankText
+} from './cardStyles';
 
 interface CardDisplayProps {
   card: Card;
   isSelected?: boolean;
   onClick?: () => void;
-  disabled?: boolean;
   stackIndex?: number;
-  size?: 'small' | 'normal';
+  size?: CardSize;
+  className?: string;
 }
 
-const CardDisplay: React.FC<CardDisplayProps> = ({ 
-  card, 
-  isSelected = false, 
-  onClick, 
-  disabled = false,
-  stackIndex = 0,
-  size = 'normal'
-}) => {
-  const getCardBackground = () => {
-    if (card.isJoker) {
-      return card.rank === 16 ? 'bg-red-100' : 'bg-gray-100';
-    }
-    return 'bg-white';
-  };
-
-  const sizeClasses = size === 'small' 
-    ? 'w-8 h-11 text-[10px]' 
-    : 'w-12 h-16 text-xs';
-
-  const marginLeft = stackIndex > 0 ? (size === 'small' ? '-6px' : '-8px') : '0';
-
+// 角标组件
+const CardCorner: React.FC<{
+  rank: number;
+  suit: number;
+  position: 'top-left' | 'bottom-right';
+  sizeConfig: SizeConfig;
+}> = ({ rank, suit, position, sizeConfig }) => {
+  const isBottom = position === 'bottom-right';
+  const colorClass = getSuitColorClass(suit);
+  
   return (
-    <div
-      className={`
-        relative border border-gray-300 rounded transition-all duration-200
-        ${sizeClasses}
-        ${getCardBackground()}
-        ${isSelected ? 'transform -translate-y-2 border-blue-500 shadow-lg' : onClick ? 'hover:shadow-md' : ''}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : onClick ? 'cursor-pointer' : ''}
-      `}
+    <div 
+      className={`absolute flex flex-col items-center leading-none ${colorClass} ${isBottom ? 'rotate-180 bottom-0.5 right-0.5' : 'top-0.5 left-0.5'}`}
       style={{ 
-        marginLeft,
-        zIndex: stackIndex 
+        padding: sizeConfig.padding,
+        width: '1.2em', // 固定宽度确保对齐
       }}
-      onClick={disabled ? undefined : onClick}
     >
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {card.isJoker ? (
-          <div className="text-center font-bold">
-            {getRankText(card.rank)}
-          </div>
-        ) : (
-          <>
-            <div className={`font-bold ${getSuitColor(card.suit)}`}>
-              {getRankText(card.rank)}
-            </div>
-            <div className={`${size === 'small' ? 'text-sm' : 'text-lg'} ${getSuitColor(card.suit)}`}>
-              {getSuitSymbol(card.suit)}
-            </div>
-          </>
-        )}
+      <span style={{ fontSize: sizeConfig.fontSize, fontWeight: 700 }}>
+        {getRankText(rank)}
+      </span>
+      <span style={{ fontSize: sizeConfig.iconSize, marginTop: '-2px' }}>
+        {SUIT_SYMBOLS[suit]}
+      </span>
+    </div>
+  );
+};
+
+// 中央花色组件
+const CardCenter: React.FC<{
+  rank: number;
+  suit: number;
+  sizeConfig: SizeConfig;
+}> = ({ suit, sizeConfig }) => {
+  const colorClass = getSuitColorClass(suit);
+  const shadowClass = getSuitShadowClass(suit);
+  
+  return (
+    <div 
+      className={`absolute inset-0 flex items-center justify-center ${colorClass} ${shadowClass}`}
+      style={{ fontSize: sizeConfig.centerIconSize }}
+    >
+      {SUIT_SYMBOLS[suit]}
+    </div>
+  );
+};
+
+// 大小王专属内容
+const JokerContent: React.FC<{
+  card: Card;
+  sizeConfig: SizeConfig;
+}> = ({ card, sizeConfig }) => {
+  const config = card.rank === 16 ? JOKER_CONFIG.big : JOKER_CONFIG.small;
+  
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center p-1">
+      <div 
+        className="absolute top-1 left-1"
+        style={{ fontSize: sizeConfig.iconSize }}
+      >
+        {config.icon}
+      </div>
+      
+      <div 
+        className={`writing-vertical-rl font-bold tracking-widest ${config.color}`}
+        style={{ 
+          fontSize: `calc(${sizeConfig.fontSize} * 1.2)`,
+          textShadow: '0 1px 1px rgba(0,0,0,0.1)'
+        }}
+      >
+        {config.text}
+      </div>
+      
+      <div 
+        className="absolute bottom-1 right-1 rotate-180"
+        style={{ fontSize: sizeConfig.iconSize }}
+      >
+        {config.icon}
       </div>
     </div>
   );
 };
 
-export default CardDisplay;
+const CardDisplay: React.FC<CardDisplayProps> = ({ 
+  card, 
+  isSelected = false, 
+  onClick, 
+  stackIndex = 0,
+  size = 'normal',
+  className = ''
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const sizeConfig = useMemo(() => getCardSizeStyle(size), [size]);
+  
+  const bgClass = useMemo(() => {
+    if (card.isJoker) {
+      return card.rank === 16 ? JOKER_CONFIG.big.bgGradient : JOKER_CONFIG.small.bgGradient;
+    }
+    return 'bg-white';
+  }, [card.isJoker, card.rank]);
+  
+  const zIndex = useMemo(() => {
+    if (isSelected) return 100;
+    if (isHovered) return 50;
+    return stackIndex;
+  }, [isSelected, isHovered, stackIndex]);
+
+  return (
+    <div
+      role="button"
+      aria-pressed={isSelected}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`
+        relative select-none
+        card-3d-shadow border border-gray-200
+        ${bgClass}
+        ${ANIMATIONS.transition}
+        cursor-pointer
+        ${isSelected ? ANIMATIONS.selected : onClick ? ANIMATIONS.hover : ''}
+        ${className}
+      `}
+      style={{
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        borderRadius: sizeConfig.borderRadius,
+        zIndex,
+        marginLeft: stackIndex > 0 ? (size === 'small' || size === 'xs' ? '-12px' : '-24px') : '0',
+        willChange: 'transform',
+      }}
+      onClick={onClick}
+    >
+      {/* 卡片内边框装饰 (可选) */}
+      {!card.isJoker && (
+        <div className="absolute inset-1 border border-gray-100 rounded opacity-50 pointer-events-none" />
+      )}
+
+      {card.isJoker ? (
+        <JokerContent card={card} sizeConfig={sizeConfig} />
+      ) : (
+        <>
+          <CardCorner 
+            rank={card.rank} 
+            suit={card.suit} 
+            position="top-left" 
+            sizeConfig={sizeConfig} 
+          />
+          
+          <CardCenter 
+            rank={card.rank} 
+            suit={card.suit} 
+            sizeConfig={sizeConfig} 
+          />
+          
+          <CardCorner 
+            rank={card.rank} 
+            suit={card.suit} 
+            position="bottom-right" 
+            sizeConfig={sizeConfig} 
+          />
+        </>
+      )}
+      
+      {/* 选中时的光泽遮罩 */}
+      {isSelected && (
+        <div className="absolute inset-0 bg-blue-400 bg-opacity-10 rounded pointer-events-none" />
+      )}
+    </div>
+  );
+};
+
+// 导出辅助函数以保持向后兼容
+export { getRankText };
+
+export default React.memo(CardDisplay);
