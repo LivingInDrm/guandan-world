@@ -106,6 +106,24 @@ message CardsDealtPayload {
   int32 card_count = 1;
 }
 
+// PlayerDealStats 单局玩家统计
+message PlayerDealStats {
+  // 玩家座位号 (0-3)
+  int32 player_seat = 1;
+  
+  // 出牌次数
+  int32 cards_played = 2;
+  
+  // 赢得的轮次数
+  int32 tricks_won = 3;
+  
+  // 过牌次数
+  int32 pass_count = 4;
+  
+  // 完成排名 (1-4, 1表示最先打完)
+  int32 finish_rank = 6;
+}
+
 // DealEndedPayload 牌局结束事件数据
 message DealEndedPayload {
 
@@ -130,6 +148,9 @@ message DealEndedPayload {
   
   // 总轮次数
   int32 trick_count = 7;
+  
+  // 玩家统计数据
+  repeated PlayerDealStats player_stats = 8;
 }
 
 // ========================================

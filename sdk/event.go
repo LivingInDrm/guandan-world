@@ -491,6 +491,7 @@ func NewDealEndedEvent(
 	levelChange [2]int,
 	durationMs int64,
 	trickCount int,
+	playerStats [4]*PlayerDealStats,
 ) *GameEvent {
 	event := emp.CreateBaseEvent(
 		eventpb.EventType_EVENT_TYPE_DEAL_ENDED,
@@ -502,6 +503,20 @@ func NewDealEndedEvent(
 		rankings32[i] = int32(r)
 	}
 
+	// 转换 PlayerDealStats
+	protoPlayerStats := make([]*eventpb.PlayerDealStats, 0, 4)
+	for _, ps := range playerStats {
+		if ps != nil {
+			protoPlayerStats = append(protoPlayerStats, &eventpb.PlayerDealStats{
+				PlayerSeat:  int32(ps.PlayerSeat),
+				CardsPlayed: int32(ps.CardsPlayed),
+				TricksWon:   int32(ps.TricksWon),
+				PassCount:   int32(ps.PassCount),
+				FinishRank:  int32(ps.FinishRank),
+			})
+		}
+	}
+
 	event.Payload = &eventpb.GameEvent_DealEnded{
 		DealEnded: &eventpb.DealEndedPayload{
 			DealLevel:   int32(dealLevel),
@@ -511,6 +526,7 @@ func NewDealEndedEvent(
 			LevelChange: []int32{int32(levelChange[0]), int32(levelChange[1])},
 			DurationMs:  durationMs,
 			TrickCount:  int32(trickCount),
+			PlayerStats: protoPlayerStats,
 		},
 	}
 

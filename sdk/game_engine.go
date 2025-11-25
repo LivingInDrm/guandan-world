@@ -872,11 +872,28 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 			}
 		}
 
+		// Get player stats (use empty stats if Statistics is nil)
+		var playerStats [4]*PlayerDealStats
+		if dealResult.Statistics != nil {
+			playerStats = dealResult.Statistics.PlayerStats
+		} else {
+			// Create empty stats for fallback case
+			for i := 0; i < 4; i++ {
+				playerStats[i] = &PlayerDealStats{
+					PlayerSeat:  i,
+					CardsPlayed: 0,
+					TricksWon:   0,
+					PassCount:   0,
+					FinishRank:  0,
+				}
+			}
+		}
+
 		// Emit deal ended event
 		durationMs := dealResult.Duration.Milliseconds()
 		dealEndedEvent := NewDealEndedEvent(ge.eventMeta, ge.currentMatch, deal,
 			deal.Level, deal.Rankings, dealResult.VictoryType, dealResult.WinningTeam,
-			dealResult.Upgrades, durationMs, len(deal.TrickHistory))
+			dealResult.Upgrades, durationMs, len(deal.TrickHistory), playerStats)
 		events = append(events, dealEndedEvent)
 
 		// Update match with deal result

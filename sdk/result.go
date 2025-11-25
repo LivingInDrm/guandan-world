@@ -127,12 +127,11 @@ func (drc *DealResultCalculator) calculateDealStatistics(deal *Deal) *DealStatis
 	// Initialize player stats
 	for i := 0; i < 4; i++ {
 		stats.PlayerStats[i] = &PlayerDealStats{
-			PlayerSeat:   i,
-			CardsPlayed:  0,
-			TricksWon:    0,
-			PassCount:    0,
-			TimeoutCount: 0,
-			FinishRank:   drc.getPlayerFinishRank(i, deal.Rankings),
+			PlayerSeat:  i,
+			CardsPlayed: 0,
+			TricksWon:   0,
+			PassCount:   0,
+			FinishRank:  drc.getPlayerFinishRank(i, deal.Rankings),
 		}
 	}
 
@@ -195,12 +194,11 @@ type DealStatistics struct {
 
 // PlayerDealStats contains statistics for a single player in a deal
 type PlayerDealStats struct {
-	PlayerSeat   int `json:"player_seat"`
-	CardsPlayed  int `json:"cards_played"`
-	TricksWon    int `json:"tricks_won"`
-	PassCount    int `json:"pass_count"`
-	TimeoutCount int `json:"timeout_count"`
-	FinishRank   int `json:"finish_rank"` // 1-4, with 1 being first to finish
+	PlayerSeat  int `json:"player_seat"`
+	CardsPlayed int `json:"cards_played"`
+	TricksWon   int `json:"tricks_won"`
+	PassCount   int `json:"pass_count"`
+	FinishRank  int `json:"finish_rank"` // 1-4, with 1 being first to finish
 }
 
 // TributeInfo contains information about the tribute phase
