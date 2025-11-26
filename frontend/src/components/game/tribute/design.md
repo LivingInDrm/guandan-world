@@ -15,13 +15,13 @@
 
 ```
 frontend/src/components/game/tribute/
-├── TributeFlow.tsx              (主容器，250行)
-├── TributePhaseContent.tsx      (内容路由，200行)
-├── SelectionPanel.tsx           (选贡面板，150行)
-├── ReturnPanel.tsx              (还贡面板，200行)
-├── ProgressIndicator.tsx        (进度条，80行)
-├── phaseConfigs.tsx             (阶段配置，100行)
-└── types.ts                     (类型定义，50行)
+├── TributeFlow.tsx              (主容器)
+├── TributePhaseContent.tsx      (内容路由)
+├── SelectionPanel.tsx           (选贡面板)
+├── ReturnPanel.tsx              (还贡面板)
+├── ProgressIndicator.tsx        (进度条)
+├── phaseConfigs.tsx             (阶段配置)
+└── types.ts                     (类型定义)
 
 复用现有组件：
 - PlayerHand (已存在)
@@ -610,35 +610,3 @@ case GamePageState.TRIBUTE_PHASE:
 - **依赖变更**：无新依赖，复用现有组件
 
 ---
-
-## 后续优化方向
-
-1. **动画增强**：使用 Framer Motion 或 React Spring
-2. **音效反馈**：添加贡牌、还贡音效
-3. **可访问性**：添加 ARIA 标签和键盘导航
-4. **测试覆盖**：单元测试 + 集成测试
-5. **国际化**：多语言支持
-
-
-已生成完整的实施方案。
-
-## 方案概要
-
-**目标**：重构上贡组件，实现统一的6阶段流程（开始→检测→贡牌→选贡→还贡→完成）
-
-**核心组件**（仅7个文件）：
-1. `TributeFlow` - 主容器（状态管理+阶段路由）
-2. `TributePhaseContent` - 内容路由（配置驱动）
-3. `SelectionPanel` - 选贡面板（合并3种场景）
-4. `ReturnPanel` - 还贡面板（统一布局）
-5. `ProgressIndicator` - 进度条
-6. `phaseConfigs` - 阶段配置
-7. `types` - 类型定义
-
-**关键设计**：
-- 前端定时器控制展示节奏
-- 同时监听后端状态，支持跳跃
-- 复用现有 `PlayerHand`、`CardDisplay`
-- 配置驱动减少重复代码
-
-**实施步骤**：10个阶段，从类型定义到清理旧代码

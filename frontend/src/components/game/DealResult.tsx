@@ -84,7 +84,7 @@ const DealResult: React.FC<DealResultProps> = ({
   };
 
   const teamRankings = getTeamRankings();
-  const winningTeam = dealResult.winning_team;
+  const winningTeam = dealResult.winningTeam;
   const losingTeam = 1 - winningTeam;
 
   return (
@@ -95,8 +95,8 @@ const DealResult: React.FC<DealResultProps> = ({
             {isMatchFinished ? '比赛结束' : '局结算'}
           </h2>
           <div className="text-lg text-gray-600">
-            {getVictoryTypeText(dealResult.victory_type)} - 
-            队伍{winningTeam + 1}获胜 (+{dealResult.upgrades[winningTeam]}级)
+            {getVictoryTypeText(dealResult.victoryType)} - 
+            队伍{winningTeam + 1}获胜 (+{dealResult.levelChange[winningTeam]}级)
           </div>
         </div>
 
@@ -127,7 +127,7 @@ const DealResult: React.FC<DealResultProps> = ({
               <div className="flex justify-between text-sm">
                 <span>升级:</span>
                 <span className="font-medium text-green-600">
-                  +{dealResult.upgrades[winningTeam]}级
+                  +{dealResult.levelChange[winningTeam]}级
                 </span>
               </div>
             </div>
@@ -158,7 +158,7 @@ const DealResult: React.FC<DealResultProps> = ({
               <div className="flex justify-between text-sm">
                 <span>升级:</span>
                 <span className="font-medium text-gray-500">
-                  +{dealResult.upgrades[losingTeam]}级
+                  +{dealResult.levelChange[losingTeam]}级
                 </span>
               </div>
             </div>
@@ -171,21 +171,15 @@ const DealResult: React.FC<DealResultProps> = ({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex justify-between">
               <span>游戏时长:</span>
-              <span className="font-medium">{formatDuration(dealResult.duration)}</span>
+              <span className="font-medium">{formatDuration(dealResult.durationMs)}</span>
             </div>
             <div className="flex justify-between">
               <span>总轮次:</span>
-              <span className="font-medium">{dealResult.trick_count}</span>
+              <span className="font-medium">{dealResult.trickCount}</span>
             </div>
             <div className="flex justify-between">
               <span>胜利类型:</span>
-              <span className="font-medium">{getVictoryTypeText(dealResult.victory_type)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>上贡情况:</span>
-              <span className="font-medium">
-                {dealResult.statistics.tribute_info.has_tribute ? '有上贡' : '无上贡'}
-              </span>
+              <span className="font-medium">{getVictoryTypeText(dealResult.victoryType)}</span>
             </div>
           </div>
         </div>
@@ -202,22 +196,20 @@ const DealResult: React.FC<DealResultProps> = ({
                   <th className="text-center py-2">出牌次数</th>
                   <th className="text-center py-2">获胜轮次</th>
                   <th className="text-center py-2">过牌次数</th>
-                  <th className="text-center py-2">超时次数</th>
                 </tr>
               </thead>
               <tbody>
-                {dealResult.statistics.player_stats.map((stats) => {
-                  const player = getPlayerBySeat(stats.player_seat);
+                {dealResult.playerStats.map((stats) => {
+                  const player = getPlayerBySeat(stats.playerSeat);
                   return (
-                    <tr key={stats.player_seat} className="border-b border-gray-200">
+                    <tr key={stats.playerSeat} className="border-b border-gray-200">
                       <td className="py-2 font-medium">
-                        {player?.username || `玩家${stats.player_seat + 1}`}
+                        {player?.username || `玩家${stats.playerSeat + 1}`}
                       </td>
-                      <td className="text-center py-2">第{stats.finish_rank}名</td>
-                      <td className="text-center py-2">{stats.cards_played}</td>
-                      <td className="text-center py-2">{stats.tricks_won}</td>
-                      <td className="text-center py-2">{stats.pass_count}</td>
-                      <td className="text-center py-2">{stats.timeout_count}</td>
+                      <td className="text-center py-2">第{stats.finishRank}名</td>
+                      <td className="text-center py-2">{stats.cardsPlayed}</td>
+                      <td className="text-center py-2">{stats.tricksWon}</td>
+                      <td className="text-center py-2">{stats.passCount}</td>
                     </tr>
                   );
                 })}

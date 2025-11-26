@@ -12,7 +12,7 @@ import { EventType, eventTypeToJSON } from '../../types/generated/event';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
-import TributePhase from './TributePhase';
+import TributeFlow from './tribute/TributeFlow';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
 import { convertProtoPlayerView, convertProtoPlayerViewToGameState } from '../../utils/converters';
@@ -26,6 +26,24 @@ const GamePageState = {
   DEAL_RESULT: 'deal_result',
   MATCH_RESULT: 'match_result'
 } as const;
+
+// 事件类型 → GamePage Phase 映射
+const EVENT_TO_PHASE_MAP: Partial<Record<EventType, string>> = {
+  [EventType.EVENT_TYPE_DEAL_STARTED]: GamePageState.PLAYING,
+  [EventType.EVENT_TYPE_TRIBUTE_STARTED]: GamePageState.TRIBUTE_PHASE,
+  [EventType.EVENT_TYPE_TRIBUTE_COMPLETED]: GamePageState.PLAYING,
+  [EventType.EVENT_TYPE_DEAL_ENDED]: GamePageState.DEAL_RESULT,
+  [EventType.EVENT_TYPE_MATCH_ENDED]: GamePageState.MATCH_RESULT,
+};
+
+// 根据游戏事件更新 Phase
+const updatePhaseFromEvent = (event: GameEvent, setCurrentPhase: (phase: string) => void) => {
+  const newPhase = EVENT_TO_PHASE_MAP[event.type];
+  if (newPhase) {
+    console.log('[Phase Transition]', eventTypeToJSON(event.type), '→', newPhase);
+    setCurrentPhase(newPhase);
+  }
+};
 
 const GamePage: React.FC = () => {
   const navigate = useNavigate();
@@ -147,48 +165,26 @@ const GamePage: React.FC = () => {
     const handleGameEvent = (message: WSMessage) => {
       const event: GameEvent = message.data as GameEvent;
       console.log('[game_event]', eventTypeToJSON(event.type), event);
+      
+      const roomIdFromMsg = message.data?.room_id;
+      if (roomIdFromMsg && roomIdFromMsg !== roomId) return;
 
+      // 统一处理 phase 转换
+      updatePhaseFromEvent(event, setCurrentPhase);
+
+      // 处理事件数据
       switch (event.type) {
-        case EventType.EVENT_TYPE_TRIBUTE_STARTED:
-          setCurrentPhase(GamePageState.TRIBUTE_PHASE);
-          break;
-          
         case EventType.EVENT_TYPE_TRIBUTE_COMPLETED:
-          setCurrentPhase(GamePageState.PLAYING);
           setTributeInfo(null);
           break;
           
         case EventType.EVENT_TYPE_DEAL_ENDED:
-          setCurrentPhase(GamePageState.DEAL_RESULT);
-          
           if (event.dealEnded) {
-            const dealEndedPayload = event.dealEnded;
-            
-            const dealResult: DealResultType = {
-              rankings: dealEndedPayload.rankings || [],
-              winning_team: dealEndedPayload.winningTeam || 0,
-              victory_type: dealEndedPayload.victoryType,
-              upgrades: (dealEndedPayload.levelChange || [0, 0]) as [number, number],
-              duration: dealEndedPayload.durationMs || 0,
-              trick_count: dealEndedPayload.trickCount || 0,
-              statistics: {
-                total_tricks: dealEndedPayload.trickCount || 0,
-                player_stats: [],
-                tribute_info: {
-                  has_tribute: tributeInfo !== null,
-                  tribute_map: {},
-                  tribute_cards: {},
-                  return_cards: {}
-                }
-              }
-            };
-            
-            setDealResult(dealResult);
+            setDealResult(event.dealEnded);
           }
           break;
           
         case EventType.EVENT_TYPE_MATCH_ENDED:
-          setCurrentPhase(GamePageState.MATCH_RESULT);
           if (event.matchEnded) {
             setMatchResult(event.matchEnded);
           }
@@ -198,7 +194,6 @@ const GamePage: React.FC = () => {
 
     // 玩家视角
     const handlePlayerView = (message: WSMessage) => {
-      const latestPhase = useGameStore.getState().currentPhase;
       console.log('[player_view]', message.data);
 
       const data = message.data;
@@ -216,14 +211,6 @@ const GamePage: React.FC = () => {
       const currentTrickId = playerView.trick_id;
       if (currentTrickId && currentTrickId !== previousTrickId) {
         setPreviousTrickId(currentTrickId);
-      }
-
-      if (latestPhase === GamePageState.GAME_PREPARE) {
-        if (playerView.deal_status === DealStatus.TRIBUTE) {
-          setCurrentPhase(GamePageState.TRIBUTE_PHASE);
-        } else if (playerView.deal_status === DealStatus.PLAYING) {
-          setCurrentPhase(GamePageState.PLAYING);
-        }
       }
 
       const isPlayingPhase = playerView.deal_status === DealStatus.PLAYING;
@@ -355,7 +342,10 @@ const GamePage: React.FC = () => {
     if (!room || playerSeat === null) return;
 
     try {
-      await apiClient.selectTribute(room.id, playerSeat, deckIndex);
+      const response = await apiClient.selectTribute(room.id, playerSeat, deckIndex);
+      if (!response.success) {
+        setRoomError('选择贡牌失败');
+      }
     } catch (error) {
       console.error('Failed to select tribute:', error);
       setRoomError('选择贡牌失败');
@@ -367,7 +357,10 @@ const GamePage: React.FC = () => {
     if (!room || playerSeat === null) return;
 
     try {
-      await apiClient.returnTribute(room.id, playerSeat, deckIndex);
+      const response = await apiClient.returnTribute(room.id, playerSeat, deckIndex);
+      if (!response.success) {
+        setRoomError('还贡失败');
+      }
     } catch (error) {
       console.error('Failed to return tribute:', error);
       setRoomError('还贡失败');
@@ -632,12 +625,14 @@ const GamePage: React.FC = () => {
         );
 
       case GamePageState.TRIBUTE_PHASE:
-        return tributeInfo && room ? (
-          <TributePhase
+        return tributeInfo && room && playerSeat !== null ? (
+          <TributeFlow
             tributePhase={tributeInfo}
             players={room.players}
-            currentPlayerSeat={playerSeat || 0}
+            currentPlayerSeat={playerSeat}
             playerHand={playerHand}
+            selectedCards={selectedCards}
+            onCardSelect={setSelectedCards}
             onSelectTribute={handleSelectTribute}
             onReturnTribute={handleReturnTribute}
           />

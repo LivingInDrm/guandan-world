@@ -55,8 +55,11 @@ export type { FrontendPlayAction } from '../utils/cardUtils';
 
 // ========== 向后兼容的类型别名 ==========
 // 为了保持现有代码兼容，提供旧类型名称的别名
-export type Card = import('./frontend').FrontendCard;
-export type PlayAction = import('../utils/cardUtils').FrontendPlayAction;
+import type { FrontendCard } from './frontend';
+import type { FrontendPlayAction } from '../utils/cardUtils';
+
+export type Card = FrontendCard;
+export type PlayAction = FrontendPlayAction;
 
 // Base types for the application
 
@@ -287,38 +290,9 @@ export interface TributePhase {
 
 // Deal result related types
 // Note: VictoryType 直接使用 Proto 枚举，与 DealStatus、TributeStatus 保持一致
-
-export interface PlayerDealStats {
-  player_seat: number;
-  cards_played: number;
-  tricks_won: number;
-  pass_count: number;
-  timeout_count: number;
-  finish_rank: number; // 1-4, with 1 being first to finish
-}
-
-export interface TributeInfo {
-  has_tribute: boolean;
-  tribute_map: { [giver: number]: number }; // giver -> receiver
-  tribute_cards: { [giver: number]: Card }; // giver -> card
-  return_cards: { [receiver: number]: Card }; // receiver -> card
-}
-
-export interface DealStatistics {
-  total_tricks: number;
-  player_stats: PlayerDealStats[];
-  tribute_info: TributeInfo;
-}
-
-export interface DealResult {
-  rankings: number[];        // Order of finishing (seat numbers)
-  winning_team: number;      // 0 or 1
-  victory_type: ProtoVictoryTypeEnum;
-  upgrades: [number, number]; // Level upgrades for each team
-  duration: number;          // Duration in milliseconds
-  trick_count: number;
-  statistics: DealStatistics;
-}
+// 直接使用 proto 类型，避免重复定义和转换
+export type { DealEndedPayload as DealResult } from './generated/event';
+export type { PlayerDealStats } from './generated/event';
 
 export interface MatchStatistics {
   total_deals: number;

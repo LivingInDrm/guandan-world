@@ -183,11 +183,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           />
         </>
       )}
-      
-      {/* 选中时的光泽遮罩 */}
-      {isSelected && (
-        <div className="absolute inset-0 bg-blue-400 bg-opacity-10 rounded pointer-events-none" />
-      )}
     </div>
   );
 };

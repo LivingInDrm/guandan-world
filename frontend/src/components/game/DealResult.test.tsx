@@ -13,55 +13,43 @@ const mockPlayers: Player[] = [
 ];
 
 const mockDealResult: DealResultType = {
-  rankings: [0, 2, 1, 3], // Player1 first, Player3 second, Player2 third, Player4 fourth
-  winning_team: 0, // Team 0 (seats 0,2) wins
-  victory_type: VictoryType.VICTORY_TYPE_DOUBLE_DOWN,
-  upgrades: [3, 0], // Team 0 gets +3, Team 1 gets +0
-  duration: 300000, // 5 minutes in milliseconds
-  trick_count: 15,
-  statistics: {
-    total_tricks: 15,
-    player_stats: [
-      {
-        player_seat: 0,
-        cards_played: 25,
-        tricks_won: 8,
-        pass_count: 3,
-        timeout_count: 0,
-        finish_rank: 1
-      },
-      {
-        player_seat: 1,
-        cards_played: 22,
-        tricks_won: 2,
-        pass_count: 5,
-        timeout_count: 1,
-        finish_rank: 3
-      },
-      {
-        player_seat: 2,
-        cards_played: 24,
-        tricks_won: 5,
-        pass_count: 2,
-        timeout_count: 0,
-        finish_rank: 2
-      },
-      {
-        player_seat: 3,
-        cards_played: 20,
-        tricks_won: 0,
-        pass_count: 8,
-        timeout_count: 2,
-        finish_rank: 4
-      }
-    ],
-    tribute_info: {
-      has_tribute: true,
-      tribute_map: { 3: 0 }, // Player4 tributes to Player1
-      tribute_cards: {},
-      return_cards: {}
+  dealLevel: 5,
+  rankings: [0, 2, 1, 3],
+  victoryType: VictoryType.VICTORY_TYPE_DOUBLE_DOWN,
+  winningTeam: 0,
+  levelChange: [3, 0],
+  durationMs: 300000,
+  trickCount: 15,
+  playerStats: [
+    {
+      playerSeat: 0,
+      cardsPlayed: 25,
+      tricksWon: 8,
+      passCount: 3,
+      finishRank: 1
+    },
+    {
+      playerSeat: 1,
+      cardsPlayed: 22,
+      tricksWon: 2,
+      passCount: 5,
+      finishRank: 3
+    },
+    {
+      playerSeat: 2,
+      cardsPlayed: 24,
+      tricksWon: 5,
+      passCount: 2,
+      finishRank: 2
+    },
+    {
+      playerSeat: 3,
+      cardsPlayed: 20,
+      tricksWon: 0,
+      passCount: 8,
+      finishRank: 4
     }
-  }
+  ]
 };
 
 const mockTeamLevels: [number, number] = [5, 3]; // Team 0 at level 5, Team 1 at level 3
@@ -174,7 +162,6 @@ describe('DealResult', () => {
     expect(screen.getByText('5:00')).toBeInTheDocument(); // Duration formatted
     expect(screen.getByText('15')).toBeInTheDocument(); // Trick count
     expect(screen.getByText('双下')).toBeInTheDocument(); // Victory type
-    expect(screen.getByText('有上贡')).toBeInTheDocument(); // Tribute info
   });
 
   it('displays player statistics table correctly', () => {
@@ -198,7 +185,6 @@ describe('DealResult', () => {
     expect(screen.getByText('出牌次数')).toBeInTheDocument();
     expect(screen.getByText('获胜轮次')).toBeInTheDocument();
     expect(screen.getByText('过牌次数')).toBeInTheDocument();
-    expect(screen.getByText('超时次数')).toBeInTheDocument();
 
     // Check some player stats - use more specific queries
     expect(screen.getByText('25')).toBeInTheDocument(); // Player1 cards played
@@ -209,8 +195,8 @@ describe('DealResult', () => {
   it('handles different victory types correctly', () => {
     const singleLastResult = {
       ...mockDealResult,
-      victory_type: VictoryType.VICTORY_TYPE_SINGLE_LAST,
-      upgrades: [2, 0] as [number, number]
+      victoryType: VictoryType.VICTORY_TYPE_SINGLE_LAST,
+      levelChange: [2, 0]
     };
 
     render(
@@ -313,7 +299,7 @@ describe('DealResult', () => {
   it('formats duration correctly for different time values', () => {
     const shortDurationResult = {
       ...mockDealResult,
-      duration: 65000 // 1 minute 5 seconds
+      durationMs: 65000
     };
 
     render(
@@ -328,33 +314,5 @@ describe('DealResult', () => {
     );
 
     expect(screen.getByText('1:05')).toBeInTheDocument();
-  });
-
-  it('handles no tribute situation correctly', () => {
-    const noTributeResult = {
-      ...mockDealResult,
-      statistics: {
-        ...mockDealResult.statistics,
-        tribute_info: {
-          has_tribute: false,
-          tribute_map: {},
-          tribute_cards: {},
-          return_cards: {}
-        }
-      }
-    };
-
-    render(
-      <DealResult
-        dealResult={noTributeResult}
-        players={mockPlayers}
-        teamLevels={mockTeamLevels}
-        onContinue={mockOnContinue}
-        onExit={mockOnExit}
-        isMatchFinished={false}
-      />
-    );
-
-    expect(screen.getByText('无上贡')).toBeInTheDocument();
   });
 });
