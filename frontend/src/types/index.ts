@@ -233,7 +233,6 @@ export interface PlayerView {
   trick_id?: string;
   current_turn?: number;
   plays?: PlayAction[];
-  tribute_phase?: TributePhase;
 }
 
 export interface PlayerGameState {
@@ -243,7 +242,6 @@ export interface PlayerGameState {
   trick_id?: string;
   current_turn?: number;
   plays?: PlayAction[];
-  tribute_phase?: TributePhase;
 }
 
 export interface GameActionData {
@@ -258,53 +256,7 @@ export interface GameActionData {
 // ========== Deal and Tribute Status (使用 Proto) ==========
 // DealStatus 和 TributeStatus 现在从 proto/view.ts 导出，见文件顶部
 
-// Tribute phase related types (保留前端特定类型)
-
-export const TributeActionType = {
-  NONE: 'none',
-  SELECT: 'select',
-  RETURN: 'return'
-} as const;
-
-export type TributeActionType = typeof TributeActionType[keyof typeof TributeActionType];
-
-export interface TributeAction {
-  type: TributeActionType;
-  player_id: number;
-  options: Card[];
-  target_player?: number;
-  timeout: number; // seconds
-}
-
-export interface TributePhase {
-  status: number;  // 使用 TributeStatus 枚举值（数字）
-  tribute_map: { [giver: number]: number }; // giver -> receiver (-1 for pool)
-  tribute_cards: { [giver: number]: Card };
-  return_cards: { [receiver: number]: Card };
-  pool_cards: Card[];
-  selecting_player: number;
-  select_timeout: string;
-  is_immune: boolean;
-  selection_results: { [receiver: number]: number }; // receiver -> original_giver
-}
-
 // Deal result related types
 // Note: VictoryType 直接使用 Proto 枚举，与 DealStatus、TributeStatus 保持一致
 // 直接使用 proto 类型，避免重复定义和转换
-export type { DealEndedPayload as DealResult } from './generated/event';
-export type { PlayerDealStats } from './generated/event';
-
-export interface MatchStatistics {
-  total_deals: number;
-  total_duration: number;    // Duration in milliseconds
-  final_levels: [number, number]; // Final levels for each team
-  winner: number;            // Winning team (0 or 1)
-}
-
-export interface MatchResult {
-  match_id: string;
-  winner: number;           // Winning team (0 or 1)
-  final_levels: [number, number];
-  statistics: MatchStatistics;
-  players: Player[];
-}
+export type { DealEndedPayload, PlayerDealStats, MatchEndedPayload } from './generated/event';

@@ -88,7 +88,7 @@ export const JOKER_CONFIG = {
 export const ANIMATIONS = {
   hover: 'hover:scale-105 hover:shadow-lg',
   selected: 'transform -translate-y-5 shadow-xl',
-  transition: 'transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+  transition: 'transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
 };
 
 // 工具函数

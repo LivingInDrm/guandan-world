@@ -4,6 +4,7 @@ import LoginPage from '../components/auth/LoginPage';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import RoomLobby from '../components/lobby/RoomLobby';
 import GamePage from '../components/game/GamePage';
+import { TributeTestPage } from '../components/test';
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
             <GamePage />
           </ProtectedRoute>
         )
+      },
+      {
+        path: 'test/tribute',
+        element: <TributeTestPage />
       }
     ]
   }

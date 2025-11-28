@@ -27,24 +27,28 @@ const CardCorner: React.FC<{
   suit: number;
   position: 'top-left' | 'bottom-right';
   sizeConfig: SizeConfig;
-}> = ({ rank, suit, position, sizeConfig }) => {
+  size: CardSize;
+}> = ({ rank, suit, position, sizeConfig, size }) => {
   const isBottom = position === 'bottom-right';
   const colorClass = getSuitColorClass(suit);
+  const showSuit = size !== 'xs';
   
   return (
     <div 
       className={`absolute flex flex-col items-center leading-none ${colorClass} ${isBottom ? 'rotate-180 bottom-0.5 right-0.5' : 'top-0.5 left-0.5'}`}
       style={{ 
         padding: sizeConfig.padding,
-        width: '1.2em', // 固定宽度确保对齐
+        width: '1.2em',
       }}
     >
       <span style={{ fontSize: sizeConfig.fontSize, fontWeight: 700 }}>
         {getRankText(rank)}
       </span>
-      <span style={{ fontSize: sizeConfig.iconSize, marginTop: '-2px' }}>
-        {SUIT_SYMBOLS[suit]}
-      </span>
+      {showSuit && (
+        <span style={{ fontSize: sizeConfig.iconSize, marginTop: '-2px' }}>
+          {SUIT_SYMBOLS[suit]}
+        </span>
+      )}
     </div>
   );
 };
@@ -166,7 +170,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             rank={card.rank} 
             suit={card.suit} 
             position="top-left" 
-            sizeConfig={sizeConfig} 
+            sizeConfig={sizeConfig}
+            size={size}
           />
           
           <CardCenter 
@@ -179,7 +184,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             rank={card.rank} 
             suit={card.suit} 
             position="bottom-right" 
-            sizeConfig={sizeConfig} 
+            sizeConfig={sizeConfig}
+            size={size}
           />
         </>
       )}

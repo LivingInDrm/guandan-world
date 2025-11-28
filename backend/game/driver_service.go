@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"sync"
 	"time"
 
@@ -15,6 +16,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
+
+const pendingEventsThreshold = 50
 
 // protoJSONMarshaler is the configuration for serializing proto messages to JSON
 // Uses camelCase field names and emits all fields including zero values
@@ -168,6 +171,7 @@ func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player
 		}
 
 		// Clean up after match
+		observer.Stop() // Stop event processing and handle remaining events
 		ds.mu.Lock()
 		delete(ds.drivers, roomID)
 		delete(ds.providers, roomID)
@@ -675,23 +679,174 @@ func (rip *RoomInputProvider) sendToPlayer(playerSeat int, message *websocket.WS
 }
 
 // WebSocketObserver implements sdk.EventObserver for WebSocket broadcasting
+// Uses an ordered event queue to ensure events are processed in seq order
 type WebSocketObserver struct {
 	roomID    string
 	wsManager WSManagerInterface
 	engine    sdk.GameEngineInterface // Reference to engine for accessing player views
+
+	// Ordered event processing
+	eventQueue    chan *sdk.GameEvent        // Event input channel
+	stopChan      chan struct{}              // Stop signal
+	lastSeq       int64                      // Last processed seq
+	pendingEvents map[int64]*sdk.GameEvent   // Out-of-order events cache
+	mu            sync.Mutex                 // Protects pendingEvents and lastSeq
 }
 
 // NewWebSocketObserver creates a new WebSocket observer
 func NewWebSocketObserver(roomID string, wsManager WSManagerInterface, engine sdk.GameEngineInterface) *WebSocketObserver {
-	return &WebSocketObserver{
-		roomID:    roomID,
-		wsManager: wsManager,
-		engine:    engine,
+	wso := &WebSocketObserver{
+		roomID:        roomID,
+		wsManager:     wsManager,
+		engine:        engine,
+		eventQueue:    make(chan *sdk.GameEvent, 256),
+		stopChan:      make(chan struct{}),
+		lastSeq:       0,
+		pendingEvents: make(map[int64]*sdk.GameEvent),
 	}
+	go wso.processEventLoop()
+	return wso
 }
 
 // OnGameEvent implements sdk.EventObserver
+// Events are queued and processed in seq order by processEventLoop
 func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
+	select {
+	case wso.eventQueue <- event:
+		// Successfully queued
+	case <-wso.stopChan:
+		// Observer stopped
+	default:
+		log.Printf("[WebSocketObserver] Event queue full for room %s, seq=%d", wso.roomID, event.Seq)
+	}
+}
+
+// Stop stops the event processing loop and processes remaining events
+func (wso *WebSocketObserver) Stop() {
+	close(wso.stopChan)
+
+	// Process remaining events in queue
+	for {
+		select {
+		case event := <-wso.eventQueue:
+			wso.processEventInOrder(event)
+		default:
+			return
+		}
+	}
+}
+
+// processEventLoop processes events from the queue in order
+func (wso *WebSocketObserver) processEventLoop() {
+	for {
+		select {
+		case event := <-wso.eventQueue:
+			wso.processEventInOrder(event)
+		case <-wso.stopChan:
+			return
+		}
+	}
+}
+
+// processEventInOrder ensures events are processed in seq order
+func (wso *WebSocketObserver) processEventInOrder(event *sdk.GameEvent) {
+	wso.mu.Lock()
+	defer wso.mu.Unlock()
+
+	seq := event.Seq
+
+	// MATCH_STARTED 特殊处理：只有当 seq <= lastSeq 时（新比赛 seq 重新计数）才需要立即重置
+	// 否则让 MATCH_STARTED 像普通事件一样排队，等前序事件处理完后再由 handleEvent 重置
+	if event.Type == eventpb.EventType_EVENT_TYPE_MATCH_STARTED && seq <= wso.lastSeq {
+		if len(wso.pendingEvents) > 0 {
+			log.Printf("[WebSocketObserver] MATCH_STARTED forcing reset, discarding %d pending events for room %s", 
+				len(wso.pendingEvents), wso.roomID)
+		}
+		wso.lastSeq = seq - 1
+		wso.pendingEvents = make(map[int64]*sdk.GameEvent)
+	}
+
+	// First event: auto-initialize lastSeq
+	if wso.lastSeq == 0 && len(wso.pendingEvents) == 0 {
+		wso.lastSeq = seq - 1
+	}
+
+	// Already processed, ignore
+	if seq <= wso.lastSeq {
+		return
+	}
+
+	// Exactly the next seq
+	if seq == wso.lastSeq+1 {
+		wso.handleEvent(event)
+		wso.lastSeq = seq
+
+		// Process consecutive cached events
+		for {
+			nextSeq := wso.lastSeq + 1
+			if nextEvent, exists := wso.pendingEvents[nextSeq]; exists {
+				wso.handleEvent(nextEvent)
+				delete(wso.pendingEvents, nextSeq)
+				wso.lastSeq = nextSeq
+			} else {
+				break
+			}
+		}
+		return
+	}
+
+	// Out of order, cache it
+	wso.pendingEvents[seq] = event
+
+	// Prevent cache from growing too large
+	if len(wso.pendingEvents) > pendingEventsThreshold {
+		log.Printf("[WebSocketObserver] ERROR: Too many pending events for room %s, lastSeq=%d, pendingCount=%d, forcing process",
+			wso.roomID, wso.lastSeq, len(wso.pendingEvents))
+		wso.forceProcessPending()
+	}
+}
+
+// forceProcessPending processes all pending events in order, skipping any gaps
+func (wso *WebSocketObserver) forceProcessPending() {
+	// Sort all pending seqs
+	seqs := make([]int64, 0, len(wso.pendingEvents))
+	for seq := range wso.pendingEvents {
+		seqs = append(seqs, seq)
+	}
+	sort.Slice(seqs, func(i, j int) bool { return seqs[i] < seqs[j] })
+
+	// Calculate missing seqs for logging
+	var missingSeqs []int64
+	if len(seqs) > 0 {
+		for expected := wso.lastSeq + 1; expected < seqs[0]; expected++ {
+			missingSeqs = append(missingSeqs, expected)
+		}
+		for i := 0; i < len(seqs)-1; i++ {
+			for gap := seqs[i] + 1; gap < seqs[i+1]; gap++ {
+				missingSeqs = append(missingSeqs, gap)
+			}
+		}
+	}
+
+	// Log warning if there are missing seqs
+	if len(missingSeqs) > 0 {
+		log.Printf("[WebSocketObserver] ERROR: Skipping missing seqs for room %s: %v (lastSeq=%d, processing=%v)",
+			wso.roomID, missingSeqs, wso.lastSeq, seqs)
+	}
+
+	// Process all in order
+	for _, seq := range seqs {
+		wso.handleEvent(wso.pendingEvents[seq])
+	}
+
+	if len(seqs) > 0 {
+		wso.lastSeq = seqs[len(seqs)-1]
+	}
+	wso.pendingEvents = make(map[int64]*sdk.GameEvent)
+}
+
+// handleEvent processes a single event (original OnGameEvent logic)
+func (wso *WebSocketObserver) handleEvent(event *sdk.GameEvent) {
 	// Serialize the entire event to JSON using protojson
 	eventJSON := marshalProtoToRawJSON(event, "GameEvent")
 	if eventJSON == nil {
@@ -712,17 +867,17 @@ func (wso *WebSocketObserver) OnGameEvent(event *sdk.GameEvent) {
 	// These are events where hand cards change or game phase transitions occur
 	switch event.Type {
 	case eventpb.EventType_EVENT_TYPE_MATCH_STARTED, // Match begins
-		eventpb.EventType_EVENT_TYPE_DEAL_STARTED,                // New deal starts
-		eventpb.EventType_EVENT_TYPE_CARDS_DEALT,                 // Cards dealt to players
-		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_SUBMITTED,      // Tribute given (hand changes)
-		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_RETURNED,       // Return tribute (hand changes)
-		eventpb.EventType_EVENT_TYPE_TRIBUTE_COMPLETED,           // Tribute phase completed
-		eventpb.EventType_EVENT_TYPE_TRICK_STARTED,               // New trick starts
-		eventpb.EventType_EVENT_TYPE_PLAYER_PLAYED,               // Player played cards (hand changes)
-		eventpb.EventType_EVENT_TYPE_PLAYER_PASSED,               // Player passed (turn changes)
-		eventpb.EventType_EVENT_TYPE_TRICK_ENDED,                 // Trick ends
-		eventpb.EventType_EVENT_TYPE_DEAL_ENDED,                  // Deal ends
-		eventpb.EventType_EVENT_TYPE_MATCH_ENDED:                 // Match ends
+		eventpb.EventType_EVENT_TYPE_DEAL_STARTED,           // New deal starts
+		eventpb.EventType_EVENT_TYPE_CARDS_DEALT,            // Cards dealt to players
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_SUBMITTED, // Tribute given (hand changes)
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_RETURNED,  // Return tribute (hand changes)
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_COMPLETED,      // Tribute phase completed
+		eventpb.EventType_EVENT_TYPE_TRICK_STARTED,          // New trick starts
+		eventpb.EventType_EVENT_TYPE_PLAYER_PLAYED,          // Player played cards (hand changes)
+		eventpb.EventType_EVENT_TYPE_PLAYER_PASSED,          // Player passed (turn changes)
+		eventpb.EventType_EVENT_TYPE_TRICK_ENDED,            // Trick ends
+		eventpb.EventType_EVENT_TYPE_DEAL_ENDED,             // Deal ends
+		eventpb.EventType_EVENT_TYPE_MATCH_ENDED:            // Match ends
 		wso.sendPlayerViews(event.Type)
 	}
 

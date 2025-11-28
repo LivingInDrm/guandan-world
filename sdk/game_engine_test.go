@@ -53,7 +53,10 @@ func TestGameEngineEventSystem(t *testing.T) {
 		nil, nil, nil, -1,
 	)
 
-	engine.emitEvent(testEvent)
+	// Use mutex to safely call emitEventLocked
+	engine.mutex.Lock()
+	engine.emitEventLocked(testEvent)
+	engine.mutex.Unlock()
 
 	// Wait for event with timeout
 	select {
@@ -93,7 +96,10 @@ func TestGameEngineMultipleEventHandlers(t *testing.T) {
 		nil, nil, nil, -1,
 	)
 
-	engine.emitEvent(testEvent)
+	// Use mutex to safely call emitEventLocked
+	engine.mutex.Lock()
+	engine.emitEventLocked(testEvent)
+	engine.mutex.Unlock()
 
 	// Wait for both handlers to be called
 	callCount := 0

@@ -3,19 +3,22 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useRoomStore } from '../../store/roomStore';
 import { useGameStore } from '../../store/gameStore';
+import { useTributeStore } from '../../store/tributeStore';
 import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
-import type { Room, Player, WSMessage, Card, GameActionData, PlayerGameState, ProtoPlayerView, DealResult as DealResultType } from '../../types';
+import type { Room, WSMessage, Card, GameActionData, PlayerGameState, ProtoPlayerView } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import type { GameEvent } from '../../types/proto';
 import { EventType, eventTypeToJSON } from '../../types/generated/event';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
-import TributeFlow from './tribute/TributeFlow';
+import TributeBoard from './tribute/TributeBoard';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
 import { convertProtoPlayerView, convertProtoPlayerViewToGameState } from '../../utils/converters';
+import { useDealResultData, useMatchResultData } from '../../hooks/useResultData';
+import { useTributeData } from '../../hooks/useTributeData';
 
 // 游戏页面状态常量
 const GamePageState = {
@@ -57,20 +60,20 @@ const GamePage: React.FC = () => {
     gameState,
     currentPhase,
     selectedCards,
-    dealResult,
-    matchResult,
-    tributeInfo,
     isMyTurn,
     setCountdown,
     setCurrentPhase,
     setSelectedCards,
     setDealResult,
     setMatchResult,
-    setTributeInfo,
     setPlayerSeat,
     setGameState,
     setMyTurn
   } = useGameStore();
+
+  const dealResultData = useDealResultData();
+  const matchResultData = useMatchResultData();
+  const tributeData = useTributeData();
 
   const [room, setRoom] = useState<Room | null>(currentRoom);
   const [playerHand, setPlayerHand] = useState<Card[]>([]);
@@ -172,10 +175,48 @@ const GamePage: React.FC = () => {
       // 统一处理 phase 转换
       updatePhaseFromEvent(event, setCurrentPhase);
 
+      const tributeActions = useTributeStore.getState();
+
       // 处理事件数据
       switch (event.type) {
+        case EventType.EVENT_TYPE_TRIBUTE_STARTED:
+          if (event.tributeStarted) {
+            tributeActions.handleTributeStarted(event.tributeStarted);
+          }
+          break;
+
+        case EventType.EVENT_TYPE_TRIBUTE_EXEMPTED:
+          if (event.tributeExempted) {
+            tributeActions.handleTributeExempted(event.tributeExempted);
+          }
+          break;
+
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_SUBMITTED:
+          if (event.tributeCardSubmitted?.submittedCard && event.actorSeat !== undefined) {
+            tributeActions.handleCardSubmitted(
+              event.actorSeat,
+              event.tributeCardSubmitted.submittedCard as Card
+            );
+          }
+          break;
+
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_SELECTED:
+          if (event.tributeCardSelected?.selectedCard && event.actorSeat !== undefined) {
+            tributeActions.handleCardSelected(
+              event.actorSeat,
+              event.tributeCardSelected.selectedCard as Card
+            );
+          }
+          break;
+
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_RETURNED:
+          if (event.tributeCardReturned && event.actorSeat !== undefined) {
+            tributeActions.handleCardReturned(event.actorSeat, event.tributeCardReturned);
+          }
+          break;
+
         case EventType.EVENT_TYPE_TRIBUTE_COMPLETED:
-          setTributeInfo(null);
+          tributeActions.handleCompleted();
           break;
           
         case EventType.EVENT_TYPE_DEAL_ENDED:
@@ -221,7 +262,6 @@ const GamePage: React.FC = () => {
 
       setCanPlay(canPlayValue);
       setMyTurn(isMyTurnValue);
-      setTributeInfo(playerView.tribute_phase || null);
 
       const playerGameState = convertProtoPlayerViewToGameState(protoPlayerView);
       setGameState(playerGameState);
@@ -255,7 +295,7 @@ const GamePage: React.FC = () => {
       wsClient.off(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
       wsClient.off(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
     };
-  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setTributeInfo, setDealResult, setMatchResult, setGameState, setPlayerSeat, setMyTurn, setCurrentRoom]);
+  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setDealResult, setMatchResult, setGameState, setPlayerSeat, setMyTurn, setCurrentRoom]);
 
   // 开始游戏
   const handleStartGame = async () => {
@@ -358,7 +398,9 @@ const GamePage: React.FC = () => {
 
     try {
       const response = await apiClient.returnTribute(room.id, playerSeat, deckIndex);
-      if (!response.success) {
+      if (response.success) {
+        setSelectedCards([]);
+      } else {
         setRoomError('还贡失败');
       }
     } catch (error) {
@@ -625,9 +667,9 @@ const GamePage: React.FC = () => {
         );
 
       case GamePageState.TRIBUTE_PHASE:
-        return tributeInfo && room && playerSeat !== null ? (
-          <TributeFlow
-            tributePhase={tributeInfo}
+        return tributeData && room && playerSeat !== null ? (
+          <TributeBoard
+            tributeData={tributeData}
             players={room.players}
             currentPlayerSeat={playerSeat}
             playerHand={playerHand}
@@ -642,11 +684,9 @@ const GamePage: React.FC = () => {
         return renderPlaying();
 
       case GamePageState.DEAL_RESULT:
-        return dealResult && room ? (
+        return dealResultData ? (
           <DealResult
-            dealResult={dealResult}
-            players={room.players.filter(p => p !== null) as Player[]}
-            teamLevels={(gameState as PlayerGameState)?.team_levels || [2, 2]}
+            {...dealResultData}
             onContinue={handleContinue}
             onExit={handleReturnToLobby}
             isMatchFinished={false}
@@ -654,9 +694,9 @@ const GamePage: React.FC = () => {
         ) : null;
 
       case GamePageState.MATCH_RESULT:
-        return matchResult ? (
+        return matchResultData ? (
           <MatchResult
-            matchResult={matchResult}
+            {...matchResultData}
             onReturnToLobby={handleReturnToLobby}
             onPlayAgain={handlePlayAgain}
           />

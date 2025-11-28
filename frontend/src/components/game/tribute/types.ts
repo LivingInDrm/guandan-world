@@ -1,38 +1,33 @@
-import type { ReactNode } from 'react';
-import type { TributePhase, Player, Card } from '../../../types';
+import type { Player, Card } from '../../../types';
+import type { TributeStep, FlyingCard } from '../../../store/tributeStore';
+import type { TributeStartedPayload, TributeExemptedPayload } from '../../../types/generated/event';
 
-export type UIPhase = 
-  | 'START' 
-  | 'IMMUNITY_CHECK' 
-  | 'SUBMITTING' 
-  | 'SELECTING' 
-  | 'RETURNING' 
-  | 'FINISHED';
-
-export interface PhaseConfig {
-  title: string;
-  icon?: string;
-  duration?: number;
-  renderContent: (props: TributeFlowProps) => ReactNode;
+export interface TributeData {
+  step: TributeStep;
+  tributeStarted: TributeStartedPayload | null;
+  tributeExempted: TributeExemptedPayload | null;
+  submittedCards: { [giverSeat: number]: Card };
+  poolCards: (Card | null)[];
+  selectedCards: { [receiverSeat: number]: Card };
+  returnedCards: Array<{
+    fromSeat: number;
+    toSeat: number;
+    card: Card;
+  }>;
+  messages: string[];
+  currentSelectingSeat: number | null;
+  flyingCards: FlyingCard[];
+  players: Player[];
+  playerSeat: number | null;
 }
 
-export interface ReturnTask {
-  receiver: number; // The player who received the tribute (and needs to return)
-  giver: number;    // The player who gave the tribute
-  done: boolean;
-}
-
-export interface TributeFlowProps {
-  tributePhase: TributePhase;
+export interface TributeBoardProps {
+  tributeData: TributeData;
   players: (Player | null)[];
   currentPlayerSeat: number;
   playerHand: Card[];
   selectedCards: Card[];
   onCardSelect: (cards: Card[]) => void;
-  onSelectTribute: (cardIndex: number) => void;
-  onReturnTribute: (cardIndex: number) => void;
-}
-
-export interface PhaseContentProps extends TributeFlowProps {
-  phase: UIPhase;
+  onSelectTribute: (deckIndex: number) => void;
+  onReturnTribute: (deckIndex: number) => void;
 }

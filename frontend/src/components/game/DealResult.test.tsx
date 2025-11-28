@@ -1,7 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DealResult from './DealResult';
-import type { DealResult as DealResultType, Player } from '../../types';
+import type { Player } from '../../types';
+import type { DealEndedPayload } from '../../types/generated/event';
 import { VictoryType } from '../../types/proto';
 
 // Mock data
@@ -12,7 +13,7 @@ const mockPlayers: Player[] = [
   { id: '4', username: 'Player4', seat: 3, online: true, auto_play: false }
 ];
 
-const mockDealResult: DealResultType = {
+const mockDealResult: DealEndedPayload = {
   dealLevel: 5,
   rankings: [0, 2, 1, 3],
   victoryType: VictoryType.VICTORY_TYPE_DOUBLE_DOWN,

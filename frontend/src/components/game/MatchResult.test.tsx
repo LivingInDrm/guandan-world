@@ -1,26 +1,23 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import MatchResult from './MatchResult';
-import type { MatchResult as MatchResultType } from '../../types';
+import type { MatchEndedPayload } from '../../types/generated/event';
+import type { Player } from '../../types';
 
 // Mock data
-const mockMatchResult: MatchResultType = {
-  match_id: 'match-123',
-  winner: 0, // Team 0 wins
-  final_levels: [14, 12], // Team 0 reached A (14), Team 1 at Q (12)
-  statistics: {
-    total_deals: 8,
-    total_duration: 1800000, // 30 minutes in milliseconds
-    final_levels: [14, 12],
-    winner: 0
-  },
-  players: [
-    { id: '1', username: 'Alice', seat: 0, online: true, auto_play: false },
-    { id: '2', username: 'Bob', seat: 1, online: true, auto_play: false },
-    { id: '3', username: 'Charlie', seat: 2, online: true, auto_play: false },
-    { id: '4', username: 'David', seat: 3, online: true, auto_play: false }
-  ]
+const mockMatchResult: MatchEndedPayload = {
+  winner: 0,
+  finalLevels: [14, 12],
+  durationMs: 1800000,
+  totalDeals: 8
 };
+
+const mockPlayers: Player[] = [
+  { id: '1', username: 'Alice', seat: 0, online: true, auto_play: false },
+  { id: '2', username: 'Bob', seat: 1, online: true, auto_play: false },
+  { id: '3', username: 'Charlie', seat: 2, online: true, auto_play: false },
+  { id: '4', username: 'David', seat: 3, online: true, auto_play: false }
+];
 
 describe('MatchResult', () => {
   let mockOnReturnToLobby: ReturnType<typeof vi.fn>;
@@ -35,6 +32,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={mockMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -52,6 +50,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={mockMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -72,6 +71,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={mockMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -92,6 +92,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={mockMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -109,6 +110,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={mockMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -132,6 +134,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={mockMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -212,6 +215,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={mockMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -228,6 +232,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={mockMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />

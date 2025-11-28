@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import type { WSMessage, Card, DealResult, MatchResult, TributePhase, PlayerGameState } from '../types';
+import type { WSMessage, Card, PlayerGameState } from '../types';
+import type { DealEndedPayload, MatchEndedPayload } from '../types/generated/event';
 
 interface GameState {
   isInGame: boolean;
@@ -12,9 +13,8 @@ interface GameState {
   error: string | null;
   currentPhase: string;
   selectedCards: Card[];
-  dealResult: DealResult | null;
-  matchResult: MatchResult | null;
-  tributeInfo: TributePhase | null;
+  dealResult: DealEndedPayload | null;
+  matchResult: MatchEndedPayload | null;
 }
 
 interface GameActions {
@@ -30,9 +30,8 @@ interface GameActions {
   reset: () => void;
   setCurrentPhase: (phase: string) => void;
   setSelectedCards: (cards: Card[]) => void;
-  setDealResult: (result: DealResult | null) => void;
-  setMatchResult: (result: MatchResult | null) => void;
-  setTributeInfo: (info: TributePhase | null) => void;
+  setDealResult: (result: DealEndedPayload | null) => void;
+  setMatchResult: (result: MatchEndedPayload | null) => void;
 }
 
 type GameStore = GameState & GameActions;
@@ -49,8 +48,7 @@ const initialState: GameState = {
   currentPhase: 'waiting_players',
   selectedCards: [],
   dealResult: null,
-  matchResult: null,
-  tributeInfo: null
+  matchResult: null
 };
 
 export const useGameStore = create<GameStore>((set) => ({
@@ -79,11 +77,9 @@ export const useGameStore = create<GameStore>((set) => ({
   
   setSelectedCards: (cards: Card[]) => set({ selectedCards: cards }),
   
-  setDealResult: (result: DealResult | null) => set({ dealResult: result }),
+  setDealResult: (result: DealEndedPayload | null) => set({ dealResult: result }),
   
-  setMatchResult: (result: MatchResult | null) => set({ matchResult: result }),
-  
-  setTributeInfo: (info: TributePhase | null) => set({ tributeInfo: info }),
+  setMatchResult: (result: MatchEndedPayload | null) => set({ matchResult: result }),
   
   reset: () => set(initialState)
 }));

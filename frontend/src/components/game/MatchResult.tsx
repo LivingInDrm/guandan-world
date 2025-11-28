@@ -1,14 +1,17 @@
 import React from 'react';
-import type { MatchResult as MatchResultType, Player } from '../../types';
+import type { Player } from '../../types';
+import type { MatchEndedPayload } from '../../types/generated/event';
 
 interface MatchResultProps {
-  matchResult: MatchResultType;
+  matchResult: MatchEndedPayload;
+  players: Player[];
   onReturnToLobby: () => void;
   onPlayAgain: () => void;
 }
 
 const MatchResult: React.FC<MatchResultProps> = ({
   matchResult,
+  players,
   onReturnToLobby,
   onPlayAgain
 }) => {
@@ -24,7 +27,7 @@ const MatchResult: React.FC<MatchResultProps> = ({
       1: []
     };
 
-    matchResult.players.forEach(player => {
+    players.forEach(player => {
       const team = getTeamForPlayer(player.seat);
       teamPlayers[team].push(player);
     });
@@ -101,7 +104,7 @@ const MatchResult: React.FC<MatchResultProps> = ({
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold text-yellow-800">最终等级:</span>
                 <span className="text-2xl font-bold text-yellow-800">
-                  {getLevelText(matchResult.final_levels[winningTeam])}
+                  {getLevelText(matchResult.finalLevels[winningTeam])}
                 </span>
               </div>
             </div>
@@ -131,7 +134,7 @@ const MatchResult: React.FC<MatchResultProps> = ({
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold text-gray-700">最终等级:</span>
                 <span className="text-2xl font-bold text-gray-700">
-                  {getLevelText(matchResult.final_levels[losingTeam])}
+                  {getLevelText(matchResult.finalLevels[losingTeam])}
                 </span>
               </div>
             </div>
@@ -144,19 +147,19 @@ const MatchResult: React.FC<MatchResultProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600 mb-1">
-                {matchResult.statistics.total_deals}
+                {matchResult.totalDeals}
               </div>
               <div className="text-sm text-gray-600">总局数</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600 mb-1">
-                {formatDuration(matchResult.statistics.total_duration)}
+                {formatDuration(matchResult.durationMs)}
               </div>
               <div className="text-sm text-gray-600">总时长</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600 mb-1">
-                {getLevelText(matchResult.final_levels[0])} vs {getLevelText(matchResult.final_levels[1])}
+                {getLevelText(matchResult.finalLevels[0])} vs {getLevelText(matchResult.finalLevels[1])}
               </div>
               <div className="text-sm text-gray-600">最终等级</div>
             </div>
@@ -176,7 +179,7 @@ const MatchResult: React.FC<MatchResultProps> = ({
               感谢参与本次掼蛋对战！
             </h3>
             <p className="text-gray-600 mb-4">
-              经过 {matchResult.statistics.total_deals} 局激烈的对战，
+              经过 {matchResult.totalDeals} 局激烈的对战，
               队伍{winningTeam + 1} 成功率先达到A级，获得最终胜利！
             </p>
             <div className="flex justify-center items-center space-x-4 text-sm text-gray-500">

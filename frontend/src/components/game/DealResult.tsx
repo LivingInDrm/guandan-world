@@ -1,9 +1,10 @@
 import React from 'react';
-import type { DealResult as DealResultType, Player } from '../../types';
+import type { Player } from '../../types';
+import type { DealEndedPayload } from '../../types/generated/event';
 import { VictoryType } from '../../types/proto';
 
 interface DealResultProps {
-  dealResult: DealResultType;
+  dealResult: DealEndedPayload;
   players: Player[];
   teamLevels: [number, number];
   onContinue: () => void;
