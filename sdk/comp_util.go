@@ -1,6 +1,9 @@
 package sdk
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // comp_util.go - 牌组公共工具函数和常量
 // 提供给所有牌型使用的基础工具函数和常量定义
@@ -64,4 +67,49 @@ func hasJokers(cards []*Card) bool {
 		}
 	}
 	return false
+}
+
+// extractDeckIndexes 从 Card 列表中提取 DeckIndex 列表
+func extractDeckIndexes(cards []*Card) ([]int, error) {
+	indexes := make([]int, len(cards))
+	for i, card := range cards {
+		if card == nil {
+			return nil, fmt.Errorf("nil card at index %d", i)
+		}
+		indexes[i] = card.DeckIndex
+	}
+	return indexes, nil
+}
+
+// findCardsByDeckIndexes 根据 DeckIndex 列表从牌组中查找对应的原始 Card
+// source: 数据源（如玩家手牌）
+// deckIndexes: 要查找的 DeckIndex 列表
+// 返回找到的牌列表，保持与 deckIndexes 相同的顺序
+// 如果有任何 DeckIndex 找不到则返回错误
+func findCardsByDeckIndexes(source []*Card, deckIndexes []int) ([]*Card, error) {
+	result := make([]*Card, 0, len(deckIndexes))
+	for _, deckIndex := range deckIndexes {
+		found := false
+		for _, card := range source {
+			if card.DeckIndex == deckIndex {
+				result = append(result, card)
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("card with deck_index %d not found in source", deckIndex)
+		}
+	}
+	return result, nil
+}
+
+// findCardByDeckIndex 根据单个 DeckIndex 从牌组中查找对应的原始 Card
+func findCardByDeckIndex(source []*Card, deckIndex int) (*Card, error) {
+	for _, card := range source {
+		if card.DeckIndex == deckIndex {
+			return card, nil
+		}
+	}
+	return nil, fmt.Errorf("card with deck_index %d not found in source", deckIndex)
 }

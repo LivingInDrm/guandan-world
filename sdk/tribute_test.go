@@ -293,30 +293,40 @@ func TestTributeProcessComplete(t *testing.T) {
 		t.Errorf("期望不免贡，但实际免贡了")
 	}
 
-	// 处理上贡 - 可能需要多次调用来完成整个流程
-	for i := 0; i < 10; i++ { // 最多尝试10次避免无限循环
-		_, err = tm.ProcessTributePhaseAction(tributePhase, playerHands)
-		if err != nil {
-			t.Fatalf("处理上贡失败: %v", err)
-		}
+	// 处理上贡流程：直接调用底层方法
 
-		// 如果进入还贡阶段，手动添加还贡卡
-		if tributePhase.Status == TributeStatusReturning {
-			// 检查是否需要还贡
-			for _, pair := range tributePhase.TributePairs {
-				if pair.Receiver != -1 && pair.ReturnCard == nil {
-					// 选择最小的牌作为还贡
-					if len(playerHands[pair.Receiver]) > 0 {
-						returnCard := playerHands[pair.Receiver][0] // 选择第一张牌
-						tributePhase.addReturnCard(pair.Receiver, returnCard)
-					}
-				}
+	// 1. 开始贡牌阶段（Waiting → Selecting）
+	err = tm.startTributePhase(tributePhase, playerHands)
+	if err != nil {
+		t.Fatalf("开始贡牌阶段失败: %v", err)
+	}
+	if tributePhase.Status != TributeStatusSelecting {
+		t.Fatalf("期望状态为 Selecting，实际为 %s", tributePhase.Status)
+	}
+
+	// 2. 处理选贡（单下/末游场景自动选贡，Selecting → Returning）
+	err = tm.processSelectingPhase(tributePhase, nil)
+	if err != nil {
+		t.Fatalf("处理选贡失败: %v", err)
+	}
+	if tributePhase.Status != TributeStatusReturning {
+		t.Fatalf("期望状态为 Returning，实际为 %s", tributePhase.Status)
+	}
+
+	// 3. 添加还贡卡
+	for _, pair := range tributePhase.TributePairs {
+		if pair.Receiver != -1 && pair.ReturnCard == nil {
+			if len(playerHands[pair.Receiver]) > 0 {
+				returnCard := playerHands[pair.Receiver][0]
+				tributePhase.addReturnCard(pair.Receiver, returnCard)
 			}
 		}
+	}
 
-		if tributePhase.Status == TributeStatusFinished {
-			break
-		}
+	// 4. 处理还贡（Returning → Finished）
+	err = tm.processReturnCards(tributePhase, playerHands)
+	if err != nil {
+		t.Fatalf("处理还贡失败: %v", err)
 	}
 
 	if tributePhase.Status != TributeStatusFinished {

@@ -160,7 +160,6 @@ func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHa
 	}
 
 	tributePhase.setPoolCards(poolCards)
-	tributePhase.Status = TributeStatusSelecting
 
 	return nil
 }
@@ -172,7 +171,6 @@ func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHa
 func (tm *TributeManager) processSelectingPhase(tributePhase *TributePhase, lastResult *DealResult) error {
 	// 判断是否是双下场景（贡牌池有2张牌）
 	if len(tributePhase.PoolCards) > 1 {
-		// 双下场景，需要等待用户选择，不做处理
 		return nil
 	}
 
@@ -351,7 +349,7 @@ func (tp *TributePhase) selectTribute(playerSeat int, card *Card) error {
 	found := false
 	var cardIndex int = -1
 	var selectedPair *TributePair = nil
-	
+
 	for i, poolCard := range tp.PoolCards {
 		if tp.cardsEqual(card, poolCard) {
 			cardIndex = i
@@ -382,7 +380,7 @@ func (tp *TributePhase) selectTribute(playerSeat int, card *Card) error {
 		// rank2 自动获得剩余牌
 		rank2 := tp.getSecondPlace()
 		remainingCard := tp.PoolCards[0]
-		
+
 		// Find the remaining TributePair
 		for _, pair := range tp.TributePairs {
 			if pair.TributeCard != nil && pair.TributeCard.DeckIndex == remainingCard.DeckIndex {
@@ -390,7 +388,7 @@ func (tp *TributePhase) selectTribute(playerSeat int, card *Card) error {
 				break
 			}
 		}
-		
+
 		// 清空贡牌池
 		tp.PoolCards = make([]*Card, 0)
 	}
@@ -434,81 +432,6 @@ func (tp *TributePhase) getSecondPlace() int {
 	// Find the teammate of current selecting player
 	// In 4-player game: 0<->2, 1<->3 are teammates
 	return (tp.SelectingPlayer + 2) % 4
-}
-
-// ProcessTributePhaseAction processes the tribute phase and returns any required action
-func (tm *TributeManager) ProcessTributePhaseAction(phase *TributePhase, playerCards [4][]*Card) (*TributeAction, error) {
-	if phase == nil {
-		return nil, nil
-	}
-
-	// Process the tribute phase based on current status
-	switch phase.Status {
-	case TributeStatusWaiting:
-		// 自动提交贡牌到贡牌池
-		err := tm.startTributePhase(phase, playerCards)
-		if err != nil {
-			return nil, fmt.Errorf("start tribute phase failed: %w", err)
-		}
-		// 状态已变为 Selecting，继续处理
-
-	case TributeStatusSelecting:
-		// 处理选贡阶段
-		// 如果是双下（贡牌池有2张牌），等待 rank1 用户选择
-		// 如果是单下/末游（贡牌池有1张牌），自动分配给 rank1
-		if len(phase.PoolCards) == 1 {
-			// 单下/末游：自动选择
-			err := tm.processSelectingPhase(phase, nil)
-			if err != nil {
-				return nil, fmt.Errorf("process selecting phase failed: %w", err)
-			}
-			// 状态已变为 Returning，GameEngine 会检测状态变化并发送事件
-		}
-		// 双下场景：等待用户选择，不做自动处理
-
-	case TributeStatusReturning:
-		// 还贡阶段：检查是否所有还贡都已完成
-		err := tm.processReturnCards(phase, playerCards)
-		if err != nil {
-			return nil, fmt.Errorf("process return cards failed: %w", err)
-		}
-
-	default:
-		// Already finished, no processing needed
-	}
-
-	// Generate action based on current status
-	switch phase.Status {
-	case TributeStatusSelecting:
-		// 双下选贡场景：rank1 从贡牌池中选择
-		if phase.SelectingPlayer >= 0 && len(phase.PoolCards) > 1 {
-			return &TributeAction{
-				Type:     TributeActionSelect,
-				PlayerID: phase.SelectingPlayer,
-				Options:  phase.PoolCards,
-			}, nil
-		}
-
-	case TributeStatusReturning:
-		// 还贡阶段：找到需要还贡的 receiver
-		for _, pair := range phase.TributePairs {
-			if pair.Receiver != -1 && pair.ReturnCard == nil {
-				// 需要还贡
-				return &TributeAction{
-					Type:         TributeActionReturn,
-					PlayerID:     pair.Receiver,
-					Options:      playerCards[pair.Receiver],
-					TargetPlayer: pair.Giver,
-				}, nil
-			}
-		}
-
-	case TributeStatusFinished:
-		// No action needed, tribute phase is complete
-		return nil, nil
-	}
-
-	return nil, nil
 }
 
 // SubmitSelection handles tribute selection from pool (double down scenario)

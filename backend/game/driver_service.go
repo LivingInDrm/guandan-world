@@ -756,7 +756,6 @@ func (wso *WebSocketObserver) processEventInOrder(event *sdk.GameEvent) {
 	seq := event.Seq
 
 	// MATCH_STARTED 特殊处理：只有当 seq <= lastSeq 时（新比赛 seq 重新计数）才需要立即重置
-	// 否则让 MATCH_STARTED 像普通事件一样排队，等前序事件处理完后再由 handleEvent 重置
 	if event.Type == eventpb.EventType_EVENT_TYPE_MATCH_STARTED && seq <= wso.lastSeq {
 		if len(wso.pendingEvents) > 0 {
 			log.Printf("[WebSocketObserver] MATCH_STARTED forcing reset, discarding %d pending events for room %s", 

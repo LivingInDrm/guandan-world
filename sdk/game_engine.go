@@ -314,7 +314,7 @@ type GameEngineInterface interface {
 	GetMatchDetails() *MatchDetails
 
 	// GetPlayerHand 返回玩家当前手牌的原始 SDK Card 对象
-	// 
+	//
 	// 用途:
 	//   - SDK 内部（GameDriver）使用，避免 proto 转换损失 Level 字段
 	//   - 保留 Card 对象的完整性（Level、RawNumber 等）
@@ -374,7 +374,6 @@ func (ge *GameEngine) StartMatch(players []Player) error {
 	return nil
 }
 
-
 // StartDeal starts a new deal in the current match
 func (ge *GameEngine) StartDeal() error {
 	ge.mutex.Lock()
@@ -392,14 +391,14 @@ func (ge *GameEngine) StartDeal() error {
 	ge.updatedAt = time.Now()
 
 	// Emit deal started event
-	event := NewDealStartedEvent(ge.eventMeta, ge.currentMatch, ge.currentMatch.CurrentDeal, 
+	event := NewDealStartedEvent(ge.eventMeta, ge.currentMatch, ge.currentMatch.CurrentDeal,
 		ge.currentMatch.CurrentDeal.Level, ge.currentMatch.TeamLevels)
 	ge.emitEventLocked(event)
 
 	// 如果有上贡阶段，发送 TributeStarted 事件
 	if ge.currentMatch.CurrentDeal.TributePhase != nil {
 		lastResult := ge.currentMatch.CurrentDeal.LastResult
-		
+
 		// 确定上贡类型
 		var tributeType string
 		switch lastResult.VictoryType {
@@ -417,14 +416,14 @@ func (ge *GameEngine) StartDeal() error {
 		var givers []int
 		var receivers []int
 		tributePhase := ge.currentMatch.CurrentDeal.TributePhase
-		
+
 		// 从 TributePairs 提取 givers（需要排序以保证事件一致性）
 		for _, pair := range tributePhase.TributePairs {
 			givers = append(givers, pair.Giver)
 		}
 		// 对 givers 排序，确保事件中的数组顺序一致
 		sort.Ints(givers)
-		
+
 		// 确定 receivers（根据上贡类型）
 		rank1 := lastResult.Rankings[0]
 		switch lastResult.VictoryType {
@@ -436,7 +435,7 @@ func (ge *GameEngine) StartDeal() error {
 		}
 
 		// 发送 TributeStarted 事件
-		tributeStartedEvent := NewTributeStartedEvent(ge.eventMeta, ge.currentMatch, 
+		tributeStartedEvent := NewTributeStartedEvent(ge.eventMeta, ge.currentMatch,
 			ge.currentMatch.CurrentDeal, tributeType, givers, receivers)
 		ge.emitEventLocked(tributeStartedEvent)
 
@@ -444,7 +443,7 @@ func (ge *GameEngine) StartDeal() error {
 		if tributePhase.IsImmune {
 			// 获取详细的抗贡信息
 			tm := NewTributeManager(ge.currentMatch.CurrentDeal.Level)
-			_, immunityDetails := tm.GetTributeImmunityDetails(lastResult, 
+			_, immunityDetails := tm.GetTributeImmunityDetails(lastResult,
 				ge.currentMatch.CurrentDeal.PlayerCards)
 
 			// 提取 joker_holders
@@ -462,7 +461,7 @@ func (ge *GameEngine) StartDeal() error {
 			}
 
 			// 发送 TributeExempted 事件
-			tributeExemptedEvent := NewTributeExemptedEvent(ge.eventMeta, ge.currentMatch, 
+			tributeExemptedEvent := NewTributeExemptedEvent(ge.eventMeta, ge.currentMatch,
 				ge.currentMatch.CurrentDeal, jokerHolders)
 			ge.emitEventLocked(tributeExemptedEvent)
 
@@ -484,22 +483,32 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 
 	deal := ge.currentMatch.CurrentDeal
 
+	// 根据传入牌的 DeckIndex，从玩家手牌中查找原始牌（确保 Level 等属性正确）
+	deckIndexes, err := extractDeckIndexes(cards)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract deck indexes: %w", err)
+	}
+	originalCards, err := findCardsByDeckIndexes(deal.PlayerCards[playerSeat], deckIndexes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find cards in player hand: %w", err)
+	}
+
 	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the play
 	preEvents := ge.checkPreActionStateTransitions()
 	for _, evt := range preEvents {
 		ge.emitEventLocked(evt)
 	}
 
-	// Execute the play
-	err := deal.PlayCards(playerSeat, cards)
+	// Execute the play with original cards
+	err = deal.PlayCards(playerSeat, originalCards)
 	if err != nil {
 		return nil, fmt.Errorf("failed to play cards: %w", err)
 	}
 
 	ge.updatedAt = time.Now()
 
-	// Create and emit player played event
-	event := NewPlayerPlayedEvent(ge.eventMeta, ge.currentMatch, deal, deal.CurrentTrick, playerSeat, cards)
+	// Create and emit player played event with original cards
+	event := NewPlayerPlayedEvent(ge.eventMeta, ge.currentMatch, deal, deal.CurrentTrick, playerSeat, originalCards)
 	ge.emitEventLocked(event)
 
 	// Check for post-action state transitions (e.g., trick ending, deal ending)
@@ -602,7 +611,7 @@ func (ge *GameEngine) buildInternalPlayerView(playerSeat int) *PlayerView {
 	}
 
 	deal := ge.currentMatch.CurrentDeal
-	
+
 	view := &PlayerView{
 		PlayerSeat: playerSeat,
 		TeamLevels: ge.currentMatch.TeamLevels,
@@ -625,7 +634,7 @@ func (ge *GameEngine) buildInternalPlayerView(playerSeat int) *PlayerView {
 		view.CurrentTurn = &turn
 		leader := deal.CurrentTrick.Leader
 		view.Leader = &leader
-		
+
 		plays := deal.CurrentTrick.Plays
 		if plays == nil {
 			plays = make([]*PlayAction, 0)
@@ -823,7 +832,7 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 	if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
 		// Start the new trick
 		deal.CurrentTrick.Status = TrickStatusPlaying
-		
+
 		// Calculate remaining players (all 4 players at start of trick)
 		remainingPlayers := []int{}
 		for i := 0; i < 4; i++ {
@@ -833,7 +842,7 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 		}
 		isFirstTrick := len(deal.TrickHistory) == 0
 		// Note: Timeout is now managed by GameDriver, not set here
-		trickStartedEvent := NewTrickStartedEvent(ge.eventMeta, ge.currentMatch, deal, 
+		trickStartedEvent := NewTrickStartedEvent(ge.eventMeta, ge.currentMatch, deal,
 			deal.CurrentTrick, deal.CurrentTrick.Leader, isFirstTrick, remainingPlayers)
 		events = append(events, trickStartedEvent)
 	}
@@ -996,6 +1005,10 @@ func (ge *GameEngine) createMatchResult() *MatchResult {
 }
 
 // ProcessTributePhase 处理贡牌阶段
+// 使用循环处理自动状态转换，在每个状态转换点直接发送事件
+// 返回值：
+//   - action != nil: 需要用户输入（双下选贡或还贡）
+//   - action == nil: 贡牌阶段完成
 func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
@@ -1014,72 +1027,108 @@ func (ge *GameEngine) ProcessTributePhase() (*TributeAction, error) {
 		return nil, nil
 	}
 
-	// 记录处理前的状态
-	previousStatus := deal.TributePhase.Status
-
-	// 获取 TributeManager 并处理
 	tm := NewTributeManager(deal.Level)
-	action, err := tm.ProcessTributePhaseAction(deal.TributePhase, deal.PlayerCards)
-	if err != nil {
-		return nil, err
-	}
+	phase := deal.TributePhase
 
-	// 检测状态变化并触发相应事件
-	currentStatus := deal.TributePhase.Status
+	// 循环处理自动状态转换，直到需要用户输入或完成
+	for {
+		switch phase.Status {
 
-	// 1. Waiting → Selecting: 发送 TributeCardSubmitted 事件（每张贡牌）
-	if previousStatus == TributeStatusWaiting && currentStatus == TributeStatusSelecting {
-		// 遍历所有贡牌，发送提交事件
-		for _, pair := range deal.TributePhase.TributePairs {
-			if pair.TributeCard != nil {
-				event := NewTributeCardSubmittedEvent(ge.eventMeta, ge.currentMatch, deal, pair.Giver, pair.TributeCard)
-				ge.emitEventLocked(event)
+		case TributeStatusWaiting:
+			// 自动提交贡牌到贡牌池
+			err := tm.startTributePhase(phase, deal.PlayerCards)
+			if err != nil {
+				return nil, fmt.Errorf("start tribute phase failed: %w", err)
 			}
+			// 发送 TributeCardSubmitted 事件
+			for _, pair := range phase.TributePairs {
+				if pair.TributeCard != nil {
+					event := NewTributeCardSubmittedEvent(ge.eventMeta, ge.currentMatch, deal, pair.Giver, pair.TributeCard)
+					ge.emitEventLocked(event)
+				}
+			}
+			// 状态转换
+			phase.Status = TributeStatusSelecting
+
+		case TributeStatusSelecting:
+			if len(phase.PoolCards) > 1 {
+				// 双下时，rank1先从两张贡牌中进行选择；这里暂停状态机，等待用户输入，返回 action给调用者
+				if phase.SelectingPlayer >= 0 {
+					return &TributeAction{
+						Type:     TributeActionSelect,
+						PlayerID: phase.SelectingPlayer,
+						Options:  phase.PoolCards,
+					}, nil
+				}
+				return nil, nil
+			}
+			// 双下，选完了1张，只剩1张；或单下/末游，仅1张，自动选择
+			err := tm.processSelectingPhase(phase, nil)
+			if err != nil {
+				return nil, fmt.Errorf("process selecting phase failed: %w", err)
+			}
+			// 发送 TributeCardSelected 事件
+			if len(phase.TributePairs) == 1 {
+				pair := phase.TributePairs[0]
+				if pair.Receiver != -1 && pair.TributeCard != nil {
+					event := NewTributeCardSelectedEvent(ge.eventMeta, ge.currentMatch, deal, pair.Receiver, pair.TributeCard, true)
+					ge.emitEventLocked(event)
+				}
+			}
+			// 继续循环处理 Returning 状态
+
+		case TributeStatusReturning:
+			// 检查是否所有还贡都已完成
+			err := tm.processReturnCards(phase, deal.PlayerCards)
+			if err != nil {
+				return nil, fmt.Errorf("process return cards failed: %w", err)
+			}
+			// 如果已完成，继续循环进入 Finished 处理
+			if phase.Status == TributeStatusFinished {
+				continue
+			}
+			// 找需要还贡的 receiver
+			for _, pair := range phase.TributePairs {
+				if pair.Receiver != -1 && pair.ReturnCard == nil {
+					return &TributeAction{
+						Type:         TributeActionReturn,
+						PlayerID:     pair.Receiver,
+						Options:      deal.PlayerCards[pair.Receiver],
+						TargetPlayer: pair.Giver,
+					}, nil
+				}
+			}
+			// 不应该到这里，但作为安全保障
+			return nil, nil
+
+		case TributeStatusFinished:
+			// 抗贡场景：需要先启动游戏阶段
+			if phase.IsImmune {
+				err := deal.startFirstTrick()
+				if err != nil {
+					return nil, fmt.Errorf("failed to start first trick: %w", err)
+				}
+				deal.Status = DealStatusPlaying
+			} else {
+				// 正常上贡场景：应用贡牌效果
+				err := tm.ApplyTributeToHands(phase, &deal.PlayerCards)
+				if err != nil {
+					return nil, fmt.Errorf("apply tribute failed: %w", err)
+				}
+				// 启动游戏阶段
+				err = deal.StartPlayingPhase()
+				if err != nil {
+					return nil, fmt.Errorf("failed to start playing phase: %w", err)
+				}
+			}
+			// 发送完成事件
+			ge.emitEventLocked(NewTributeCompletedEvent(ge.eventMeta, ge.currentMatch, deal))
+			return nil, nil
+
+		default:
+			return nil, nil
 		}
 	}
-
-	// 2. Selecting → Returning: 单下/末游自动选贡，发送 TributeCardSelected 事件
-	if previousStatus == TributeStatusSelecting && currentStatus == TributeStatusReturning {
-		// 检查是否是自动选择（单下/末游）
-		// TributePairs 中应该只有1个条目
-		if len(deal.TributePhase.TributePairs) == 1 {
-			pair := deal.TributePhase.TributePairs[0]
-			if pair.Receiver != -1 && pair.TributeCard != nil {
-				event := NewTributeCardSelectedEvent(ge.eventMeta, ge.currentMatch, deal, pair.Receiver, pair.TributeCard, true)
-				ge.emitEventLocked(event)
-			}
-		}
-	}
-
-	// 3. 如果贡牌阶段完成，应用贡牌效果并发送完成事件
-	if currentStatus == TributeStatusFinished {
-		// 抗贡场景：需要先启动游戏阶段（创建第一个trick）
-		if deal.TributePhase.IsImmune {
-			// 启动游戏阶段
-			err = deal.startFirstTrick()
-			if err != nil {
-				return nil, fmt.Errorf("failed to start first trick: %w", err)
-			}
-			deal.Status = DealStatusPlaying
-		} else {
-			// 正常上贡场景：应用贡牌效果
-			err = tm.ApplyTributeToHands(deal.TributePhase, &deal.PlayerCards)
-			if err != nil {
-				return nil, fmt.Errorf("apply tribute failed: %w", err)
-			}
-
-			// 启动游戏阶段（包括创建第一个trick和设置状态）
-			err = deal.StartPlayingPhase()
-			if err != nil {
-				return nil, fmt.Errorf("failed to start playing phase: %w", err)
-			}
-		}
-
-		// 统一发送完成事件（抗贡和正常上贡都在这里发送）
-		ge.emitEventLocked(NewTributeCompletedEvent(ge.eventMeta, ge.currentMatch, deal))
-	}
-
-	return action, nil
 }
 
 // SubmitTributeSelection 提交贡牌选择（用于双下选牌）
@@ -1101,6 +1150,12 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, selectedCard *Card) e
 		return errors.New("selected card is nil")
 	}
 
+	// 从贡牌池中根据 DeckIndex 查找原始牌（确保 Level 等属性正确）
+	originalCard, err := findCardByDeckIndex(deal.TributePhase.PoolCards, selectedCard.DeckIndex)
+	if err != nil {
+		return fmt.Errorf("card not found in tribute pool: %w", err)
+	}
+
 	// 记录选择前的已分配贡牌数量，用于检测 rank2 的自动分配
 	var previousReceivedCount int
 	for _, pair := range deal.TributePhase.TributePairs {
@@ -1109,16 +1164,16 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, selectedCard *Card) e
 		}
 	}
 
-	// 调用 TributeManager 处理选择
+	// 调用 TributeManager 处理选择（使用原始牌）
 	tm := NewTributeManager(deal.Level)
-	err := tm.SubmitSelection(deal.TributePhase, playerID, selectedCard)
+	err = tm.SubmitSelection(deal.TributePhase, playerID, originalCard)
 	if err != nil {
 		return err
 	}
 
-	// 发送 rank1 的选择事件
-	ge.emitEventLocked(NewTributeCardSelectedEvent(ge.eventMeta, ge.currentMatch, deal, 
-		playerID, selectedCard, false))
+	// 发送 rank1 的选择事件（使用原始牌）
+	ge.emitEventLocked(NewTributeCardSelectedEvent(ge.eventMeta, ge.currentMatch, deal,
+		playerID, originalCard, false))
 
 	// 检测是否是双下场景（rank2 自动获得剩余牌）
 	var currentReceivedCount int
@@ -1133,7 +1188,7 @@ func (ge *GameEngine) SubmitTributeSelection(playerID int, selectedCard *Card) e
 		for _, pair := range deal.TributePhase.TributePairs {
 			if pair.Receiver != -1 && pair.Receiver != playerID && pair.TributeCard != nil {
 				// 找到了 rank2 的 pair
-				ge.emitEventLocked(NewTributeCardSelectedEvent(ge.eventMeta, ge.currentMatch, deal, 
+				ge.emitEventLocked(NewTributeCardSelectedEvent(ge.eventMeta, ge.currentMatch, deal,
 					pair.Receiver, pair.TributeCard, true))
 				break
 			}
@@ -1162,6 +1217,12 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, returnCard *Card) error 
 		return errors.New("return card is nil")
 	}
 
+	// 从玩家手牌中根据 DeckIndex 查找原始牌（确保 Level 等属性正确）
+	originalCard, err := findCardByDeckIndex(deal.PlayerCards[playerID], returnCard.DeckIndex)
+	if err != nil {
+		return fmt.Errorf("card not found in player hand: %w", err)
+	}
+
 	// 从 TributePairs 获取 target_player（原贡者）
 	var targetPlayer int = -1
 	for _, pair := range deal.TributePhase.TributePairs {
@@ -1174,16 +1235,16 @@ func (ge *GameEngine) SubmitReturnTribute(playerID int, returnCard *Card) error 
 		return fmt.Errorf("player %d is not a tribute receiver", playerID)
 	}
 
-	// 调用 TributeManager 处理还贡
+	// 调用 TributeManager 处理还贡（使用原始牌）
 	tm := NewTributeManager(deal.Level)
-	err := tm.SubmitReturn(deal.TributePhase, playerID, returnCard, deal.PlayerCards[playerID])
+	err = tm.SubmitReturn(deal.TributePhase, playerID, originalCard, deal.PlayerCards[playerID])
 	if err != nil {
 		return err
 	}
 
-	// 发送还贡事件
-	ge.emitEventLocked(NewTributeCardReturnedEvent(ge.eventMeta, ge.currentMatch, deal, 
-		playerID, returnCard, targetPlayer, false))
+	// 发送还贡事件（使用原始牌）
+	ge.emitEventLocked(NewTributeCardReturnedEvent(ge.eventMeta, ge.currentMatch, deal,
+		playerID, originalCard, targetPlayer, false))
 
 	return nil
 }
@@ -1262,16 +1323,16 @@ func (ge *GameEngine) GetMatchDetails() *MatchDetails {
 func (ge *GameEngine) GetPlayerHand(playerSeat int) []*Card {
 	ge.mutex.RLock()
 	defer ge.mutex.RUnlock()
-	
+
 	// 边界检查
 	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
 		return nil
 	}
-	
+
 	if playerSeat < 0 || playerSeat >= 4 {
 		return nil
 	}
-	
+
 	// 返回原始引用（零拷贝）
 	return ge.currentMatch.CurrentDeal.PlayerCards[playerSeat]
 }

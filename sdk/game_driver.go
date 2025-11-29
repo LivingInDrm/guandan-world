@@ -450,42 +450,43 @@ func (gd *GameDriver) runTributePhase() error {
 	for gd.engine.GetCurrentDealStatus() == DealStatusTribute && actionCount < maxActions {
 		actionCount++
 
-		// 记录处理前的状态，用于检测状态变化
+		// 记录处理前的状态
 		prevStatus := gd.getTributeStatus()
 
 		// 处理贡牌动作
+		// ProcessTributePhase 会在一次调用中完成所有自动状态转换
+		// 返回 action 表示需要用户输入，返回 nil 表示贡牌阶段完成
 		action, err := gd.engine.ProcessTributePhase()
 		if err != nil {
 			return fmt.Errorf("failed to process tribute phase: %w", err)
 		}
 
-		// 检测状态变化并添加对应延时
 		currStatus := gd.getTributeStatus()
 
-		// Waiting → Selecting: TributeCardSubmitted 事件已发送
-		if prevStatus == TributeStatusWaiting && currStatus == TributeStatusSelecting {
+		// 添加延时让前端展示动画
+		// 注意：ProcessTributePhase 可能在一次调用中跨越多个状态
+		// 例如单下/末游：Waiting → Selecting → Returning
+
+		// 如果从 Waiting 开始有状态变化，说明发送了 TributeCardSubmitted 事件
+		if prevStatus == TributeStatusWaiting && currStatus != TributeStatusWaiting {
 			if !gd.sleepWithContext(gd.config.TributeCardSubmittedDelay) {
 				return fmt.Errorf("game cancelled during tribute card submitted delay")
 			}
 		}
 
-		// Selecting → Returning (自动选贡): TributeCardSelected 事件已发送
-		if prevStatus == TributeStatusSelecting && currStatus == TributeStatusReturning {
+		// 如果当前是 Returning 且之前不是，说明发送了 TributeCardSelected 事件（单下/末游自动选贡）
+		if prevStatus != TributeStatusReturning && currStatus == TributeStatusReturning {
 			if !gd.sleepWithContext(gd.config.TributeCardSelectedDelay) {
 				return fmt.Errorf("game cancelled during tribute card selected delay")
 			}
 		}
 
-		// 状态变为 Finished: TributeCompleted 事件已发送
-		if currStatus == TributeStatusFinished {
+		// 贡牌阶段完成（ProcessTributePhase 返回 nil）
+		if action == nil {
+			// TributeCompleted 事件已发送，添加延时
 			if !gd.sleepWithContext(gd.config.TributeCompletedDelay) {
 				return fmt.Errorf("game cancelled during tribute completed delay")
 			}
-			break
-		}
-
-		// 如果没有待处理的动作，贡牌阶段完成
-		if action == nil {
 			break
 		}
 
