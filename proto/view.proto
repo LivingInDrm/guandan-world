@@ -141,9 +141,6 @@ message TributeView {
   // 贡牌池（双下选牌场景使用）
   repeated guandan.common.Card pool_cards = 12;
   
-  // rank1玩家座位号，-1 表示无
-  int32 selecting_player = 13;
-  
   // 是否免贡
   bool is_immune = 14;
   

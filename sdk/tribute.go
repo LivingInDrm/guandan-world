@@ -29,14 +29,15 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 	}
 
 	tributePhase := &TributePhase{
-		Status:          TributeStatusWaiting,
-		TributePairs:    make([]*TributePair, 0),
-		PoolCards:       make([]*Card, 0),
-		SelectingPlayer: -1,
+		Status:       TributeStatusWaiting,
+		TributePairs: make([]*TributePair, 0),
+		PoolCards:    make([]*Card, 0),
+		Winners:      []int{},
 	}
 
 	// 按排名获取玩家
 	rank1 := rankings[0] // 第1名
+	rank2 := rankings[1] // 第2名
 	rank3 := rankings[2] // 第3名
 	rank4 := rankings[3] // 第4名
 
@@ -47,7 +48,7 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 		// Double Down: rank1, rank2 同队
 		// Rank3 和 Rank4 各上交 1 张贡牌到贡牌池
 		// Rank1 优先从贡牌池中挑选其一；Rank2 获得剩下的一张贡牌
-		tributePhase.SelectingPlayer = rank1
+		tributePhase.Winners = []int{rank1, rank2}
 		tributePhase.TributePairs = append(tributePhase.TributePairs,
 			&TributePair{Giver: rank3, Receiver: -1, TributeCard: nil, ReturnCard: nil},
 			&TributePair{Giver: rank4, Receiver: -1, TributeCard: nil, ReturnCard: nil},
@@ -56,7 +57,7 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 	case VictoryTypeSingleLast:
 		// Single Last: rank1, rank3 同队
 		// Rank4 上交 1 张贡牌到贡牌池，Rank1 自动获得
-		tributePhase.SelectingPlayer = rank1
+		tributePhase.Winners = []int{rank1}
 		tributePhase.TributePairs = append(tributePhase.TributePairs,
 			&TributePair{Giver: rank4, Receiver: -1, TributeCard: nil, ReturnCard: nil},
 		)
@@ -64,7 +65,7 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 	case VictoryTypePartnerLast:
 		// Partner Last: rank1, rank4 同队
 		// Rank3 上交 1 张贡牌到贡牌池，Rank1 自动获得
-		tributePhase.SelectingPlayer = rank1
+		tributePhase.Winners = []int{rank1}
 		tributePhase.TributePairs = append(tributePhase.TributePairs,
 			&TributePair{Giver: rank3, Receiver: -1, TributeCard: nil, ReturnCard: nil},
 		)
@@ -136,144 +137,70 @@ func (tm *TributeManager) countBigJokers(hand []*Card) int {
 	return count
 }
 
-// startTributePhase starts the tribute phase by determining tribute cards
-func (tm *TributeManager) startTributePhase(tributePhase *TributePhase, playerHands [4][]*Card) error {
-	// 统一处理所有上贡类型：自动选择贡牌并放入贡牌池
+// GiveTributeToPool 计算并将贡牌放入贡牌池，，填充 TributePairs，从玩家手里删除对应的贡牌
+func (tm *TributeManager) GiveTributeToPool(phase *TributePhase, playerHands *[4][]*Card) error {
 	poolCards := make([]*Card, 0)
-	seenDeckIndexes := make(map[int]bool) // 防御性检查：确保不重复
 
-	for _, pair := range tributePhase.TributePairs {
-		// 自动选择贡牌（除红桃级牌外的最大牌）
+	for _, pair := range phase.TributePairs {
 		tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[pair.Giver])
 		if tributeCard != nil {
-			// 防御性检查：确保DeckIndex不重复
-			if seenDeckIndexes[tributeCard.DeckIndex] {
-				return fmt.Errorf("duplicate card deck_index in tribute pool: %d", tributeCard.DeckIndex)
-			}
-			seenDeckIndexes[tributeCard.DeckIndex] = true
-
-			// 填充 TributePair
 			pair.TributeCard = tributeCard
-			// 加入贡牌池
 			poolCards = append(poolCards, tributeCard)
+			playerHands[pair.Giver] = tm.removeCardFromHand(playerHands[pair.Giver], tributeCard)
 		}
 	}
 
-	tributePhase.setPoolCards(poolCards)
-
+	phase.setPoolCards(poolCards)
 	return nil
 }
 
-// processSelectingPhase processes automatic selection for non-double-down scenarios
-// 处理单下/末游场景的自动选贡，双下场景不做处理（等待用户选择）
-// 状态转换: Selecting → Returning（仅单下/末游）
-// 事件发送: 由 GameEngine 通过状态变化检测发送 TributeCardSelected 事件
-func (tm *TributeManager) processSelectingPhase(tributePhase *TributePhase, lastResult *DealResult) error {
-	// 判断是否是双下场景（贡牌池有2张牌）
-	if len(tributePhase.PoolCards) > 1 {
-		return nil
-	}
-
-	// 单下/末游场景：rank1自动获得唯一的贡牌
-	if len(tributePhase.PoolCards) == 1 {
-		selectedCard := tributePhase.PoolCards[0]
-		rank1 := tributePhase.SelectingPlayer
-
-		// 找到对应的 TributePair 并更新 Receiver
-		found := false
-		for _, pair := range tributePhase.TributePairs {
-			if pair.TributeCard != nil && pair.TributeCard.DeckIndex == selectedCard.DeckIndex {
-				pair.Receiver = rank1
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			// 提供详细调试信息
-			poolDeckIndexes := make([]int, len(tributePhase.PoolCards))
-			for i, card := range tributePhase.PoolCards {
-				poolDeckIndexes[i] = card.DeckIndex
-			}
-			pairDeckIndexes := make([]int, len(tributePhase.TributePairs))
-			for i, pair := range tributePhase.TributePairs {
-				if pair.TributeCard != nil {
-					pairDeckIndexes[i] = pair.TributeCard.DeckIndex
-				} else {
-					pairDeckIndexes[i] = -1
-				}
-			}
-			return fmt.Errorf("could not find tribute pair for pool card: pool=%v, pairs=%v", poolDeckIndexes, pairDeckIndexes)
-		}
-
-		// 清空贡牌池
-		tributePhase.PoolCards = make([]*Card, 0)
-
-		// 状态转换到还贡阶段
-		tributePhase.Status = TributeStatusReturning
-	}
-
-	return nil
-}
-
-// processReturnCards processes the return cards phase
-func (tm *TributeManager) processReturnCards(tributePhase *TributePhase, playerHands [4][]*Card) error {
-	// Check if all return cards have been submitted
-	// 基于 TributePairs 判断是否所有还贡都已完成
-	allReturned := true
-	hasActivePairs := false
-	for _, pair := range tributePhase.TributePairs {
+// GetNextReceiver 找下一个待分配的 receiver（Winners 中还没成为任何 TributePair.Receiver 的第一个）
+func (tm *TributeManager) GetNextReceiver(phase *TributePhase) int {
+	assignedReceivers := make(map[int]bool)
+	// 收集所有已分配的接收者
+	for _, pair := range phase.TributePairs {
 		if pair.Receiver != -1 {
-			hasActivePairs = true
-			// Check if return card is missing
-			if pair.ReturnCard == nil {
-				allReturned = false
-				break
-			}
+			assignedReceivers[pair.Receiver] = true
 		}
 	}
 
-	// Only finish the phase if all returns are complete
-	if allReturned && hasActivePairs {
-		tributePhase.Status = TributeStatusFinished
+	// 选择第一个尚未被分配的获胜者
+	for _, winner := range phase.Winners {
+		if !assignedReceivers[winner] {
+			return winner
+		}
 	}
-
-	return nil
+	return -1
 }
 
-// ApplyTributeToHands applies tribute effects to player hands
-func (tm *TributeManager) ApplyTributeToHands(tributePhase *TributePhase, playerHands *[4][]*Card) error {
-	if tributePhase == nil || tributePhase.Status != TributeStatusFinished {
-		return nil
-	}
-
-	// 统一处理所有上贡场景：基于 TributePairs
-	for _, pair := range tributePhase.TributePairs {
-		// Step 1: 应用贡牌转移 (from giver to receiver)
-		if pair.Receiver != -1 && pair.TributeCard != nil {
-			// Remove tribute card from giver
-			playerHands[pair.Giver] = tm.removeCardFromHand(playerHands[pair.Giver], pair.TributeCard)
-
-			// Add tribute card to receiver
-			playerHands[pair.Receiver] = append(playerHands[pair.Receiver], pair.TributeCard)
-		}
-
-		// Step 2: 应用还贡 (from receiver back to giver)
-		if pair.Receiver != -1 && pair.ReturnCard != nil {
-			// Remove return card from receiver
-			playerHands[pair.Receiver] = tm.removeCardFromHand(playerHands[pair.Receiver], pair.ReturnCard)
-
-			// Add return card to giver
-			playerHands[pair.Giver] = append(playerHands[pair.Giver], pair.ReturnCard)
+// AssignCardToReceiver 将贡牌分配给 receiver
+func (tm *TributeManager) AssignCardToReceiver(phase *TributePhase, card *Card, receiver int) {
+	for _, pair := range phase.TributePairs {
+		if pair.TributeCard != nil && pair.TributeCard.DeckIndex == card.DeckIndex {
+			pair.Receiver = receiver
+			break
 		}
 	}
+}
 
-	// Re-sort all hands
-	for player := 0; player < 4; player++ {
-		playerHands[player] = sortCards(playerHands[player])
+// RemoveFromPool 从贡牌池移除指定牌
+func (tm *TributeManager) RemoveFromPool(phase *TributePhase, card *Card) {
+	for i, poolCard := range phase.PoolCards {
+		if poolCard.DeckIndex == card.DeckIndex {
+			phase.PoolCards = append(phase.PoolCards[:i], phase.PoolCards[i+1:]...)
+			break
+		}
 	}
+}
 
-	return nil
+// GetPendingReturnReceiver 找下一个需要还贡的 receiver
+func (tm *TributeManager) GetPendingReturnReceiver(phase *TributePhase) (receiver int, giver int) {
+	for _, pair := range phase.TributePairs {
+		if pair.Receiver != -1 && pair.ReturnCard == nil {
+			return pair.Receiver, pair.Giver
+		}
+	}
+	return -1, -1
 }
 
 // getHighestCardExcludingHeartTrump 获取除红桃Trump外最大的一张牌
@@ -335,76 +262,6 @@ func (tm *TributeManager) cardsEqual(card1, card2 *Card) bool {
 	return card1.DeckIndex == card2.DeckIndex
 }
 
-// selectTribute handles tribute selection from pool (double down scenario)
-func (tp *TributePhase) selectTribute(playerSeat int, card *Card) error {
-	if tp.Status != TributeStatusSelecting {
-		return fmt.Errorf("not in selecting status: %s", tp.Status)
-	}
-
-	if playerSeat != tp.SelectingPlayer {
-		return fmt.Errorf("not player %d's turn to select", playerSeat)
-	}
-
-	// Validate card is in pool and find the corresponding TributePair
-	found := false
-	var cardIndex int = -1
-	var selectedPair *TributePair = nil
-
-	for i, poolCard := range tp.PoolCards {
-		if tp.cardsEqual(card, poolCard) {
-			cardIndex = i
-			// Find the corresponding TributePair
-			for _, pair := range tp.TributePairs {
-				if pair.TributeCard != nil && pair.TributeCard.DeckIndex == poolCard.DeckIndex {
-					selectedPair = pair
-					found = true
-					break
-				}
-			}
-			break
-		}
-	}
-
-	if !found || selectedPair == nil {
-		return errors.New("card not found in tribute pool or no matching tribute pair")
-	}
-
-	// 记录选择结果：playerSeat 选择了来自 selectedPair.Giver 的牌
-	selectedPair.Receiver = playerSeat
-
-	// 从贡牌池移除已选牌
-	tp.PoolCards = append(tp.PoolCards[:cardIndex], tp.PoolCards[cardIndex+1:]...)
-
-	// 处理剩余牌（双下场景）
-	if len(tp.PoolCards) > 0 {
-		// rank2 自动获得剩余牌
-		rank2 := tp.getSecondPlace()
-		remainingCard := tp.PoolCards[0]
-
-		// Find the remaining TributePair
-		for _, pair := range tp.TributePairs {
-			if pair.TributeCard != nil && pair.TributeCard.DeckIndex == remainingCard.DeckIndex {
-				pair.Receiver = rank2
-				break
-			}
-		}
-
-		// 清空贡牌池
-		tp.PoolCards = make([]*Card, 0)
-	}
-
-	// 选贡完成，进入还贡阶段
-	tp.Status = TributeStatusReturning
-	tp.SelectingPlayer = -1
-
-	return nil
-}
-
-// getCardKey returns a unique key for a card
-func (tp *TributePhase) getCardKey(card *Card) string {
-	return fmt.Sprintf("%d_%s", card.Number, card.Color)
-}
-
 // setPoolCards sets the pool cards for double down scenario
 func (tp *TributePhase) setPoolCards(cards []*Card) {
 	tp.PoolCards = make([]*Card, len(cards))
@@ -429,108 +286,13 @@ func (tp *TributePhase) cardsEqual(card1, card2 *Card) bool {
 
 // getSecondPlace returns the seat number of second place
 func (tp *TributePhase) getSecondPlace() int {
-	// Find the teammate of current selecting player
-	// In 4-player game: 0<->2, 1<->3 are teammates
-	return (tp.SelectingPlayer + 2) % 4
-}
-
-// SubmitSelection handles tribute selection from pool (double down scenario)
-func (tm *TributeManager) SubmitSelection(phase *TributePhase, playerID int, selectedCard *Card) error {
-	if phase == nil {
-		return errors.New("no tribute phase")
+	if len(tp.Winners) > 1 {
+		return tp.Winners[1]
 	}
-
-	if phase.Status != TributeStatusSelecting {
-		return errors.New("not in selecting status")
+	if len(tp.Winners) > 0 {
+		return (tp.Winners[0] + 2) % 4
 	}
-
-	if phase.SelectingPlayer != playerID {
-		return fmt.Errorf("not player %d's turn to select", playerID)
-	}
-
-	if selectedCard == nil {
-		return errors.New("selected card is nil")
-	}
-
-	// Verify the card is in the pool
-	cardFound := false
-	for _, card := range phase.PoolCards {
-		if card.DeckIndex == selectedCard.DeckIndex {
-			cardFound = true
-			break
-		}
-	}
-
-	if !cardFound {
-		return errors.New("card not found in tribute pool")
-	}
-
-	// Execute selection
-	return phase.selectTribute(playerID, selectedCard)
-}
-
-// SubmitReturn handles return tribute submission
-func (tm *TributeManager) SubmitReturn(phase *TributePhase, playerID int, returnCard *Card, playerCards []*Card) error {
-	if phase == nil {
-		return errors.New("no tribute phase")
-	}
-
-	if phase.Status != TributeStatusReturning {
-		return errors.New("not in returning status")
-	}
-
-	// 验证玩家是否需要还贡（基于 TributePairs）
-	var targetPair *TributePair
-	for _, pair := range phase.TributePairs {
-		if pair.Receiver == playerID {
-			targetPair = pair
-			break
-		}
-	}
-
-	if targetPair == nil {
-		return fmt.Errorf("player %d does not need to return tribute", playerID)
-	}
-
-	// 检查是否已还贡
-	if targetPair.ReturnCard != nil {
-		return fmt.Errorf("player %d has already returned tribute", playerID)
-	}
-
-	if returnCard == nil {
-		return errors.New("return card is nil")
-	}
-
-	// Verify the card is in player's hand
-	cardFound := false
-	for _, card := range playerCards {
-		if card.DeckIndex == returnCard.DeckIndex {
-			cardFound = true
-			break
-		}
-	}
-
-	if !cardFound {
-		return errors.New("card not found in player's hand")
-	}
-
-	// Record the return
-	phase.addReturnCard(playerID, returnCard)
-
-	// Check if all returns are complete
-	allReturned := true
-	for _, pair := range phase.TributePairs {
-		if pair.Receiver != -1 && pair.ReturnCard == nil {
-			allReturned = false
-			break
-		}
-	}
-
-	if allReturned {
-		phase.Status = TributeStatusFinished
-	}
-
-	return nil
+	return -1
 }
 
 // buildTributeMapFromPairs builds a tribute map from TributePairs
@@ -566,4 +328,325 @@ func buildReturnCardsFromPairs(pairs []*TributePair) map[int]*Card {
 		}
 	}
 	return result
+}
+
+// ProcessTributeStep 纯函数：根据当前状态计算下一步操作
+//
+// 特点：
+//   - 不修改任何输入参数
+//   - 不发送事件
+//   - 不依赖 GameEngine/Match/Deal
+//
+// 返回值包含所有需要执行的变更，由调用者负责应用
+func ProcessTributeStep(
+	phase *TributePhase,
+	playerHands [4][]*Card,
+	level int,
+	input *TributeInput,
+) *TributeStepResult {
+	result := &TributeStepResult{}
+	tm := NewTributeManager(level)
+
+	switch phase.Status {
+
+	case TributeStatusWaiting:
+		result = processTributeWaiting(tm, phase, playerHands)
+
+	case TributeStatusSelecting:
+		result = processTributeSelecting(tm, phase, playerHands, input)
+
+	case TributeStatusReturning:
+		result = processTributeReturning(tm, phase, playerHands, input)
+
+	case TributeStatusFinished:
+		result = processTributeFinished(phase)
+
+	default:
+		// Unknown status, do nothing
+	}
+
+	return result
+}
+
+// processTributeWaiting 处理 Waiting 状态：选择贡牌并放入池
+func processTributeWaiting(tm *TributeManager, phase *TributePhase, playerHands [4][]*Card) *TributeStepResult {
+	result := &TributeStepResult{
+		NextStatus: TributeStatusSelecting,
+	}
+
+	poolCards := make([]*Card, 0)
+
+	for _, pair := range phase.TributePairs {
+		tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[pair.Giver])
+		if tributeCard == nil {
+			result.Error = fmt.Errorf("player %d has no valid tribute card", pair.Giver)
+			return result
+		}
+
+		poolCards = append(poolCards, tributeCard)
+
+		// 事件意图
+		result.Events = append(result.Events, TributeEventIntent{
+			Type:       EventTributeCardSubmitted,
+			PlayerSeat: pair.Giver,
+			Card:       tributeCard,
+		})
+
+		// 手牌变更：从 giver 移除
+		result.HandChanges = append(result.HandChanges, HandChange{
+			PlayerSeat: pair.Giver,
+			Card:       tributeCard,
+			IsAdd:      false,
+		})
+
+		// Pair 变更：设置 TributeCard
+		result.PairUpdates = append(result.PairUpdates, PairUpdate{
+			GiverSeat:   pair.Giver,
+			TributeCard: tributeCard,
+		})
+	}
+
+	// 设置 PoolCards
+	result.PoolCardsToSet = poolCards
+
+	return result
+}
+
+// processTributeSelecting 处理 Selecting 状态：分配贡牌给接收者
+func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHands [4][]*Card, input *TributeInput) *TributeStepResult {
+	result := &TributeStepResult{}
+
+	// 双下场景：PoolCards == 2，需要第一名选择
+	if len(phase.PoolCards) == 2 && len(phase.Winners) > 0 {
+		if input == nil {
+			// 需要用户输入
+			result.PendingAction = &TributeAction{
+				Type:     TributeActionSelect,
+				PlayerID: phase.Winners[0],
+				Options:  phase.PoolCards,
+			}
+			return result
+		}
+
+		// 处理用户选择
+		if input.Card == nil {
+			result.Error = errors.New("input card is nil")
+			return result
+		}
+
+		// 在 PoolCards 中查找原始牌
+		var selectedCard *Card
+		for _, card := range phase.PoolCards {
+			if card.DeckIndex == input.Card.DeckIndex {
+				selectedCard = card
+				break
+			}
+		}
+		if selectedCard == nil {
+			result.Error = errors.New("card not found in tribute pool")
+			return result
+		}
+
+		// 验证是否轮到该玩家选择
+		if len(phase.Winners) == 0 || phase.Winners[0] != input.PlayerID {
+			result.Error = fmt.Errorf("not player %d's turn to select", input.PlayerID)
+			return result
+		}
+
+		receiver := input.PlayerID
+
+		// 事件意图
+		result.Events = append(result.Events, TributeEventIntent{
+			Type:       EventTributeCardSelected,
+			PlayerSeat: receiver,
+			Card:       selectedCard,
+			IsAuto:     false,
+		})
+
+		// 手牌变更：添加到 receiver
+		result.HandChanges = append(result.HandChanges, HandChange{
+			PlayerSeat: receiver,
+			Card:       selectedCard,
+			IsAdd:      true,
+		})
+
+		// Pair 变更：设置 Receiver
+		result.PairUpdates = append(result.PairUpdates, PairUpdate{
+			GiverSeat: findGiverByCard(phase, selectedCard),
+			Receiver:  &receiver,
+		})
+
+		// 从 PoolCards 移除
+		result.PoolCardToRemove = selectedCard
+
+		return result
+	}
+
+	// 单贡场景：PoolCards == 1，自动分配
+	if len(phase.PoolCards) == 1 {
+		card := phase.PoolCards[0]
+		receiver := tm.GetNextReceiver(phase)
+		if receiver == -1 {
+			result.Error = fmt.Errorf("no receiver found for pool card")
+			return result
+		}
+
+		// 事件意图
+		result.Events = append(result.Events, TributeEventIntent{
+			Type:       EventTributeCardSelected,
+			PlayerSeat: receiver,
+			Card:       card,
+			IsAuto:     true,
+		})
+
+		// 手牌变更：添加到 receiver
+		result.HandChanges = append(result.HandChanges, HandChange{
+			PlayerSeat: receiver,
+			Card:       card,
+			IsAdd:      true,
+		})
+
+		// Pair 变更：设置 Receiver
+		result.PairUpdates = append(result.PairUpdates, PairUpdate{
+			GiverSeat: findGiverByCard(phase, card),
+			Receiver:  &receiver,
+		})
+
+		// 从 PoolCards 移除
+		result.PoolCardToRemove = card
+
+		return result
+	}
+
+	// PoolCards 为空，进入还贡阶段
+	result.NextStatus = TributeStatusReturning
+	return result
+}
+
+// processTributeReturning 处理 Returning 状态：还贡
+func processTributeReturning(tm *TributeManager, phase *TributePhase, playerHands [4][]*Card, input *TributeInput) *TributeStepResult {
+	result := &TributeStepResult{}
+
+	if input == nil {
+		// 检查是否有待还贡
+		receiver, giver := tm.GetPendingReturnReceiver(phase)
+		if receiver == -1 {
+			// 全部完成，进入 Finished
+			result.NextStatus = TributeStatusFinished
+			return result
+		}
+
+		// 需要用户输入
+		result.PendingAction = &TributeAction{
+			Type:         TributeActionReturn,
+			PlayerID:     receiver,
+			Options:      playerHands[receiver],
+			TargetPlayer: giver,
+		}
+		return result
+	}
+
+	// 处理用户还贡
+	if input.Card == nil {
+		result.Error = errors.New("input card is nil")
+		return result
+	}
+
+	// 在玩家手牌中查找原始牌
+	var returnCard *Card
+	for _, card := range playerHands[input.PlayerID] {
+		if card.DeckIndex == input.Card.DeckIndex {
+			returnCard = card
+			break
+		}
+	}
+	if returnCard == nil {
+		result.Error = errors.New("card not found in player hand")
+		return result
+	}
+
+	// 找到对应的 TributePair
+	var targetPair *TributePair
+	for _, pair := range phase.TributePairs {
+		if pair.Receiver == input.PlayerID {
+			targetPair = pair
+			break
+		}
+	}
+	if targetPair == nil {
+		result.Error = fmt.Errorf("player %d is not a tribute receiver", input.PlayerID)
+		return result
+	}
+
+	if targetPair.ReturnCard != nil {
+		result.Error = fmt.Errorf("player %d has already returned tribute", input.PlayerID)
+		return result
+	}
+
+	giver := targetPair.Giver
+
+	// 事件意图
+	result.Events = append(result.Events, TributeEventIntent{
+		Type:       EventReturnTribute,
+		PlayerSeat: input.PlayerID,
+		Card:       returnCard,
+		TargetSeat: giver,
+		IsAuto:     false,
+	})
+
+	// 手牌变更：从 receiver 移除，添加到 giver
+	result.HandChanges = append(result.HandChanges, HandChange{
+		PlayerSeat: input.PlayerID,
+		Card:       returnCard,
+		IsAdd:      false,
+	})
+	result.HandChanges = append(result.HandChanges, HandChange{
+		PlayerSeat: giver,
+		Card:       returnCard,
+		IsAdd:      true,
+	})
+
+	// Pair 变更：设置 ReturnCard
+	result.PairUpdates = append(result.PairUpdates, PairUpdate{
+		GiverSeat:  giver,
+		ReturnCard: returnCard,
+	})
+
+	return result
+}
+
+// processTributeFinished 处理 Finished 状态：验证并完成
+func processTributeFinished(phase *TributePhase) *TributeStepResult {
+	result := &TributeStepResult{
+		PhaseCompleted: true,
+	}
+
+	// 验证贡牌完整性（非抗贡情况）
+	if !phase.IsImmune {
+		for _, pair := range phase.TributePairs {
+			if pair.Giver == -1 || pair.Receiver == -1 || pair.TributeCard == nil || pair.ReturnCard == nil {
+				result.Error = fmt.Errorf("invalid tribute pair: giver=%d, receiver=%d, tributeCard=%v, returnCard=%v",
+					pair.Giver, pair.Receiver, pair.TributeCard, pair.ReturnCard)
+				result.PhaseCompleted = false
+				return result
+			}
+		}
+	}
+
+	// 发送完成事件
+	result.Events = append(result.Events, TributeEventIntent{
+		Type: EventTributeCompleted,
+	})
+
+	return result
+}
+
+// findGiverByCard 根据贡牌找到对应的 Giver
+func findGiverByCard(phase *TributePhase, card *Card) int {
+	for _, pair := range phase.TributePairs {
+		if pair.TributeCard != nil && pair.TributeCard.DeckIndex == card.DeckIndex {
+			return pair.Giver
+		}
+	}
+	return -1
 }

@@ -66,13 +66,13 @@ type Match struct {
 // Deal represents a single deal (one round of the game)
 type Deal struct {
 	ID            string        `json:"id"`
-	Level         int           `json:"level"`         // Current level for this deal
+	Level         int           `json:"level"` // Current level for this deal
 	Status        DealStatus    `json:"status"`
 	CurrentTrick  *Trick        `json:"current_trick"`
 	TrickHistory  []*Trick      `json:"trick_history"`
 	TributePhase  *TributePhase `json:"tribute_phase,omitempty"`
-	PlayerCards   [4][]*Card    `json:"player_cards"`   // Each player's current hand
-	Rankings      []int         `json:"rankings"`       // Order of players finishing (seat numbers)
+	PlayerCards   [4][]*Card    `json:"player_cards"` // Each player's current hand
+	Rankings      []int         `json:"rankings"`     // Order of players finishing (seat numbers)
 	StartTime     time.Time     `json:"start_time"`
 	EndTime       *time.Time    `json:"end_time,omitempty"`
 	LastResult    *DealResult   `json:"-"`              // Previous deal result (not serialized)
@@ -112,11 +112,11 @@ type TributePair struct {
 
 // TributePhase represents the tribute phase of a deal
 type TributePhase struct {
-	Status          TributeStatus    `json:"status"`
-	TributePairs    []*TributePair   `json:"tribute_pairs"`    // All tribute relationships (single source of truth)
-	PoolCards       []*Card          `json:"pool_cards"`       // Cards in tribute pool (for double-down selection UI)
-	SelectingPlayer int              `json:"selecting_player"` // Player selecting from pool (-1 if none)
-	IsImmune        bool             `json:"is_immune"`        // Whether tribute was skipped due to immunity
+	Status       TributeStatus  `json:"status"`
+	TributePairs []*TributePair `json:"tribute_pairs"` // All tribute relationships (single source of truth)
+	PoolCards    []*Card        `json:"pool_cards"`    // Cards in tribute pool (for double-down selection UI)
+	Winners      []int          `json:"winners"`       // Winning players (DoubleDown: [rank1, rank2], others: [rank1])
+	IsImmune     bool           `json:"is_immune"`     // Whether tribute was skipped due to immunity
 }
 
 // TributeStatus represents the status of tribute phase
@@ -146,6 +146,57 @@ const (
 	TributeActionSelect TributeActionType = "select" // Select tribute card from pool (double-down)
 	TributeActionReturn TributeActionType = "return" // Return tribute card
 )
+
+// TributeInput represents user input for tribute phase
+type TributeInput struct {
+	PlayerID int   `json:"player_id"` // Player seat number (0-3)
+	Card     *Card `json:"card"`      // Selected card
+}
+
+// TributeStepResult 纯函数返回值，描述"应该执行的操作"
+type TributeStepResult struct {
+	NextStatus       TributeStatus        // 状态转换目标（空串表示不变）
+	PhaseCompleted   bool                 // 贡牌阶段是否完成
+	Events           []TributeEventIntent // 待发送事件
+	PendingAction    *TributeAction       // 需要用户输入时返回
+	HandChanges      []HandChange         // 手牌变更
+	PairUpdates      []PairUpdate         // TributePair 变更
+	PoolCardsToSet   []*Card              // 非nil时设置 phase.PoolCards（Waiting 阶段）
+	PoolCardToRemove *Card                // 非nil时从 phase.PoolCards 移除
+	Error            error
+}
+
+// TributeEventIntent 事件意图
+type TributeEventIntent struct {
+	Type       GameEventType // 复用已有: EventTributeCardSubmitted 等
+	PlayerSeat int
+	Card       *Card
+	TargetSeat int
+	IsAuto     bool
+}
+
+// HandChange 手牌变更意图
+type HandChange struct {
+	PlayerSeat int
+	Card       *Card
+	IsAdd      bool // true=添加, false=移除
+}
+
+// PairUpdate TributePair 变更意图
+type PairUpdate struct {
+	GiverSeat   int   // 用于匹配 TributePair
+	Receiver    *int  // 非nil时更新 pair.Receiver
+	TributeCard *Card // 非nil时更新 pair.TributeCard
+	ReturnCard  *Card // 非nil时更新 pair.ReturnCard
+}
+
+// StepResult 单步贡牌处理结果（由 StepTribute 返回）
+type StepResult struct {
+	Action        *TributeAction `json:"action,omitempty"`  // 非nil表示需要用户输入
+	Completed     bool           `json:"completed"`         // 贡牌阶段完成
+	PrevStatus    TributeStatus  `json:"prev_status"`       // 本步开始时的状态
+	StatusChanged bool           `json:"status_changed"`    // 是否发生状态转换
+}
 
 // Methods for Match and Deal are implemented in their respective files
 

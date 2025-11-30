@@ -115,7 +115,7 @@ func (h *GameDriverHandler) SubmitPlayDecision(c *gin.Context) {
 type TributeSelectionRequest struct {
 	RoomID     string `json:"room_id" binding:"required"`
 	PlayerSeat int    `json:"player_seat" binding:"min=0,max=3"`
-	DeckIndex  int    `json:"deck_index" binding:"required"`
+	DeckIndex  int    `json:"deck_index" binding:"min=0,max=107"`
 }
 
 // SubmitTributeSelection submits a tribute selection
@@ -157,7 +157,7 @@ func (h *GameDriverHandler) SubmitTributeSelection(c *gin.Context) {
 type ReturnTributeRequest struct {
 	RoomID     string `json:"room_id" binding:"required"`
 	PlayerSeat int    `json:"player_seat" binding:"min=0,max=3"`
-	DeckIndex  int    `json:"deck_index" binding:"required"`
+	DeckIndex  int    `json:"deck_index" binding:"min=0,max=107"`
 }
 
 // SubmitReturnTribute submits a return tribute

@@ -293,25 +293,24 @@ func TestTributeProcessComplete(t *testing.T) {
 		t.Errorf("期望不免贡，但实际免贡了")
 	}
 
-	// 处理上贡流程：直接调用底层方法
+	// 处理上贡流程：使用新的 API
 
-	// 1. 开始贡牌阶段（Waiting → Selecting）
-	err = tm.startTributePhase(tributePhase, playerHands)
+	// 1. 选择贡牌并填充到贡牌池
+	err = tm.GiveTributeToPool(tributePhase, &playerHands)
 	if err != nil {
-		t.Fatalf("开始贡牌阶段失败: %v", err)
+		t.Fatalf("选择贡牌失败: %v", err)
 	}
-	if tributePhase.Status != TributeStatusSelecting {
-		t.Fatalf("期望状态为 Selecting，实际为 %s", tributePhase.Status)
-	}
+	tributePhase.Status = TributeStatusSelecting
 
-	// 2. 处理选贡（单下/末游场景自动选贡，Selecting → Returning）
-	err = tm.processSelectingPhase(tributePhase, nil)
-	if err != nil {
-		t.Fatalf("处理选贡失败: %v", err)
+	// 2. 处理选贡（单下/末游场景，PoolCards == 1，自动选贡）
+	if len(tributePhase.PoolCards) == 1 {
+		card := tributePhase.PoolCards[0]
+		receiver := tm.GetNextReceiver(tributePhase)
+		tm.AssignCardToReceiver(tributePhase, card, receiver)
+		tm.RemoveFromPool(tributePhase, card)
+		playerHands[receiver] = append(playerHands[receiver], card)
 	}
-	if tributePhase.Status != TributeStatusReturning {
-		t.Fatalf("期望状态为 Returning，实际为 %s", tributePhase.Status)
-	}
+	tributePhase.Status = TributeStatusReturning
 
 	// 3. 添加还贡卡
 	for _, pair := range tributePhase.TributePairs {
@@ -323,10 +322,10 @@ func TestTributeProcessComplete(t *testing.T) {
 		}
 	}
 
-	// 4. 处理还贡（Returning → Finished）
-	err = tm.processReturnCards(tributePhase, playerHands)
-	if err != nil {
-		t.Fatalf("处理还贡失败: %v", err)
+	// 4. 检查还贡完成
+	receiver, _ := tm.GetPendingReturnReceiver(tributePhase)
+	if receiver == -1 {
+		tributePhase.Status = TributeStatusFinished
 	}
 
 	if tributePhase.Status != TributeStatusFinished {
@@ -363,12 +362,6 @@ func TestTributeProcessComplete(t *testing.T) {
 	if tributeCard.Number != expectedTributeCard.Number || tributeCard.Color != expectedTributeCard.Color {
 		t.Errorf("上贡牌错误：期望 %s，实际 %s",
 			formatCardForTest(expectedTributeCard), formatCardForTest(tributeCard))
-	}
-
-	// 应用上贡效果到手牌
-	err = tm.ApplyTributeToHands(tributePhase, &playerHands)
-	if err != nil {
-		t.Fatalf("应用上贡效果失败: %v", err)
 	}
 
 	// 验证手牌变化

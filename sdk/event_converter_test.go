@@ -264,9 +264,9 @@ func TestConvertTributeViewToProto(t *testing.T) {
 		TributePairs: []*TributePair{
 			{Giver: 3, Receiver: -1, TributeCard: &Card{Number: 14, Color: "Spade", DeckIndex: 50}},
 		},
-		PoolCards:       []*Card{{Number: 14, Color: "Spade", DeckIndex: 50}},
-		SelectingPlayer: 0,
-		IsImmune:        false,
+		PoolCards: []*Card{{Number: 14, Color: "Spade", DeckIndex: 50}},
+		Winners:   []int{0},
+		IsImmune:  false,
 	}
 
 	protoView := ConvertTributeViewToProto(sdkPhase, "match456", 1, 200)
@@ -298,10 +298,6 @@ func TestConvertTributeViewToProto(t *testing.T) {
 
 	if len(protoView.PoolCards) != 1 {
 		t.Errorf("Expected 1 pool card, got %d", len(protoView.PoolCards))
-	}
-
-	if protoView.SelectingPlayer != 0 {
-		t.Errorf("Expected SelectingPlayer=0, got %d", protoView.SelectingPlayer)
 	}
 
 	if protoView.IsImmune != false {

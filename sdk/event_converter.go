@@ -464,9 +464,8 @@ func ConvertTributeViewToProto(
 		UpdatedAtMs: time.Now().UnixMilli(),
 
 		// Tribute phase info
-		Status:          ConvertTributeStatusToProto(phase.Status),
-		SelectingPlayer: int32(phase.SelectingPlayer),
-		IsImmune:        phase.IsImmune,
+		Status:   ConvertTributeStatusToProto(phase.Status),
+		IsImmune: phase.IsImmune,
 		PoolCards:       ConvertCardsToProto(phase.PoolCards),
 	}
 

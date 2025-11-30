@@ -57,7 +57,7 @@ func (d *Deal) StartDeal() error {
 		isImmune, _ := tributeManager.GetTributeImmunityDetails(d.LastResult, d.PlayerCards)
 		if isImmune {
 			// 抗贡：设置状态为 Finished，但保持 Deal.Status 为 Tribute
-			// 让 ProcessTributePhase 统一处理事件发送和状态转换
+			// 让 StepTribute 统一处理事件发送和状态转换
 			d.TributePhase.Status = TributeStatusFinished
 			d.TributePhase.IsImmune = true
 			d.Status = DealStatusTribute

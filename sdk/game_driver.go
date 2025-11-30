@@ -73,28 +73,28 @@ type GameDriverConfig struct {
 	// 事件处理
 	AsyncEventHandling bool `json:"async_event_handling"` // 是否异步处理事件
 
-	// 上贡阶段延时配置（用于前端动画展示）
-	TributeStartedDelay       time.Duration `json:"tribute_started_delay"`        // TributeStarted 事件后延时
-	TributeCardSubmittedDelay time.Duration `json:"tribute_card_submitted_delay"` // TributeCardSubmitted 事件后延时
-	TributeCardSelectedDelay  time.Duration `json:"tribute_card_selected_delay"`  // TributeCardSelected 事件后延时
-	TributeCardReturnedDelay  time.Duration `json:"tribute_card_returned_delay"`  // TributeCardReturned 事件后延时
-	TributeCompletedDelay     time.Duration `json:"tribute_completed_delay"`      // TributeCompleted 事件后延时
+	// 贡牌阶段延时配置（基于状态转换）
+	TributeStartedDelay   time.Duration `json:"tribute_started_delay"`   // 贡牌阶段开始后延时
+	TributeWaitingDelay   time.Duration `json:"tribute_waiting_delay"`   // Waiting 阶段结束后延时
+	TributeSelectingDelay time.Duration `json:"tribute_selecting_delay"` // Selecting 阶段结束后延时
+	TributeReturningDelay time.Duration `json:"tribute_returning_delay"` // Returning 阶段结束后延时
+	TributeFinishedDelay  time.Duration `json:"tribute_finished_delay"`  // Finished 阶段（完成）后延时
 }
 
 // DefaultGameDriverConfig 返回默认的游戏驱动器配置
 func DefaultGameDriverConfig() *GameDriverConfig {
 	return &GameDriverConfig{
-		PlayDecisionTimeout:       30 * time.Second,            // 30秒出牌超时
-		TributeTimeout:            20 * time.Second,            // 20秒贡牌超时
-		TurnTimeoutSeconds:        20,                          // 20秒单次出牌超时
-		TimeoutStrategy:           NewDefaultTimeoutStrategy(), // 使用默认超时策略
-		MaxConcurrentPlayers:      4,                           // 最多4个玩家
-		AsyncEventHandling:        false,                       // 同步事件处理确保顺序
-		TributeStartedDelay:       2000 * time.Millisecond,     // 上贡开始后延时
-		TributeCardSubmittedDelay: 2000 * time.Millisecond,     // 贡牌提交后延时
-		TributeCardSelectedDelay:  2000 * time.Millisecond,     // 选牌后延时
-		TributeCardReturnedDelay:  2000 * time.Millisecond,     // 还贡后延时
-		TributeCompletedDelay:     2000 * time.Millisecond,     // 上贡完成后延时
+		PlayDecisionTimeout:  30 * time.Second,            // 30秒出牌超时
+		TributeTimeout:       20 * time.Second,            // 20秒贡牌超时
+		TurnTimeoutSeconds:   20,                          // 20秒单次出牌超时
+		TimeoutStrategy:      NewDefaultTimeoutStrategy(), // 使用默认超时策略
+		MaxConcurrentPlayers: 4,                           // 最多4个玩家
+		AsyncEventHandling:   false,                       // 同步事件处理确保顺序
+		TributeStartedDelay:  2000 * time.Millisecond,     // 贡牌阶段开始后延时
+		TributeWaitingDelay:  2000 * time.Millisecond,     // Waiting 阶段结束后延时
+		TributeSelectingDelay: 2000 * time.Millisecond,    // Selecting 阶段结束后延时
+		TributeReturningDelay: 2000 * time.Millisecond,    // Returning 阶段结束后延时
+		TributeFinishedDelay: 2000 * time.Millisecond,     // 阶段完成后延时
 	}
 }
 
@@ -444,149 +444,131 @@ func (gd *GameDriver) runDeal() error {
 
 // runTributePhase 运行贡牌阶段
 func (gd *GameDriver) runTributePhase() error {
-	maxActions := 20 // 安全计数器，防止无限循环
-	actionCount := 0
+	maxSteps := 20
+	var pendingInput *TributeInput
+	completed := false
 
-	for gd.engine.GetCurrentDealStatus() == DealStatusTribute && actionCount < maxActions {
-		actionCount++
-
-		// 记录处理前的状态
-		prevStatus := gd.getTributeStatus()
-
-		// 处理贡牌动作
-		// ProcessTributePhase 会在一次调用中完成所有自动状态转换
-		// 返回 action 表示需要用户输入，返回 nil 表示贡牌阶段完成
-		action, err := gd.engine.ProcessTributePhase()
+	for step := 0; step < maxSteps; step++ {
+		result, err := gd.engine.StepTribute(pendingInput)
 		if err != nil {
-			return fmt.Errorf("failed to process tribute phase: %w", err)
+			return fmt.Errorf("failed to step tribute: %w", err)
 		}
+		pendingInput = nil
 
-		currStatus := gd.getTributeStatus()
-
-		// 添加延时让前端展示动画
-		// 注意：ProcessTributePhase 可能在一次调用中跨越多个状态
-		// 例如单下/末游：Waiting → Selecting → Returning
-
-		// 如果从 Waiting 开始有状态变化，说明发送了 TributeCardSubmitted 事件
-		if prevStatus == TributeStatusWaiting && currStatus != TributeStatusWaiting {
-			if !gd.sleepWithContext(gd.config.TributeCardSubmittedDelay) {
-				return fmt.Errorf("game cancelled during tribute card submitted delay")
+		if result.StatusChanged {
+			delay := gd.getTributeDelay(result.PrevStatus)
+			if delay > 0 {
+				if !gd.sleepWithContext(delay) {
+					return fmt.Errorf("game cancelled during tribute delay")
+				}
 			}
 		}
 
-		// 如果当前是 Returning 且之前不是，说明发送了 TributeCardSelected 事件（单下/末游自动选贡）
-		if prevStatus != TributeStatusReturning && currStatus == TributeStatusReturning {
-			if !gd.sleepWithContext(gd.config.TributeCardSelectedDelay) {
-				return fmt.Errorf("game cancelled during tribute card selected delay")
+		if result.Completed {
+			if !gd.sleepWithContext(gd.config.TributeFinishedDelay) {
+				return fmt.Errorf("game cancelled during tribute finished delay")
 			}
-		}
-
-		// 贡牌阶段完成（ProcessTributePhase 返回 nil）
-		if action == nil {
-			// TributeCompleted 事件已发送，添加延时
-			if !gd.sleepWithContext(gd.config.TributeCompletedDelay) {
-				return fmt.Errorf("game cancelled during tribute completed delay")
-			}
+			completed = true
 			break
 		}
 
-		// 根据动作类型请求玩家输入
-		// 使用gameCancelCtx作为基础，这样游戏结束时会自动取消所有请求
-		ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.TributeTimeout)
-
-		switch action.Type {
-		case TributeActionSelect:
-			// 双下选牌
-			selectedCard, err := gd.inputProvider.RequestTributeSelection(ctx, action.PlayerID, action.Options)
-			ctxErr := ctx.Err() // 在cancel()之前捕获上下文错误
-			cancel()
-
+		if result.Action != nil {
+			selectedCard, err := gd.getTributeInput(result.Action)
 			if err != nil {
-				switch {
-				case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
-					// 超时，使用默认策略
-					gd.handleTimeout(action.PlayerID, "tribute_select")
-					selectedCard = gd.config.TimeoutStrategy.GetDefaultTributeCard(action.Options)
-					if selectedCard == nil {
-						// Fallback：选择第一个非nil选项
-						for _, c := range action.Options {
-							if c != nil {
-								selectedCard = c
-								break
-							}
-						}
-						if selectedCard == nil {
-							return fmt.Errorf("timeout strategy returned nil and no valid options, player %d", action.PlayerID)
-						}
-					}
-				case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
-					// 游戏被取消
-					return fmt.Errorf("game cancelled during tribute selection for player %d", action.PlayerID)
-				default:
-					return fmt.Errorf("failed to get tribute selection from player %d: %w", action.PlayerID, err)
-				}
+				return err
 			}
-
-			if err := gd.engine.SubmitTributeSelection(action.PlayerID, selectedCard); err != nil {
-				return fmt.Errorf("failed to submit tribute selection: %w", err)
+			pendingInput = &TributeInput{
+				PlayerID: result.Action.PlayerID,
+				Card:     selectedCard,
 			}
-
-			// TributeCardSelected 事件已发送，延时让前端展示动画
-			if !gd.sleepWithContext(gd.config.TributeCardSelectedDelay) {
-				return fmt.Errorf("game cancelled during tribute card selected delay")
-			}
-
-		case TributeActionReturn:
-			// 还贡
-			returnCard, err := gd.inputProvider.RequestReturnTribute(ctx, action.PlayerID, action.Options)
-			ctxErr := ctx.Err() // 在cancel()之前捕获上下文错误
-			cancel()
-
-			if err != nil {
-				switch {
-				case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
-					// 超时，使用默认策略
-					gd.handleTimeout(action.PlayerID, "return_tribute")
-					returnCard = gd.config.TimeoutStrategy.GetDefaultReturnCard(action.Options)
-					if returnCard == nil {
-						// Fallback：选择第一个非nil选项
-						for _, c := range action.Options {
-							if c != nil {
-								returnCard = c
-								break
-							}
-						}
-						if returnCard == nil {
-							return fmt.Errorf("timeout strategy returned nil and no valid return card, player %d", action.PlayerID)
-						}
-					}
-				case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
-					// 游戏被取消
-					return fmt.Errorf("game cancelled during return tribute for player %d", action.PlayerID)
-				default:
-					return fmt.Errorf("failed to get return tribute from player %d: %w", action.PlayerID, err)
-				}
-			}
-
-			if err := gd.engine.SubmitReturnTribute(action.PlayerID, returnCard); err != nil {
-				return fmt.Errorf("failed to submit return tribute: %w", err)
-			}
-
-			// TributeCardReturned 事件已发送，延时让前端展示动画
-			if !gd.sleepWithContext(gd.config.TributeCardReturnedDelay) {
-				return fmt.Errorf("game cancelled during tribute card returned delay")
-			}
-		default:
-			cancel()
-			return fmt.Errorf("unknown tribute action type: %v", action.Type)
 		}
 	}
 
-	if actionCount >= maxActions {
-		return fmt.Errorf("tribute phase exceeded maximum actions limit")
+	if !completed {
+		return fmt.Errorf("tribute phase exceeded maximum steps limit (%d)", maxSteps)
+	}
+
+	if err := gd.engine.StartPlayingPhase(); err != nil {
+		return fmt.Errorf("failed to start playing phase: %w", err)
 	}
 
 	return nil
+}
+
+// getTributeDelay 根据状态获取延迟时间
+func (gd *GameDriver) getTributeDelay(status TributeStatus) time.Duration {
+	switch status {
+	case TributeStatusWaiting:
+		return gd.config.TributeWaitingDelay
+	case TributeStatusSelecting:
+		return gd.config.TributeSelectingDelay
+	case TributeStatusReturning:
+		return gd.config.TributeReturningDelay
+	default:
+		return 0
+	}
+}
+
+// getTributeInput 获取用户贡牌输入（选牌或还贡）
+func (gd *GameDriver) getTributeInput(action *TributeAction) (*Card, error) {
+	ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.TributeTimeout)
+	defer cancel()
+
+	var selectedCard *Card
+	var err error
+	var actionType string
+
+	switch action.Type {
+	case TributeActionSelect:
+		actionType = "tribute_select"
+		selectedCard, err = gd.inputProvider.RequestTributeSelection(ctx, action.PlayerID, action.Options)
+	case TributeActionReturn:
+		actionType = "return_tribute"
+		selectedCard, err = gd.inputProvider.RequestReturnTribute(ctx, action.PlayerID, action.Options)
+	default:
+		return nil, fmt.Errorf("unknown tribute action type: %v", action.Type)
+	}
+
+	ctxErr := ctx.Err()
+
+	if err != nil {
+		switch {
+		case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
+			gd.handleTimeout(action.PlayerID, actionType)
+			selectedCard = gd.getDefaultTributeCard(action)
+			if selectedCard == nil {
+				return nil, fmt.Errorf("timeout strategy returned nil and no valid card, player %d", action.PlayerID)
+			}
+		case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
+			return nil, fmt.Errorf("game cancelled during %s for player %d", actionType, action.PlayerID)
+		default:
+			return nil, fmt.Errorf("failed to get %s from player %d: %w", actionType, action.PlayerID, err)
+		}
+	}
+
+	return selectedCard, nil
+}
+
+// getDefaultTributeCard 获取超时时的默认选牌
+func (gd *GameDriver) getDefaultTributeCard(action *TributeAction) *Card {
+	var card *Card
+
+	switch action.Type {
+	case TributeActionSelect:
+		card = gd.config.TimeoutStrategy.GetDefaultTributeCard(action.Options)
+	case TributeActionReturn:
+		card = gd.config.TimeoutStrategy.GetDefaultReturnCard(action.Options)
+	}
+
+	if card == nil {
+		for _, c := range action.Options {
+			if c != nil {
+				return c
+			}
+		}
+	}
+
+	return card
 }
 
 // runPlayingPhase 运行游戏阶段
@@ -815,19 +797,4 @@ func (gd *GameDriver) sleepWithContext(d time.Duration) bool {
 	case <-gd.gameCancelCtx.Done():
 		return false
 	}
-}
-
-// getTributeStatus 获取当前上贡阶段的状态
-func (gd *GameDriver) getTributeStatus() TributeStatus {
-	gameState := gd.engine.GetGameState()
-	if gameState == nil || gameState.CurrentMatch == nil {
-		return ""
-	}
-	if gameState.CurrentMatch.CurrentDeal == nil {
-		return ""
-	}
-	if gameState.CurrentMatch.CurrentDeal.TributePhase == nil {
-		return ""
-	}
-	return gameState.CurrentMatch.CurrentDeal.TributePhase.Status
 }
