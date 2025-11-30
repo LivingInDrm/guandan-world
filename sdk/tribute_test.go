@@ -250,31 +250,31 @@ func TestTributeProcessComplete(t *testing.T) {
 		VictoryType: VictoryTypeSingleLast, // rank1(0), rank3(2) 同队
 	}
 
-	// 创建测试手牌
+	// 创建测试手牌（需要设置 DeckIndex 以便新 API 能正确处理）
 	playerHands := [4][]*Card{
 		// 玩家0 (rank1, 胜方): 有红桃Trump和其他牌
 		{
-			{Number: 7, Color: "Heart"},  // 红桃Trump (level=7)
-			{Number: 14, Color: "Spade"}, // A♠
-			{Number: 13, Color: "Club"},  // K♣
+			{Number: 7, Color: "Heart", DeckIndex: 1},  // 红桃Trump (level=7)
+			{Number: 14, Color: "Spade", DeckIndex: 2}, // A♠
+			{Number: 13, Color: "Club", DeckIndex: 3},  // K♣
 		},
 		// 玩家1 (rank2, 败方): 普通牌
 		{
-			{Number: 12, Color: "Diamond"}, // Q♦
-			{Number: 11, Color: "Spade"},   // J♠
-			{Number: 10, Color: "Heart"},   // 10♥
+			{Number: 12, Color: "Diamond", DeckIndex: 4}, // Q♦
+			{Number: 11, Color: "Spade", DeckIndex: 5},   // J♠
+			{Number: 10, Color: "Heart", DeckIndex: 6},   // 10♥
 		},
 		// 玩家2 (rank3, 胜方): 普通牌
 		{
-			{Number: 9, Color: "Club"},    // 9♣
-			{Number: 8, Color: "Diamond"}, // 8♦
-			{Number: 7, Color: "Spade"},   // 7♠
+			{Number: 9, Color: "Club", DeckIndex: 7},    // 9♣
+			{Number: 8, Color: "Diamond", DeckIndex: 8}, // 8♦
+			{Number: 7, Color: "Spade", DeckIndex: 9},   // 7♠
 		},
 		// 玩家3 (rank4, 败方): 需要上贡，有大王和其他牌
 		{
-			{Number: 16, Color: "Joker"},   // 大王
-			{Number: 14, Color: "Heart"},   // A♥
-			{Number: 13, Color: "Diamond"}, // K♦
+			{Number: 16, Color: "Joker", DeckIndex: 10},   // 大王
+			{Number: 14, Color: "Heart", DeckIndex: 11},   // A♥
+			{Number: 13, Color: "Diamond", DeckIndex: 12}, // K♦
 		},
 	}
 
@@ -293,39 +293,86 @@ func TestTributeProcessComplete(t *testing.T) {
 		t.Errorf("期望不免贡，但实际免贡了")
 	}
 
-	// 处理上贡流程：使用新的 API
+	// 使用 ProcessTributeStep 驱动贡牌流程
+	level := 7
+	maxIterations := 10
 
-	// 1. 选择贡牌并填充到贡牌池
-	err = tm.GiveTributeToPool(tributePhase, &playerHands)
-	if err != nil {
-		t.Fatalf("选择贡牌失败: %v", err)
-	}
-	tributePhase.Status = TributeStatusSelecting
+	for i := 0; i < maxIterations; i++ {
+		var input *TributeInput
 
-	// 2. 处理选贡（单下/末游场景，PoolCards == 1，自动选贡）
-	if len(tributePhase.PoolCards) == 1 {
-		card := tributePhase.PoolCards[0]
-		receiver := tm.GetNextReceiver(tributePhase)
-		tm.AssignCardToReceiver(tributePhase, card, receiver)
-		tm.RemoveFromPool(tributePhase, card)
-		playerHands[receiver] = append(playerHands[receiver], card)
-	}
-	tributePhase.Status = TributeStatusReturning
-
-	// 3. 添加还贡卡
-	for _, pair := range tributePhase.TributePairs {
-		if pair.Receiver != -1 && pair.ReturnCard == nil {
-			if len(playerHands[pair.Receiver]) > 0 {
-				returnCard := playerHands[pair.Receiver][0]
-				tributePhase.addReturnCard(pair.Receiver, returnCard)
+		// 如果需要还贡输入，自动提供第一张手牌
+		if tributePhase.Status == TributeStatusReturning {
+			receiver, _ := tm.GetPendingReturnReceiver(tributePhase)
+			if receiver != -1 && len(playerHands[receiver]) > 0 {
+				input = &TributeInput{
+					PlayerID: receiver,
+					Card:     playerHands[receiver][0],
+				}
 			}
 		}
-	}
 
-	// 4. 检查还贡完成
-	receiver, _ := tm.GetPendingReturnReceiver(tributePhase)
-	if receiver == -1 {
-		tributePhase.Status = TributeStatusFinished
+		result := ProcessTributeStep(tributePhase, playerHands, level, input)
+		if result.Error != nil {
+			t.Fatalf("ProcessTributeStep 错误: %v", result.Error)
+		}
+
+		// 应用状态变更
+		if result.NextStatus != "" {
+			tributePhase.Status = result.NextStatus
+		}
+
+		// 应用 PoolCards 设置
+		if result.PoolCardsToSet != nil {
+			tributePhase.PoolCards = make([]*Card, len(result.PoolCardsToSet))
+			copy(tributePhase.PoolCards, result.PoolCardsToSet)
+		}
+
+		// 应用 PoolCard 移除
+		if result.PoolCardToRemove != nil {
+			for i, card := range tributePhase.PoolCards {
+				if card.DeckIndex == result.PoolCardToRemove.DeckIndex {
+					tributePhase.PoolCards = append(tributePhase.PoolCards[:i], tributePhase.PoolCards[i+1:]...)
+					break
+				}
+			}
+		}
+
+		// 应用 PairUpdates
+		for _, update := range result.PairUpdates {
+			for _, pair := range tributePhase.TributePairs {
+				if pair.Giver == update.GiverSeat {
+					if update.TributeCard != nil {
+						pair.TributeCard = update.TributeCard
+					}
+					if update.Receiver != nil {
+						pair.Receiver = *update.Receiver
+					}
+					if update.ReturnCard != nil {
+						pair.ReturnCard = update.ReturnCard
+					}
+				}
+			}
+		}
+
+		// 应用手牌变更
+		for _, change := range result.HandChanges {
+			if change.IsAdd {
+				playerHands[change.PlayerSeat] = append(playerHands[change.PlayerSeat], change.Card)
+			} else {
+				for j, card := range playerHands[change.PlayerSeat] {
+					if card.DeckIndex == change.Card.DeckIndex {
+						playerHands[change.PlayerSeat] = append(playerHands[change.PlayerSeat][:j], playerHands[change.PlayerSeat][j+1:]...)
+						break
+					}
+				}
+			}
+		}
+
+		// 检查是否完成
+		if result.PhaseCompleted {
+			tributePhase.Status = TributeStatusFinished
+			break
+		}
 	}
 
 	if tributePhase.Status != TributeStatusFinished {
@@ -384,9 +431,9 @@ func TestTributeProcessComplete(t *testing.T) {
 		t.Errorf("玩家0手牌中没有大王，上贡未生效")
 	}
 
-	t.Logf("✅ 上贡过程验证成功")
+	t.Logf("上贡过程验证成功")
 	t.Logf("   上贡映射: %v", buildTributeMapFromPairs(tributePhase.TributePairs))
-	t.Logf("   上贡牌: 玩家3 → 玩家0, 牌: %s", formatCardForTest(tributeCard))
+	t.Logf("   上贡牌: 玩家3 -> 玩家0, 牌: %s", formatCardForTest(tributeCard))
 	t.Logf("   玩家3剩余手牌: %d张", len(playerHands[3]))
 	t.Logf("   玩家0手牌: %d张", len(playerHands[0]))
 }

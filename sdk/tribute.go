@@ -137,23 +137,6 @@ func (tm *TributeManager) countBigJokers(hand []*Card) int {
 	return count
 }
 
-// GiveTributeToPool 计算并将贡牌放入贡牌池，，填充 TributePairs，从玩家手里删除对应的贡牌
-func (tm *TributeManager) GiveTributeToPool(phase *TributePhase, playerHands *[4][]*Card) error {
-	poolCards := make([]*Card, 0)
-
-	for _, pair := range phase.TributePairs {
-		tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[pair.Giver])
-		if tributeCard != nil {
-			pair.TributeCard = tributeCard
-			poolCards = append(poolCards, tributeCard)
-			playerHands[pair.Giver] = tm.removeCardFromHand(playerHands[pair.Giver], tributeCard)
-		}
-	}
-
-	phase.setPoolCards(poolCards)
-	return nil
-}
-
 // GetNextReceiver 找下一个待分配的 receiver（Winners 中还没成为任何 TributePair.Receiver 的第一个）
 func (tm *TributeManager) GetNextReceiver(phase *TributePhase) int {
 	assignedReceivers := make(map[int]bool)
@@ -171,26 +154,6 @@ func (tm *TributeManager) GetNextReceiver(phase *TributePhase) int {
 		}
 	}
 	return -1
-}
-
-// AssignCardToReceiver 将贡牌分配给 receiver
-func (tm *TributeManager) AssignCardToReceiver(phase *TributePhase, card *Card, receiver int) {
-	for _, pair := range phase.TributePairs {
-		if pair.TributeCard != nil && pair.TributeCard.DeckIndex == card.DeckIndex {
-			pair.Receiver = receiver
-			break
-		}
-	}
-}
-
-// RemoveFromPool 从贡牌池移除指定牌
-func (tm *TributeManager) RemoveFromPool(phase *TributePhase, card *Card) {
-	for i, poolCard := range phase.PoolCards {
-		if poolCard.DeckIndex == card.DeckIndex {
-			phase.PoolCards = append(phase.PoolCards[:i], phase.PoolCards[i+1:]...)
-			break
-		}
-	}
 }
 
 // GetPendingReturnReceiver 找下一个需要还贡的 receiver
@@ -227,72 +190,6 @@ func (tm *TributeManager) getHighestCardExcludingHeartTrump(hand []*Card) *Card 
 	}
 
 	return highest
-}
-
-// getLowestCard returns the lowest card from a hand
-func (tm *TributeManager) getLowestCard(hand []*Card) *Card {
-	if len(hand) == 0 {
-		return nil
-	}
-
-	lowest := hand[0]
-	for _, card := range hand[1:] {
-		if lowest.GreaterThan(card) {
-			lowest = card
-		}
-	}
-
-	return lowest
-}
-
-// removeCardFromHand removes a specific card from a hand
-func (tm *TributeManager) removeCardFromHand(hand []*Card, cardToRemove *Card) []*Card {
-	for i, card := range hand {
-		if tm.cardsEqual(card, cardToRemove) {
-			// Remove card by swapping with last and truncating
-			hand[i] = hand[len(hand)-1]
-			return hand[:len(hand)-1]
-		}
-	}
-	return hand
-}
-
-// cardsEqual checks if two cards are equal by DeckIndex
-func (tm *TributeManager) cardsEqual(card1, card2 *Card) bool {
-	return card1.DeckIndex == card2.DeckIndex
-}
-
-// setPoolCards sets the pool cards for double down scenario
-func (tp *TributePhase) setPoolCards(cards []*Card) {
-	tp.PoolCards = make([]*Card, len(cards))
-	copy(tp.PoolCards, cards)
-}
-
-// addReturnCard adds a return card from receiver to giver
-func (tp *TributePhase) addReturnCard(receiver int, card *Card) {
-	// Find the TributePair where receiver matches
-	for _, pair := range tp.TributePairs {
-		if pair.Receiver == receiver {
-			pair.ReturnCard = card
-			return
-		}
-	}
-}
-
-// cardsEqual checks if two cards are equal by DeckIndex
-func (tp *TributePhase) cardsEqual(card1, card2 *Card) bool {
-	return card1.DeckIndex == card2.DeckIndex
-}
-
-// getSecondPlace returns the seat number of second place
-func (tp *TributePhase) getSecondPlace() int {
-	if len(tp.Winners) > 1 {
-		return tp.Winners[1]
-	}
-	if len(tp.Winners) > 0 {
-		return (tp.Winners[0] + 2) % 4
-	}
-	return -1
 }
 
 // buildTributeMapFromPairs builds a tribute map from TributePairs

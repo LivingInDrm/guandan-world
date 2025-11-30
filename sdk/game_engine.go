@@ -218,18 +218,6 @@ type GameEngineInterface interface {
 	//   - 功能等同于RegisterObserver
 	On(eventType GameEventType, handler func(*GameEvent))
 
-	// RegisterEventHandler 注册游戏事件处理器（已废弃，使用On代替）
-	// Deprecated: 使用 RegisterObserver 或 On 代替
-	// 参数:
-	//   eventType: 要监听的事件类型
-	//   handler: 事件处理函数
-	// 功能说明:
-	//   - 允许外部系统监听游戏事件
-	//   - 支持多个处理器监听同一事件类型
-	//   - 事件处理器在独立的协程中执行，不会阻塞游戏进程
-	//   - 常用事件包括：出牌、过牌、牌局结束、比赛结束等
-	RegisterEventHandler(eventType GameEventType, handler GameEventHandler)
-
 	// 玩家管理
 
 	// HandlePlayerDisconnect 处理玩家断线
@@ -690,13 +678,6 @@ func (ge *GameEngine) RegisterObserver(eventType GameEventType, observer EventOb
 // On is a convenience method for registering event handlers using functions
 // See RegisterObserver for concurrency contract details
 func (ge *GameEngine) On(eventType GameEventType, handler func(*GameEvent)) {
-	ge.RegisterObserver(eventType, EventHandlerFunc(handler))
-}
-
-// RegisterEventHandler registers an event handler (legacy interface for backward compatibility)
-// Deprecated: Use RegisterObserver or On instead
-// See RegisterObserver for concurrency contract details
-func (ge *GameEngine) RegisterEventHandler(eventType GameEventType, handler GameEventHandler) {
 	ge.RegisterObserver(eventType, EventHandlerFunc(handler))
 }
 
