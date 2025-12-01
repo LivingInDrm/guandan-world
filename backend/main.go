@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -11,11 +11,18 @@ import (
 	"guandan-world/backend/handlers"
 	"guandan-world/backend/room"
 	"guandan-world/backend/websocket"
+	"guandan-world/pkg/log"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	if err := log.Init("./logs", log.LevelInfo); err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to init logger:", err)
+		os.Exit(1)
+	}
+	defer log.Close()
+
 	r := gin.Default()
 
 	// 添加 CORS 中间件
@@ -109,7 +116,7 @@ func main() {
 
 		// Pass user ID to WebSocket handler
 		if err := wsManager.HandleWebSocket(c.Writer, c.Request, user.ID); err != nil {
-			log.Printf("WebSocket error: %v", err)
+			log.Error("WebSocket error", "error", err)
 		}
 	})
 
@@ -121,8 +128,9 @@ func main() {
 	})
 
 	// 启动服务器
-	log.Println("Server starting on :8080")
+	log.Info("server starting", "port", 8080)
 	if err := r.Run(":8080"); err != nil {
-		log.Fatal("Failed to start server:", err)
+		log.Error("failed to start server", "error", err)
+		os.Exit(1)
 	}
 }
