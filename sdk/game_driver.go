@@ -355,6 +355,9 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 		return nil, fmt.Errorf("failed to start match: %w", err)
 	}
 
+	// 确保无论成功或失败，所有异步事件都发送完成后再返回
+	defer gd.engine.FlushEvents()
+
 	startTime := time.Now()
 	dealCount := 0
 
@@ -411,9 +414,6 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 			AverageTime: 0,
 		}
 	}
-
-	// 等待所有异步事件发送完成，确保 MatchEnded 等事件到达前端
-	gd.engine.FlushEvents()
 
 	return result, nil
 }
