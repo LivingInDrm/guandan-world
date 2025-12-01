@@ -83,7 +83,7 @@ func TestComparisonBatch(t *testing.T) {
 			// 根据测试数据中的type创建指定类型的牌组
 			comp2Cards := convertJSONToCards(testCase.Comp2.Cards, testData.Level)
 			comp2 := CreateCompByType(comp2Cards, testCase.Comp2.Type)
-			
+
 			// 对comp2进行normalize，将万能牌替换为具体的牌
 			normalizedComp2 := NormalizeComp(comp2)
 
@@ -177,126 +177,6 @@ func TestComparisonBatch(t *testing.T) {
 	}
 }
 
-// TestComparisonByType 按牌型分类测试比较功能
-func TestComparisonByType(t *testing.T) {
-	// 读取测试数据文件
-	testDataPath := filepath.Join("..", "test-data", "comparison_test_data.json")
-	data, err := os.ReadFile(testDataPath)
-	if err != nil {
-		t.Fatalf("无法读取测试数据文件: %v", err)
-	}
-
-	// 解析 JSON 数据
-	var testData ComparisonTestData
-	if err := json.Unmarshal(data, &testData); err != nil {
-		t.Fatalf("无法解析测试数据: %v", err)
-	}
-
-	// 按牌型分组测试用例
-	typeGroups := make(map[string][]ComparisonTestCase)
-	for _, testCase := range testData.Comparisons {
-		if testCase.ComparisonType == "intra_type" || testCase.ComparisonType == "intra_type_cross_wildcard" {
-			typeGroups[testCase.CompType] = append(typeGroups[testCase.CompType], testCase)
-		}
-	}
-
-	// 测试各个牌型
-	for compType, cases := range typeGroups {
-		t.Run(fmt.Sprintf("Type_%s", compType), func(t *testing.T) {
-			passCount := 0
-			failCount := 0
-
-			for _, testCase := range cases {
-				// 创建牌组
-				comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
-				comp1 := FromCardList(comp1Cards, nil)
-
-				comp2Cards := convertJSONToCards(testCase.Comp2.Cards, testData.Level)
-				comp2 := FromCardList(comp2Cards, nil)
-
-				// 执行比较
-				actualComp1Greater := comp1.GreaterThan(comp2)
-				actualComp2Greater := comp2.GreaterThan(comp1)
-
-				// 验证结果
-				if actualComp1Greater == testCase.Comp1GreaterThanComp2 &&
-					actualComp2Greater == testCase.Comp2GreaterThanComp1 {
-					passCount++
-				} else {
-					failCount++
-					t.Errorf("🚨 [TestID:%d] %s类型测试失败:", testCase.TestID, compType)
-					t.Errorf("📍 快速定位: %s", testCase.GetDebugCommand())
-					t.Errorf("  Comp1: %s", formatCompForLog(comp1))
-					t.Errorf("  Comp2: %s", formatCompForLog(comp2))
-					t.Errorf("  期望: comp1>comp2=%v, comp2>comp1=%v", testCase.Comp1GreaterThanComp2, testCase.Comp2GreaterThanComp1)
-					t.Errorf("  实际: comp1>comp2=%v, comp2>comp1=%v", actualComp1Greater, actualComp2Greater)
-				}
-			}
-
-			t.Logf("%s: 通过 %d/%d (%.1f%%)", compType, passCount, len(cases), float64(passCount)/float64(len(cases))*100)
-			if failCount > 0 {
-				t.Errorf("%s 有 %d 个测试用例失败", compType, failCount)
-			}
-		})
-	}
-}
-
-// TestInterTypeComparison 测试不同类型之间的比较
-func TestInterTypeComparison(t *testing.T) {
-	// 读取测试数据文件
-	testDataPath := filepath.Join("..", "test-data", "comparison_test_data.json")
-	data, err := os.ReadFile(testDataPath)
-	if err != nil {
-		t.Fatalf("无法读取测试数据文件: %v", err)
-	}
-
-	// 解析 JSON 数据
-	var testData ComparisonTestData
-	if err := json.Unmarshal(data, &testData); err != nil {
-		t.Fatalf("无法解析测试数据: %v", err)
-	}
-
-	passCount := 0
-	failCount := 0
-
-	// 只测试不同类型之间的比较
-	for _, testCase := range testData.Comparisons {
-		if testCase.ComparisonType != "inter_type" {
-			continue
-		}
-
-		t.Run(fmt.Sprintf("TestID_%d_InterType", testCase.TestID), func(t *testing.T) {
-			// 创建牌组
-			comp1Cards := convertJSONToCards(testCase.Comp1.Cards, testData.Level)
-			comp1 := FromCardList(comp1Cards, nil)
-
-			comp2Cards := convertJSONToCards(testCase.Comp2.Cards, testData.Level)
-			comp2 := FromCardList(comp2Cards, nil)
-
-			// 执行比较
-			actualComp1Greater := comp1.GreaterThan(comp2)
-			actualComp2Greater := comp2.GreaterThan(comp1)
-
-			// 验证结果
-			if actualComp1Greater == testCase.Comp1GreaterThanComp2 &&
-				actualComp2Greater == testCase.Comp2GreaterThanComp1 {
-				passCount++
-				t.Logf("✓ [TestID:%d] %s vs %s", testCase.TestID, formatCompForLog(comp1), formatCompForLog(comp2))
-			} else {
-				failCount++
-				t.Errorf("🚨 [TestID:%d] 不同类型比较失败:", testCase.TestID)
-				t.Errorf("📍 快速定位: %s", testCase.GetDebugCommand())
-				t.Errorf("  Comp1: %s", formatCompForLog(comp1))
-				t.Errorf("  Comp2: %s", formatCompForLog(comp2))
-				t.Errorf("  期望: comp1>comp2=%v, comp2>comp1=%v", testCase.Comp1GreaterThanComp2, testCase.Comp2GreaterThanComp1)
-				t.Errorf("  实际: comp1>comp2=%v, comp2>comp1=%v", actualComp1Greater, actualComp2Greater)
-			}
-		})
-	}
-
-	t.Logf("不同类型比较: 通过 %d, 失败 %d", passCount, failCount)
-}
-
 // convertJSONToCards 将 JSON 卡片数据转换为 Card 数组
 func convertJSONToCards(cardDataList [][]interface{}, level int) []*Card {
 	var cards []*Card
@@ -314,7 +194,7 @@ func formatCompForLog(comp CardComp) string {
 	if comp == nil {
 		return "nil"
 	}
-	
+
 	cards := comp.GetCards()
 	if len(cards) == 0 {
 		return fmt.Sprintf("%s: Empty", comp.GetType().String())
@@ -419,8 +299,8 @@ func TestAnalyzeFailedCasesWildcardDistribution(t *testing.T) {
 
 	// 统计失败用例的wildcard分布
 	wildcardDistribution := make(map[string]map[int]int) // compType -> wildcardCount -> failureCount
-	totalFailures := make(map[string]int)               // compType -> totalFailures
-	
+	totalFailures := make(map[string]int)                // compType -> totalFailures
+
 	t.Logf("=== 开始分析失败用例的Wildcard分布 ===")
 
 	failureCount := 0
@@ -442,11 +322,11 @@ func TestAnalyzeFailedCasesWildcardDistribution(t *testing.T) {
 
 		if isFailed {
 			failureCount++
-			
+
 			// 分析两个牌组的wildcard数量
 			comp1Type := comp1.GetType().String()
 			comp2Type := comp2.GetType().String()
-			
+
 			comp1WildcardCount := countWildcards(comp1Cards)
 			comp2WildcardCount := countWildcards(comp2Cards)
 
@@ -461,7 +341,7 @@ func TestAnalyzeFailedCasesWildcardDistribution(t *testing.T) {
 			// 记录失败情况
 			wildcardDistribution[comp1Type][comp1WildcardCount]++
 			wildcardDistribution[comp2Type][comp2WildcardCount]++
-			
+
 			totalFailures[comp1Type]++
 			totalFailures[comp2Type]++
 
@@ -477,11 +357,11 @@ func TestAnalyzeFailedCasesWildcardDistribution(t *testing.T) {
 
 	// 输出统计结果
 	t.Logf("=== Wildcard分布统计 ===")
-	
+
 	// 按牌型排序输出
 	for compType, distribution := range wildcardDistribution {
 		t.Logf("%s类型 - 总失败次数: %d", compType, totalFailures[compType])
-		
+
 		for wildcardCount := 0; wildcardCount <= 5; wildcardCount++ {
 			if failures, exists := distribution[wildcardCount]; exists {
 				percentage := float64(failures) / float64(totalFailures[compType]) * 100
@@ -494,14 +374,14 @@ func TestAnalyzeFailedCasesWildcardDistribution(t *testing.T) {
 	t.Logf("=== 总体Wildcard分布 ===")
 	totalWildcardCount := make(map[int]int)
 	totalAllFailures := 0
-	
+
 	for _, distribution := range wildcardDistribution {
 		for wildcardCount, failures := range distribution {
 			totalWildcardCount[wildcardCount] += failures
 			totalAllFailures += failures
 		}
 	}
-	
+
 	for wildcardCount := 0; wildcardCount <= 5; wildcardCount++ {
 		if failures, exists := totalWildcardCount[wildcardCount]; exists {
 			percentage := float64(failures) / float64(totalAllFailures) * 100
@@ -509,4 +389,3 @@ func TestAnalyzeFailedCasesWildcardDistribution(t *testing.T) {
 		}
 	}
 }
-

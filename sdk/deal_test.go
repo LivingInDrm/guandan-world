@@ -183,8 +183,9 @@ func TestDealValidatePlayerCards(t *testing.T) {
 		t.Errorf("validatePlayerCards should succeed with valid cards: %v", err)
 	}
 
-	// Test with cards not in player's hand - create a card that definitely doesn't exist
-	fakeCard, _ := NewCard(2, "Heart", 99) // Level 99 doesn't exist in any deck
+	// Test with cards not in player's hand - create a card with invalid DeckIndex
+	fakeCard, _ := NewCard(2, "Heart", 5)
+	fakeCard.DeckIndex = -1 // Invalid DeckIndex, not in any player's hand
 	err = deal.validatePlayerCards(0, []*Card{fakeCard})
 	if err == nil {
 		t.Error("validatePlayerCards should fail with cards not in player's hand")
@@ -266,20 +267,24 @@ func TestDealCardsEqual(t *testing.T) {
 	deal, _ := NewDeal(5, nil)
 
 	card1, _ := NewCard(10, "Heart", 5)
+	card1.DeckIndex = 1
 	card2, _ := NewCard(10, "Heart", 5)
+	card2.DeckIndex = 1
 	card3, _ := NewCard(10, "Spade", 5)
+	card3.DeckIndex = 2
 	card4, _ := NewCard(9, "Heart", 5)
+	card4.DeckIndex = 3
 
 	if !deal.cardsEqual(card1, card2) {
-		t.Error("Same cards should be equal")
+		t.Error("Cards with same DeckIndex should be equal")
 	}
 
 	if deal.cardsEqual(card1, card3) {
-		t.Error("Cards with different colors should not be equal")
+		t.Error("Cards with different DeckIndex should not be equal")
 	}
 
 	if deal.cardsEqual(card1, card4) {
-		t.Error("Cards with different numbers should not be equal")
+		t.Error("Cards with different DeckIndex should not be equal")
 	}
 }
 

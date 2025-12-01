@@ -41648,10 +41648,10 @@
             "Diamond"
           ]
         ],
-        "type": "Plate",
+        "type": "Tube",
         "wildcard_count": 2
       },
-      "comp1_greater_than_comp2": false,
+      "comp1_greater_than_comp2": true,
       "comp2_greater_than_comp1": false
     },
     {

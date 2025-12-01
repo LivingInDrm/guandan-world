@@ -375,8 +375,8 @@ func TestCardSliceMarshalJSON(t *testing.T) {
 	}
 
 	// Verify first card has correct structure
-	if result[0]["id"] != "Spade_5_8" {
-		t.Errorf("First card id: expected 'Spade_5_8', got '%v'", result[0]["id"])
+	if result[0]["deck_index"] != float64(8) {
+		t.Errorf("First card deck_index: expected 8, got '%v'", result[0]["deck_index"])
 	}
 	if result[0]["suit"] != float64(0) {
 		t.Errorf("First card suit: expected 0, got %v", result[0]["suit"])

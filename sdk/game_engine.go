@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"guandan-world/pkg/log"
 	viewpb "guandan-world/proto/view"
 )
 
@@ -58,6 +59,7 @@ type GameEngine struct {
 	eventMeta       *EventMetadataProvider            // 事件元数据提供者
 	currentStateSeq int64                             // 当前状态版本号（由事件seq驱动，用于视图版本控制）
 	mutex           sync.RWMutex                      // 读写锁，保护并发访问游戏状态
+	eventWg         sync.WaitGroup                    // 追踪异步事件完成状态
 	createdAt       time.Time                         // 游戏引擎创建时间
 	updatedAt       time.Time                         // 最后更新时间
 }
@@ -218,6 +220,12 @@ type GameEngineInterface interface {
 	//   - 功能等同于RegisterObserver
 	On(eventType GameEventType, handler func(*GameEvent))
 
+	// FlushEvents 等待所有异步事件发送完成
+	// 功能说明:
+	//   - 在 match 结束时调用，确保所有事件在返回前被处理
+	//   - 用于解决 match 结束时事件未发送到前端的问题
+	FlushEvents()
+
 	// 玩家管理
 
 	// HandlePlayerDisconnect 处理玩家断线
@@ -318,16 +326,54 @@ func NewGameEngine() *GameEngine {
 	}
 }
 
+// requireActiveMatch 检测是否存在活跃比赛（Public API 用）
+func (ge *GameEngine) requireActiveMatch() (*Match, error) {
+	if ge.currentMatch == nil {
+		log.Warn("require failed: no active match")
+		return nil, errors.New("no active match")
+	}
+	return ge.currentMatch, nil
+}
+
+// requireActiveDeal 检测是否存在活跃牌局（Public API 用）
+func (ge *GameEngine) requireActiveDeal() (*Deal, error) {
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		log.Warn("require failed: no active deal")
+		return nil, errors.New("no active deal")
+	}
+	return ge.currentMatch.CurrentDeal, nil
+}
+
+// mustActiveMatch 断言存在活跃比赛（Internal 用）
+func (ge *GameEngine) mustActiveMatch() *Match {
+	if ge.currentMatch == nil {
+		log.Error("must failed: no active match")
+		panic("must: no active match")
+	}
+	return ge.currentMatch
+}
+
+// mustActiveDeal 断言存在活跃牌局（Internal 用）
+func (ge *GameEngine) mustActiveDeal() *Deal {
+	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
+		log.Error("must failed: no active deal")
+		panic("must: no active deal")
+	}
+	return ge.currentMatch.CurrentDeal
+}
+
 // StartMatch initializes a new match with the given players
 func (ge *GameEngine) StartMatch(players []Player) error {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
 	if len(players) != 4 {
+		log.Warn("invalid player count", "player_count", len(players))
 		return errors.New("exactly 4 players are required")
 	}
 
 	if ge.status != GameStatusWaiting {
+		log.Warn("invalid game status", "game_status", ge.status)
 		return errors.New("game is not in waiting status")
 	}
 
@@ -353,25 +399,27 @@ func (ge *GameEngine) StartDeal() error {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.currentMatch == nil {
-		return errors.New("no active match")
+	match, err := ge.requireActiveMatch()
+	if err != nil {
+		return err
 	}
 
-	err := ge.currentMatch.StartNewDeal()
+	err = match.StartNewDeal()
 	if err != nil {
 		return fmt.Errorf("failed to start deal: %w", err)
 	}
 
 	ge.updatedAt = time.Now()
 
+	deal := match.CurrentDeal
+
 	// Emit deal started event
-	event := NewDealStartedEvent(ge.eventMeta, ge.currentMatch, ge.currentMatch.CurrentDeal,
-		ge.currentMatch.CurrentDeal.Level, ge.currentMatch.TeamLevels)
+	event := NewDealStartedEvent(ge.eventMeta, match, deal, deal.Level, match.TeamLevels)
 	ge.emitEventLocked(event)
 
 	// 如果有上贡阶段，发送 TributeStarted 事件
-	if ge.currentMatch.CurrentDeal.TributePhase != nil {
-		lastResult := ge.currentMatch.CurrentDeal.LastResult
+	if deal.TributePhase != nil {
+		lastResult := deal.LastResult
 
 		// 确定上贡类型
 		var tributeType string
@@ -389,7 +437,7 @@ func (ge *GameEngine) StartDeal() error {
 		// 提取 givers 和 receivers
 		var givers []int
 		var receivers []int
-		tributePhase := ge.currentMatch.CurrentDeal.TributePhase
+		tributePhase := deal.TributePhase
 
 		// 从 TributePairs 提取 givers（需要排序以保证事件一致性）
 		for _, pair := range tributePhase.TributePairs {
@@ -409,16 +457,14 @@ func (ge *GameEngine) StartDeal() error {
 		}
 
 		// 发送 TributeStarted 事件
-		tributeStartedEvent := NewTributeStartedEvent(ge.eventMeta, ge.currentMatch,
-			ge.currentMatch.CurrentDeal, tributeType, givers, receivers)
+		tributeStartedEvent := NewTributeStartedEvent(ge.eventMeta, match, deal, tributeType, givers, receivers)
 		ge.emitEventLocked(tributeStartedEvent)
 
 		// 检查是否触发抗贡
 		if tributePhase.IsImmune {
 			// 获取详细的抗贡信息
-			tm := NewTributeManager(ge.currentMatch.CurrentDeal.Level)
-			_, immunityDetails := tm.GetTributeImmunityDetails(lastResult,
-				ge.currentMatch.CurrentDeal.PlayerCards)
+			tm := NewTributeManager(deal.Level)
+			_, immunityDetails := tm.GetTributeImmunityDetails(lastResult, deal.PlayerCards)
 
 			// 提取 joker_holders
 			jokerHolders := make(map[int]int)
@@ -435,8 +481,7 @@ func (ge *GameEngine) StartDeal() error {
 			}
 
 			// 发送 TributeExempted 事件
-			tributeExemptedEvent := NewTributeExemptedEvent(ge.eventMeta, ge.currentMatch,
-				ge.currentMatch.CurrentDeal, jokerHolders)
+			tributeExemptedEvent := NewTributeExemptedEvent(ge.eventMeta, match, deal, jokerHolders)
 			ge.emitEventLocked(tributeExemptedEvent)
 
 			// 注意：不在这里发送 TributeCompleted，统一在 StepTribute 中发送
@@ -451,11 +496,10 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return nil, errors.New("no active deal")
+	deal, err := ge.requireActiveDeal()
+	if err != nil {
+		return nil, err
 	}
-
-	deal := ge.currentMatch.CurrentDeal
 
 	// 根据传入牌的 DeckIndex，从玩家手牌中查找原始牌（确保 Level 等属性正确）
 	deckIndexes, err := extractDeckIndexes(cards)
@@ -499,11 +543,10 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return nil, errors.New("no active deal")
+	deal, err := ge.requireActiveDeal()
+	if err != nil {
+		return nil, err
 	}
-
-	deal := ge.currentMatch.CurrentDeal
 
 	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the pass
 	preEvents := ge.checkPreActionStateTransitions()
@@ -512,7 +555,7 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 	}
 
 	// Execute the pass
-	err := deal.PassTurn(playerSeat)
+	err = deal.PassTurn(playerSeat)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pass turn: %w", err)
 	}
@@ -686,11 +729,12 @@ func (ge *GameEngine) HandlePlayerDisconnect(playerSeat int) (*GameEvent, error)
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.currentMatch == nil {
-		return nil, errors.New("no active match")
+	match, err := ge.requireActiveMatch()
+	if err != nil {
+		return nil, err
 	}
 
-	err := ge.currentMatch.HandlePlayerDisconnect(playerSeat)
+	err = match.HandlePlayerDisconnect(playerSeat)
 	if err != nil {
 		return nil, fmt.Errorf("failed to handle disconnect: %w", err)
 	}
@@ -700,11 +744,11 @@ func (ge *GameEngine) HandlePlayerDisconnect(playerSeat int) (*GameEvent, error)
 	// Create disconnect event
 	var deal *Deal
 	var trick *Trick
-	if ge.currentMatch.CurrentDeal != nil {
-		deal = ge.currentMatch.CurrentDeal
+	if match.CurrentDeal != nil {
+		deal = match.CurrentDeal
 		trick = deal.CurrentTrick
 	}
-	event := NewPlayerDisconnectEvent(ge.eventMeta, ge.currentMatch, deal, trick, playerSeat, true)
+	event := NewPlayerDisconnectEvent(ge.eventMeta, match, deal, trick, playerSeat, true)
 	ge.emitEventLocked(event)
 
 	return event, nil
@@ -715,11 +759,12 @@ func (ge *GameEngine) HandlePlayerReconnect(playerSeat int) (*GameEvent, error) 
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.currentMatch == nil {
-		return nil, errors.New("no active match")
+	match, err := ge.requireActiveMatch()
+	if err != nil {
+		return nil, err
 	}
 
-	err := ge.currentMatch.HandlePlayerReconnect(playerSeat)
+	err = match.HandlePlayerReconnect(playerSeat)
 	if err != nil {
 		return nil, fmt.Errorf("failed to handle reconnect: %w", err)
 	}
@@ -729,11 +774,11 @@ func (ge *GameEngine) HandlePlayerReconnect(playerSeat int) (*GameEvent, error) 
 	// Create reconnect event
 	var deal *Deal
 	var trick *Trick
-	if ge.currentMatch.CurrentDeal != nil {
-		deal = ge.currentMatch.CurrentDeal
+	if match.CurrentDeal != nil {
+		deal = match.CurrentDeal
 		trick = deal.CurrentTrick
 	}
-	event := NewPlayerReconnectEvent(ge.eventMeta, ge.currentMatch, deal, trick, playerSeat, false)
+	event := NewPlayerReconnectEvent(ge.eventMeta, match, deal, trick, playerSeat, false)
 	ge.emitEventLocked(event)
 
 	return event, nil
@@ -744,11 +789,12 @@ func (ge *GameEngine) SetPlayerAutoPlay(playerSeat int, enabled bool) error {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.currentMatch == nil {
-		return errors.New("no active match")
+	match, err := ge.requireActiveMatch()
+	if err != nil {
+		return err
 	}
 
-	return ge.currentMatch.SetPlayerAutoPlay(playerSeat, enabled)
+	return match.SetPlayerAutoPlay(playerSeat, enabled)
 }
 
 // emitEventLocked is called when the caller already holds ge.mutex lock
@@ -772,11 +818,12 @@ func (ge *GameEngine) emitEventLocked(event *GameEvent) {
 	// Call all observers asynchronously outside the lock
 	for _, observer := range observersCopy {
 		obs := observer
+		ge.eventWg.Add(1)
 		go func() {
+			defer ge.eventWg.Done()
 			defer func() {
 				if r := recover(); r != nil {
-					// TODO: Replace with pluggable logger interface
-					fmt.Printf("[GameEngine] Event observer panic for %s: %v\n", event.Type, r)
+					log.Error("event observer panic", "event_type", event.Type, "panic", r)
 				}
 			}()
 			obs.OnGameEvent(event)
@@ -784,16 +831,18 @@ func (ge *GameEngine) emitEventLocked(event *GameEvent) {
 	}
 }
 
+// FlushEvents 等待所有异步事件发送完成
+// 在 match 结束时调用，确保所有事件（如 MatchEnded）在返回前被处理
+func (ge *GameEngine) FlushEvents() {
+	ge.eventWg.Wait()
+}
+
 // checkPreActionStateTransitions checks for state transitions that should happen before player actions
 // Currently only handles trick starting (TrickStatusWaiting -> TrickStatusPlaying)
 func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 	events := make([]*GameEvent, 0)
 
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return events
-	}
-
-	deal := ge.currentMatch.CurrentDeal
+	deal := ge.mustActiveDeal()
 
 	// Check if there's a waiting trick that needs to be started
 	if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
@@ -822,21 +871,18 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 	events := make([]*GameEvent, 0)
 
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return events
-	}
-
-	deal := ge.currentMatch.CurrentDeal
+	match := ge.mustActiveMatch()
+	deal := ge.mustActiveDeal()
 
 	// Check if deal is finished first (can happen at any time)
 	if deal.Status == DealStatusFinished {
 		// Calculate deal result using the new result system
-		dealResult, err := deal.CalculateResult(ge.currentMatch)
+		dealResult, err := deal.CalculateResult(match)
 		if err != nil {
-			// Log error but continue - create a basic result
-			winningTeam := ge.currentMatch.GetTeamForPlayer(deal.Rankings[0])
+			log.Error("failed to calculate deal result", "error", err)
+			winningTeam := match.GetTeamForPlayer(deal.Rankings[0])
 			upgrades := [2]int{0, 0}
-			upgrades[winningTeam] = 1 // 确保获胜队伍能够升级
+			upgrades[winningTeam] = 1
 
 			dealResult = &DealResult{
 				Rankings:    deal.Rankings,
@@ -867,16 +913,16 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 
 		// Emit deal ended event
 		durationMs := dealResult.Duration.Milliseconds()
-		dealEndedEvent := NewDealEndedEvent(ge.eventMeta, ge.currentMatch, deal,
+		dealEndedEvent := NewDealEndedEvent(ge.eventMeta, match, deal,
 			deal.Level, deal.Rankings, dealResult.VictoryType, dealResult.WinningTeam,
 			dealResult.Upgrades, durationMs, len(deal.TrickHistory), playerStats)
 		events = append(events, dealEndedEvent)
 
 		// Update match with deal result
-		err = ge.currentMatch.FinishDeal(dealResult)
+		err = match.FinishDeal(dealResult)
 		if err == nil {
 			// Check if match is finished
-			if ge.currentMatch.Status == MatchStatusFinished {
+			if match.Status == MatchStatusFinished {
 				ge.status = GameStatusFinished
 
 				// Create match result
@@ -884,8 +930,8 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 
 				// Emit match ended event
 				durationMs := matchResult.Duration.Milliseconds()
-				matchEndedEvent := NewMatchEndedEvent(ge.eventMeta, ge.currentMatch,
-					ge.currentMatch.Winner, ge.currentMatch.TeamLevels, durationMs, len(ge.currentMatch.DealHistory))
+				matchEndedEvent := NewMatchEndedEvent(ge.eventMeta, match,
+					match.Winner, match.TeamLevels, durationMs, len(match.DealHistory))
 				events = append(events, matchEndedEvent)
 			}
 		}
@@ -893,7 +939,7 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 		// Check if current trick is finished
 		// Emit trick ended event
 		finishedTrick := deal.CurrentTrick
-		trickEndedEvent := NewTrickEndedEvent(ge.eventMeta, ge.currentMatch, deal, finishedTrick, finishedTrick.Winner)
+		trickEndedEvent := NewTrickEndedEvent(ge.eventMeta, match, deal, finishedTrick, finishedTrick.Winner)
 		events = append(events, trickEndedEvent)
 
 		// Add finished trick to history
@@ -912,21 +958,23 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 
 // createMatchResult creates a MatchResult from a finished match
 func (ge *GameEngine) createMatchResult() *MatchResult {
-	if ge.currentMatch == nil || ge.currentMatch.Status != MatchStatusFinished {
-		return nil
+	match := ge.mustActiveMatch()
+	if match.Status != MatchStatusFinished {
+		log.Error("must failed: match not finished", "match_status", match.Status)
+		panic("must: match not finished")
 	}
 
 	// Calculate total duration
 	duration := time.Duration(0)
-	if ge.currentMatch.EndTime != nil {
-		duration = ge.currentMatch.EndTime.Sub(ge.currentMatch.StartTime)
+	if match.EndTime != nil {
+		duration = match.EndTime.Sub(match.StartTime)
 	}
 
 	// Calculate match statistics
 	stats := &MatchStatistics{
-		TotalDeals:    len(ge.currentMatch.DealHistory),
+		TotalDeals:    len(match.DealHistory),
 		TotalDuration: duration,
-		FinalLevels:   ge.currentMatch.TeamLevels,
+		FinalLevels:   match.TeamLevels,
 		TeamStats:     [2]*TeamMatchStats{},
 	}
 
@@ -941,8 +989,8 @@ func (ge *GameEngine) createMatchResult() *MatchResult {
 	}
 
 	// Calculate team statistics from deal history
-	for _, deal := range ge.currentMatch.DealHistory {
-		if result, err := deal.CalculateResult(ge.currentMatch); err == nil {
+	for _, deal := range match.DealHistory {
+		if result, err := deal.CalculateResult(match); err == nil {
 			// Count deals won
 			stats.TeamStats[result.WinningTeam].DealsWon++
 
@@ -955,7 +1003,7 @@ func (ge *GameEngine) createMatchResult() *MatchResult {
 			if result.Statistics != nil {
 				for _, playerStats := range result.Statistics.PlayerStats {
 					if playerStats != nil {
-						team := ge.currentMatch.GetTeamForPlayer(playerStats.PlayerSeat)
+						team := match.GetTeamForPlayer(playerStats.PlayerSeat)
 						stats.TeamStats[team].TotalTricks += playerStats.TricksWon
 					}
 				}
@@ -964,8 +1012,8 @@ func (ge *GameEngine) createMatchResult() *MatchResult {
 	}
 
 	return &MatchResult{
-		Winner:      ge.currentMatch.Winner,
-		FinalLevels: ge.currentMatch.TeamLevels,
+		Winner:      match.Winner,
+		FinalLevels: match.TeamLevels,
 		Duration:    duration,
 		Statistics:  stats,
 	}
@@ -1057,12 +1105,13 @@ func (ge *GameEngine) StepTribute(input *TributeInput) (*StepResult, error) {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return nil, errors.New("no active deal")
+	deal, err := ge.requireActiveDeal()
+	if err != nil {
+		return nil, err
 	}
 
-	deal := ge.currentMatch.CurrentDeal
 	if deal.Status != DealStatusTribute {
+		log.Warn("require failed: not in tribute phase", "deal_status", deal.Status)
 		return nil, errors.New("not in tribute phase")
 	}
 
@@ -1117,11 +1166,11 @@ func (ge *GameEngine) StartPlayingPhase() error {
 	ge.mutex.Lock()
 	defer ge.mutex.Unlock()
 
-	if ge.currentMatch == nil || ge.currentMatch.CurrentDeal == nil {
-		return errors.New("no active deal")
+	deal, err := ge.requireActiveDeal()
+	if err != nil {
+		return err
 	}
 
-	deal := ge.currentMatch.CurrentDeal
 	return deal.StartPlayingPhase()
 }
 

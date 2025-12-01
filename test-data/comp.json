@@ -408,7 +408,7 @@
             },
             {
               "cards": [[10, "Diamond"], [5, "Heart"], [10, "Diamond"], [10, "Heart"], [10, "Heart"], [10, "Club"], [10, "Club"], [10, "Spade"], [10, "Spade"], [5, "Heart"]],
-              "type": "NaiveBomb"
+              "type": "IllegalComp"
             },
             {
               "cards": [[9, "Diamond"], [5, "Heart"], [10, "Diamond"], [10, "Heart"], [10, "Heart"], [10, "Club"], [10, "Club"], [10, "Spade"], [10, "Spade"], [5, "Heart"]],

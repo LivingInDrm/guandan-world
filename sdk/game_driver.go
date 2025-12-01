@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"guandan-world/pkg/log"
 )
 
 // ActionType 定义玩家可执行的动作类型
@@ -84,17 +86,17 @@ type GameDriverConfig struct {
 // DefaultGameDriverConfig 返回默认的游戏驱动器配置
 func DefaultGameDriverConfig() *GameDriverConfig {
 	return &GameDriverConfig{
-		PlayDecisionTimeout:  30 * time.Second,            // 30秒出牌超时
-		TributeTimeout:       20 * time.Second,            // 20秒贡牌超时
-		TurnTimeoutSeconds:   20,                          // 20秒单次出牌超时
-		TimeoutStrategy:      NewDefaultTimeoutStrategy(), // 使用默认超时策略
-		MaxConcurrentPlayers: 4,                           // 最多4个玩家
-		AsyncEventHandling:   false,                       // 同步事件处理确保顺序
-		TributeStartedDelay:  2000 * time.Millisecond,     // 贡牌阶段开始后延时
-		TributeWaitingDelay:  2000 * time.Millisecond,     // Waiting 阶段结束后延时
-		TributeSelectingDelay: 2000 * time.Millisecond,    // Selecting 阶段结束后延时
-		TributeReturningDelay: 2000 * time.Millisecond,    // Returning 阶段结束后延时
-		TributeFinishedDelay: 2000 * time.Millisecond,     // 阶段完成后延时
+		PlayDecisionTimeout:   30 * time.Second,            // 30秒出牌超时
+		TributeTimeout:        20 * time.Second,            // 20秒贡牌超时
+		TurnTimeoutSeconds:    20,                          // 20秒单次出牌超时
+		TimeoutStrategy:       NewDefaultTimeoutStrategy(), // 使用默认超时策略
+		MaxConcurrentPlayers:  4,                           // 最多4个玩家
+		AsyncEventHandling:    false,                       // 同步事件处理确保顺序
+		TributeStartedDelay:   2000 * time.Millisecond,     // 贡牌阶段开始后延时
+		TributeWaitingDelay:   2000 * time.Millisecond,     // Waiting 阶段结束后延时
+		TributeSelectingDelay: 2000 * time.Millisecond,     // Selecting 阶段结束后延时
+		TributeReturningDelay: 2000 * time.Millisecond,     // Returning 阶段结束后延时
+		TributeFinishedDelay:  2000 * time.Millisecond,     // 阶段完成后延时
 	}
 }
 
@@ -193,8 +195,7 @@ func (gd *GameDriver) notifyObservers(event *GameEvent) {
 			go func() {
 				defer func() {
 					if r := recover(); r != nil {
-						// 捕获 panic，防止崩溃
-						fmt.Printf("[GameDriver] Observer panic for %s: %v\n", evt.Type, r)
+						log.Error("observer panic", "event_type", evt.Type, "panic", r)
 					}
 				}()
 				obs.OnGameEvent(evt)
@@ -205,7 +206,7 @@ func (gd *GameDriver) notifyObservers(event *GameEvent) {
 			func() {
 				defer func() {
 					if r := recover(); r != nil {
-						fmt.Printf("[GameDriver] Observer panic for %s: %v\n", event.Type, r)
+						log.Error("observer panic", "event_type", event.Type, "panic", r)
 					}
 				}()
 				observer.OnGameEvent(event)
@@ -293,7 +294,8 @@ type PlayerStats struct {
 // 这是新架构的核心方法，将整个比赛循环封装在SDK内部
 func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 	if gd.inputProvider == nil {
-		return nil, fmt.Errorf("input provider not set")
+		log.Warn("require failed: input provider not set")
+		return nil, errors.New("input provider not set")
 	}
 
 	// 使用互斥锁保护cancelFunc的读写
@@ -409,6 +411,9 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 			AverageTime: 0,
 		}
 	}
+
+	// 等待所有异步事件发送完成，确保 MatchEnded 等事件到达前端
+	gd.engine.FlushEvents()
 
 	return result, nil
 }
@@ -698,8 +703,7 @@ func (gd *GameDriver) runTrick() error {
 
 			_, err = gd.engine.PlayCards(currentPlayer, decision.Cards)
 			if err != nil {
-				// 检测到非法出牌
-				// 记录为超时统计（统一处理非法行为）
+				log.Warn("invalid play detected", "player_seat", currentPlayer, "error", err)
 				gd.handleTimeout(currentPlayer, "invalid_play")
 
 				// 使用超时策略自动生成合法决策
@@ -754,7 +758,8 @@ func (gd *GameDriver) runTrick() error {
 // handleTimeout 处理玩家超时
 // actionType: "play_decision", "tribute_select", "return_tribute"
 func (gd *GameDriver) handleTimeout(playerSeat int, actionType string) {
-	// 记录超时统计
+	log.Info("player timeout", "player_seat", playerSeat, "action_type", actionType)
+
 	switch actionType {
 	case "play_decision":
 		gd.incrementPlayDecisionTimeout(playerSeat)

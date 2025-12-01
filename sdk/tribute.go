@@ -3,6 +3,8 @@ package sdk
 import (
 	"errors"
 	"fmt"
+
+	"guandan-world/pkg/log"
 )
 
 // TributeManager handles all tribute-related operations independently
@@ -25,6 +27,7 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 
 	rankings := lastResult.Rankings
 	if len(rankings) < 4 {
+		log.Warn("invalid rankings for tribute phase", "rankings_len", len(rankings))
 		return nil, errors.New("invalid rankings for tribute phase")
 	}
 
@@ -71,6 +74,7 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 		)
 
 	default:
+		log.Warn("unknown victory type", "victory_type", lastResult.VictoryType)
 		return nil, fmt.Errorf("unknown victory type: %v", lastResult.VictoryType)
 	}
 
@@ -276,6 +280,7 @@ func processTributeWaiting(tm *TributeManager, phase *TributePhase, playerHands 
 	for _, pair := range phase.TributePairs {
 		tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[pair.Giver])
 		if tributeCard == nil {
+			log.Warn("no valid tribute card", "player_seat", pair.Giver)
 			result.Error = fmt.Errorf("player %d has no valid tribute card", pair.Giver)
 			return result
 		}
@@ -327,6 +332,7 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 
 		// 处理用户选择
 		if input.Card == nil {
+			log.Warn("tribute input card is nil")
 			result.Error = errors.New("input card is nil")
 			return result
 		}
@@ -340,12 +346,14 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 			}
 		}
 		if selectedCard == nil {
+			log.Warn("card not found in tribute pool", "deck_index", input.Card.DeckIndex)
 			result.Error = errors.New("card not found in tribute pool")
 			return result
 		}
 
 		// 验证是否轮到该玩家选择
 		if len(phase.Winners) == 0 || phase.Winners[0] != input.PlayerID {
+			log.Warn("not player's turn to select", "player_id", input.PlayerID)
 			result.Error = fmt.Errorf("not player %d's turn to select", input.PlayerID)
 			return result
 		}
@@ -384,6 +392,7 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 		card := phase.PoolCards[0]
 		receiver := tm.GetNextReceiver(phase)
 		if receiver == -1 {
+			log.Warn("no receiver found for pool card")
 			result.Error = fmt.Errorf("no receiver found for pool card")
 			return result
 		}
@@ -445,6 +454,7 @@ func processTributeReturning(tm *TributeManager, phase *TributePhase, playerHand
 
 	// 处理用户还贡
 	if input.Card == nil {
+		log.Warn("return tribute input card is nil")
 		result.Error = errors.New("input card is nil")
 		return result
 	}
@@ -458,6 +468,7 @@ func processTributeReturning(tm *TributeManager, phase *TributePhase, playerHand
 		}
 	}
 	if returnCard == nil {
+		log.Warn("card not found in player hand", "player_id", input.PlayerID, "deck_index", input.Card.DeckIndex)
 		result.Error = errors.New("card not found in player hand")
 		return result
 	}
@@ -471,11 +482,13 @@ func processTributeReturning(tm *TributeManager, phase *TributePhase, playerHand
 		}
 	}
 	if targetPair == nil {
+		log.Warn("player is not a tribute receiver", "player_id", input.PlayerID)
 		result.Error = fmt.Errorf("player %d is not a tribute receiver", input.PlayerID)
 		return result
 	}
 
 	if targetPair.ReturnCard != nil {
+		log.Warn("player has already returned tribute", "player_id", input.PlayerID)
 		result.Error = fmt.Errorf("player %d has already returned tribute", input.PlayerID)
 		return result
 	}
@@ -522,6 +535,7 @@ func processTributeFinished(phase *TributePhase) *TributeStepResult {
 	if !phase.IsImmune {
 		for _, pair := range phase.TributePairs {
 			if pair.Giver == -1 || pair.Receiver == -1 || pair.TributeCard == nil || pair.ReturnCard == nil {
+				log.Warn("invalid tribute pair", "giver", pair.Giver, "receiver", pair.Receiver)
 				result.Error = fmt.Errorf("invalid tribute pair: giver=%d, receiver=%d, tributeCard=%v, returnCard=%v",
 					pair.Giver, pair.Receiver, pair.TributeCard, pair.ReturnCard)
 				result.PhaseCompleted = false

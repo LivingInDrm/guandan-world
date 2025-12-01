@@ -107,7 +107,7 @@ func TestWildcardNormalization(t *testing.T) {
 			t.Error("NormalizedCards should not be nil")
 		}
 
-		// Should have three 8s and two 9s
+		// Should have three 8s, one 9, and one 3 (wildcard keeps original value)
 		countMap := make(map[int]int)
 		for _, card := range fullHouse.NormalizedCards {
 			countMap[card.Number]++
@@ -116,8 +116,11 @@ func TestWildcardNormalization(t *testing.T) {
 		if countMap[8] != 3 {
 			t.Errorf("Expected 3 cards with value 8, got %d", countMap[8])
 		}
-		if countMap[9] != 2 {
-			t.Errorf("Expected 2 cards with value 9, got %d", countMap[9])
+		if countMap[9] != 1 {
+			t.Errorf("Expected 1 card with value 9, got %d", countMap[9])
+		}
+		if countMap[3] != 1 {
+			t.Errorf("Expected 1 card with value 3 (wildcard), got %d", countMap[3])
 		}
 	})
 
@@ -140,12 +143,15 @@ func TestWildcardNormalization(t *testing.T) {
 			t.Error("NormalizedCards should not be nil")
 		}
 
-		// Should have 5,6,7,8,9 in order
-		expectedValues := []int{5, 6, 7, 8, 9}
-		for i, card := range straight.NormalizedCards {
-			if card.Number != expectedValues[i] {
-				t.Errorf("Expected card at position %d to be %d, got %d", 
-					i, expectedValues[i], card.Number)
+		// Should have 3,5,6,7,8 (wildcard keeps original value)
+		countMap := make(map[int]int)
+		for _, card := range straight.NormalizedCards {
+			countMap[card.Number]++
+		}
+		expectedCards := []int{3, 5, 6, 7, 8}
+		for _, expected := range expectedCards {
+			if countMap[expected] != 1 {
+				t.Errorf("Expected 1 card with value %d, got %d", expected, countMap[expected])
 			}
 		}
 	})

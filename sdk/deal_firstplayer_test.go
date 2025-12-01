@@ -138,6 +138,11 @@ func TestTrickNextLeaderWithTeammate(t *testing.T) {
 		t.Fatalf("Failed to deal cards: %v", err)
 	}
 	
+	// Initialize all players as active
+	for i := 0; i < 4; i++ {
+		deal.ActivePlayers[i] = true
+	}
+	
 	// Start first trick
 	deal.CurrentTrick, _ = NewTrick(0)
 	deal.CurrentTrick.Status = TrickStatusPlaying
@@ -157,6 +162,8 @@ func TestTrickNextLeaderWithTeammate(t *testing.T) {
 	
 	// Remove all cards from player 0 to simulate finishing
 	deal.PlayerCards[0] = []*Card{}
+	deal.ActivePlayers[0] = false
+	deal.Rankings = append(deal.Rankings, 0)
 	
 	// Other players pass
 	for i := 1; i <= 3; i++ {
