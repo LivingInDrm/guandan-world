@@ -1,5 +1,3 @@
-import type { Card } from '../../types';
-
 // 卡片尺寸定义
 export type CardSize = 'xs' | 'small' | 'normal' | 'large';
 

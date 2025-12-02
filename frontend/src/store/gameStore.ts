@@ -1,10 +1,11 @@
 import { create } from 'zustand';
-import type { WSMessage, Card, PlayerGameState } from '../types';
+import type { WSMessage } from '../types';
+import type { Card, PlayerView } from '../types/proto';
 import type { DealEndedPayload, MatchEndedPayload } from '../types/generated/event';
 
 interface GameState {
   isInGame: boolean;
-  gameState: PlayerGameState | null;
+  playerView: PlayerView | null;
   playerSeat: number | null;
   isMyTurn: boolean;
   countdown: number | null;
@@ -19,7 +20,7 @@ interface GameState {
 
 interface GameActions {
   setInGame: (inGame: boolean) => void;
-  setGameState: (state: PlayerGameState | null) => void;
+  setPlayerView: (view: PlayerView | null) => void;
   setPlayerSeat: (seat: number | null) => void;
   setMyTurn: (isMyTurn: boolean) => void;
   setCountdown: (countdown: number | null) => void;
@@ -38,7 +39,7 @@ type GameStore = GameState & GameActions;
 
 const initialState: GameState = {
   isInGame: false,
-  gameState: null,
+  playerView: null,
   playerSeat: null,
   isMyTurn: false,
   countdown: null,
@@ -57,7 +58,7 @@ export const useGameStore = create<GameStore>((set) => ({
   // Actions
   setInGame: (inGame: boolean) => set({ isInGame: inGame }),
   
-  setGameState: (gameState: PlayerGameState | null) => set({ gameState }),
+  setPlayerView: (playerView: PlayerView | null) => set({ playerView }),
   
   setPlayerSeat: (seat: number | null) => set({ playerSeat: seat }),
   

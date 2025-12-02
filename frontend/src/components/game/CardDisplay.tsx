@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import type { Card } from '../../types';
+import type { Card } from '../../types/proto';
+import { isJoker } from '../../utils/cardUtils';
 import { 
   SUIT_SYMBOLS, 
   JOKER_CONFIG, 
@@ -120,11 +121,11 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   const sizeConfig = useMemo(() => getCardSizeStyle(size), [size]);
   
   const bgClass = useMemo(() => {
-    if (card.isJoker) {
+    if (isJoker(card)) {
       return card.rank === 16 ? JOKER_CONFIG.big.bgGradient : JOKER_CONFIG.small.bgGradient;
     }
     return 'bg-white';
-  }, [card.isJoker, card.rank]);
+  }, [card]);
   
   const zIndex = useMemo(() => {
     if (isSelected) return 100;
@@ -158,11 +159,11 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       onClick={onClick}
     >
       {/* 卡片内边框装饰 (可选) */}
-      {!card.isJoker && (
+      {!isJoker(card) && (
         <div className="absolute inset-1 border border-gray-100 rounded opacity-50 pointer-events-none" />
       )}
 
-      {card.isJoker ? (
+      {isJoker(card) ? (
         <JokerContent card={card} sizeConfig={sizeConfig} />
       ) : (
         <>

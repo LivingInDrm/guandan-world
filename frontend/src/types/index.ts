@@ -17,7 +17,6 @@ import {
   DealStatus as ProtoDealStatusEnum, 
   TributeStatus as ProtoTributeStatusEnum 
 } from './generated/view';
-import { VictoryType as ProtoVictoryTypeEnum } from './generated/event';
 
 export const DealStatus = {
   UNSPECIFIED: ProtoDealStatusEnum.DEAL_STATUS_UNSPECIFIED,
@@ -48,18 +47,12 @@ export type {
   VictoryType as ProtoVictoryType,
 } from './proto';
 
-// ========== 前端扩展类型 ==========
-// 在 proto 基础上添加 UI 需要的额外字段
-export type { FrontendCard } from './frontend';
-export type { FrontendPlayAction } from '../utils/cardUtils';
+// ========== 类型别名 ==========
+// 直接使用 Proto 类型，不再需要前端扩展类型
+import type { Card as ProtoCardType, PlayAction as ProtoPlayActionType } from './proto';
 
-// ========== 向后兼容的类型别名 ==========
-// 为了保持现有代码兼容，提供旧类型名称的别名
-import type { FrontendCard } from './frontend';
-import type { FrontendPlayAction } from '../utils/cardUtils';
-
-export type Card = FrontendCard;
-export type PlayAction = FrontendPlayAction;
+export type Card = ProtoCardType;
+export type PlayAction = ProtoPlayActionType;
 
 // Base types for the application
 
@@ -223,27 +216,6 @@ export const PlayerStatus = {
 } as const;
 
 export type PlayerStatus = typeof PlayerStatus[keyof typeof PlayerStatus];
-
-export interface PlayerView {
-  player_seat: number;
-  player_cards: Card[];
-  team_levels: [number, number];
-  deal_level: number;
-  deal_status: number;  // 使用 DealStatus 枚举值（数字）
-  trick_id?: string;
-  current_turn?: number;
-  plays?: PlayAction[];
-}
-
-export interface PlayerGameState {
-  team_levels: [number, number];
-  deal_level: number;
-  deal_status: number;  // 使用 DealStatus 枚举值（数字）
-  trick_id?: string;
-  current_turn?: number;
-  plays?: PlayAction[];
-  play_states?: [number, number, number, number];  // 每个玩家状态：0=等待 1=已出 2=不出 3=已结束
-}
 
 export interface GameActionData {
   action_type: 'play_decision_required' | 'tribute_selection_required' | 'return_tribute_required';

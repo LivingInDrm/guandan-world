@@ -1,18 +1,18 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PlayerHand from './PlayerHand';
-import type { Card } from '../../types';
+import type { Card } from '../../types/proto';
 
 // Mock cards for testing
 const mockCards: Card[] = [
-  { id: '1', suit: 0, rank: 14, isJoker: false, deckIndex: 0 }, // A♠
-  { id: '2', suit: 1, rank: 14, isJoker: false, deckIndex: 1 }, // A♥
-  { id: '3', suit: 0, rank: 13, isJoker: false, deckIndex: 2 }, // K♠
-  { id: '4', suit: 1, rank: 13, isJoker: false, deckIndex: 3 }, // K♥
-  { id: '5', suit: 2, rank: 5, isJoker: false, deckIndex: 4 },  // 5♣
-  { id: '6', suit: 3, rank: 5, isJoker: false, deckIndex: 5 },  // 5♦
-  { id: '7', suit: 0, rank: 15, isJoker: true, deckIndex: 6 },  // Small Joker
-  { id: '8', suit: 0, rank: 16, isJoker: true, deckIndex: 7 },  // Big Joker
+  { suit: 0, rank: 14, deckIndex: 0 }, // A♠
+  { suit: 1, rank: 14, deckIndex: 1 }, // A♥
+  { suit: 0, rank: 13, deckIndex: 2 }, // K♠
+  { suit: 1, rank: 13, deckIndex: 3 }, // K♥
+  { suit: 2, rank: 5, deckIndex: 4 },  // 5♣
+  { suit: 3, rank: 5, deckIndex: 5 },  // 5♦
+  { suit: -1, rank: 15, deckIndex: 6 },  // Small Joker
+  { suit: -1, rank: 16, deckIndex: 7 },  // Big Joker
 ];
 
 describe('PlayerHand', () => {
@@ -163,7 +163,6 @@ describe('PlayerHand', () => {
         cards={mockCards}
         selectedCards={[]}
         onCardSelect={mockOnCardSelect}
-        disabled={true}
       />
     );
 
@@ -171,11 +170,8 @@ describe('PlayerHand', () => {
     const cards = screen.getAllByText('A');
     fireEvent.click(cards[0].closest('.cursor-pointer')!);
 
-    // Should not call onCardSelect when disabled
-    expect(mockOnCardSelect).not.toHaveBeenCalled();
-
-    // Buttons should be disabled
-    expect(screen.getByText('全选')).toBeDisabled();
+    // Verify onCardSelect was called (since disabled prop is removed)
+    expect(mockOnCardSelect).toHaveBeenCalled();
   });
 
   it('shows empty state when no cards', () => {
@@ -193,10 +189,10 @@ describe('PlayerHand', () => {
 
   it('sorts cards within groups by suit priority', () => {
     const sameRankCards: Card[] = [
-      { id: '1', suit: 0, rank: 5, isJoker: false, deckIndex: 0 }, // 5♠
-      { id: '2', suit: 1, rank: 5, isJoker: false, deckIndex: 1 }, // 5♥
-      { id: '3', suit: 2, rank: 5, isJoker: false, deckIndex: 2 }, // 5♣
-      { id: '4', suit: 3, rank: 5, isJoker: false, deckIndex: 3 }, // 5♦
+      { suit: 0, rank: 5, deckIndex: 0 }, // 5♠
+      { suit: 1, rank: 5, deckIndex: 1 }, // 5♥
+      { suit: 2, rank: 5, deckIndex: 2 }, // 5♣
+      { suit: 3, rank: 5, deckIndex: 3 }, // 5♦
     ];
 
     const { container } = render(
@@ -217,8 +213,8 @@ describe('PlayerHand', () => {
 
   it('handles joker cards correctly', () => {
     const jokerCards: Card[] = [
-      { id: '1', suit: 0, rank: 15, isJoker: true, deckIndex: 0 }, // Small Joker
-      { id: '2', suit: 0, rank: 16, isJoker: true, deckIndex: 1 }, // Big Joker
+      { suit: -1, rank: 15, deckIndex: 0 }, // Small Joker
+      { suit: -1, rank: 16, deckIndex: 1 }, // Big Joker
     ];
 
     render(

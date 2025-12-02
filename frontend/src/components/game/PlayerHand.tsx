@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import type { Card } from '../../types';
+import type { Card } from '../../types/proto';
+import { isJoker } from '../../utils/cardUtils';
 import CardDisplay, { getRankText } from './CardDisplay';
 
 interface PlayerHandProps {
@@ -24,9 +25,9 @@ const CardGroup: React.FC<CardGroupProps> = ({
   const safeCards = Array.isArray(cards) ? cards : [];
 
   const sortedCards = [...safeCards].sort((a, b) => {
-    if (a.isJoker && b.isJoker) return b.rank - a.rank;
-    if (a.isJoker) return -1;
-    if (b.isJoker) return 1;
+    if (isJoker(a) && isJoker(b)) return b.rank - a.rank;
+    if (isJoker(a)) return -1;
+    if (isJoker(b)) return 1;
     
     const suitPriority = [3, 1, 2, 0];
     const aPriority = suitPriority.indexOf(a.suit);
@@ -35,10 +36,10 @@ const CardGroup: React.FC<CardGroupProps> = ({
   });
 
   const handleCardClick = (clickedCard: Card) => {
-    const isSelected = selectedCards.some(c => c.id === clickedCard.id);
+    const isSelected = selectedCards.some(c => c.deckIndex === clickedCard.deckIndex);
     
     if (isSelected) {
-      const newSelection = selectedCards.filter(c => c.id !== clickedCard.id);
+      const newSelection = selectedCards.filter(c => c.deckIndex !== clickedCard.deckIndex);
       onCardSelect(newSelection);
     } else {
       const newSelection = [...selectedCards, clickedCard];
@@ -54,9 +55,9 @@ const CardGroup: React.FC<CardGroupProps> = ({
       <div className="flex items-end">
         {sortedCards.map((card, index) => (
           <CardDisplay
-            key={card.id}
+            key={card.deckIndex}
             card={card}
-            isSelected={selectedCards.some(c => c.id === card.id)}
+            isSelected={selectedCards.some(c => c.deckIndex === card.deckIndex)}
             onClick={() => handleCardClick(card)}
             stackIndex={index}
           />

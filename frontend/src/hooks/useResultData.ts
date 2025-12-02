@@ -1,18 +1,20 @@
 import { useGameStore } from '../store/gameStore';
 import { useRoomStore } from '../store/roomStore';
-import type { Player, PlayerGameState } from '../types';
+import type { Player } from '../types';
 
 export const useDealResultData = () => {
   const dealResult = useGameStore(s => s.dealResult);
   const room = useRoomStore(s => s.currentRoom);
-  const gameState = useGameStore(s => s.gameState);
+  const playerView = useGameStore(s => s.playerView);
   
   if (!dealResult || !room) return null;
   
   return {
     dealResult,
     players: room.players.filter(p => p !== null) as Player[],
-    teamLevels: (gameState as PlayerGameState)?.team_levels || [2, 2] as [number, number]
+    teamLevels: playerView?.teamLevels?.length === 2
+      ? playerView.teamLevels as [number, number]
+      : [2, 2] as [number, number]
   };
 };
 

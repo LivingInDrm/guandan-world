@@ -1,13 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import GameControls from './GameControls';
-import type { Card } from '../../types';
+import type { Card } from '../../types/proto';
 
 // Mock cards for testing
 const mockCards: Card[] = [
-  { id: '1', suit: 0, rank: 14, isJoker: false, deckIndex: 0 }, // A♠
-  { id: '2', suit: 1, rank: 14, isJoker: false, deckIndex: 1 }, // A♥
-  { id: '3', suit: 0, rank: 13, isJoker: false, deckIndex: 2 }, // K♠
+  { suit: 0, rank: 14, deckIndex: 0 }, // A♠
+  { suit: 1, rank: 14, deckIndex: 1 }, // A♥
+  { suit: 0, rank: 13, deckIndex: 2 }, // K♠
 ];
 
 describe('GameControls', () => {

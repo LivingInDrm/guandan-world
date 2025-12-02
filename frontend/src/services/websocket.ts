@@ -159,7 +159,7 @@ class WebSocketClient {
     }
   }
 
-  private handleClose(event: CloseEvent): void {
+  private handleClose(_event: CloseEvent): void {
     this.isConnected = false;
     this.clearTimers();
     

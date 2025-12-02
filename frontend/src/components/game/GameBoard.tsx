@@ -1,5 +1,6 @@
 import React from 'react';
-import type { Player, PlayAction } from '../../types';
+import type { Player } from '../../types';
+import type { PlayAction } from '../../types/proto';
 import { PlayerStatus } from '../../types';
 import CardDisplay from './CardDisplay';
 
@@ -145,7 +146,7 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position 
         <div className={`flex ${getFlexDirection()} items-center gap-0.5`}>
           {play.cards.map((card, index) => (
             <CardDisplay
-              key={card.id}
+              key={card.deckIndex}
               card={card}
               size="xs"
               stackIndex={index}

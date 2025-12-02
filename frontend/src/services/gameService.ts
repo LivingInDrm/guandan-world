@@ -213,11 +213,11 @@ class GameService {
     }
   }
 
-  private handleJoinRoom(message: WSMessage): void {
+  private handleJoinRoom(_message: WSMessage): void {
     // Room update will be handled by room_update message
   }
 
-  private handleLeaveRoom(message: WSMessage): void {
+  private handleLeaveRoom(_message: WSMessage): void {
     // Room update will be handled by room_update message
   }
 
@@ -240,8 +240,6 @@ class GameService {
 
   private handleGameEvent(message: WSMessage): void {
     // GameEvent is now sent directly in message.data (flattened structure)
-    const gameEvent = message.data;
-    
     // Note: Do NOT set gameState here - it should only be updated from player_view messages
     // game_event is just a notification, not the full game state
     useGameStore.getState().setLastMessage(message);

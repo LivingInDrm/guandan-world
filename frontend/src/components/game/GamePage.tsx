@@ -6,9 +6,9 @@ import { useGameStore } from '../../store/gameStore';
 import { useTributeStore } from '../../store/tributeStore';
 import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
-import type { Room, WSMessage, Card, GameActionData, PlayerGameState, ProtoPlayerView } from '../../types';
+import type { Room, WSMessage, GameActionData } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
-import type { GameEvent } from '../../types/proto';
+import type { GameEvent, Card, PlayerView as ProtoPlayerView } from '../../types/proto';
 import { EventType, eventTypeToJSON } from '../../types/generated/event';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
@@ -16,9 +16,9 @@ import GameControls from './GameControls';
 import TributeBoard from './tribute/TributeBoard';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
-import { convertProtoPlayerView, convertProtoPlayerViewToGameState } from '../../utils/converters';
 import { useDealResultData, useMatchResultData } from '../../hooks/useResultData';
 import { useTributeData } from '../../hooks/useTributeData';
+import { usePlayerViewData } from '../../hooks/usePlayerViewData';
 
 // 游戏页面状态常量
 const GamePageState = {
@@ -57,7 +57,6 @@ const GamePage: React.FC = () => {
     isConnected,
     countdown,
     playerSeat,
-    gameState,
     currentPhase,
     selectedCards,
     isMyTurn,
@@ -67,13 +66,14 @@ const GamePage: React.FC = () => {
     setDealResult,
     setMatchResult,
     setPlayerSeat,
-    setGameState,
+    setPlayerView,
     setMyTurn
   } = useGameStore();
 
   const dealResultData = useDealResultData();
   const matchResultData = useMatchResultData();
   const tributeData = useTributeData();
+  const playerViewData = usePlayerViewData();
 
   const [room, setRoom] = useState<Room | null>(currentRoom);
   const [playerHand, setPlayerHand] = useState<Card[]>([]);
@@ -244,27 +244,25 @@ const GamePage: React.FC = () => {
       }
 
       const protoPlayerView: ProtoPlayerView = data.player_view;
-      const playerView = convertProtoPlayerView(protoPlayerView);
       
-      setPlayerSeat(playerView.player_seat);
-      setPlayerHand(playerView.player_cards);
+      setPlayerSeat(protoPlayerView.playerSeat);
+      setPlayerHand(protoPlayerView.playerCards);
 
-      const currentTrickId = playerView.trick_id;
+      const currentTrickId = protoPlayerView.trickIndex?.toString();
       if (currentTrickId && currentTrickId !== previousTrickId) {
         setPreviousTrickId(currentTrickId);
       }
 
-      const isPlayingPhase = playerView.deal_status === DealStatus.PLAYING;
+      const isPlayingPhase = protoPlayerView.dealStatus === DealStatus.PLAYING;
       const isMyTurnValue = isPlayingPhase &&
-        playerView.current_turn === playerView.player_seat;
-      const handLen = playerView.player_cards?.length ?? 0;
+        protoPlayerView.currentTurn === protoPlayerView.playerSeat;
+      const handLen = protoPlayerView.playerCards?.length ?? 0;
       const canPlayValue = isMyTurnValue && handLen > 0;
 
       setCanPlay(canPlayValue);
       setMyTurn(isMyTurnValue);
 
-      const playerGameState = convertProtoPlayerViewToGameState(protoPlayerView);
-      setGameState(playerGameState);
+      setPlayerView(protoPlayerView);
     };
 
     const handleGameAction = (message: WSMessage) => {
@@ -295,7 +293,7 @@ const GamePage: React.FC = () => {
       wsClient.off(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
       wsClient.off(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
     };
-  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setDealResult, setMatchResult, setGameState, setPlayerSeat, setMyTurn, setCurrentRoom]);
+  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setDealResult, setMatchResult, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom]);
 
   // 开始游戏
   const handleStartGame = async () => {
@@ -612,24 +610,18 @@ const GamePage: React.FC = () => {
   };
 
   const renderPlaying = () => {
-    if (!gameState || !room || playerSeat === null) return null;
+    if (!playerViewData || !room || playerSeat === null) return null;
 
-    const playerGameState = gameState as PlayerGameState;
-    const teamLevels = playerGameState.team_levels || [2, 2];
-    const currentLevel = playerGameState.deal_level || 2;
-    const plays = playerGameState.plays || [];
-    const currentTurn = playerGameState.current_turn ?? -1;
-    const playStates = playerGameState.play_states;
-
+    const { teamLevels, dealLevel, plays, currentTurn, playStates } = playerViewData;
     const players = room.players;
 
     return (
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         <GameBoard
-          teamLevels={teamLevels}
-          currentLevel={currentLevel}
-          plays={plays}
-          currentTurn={currentTurn}
+          teamLevels={teamLevels || [2, 2]}
+          currentLevel={dealLevel || 2}
+          plays={plays || []}
+          currentTurn={currentTurn ?? -1}
           players={players}
           currentPlayerSeat={playerSeat}
           playStates={playStates}

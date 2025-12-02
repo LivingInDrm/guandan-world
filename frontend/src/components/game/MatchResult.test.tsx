@@ -161,6 +161,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={team1WinResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -173,15 +174,13 @@ describe('MatchResult', () => {
   it('formats duration correctly for different time values', () => {
     const longMatchResult = {
       ...mockMatchResult,
-      statistics: {
-        ...mockMatchResult.statistics,
-        total_duration: 3665000 // 1 hour, 1 minute, 5 seconds
-      }
+      durationMs: 3665000 // 1 hour, 1 minute, 5 seconds
     };
 
     render(
       <MatchResult
         matchResult={longMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -199,6 +198,7 @@ describe('MatchResult', () => {
     render(
       <MatchResult
         matchResult={differentLevelsResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -259,15 +259,13 @@ describe('MatchResult', () => {
   it('handles edge case with minimum match duration', () => {
     const quickMatchResult = {
       ...mockMatchResult,
-      statistics: {
-        ...mockMatchResult.statistics,
-        total_duration: 65000 // 1 minute, 5 seconds
-      }
+      durationMs: 65000 // 1 minute, 5 seconds
     };
 
     render(
       <MatchResult
         matchResult={quickMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />
@@ -279,15 +277,13 @@ describe('MatchResult', () => {
   it('displays correct congratulations message with dynamic content', () => {
     const customMatchResult = {
       ...mockMatchResult,
-      statistics: {
-        ...mockMatchResult.statistics,
-        total_deals: 12
-      }
+      totalDeals: 12
     };
 
     render(
       <MatchResult
         matchResult={customMatchResult}
+        players={mockPlayers}
         onReturnToLobby={mockOnReturnToLobby}
         onPlayAgain={mockOnPlayAgain}
       />

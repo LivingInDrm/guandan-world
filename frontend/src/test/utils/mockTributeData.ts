@@ -1,18 +1,13 @@
-import type { Card, Player } from '../../types';
+import type { Player } from '../../types';
+import type { Card } from '../../types/proto';
 import type { TributeStartedPayload, TributeExemptedPayload, TributeCardReturnedPayload } from '../../types/generated/event';
 import { TributeType } from '../../types/generated/event';
 
-const SUIT_NAMES = ['Spade', 'Heart', 'Club', 'Diamond'];
-
 export const createMockCard = (deckIndex: number, rank: number, suit: number): Card => {
-  const isJoker = rank >= 15;
-  const suitName = isJoker ? 'Joker' : SUIT_NAMES[suit];
   return {
     deckIndex,
     rank,
     suit,
-    isJoker,
-    id: `${suitName}_${rank}_${deckIndex}`,
   };
 };
 
@@ -80,6 +75,7 @@ export const createMockTributeExempted = (bigJokerHolders: { [seat: number]: num
 export const createMockCardReturned = (targetPlayer: number, card: Card): TributeCardReturnedPayload => ({
   targetPlayer,
   returnedCard: card,
+  isAuto: false,
 });
 
 export const MOCK_TRIBUTE_CARDS = {

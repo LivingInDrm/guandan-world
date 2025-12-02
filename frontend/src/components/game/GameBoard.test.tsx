@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import GameBoard from './GameBoard';
-import type { Player, PlayAction } from '../../types';
+import type { Player } from '../../types';
+import type { PlayAction } from '../../types/proto';
+import { CompType } from '../../types/proto';
 
 const mockPlayers: (Player | null)[] = [
   { id: '1', username: 'Player1', seat: 0, online: true, auto_play: false },
@@ -13,9 +15,10 @@ const mockPlayers: (Player | null)[] = [
 const mockPlays: PlayAction[] = [
   {
     playerSeat: 0,
-    cards: [{ id: 'card1', suit: 0, rank: 5, isJoker: false, deckIndex: 0 }],
+    cards: [{ suit: 0, rank: 5, deckIndex: 0 }],
     isPass: false,
-    timestamp: '2024-01-01T00:00:00Z',
+    timestampMs: 0,
+    compType: CompType.COMP_TYPE_SINGLE,
   }
 ];
 
