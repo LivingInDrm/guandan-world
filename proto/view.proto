@@ -84,6 +84,10 @@ message PlayerView {
   // 当前 Trick 的先出的玩家座位号
   optional int32 leader = 22;
   
+  // 每个玩家在当前 Trick 中的状态 [4]
+  // 0=等待 1=已出牌 2=不出 3=已结束
+  repeated int32 play_states = 23;
+  
   // ===== 保留扩展字段 (Field 30-99) =====
   reserved 30 to 99;
 }

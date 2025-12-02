@@ -35,6 +35,7 @@ type PlayerView struct {
 	CurrentTurn  *int          `json:"current_turn,omitempty"`  // 当前轮到的玩家座位号（playing阶段，使用指针避免0值被omitempty省略）
 	Leader       *int          `json:"leader,omitempty"`        // 当前Trick的首家玩家座位号（playing阶段，使用指针避免0值被omitempty省略）
 	Plays        []*PlayAction `json:"plays,omitempty"`         // 当前Trick的所有出牌记录（playing阶段）
+	PlayState    [4]PlayState  `json:"play_state"`              // 每个玩家在当前Trick中的状态（playing阶段）
 	TributePhase *TributePhase `json:"tribute_phase,omitempty"` // 上贡阶段信息（tribute阶段）
 }
 
@@ -654,6 +655,7 @@ func (ge *GameEngine) buildInternalPlayerView(playerSeat int) *PlayerView {
 			plays = make([]*PlayAction, 0)
 		}
 		view.Plays = plays
+		view.PlayState = deal.PlayState
 	} else if deal.Status == DealStatusTribute && deal.TributePhase != nil {
 		view.TributePhase = deal.TributePhase
 	}

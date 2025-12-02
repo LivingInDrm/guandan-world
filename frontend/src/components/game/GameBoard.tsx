@@ -10,6 +10,7 @@ interface GameBoardProps {
   currentTurn: number;
   players: (Player | null)[];
   currentPlayerSeat: number;
+  playStates?: [number, number, number, number];
 }
 
 interface PlayerAreaProps {
@@ -207,9 +208,23 @@ const GameBoard: React.FC<GameBoardProps> = ({
   plays,
   currentTurn,
   players, 
-  currentPlayerSeat
+  currentPlayerSeat,
+  playStates
 }) => {
   const getPlayerStatus = (seat: number): PlayerStatus => {
+    if (playStates) {
+      const state = playStates[seat];
+      if (state === 0 && currentTurn === seat) {
+        return PlayerStatus.PLAYING;
+      }
+      switch (state) {
+        case 0: return PlayerStatus.WAITING;
+        case 1: return PlayerStatus.PLAYED;
+        case 2: return PlayerStatus.PASSED;
+        case 3: return PlayerStatus.FINISHED;
+      }
+    }
+    
     if (currentTurn === seat) {
       return PlayerStatus.PLAYING;
     }

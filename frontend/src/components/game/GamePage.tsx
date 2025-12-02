@@ -619,6 +619,7 @@ const GamePage: React.FC = () => {
     const currentLevel = playerGameState.deal_level || 2;
     const plays = playerGameState.plays || [];
     const currentTurn = playerGameState.current_turn ?? -1;
+    const playStates = playerGameState.play_states;
 
     const players = room.players;
 
@@ -631,6 +632,7 @@ const GamePage: React.FC = () => {
           currentTurn={currentTurn}
           players={players}
           currentPlayerSeat={playerSeat}
+          playStates={playStates}
         />
 
         <PlayerHand

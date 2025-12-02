@@ -242,6 +242,7 @@ export interface PlayerGameState {
   trick_id?: string;
   current_turn?: number;
   plays?: PlayAction[];
+  play_states?: [number, number, number, number];  // 每个玩家状态：0=等待 1=已出 2=不出 3=已结束
 }
 
 export interface GameActionData {

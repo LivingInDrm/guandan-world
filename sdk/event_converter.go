@@ -438,6 +438,14 @@ func ConvertPlayerViewToProto(
 			protoPlays[i] = ConvertPlayActionToProto(play)
 		}
 		protoView.Plays = protoPlays
+
+		// Convert play states
+		protoView.PlayStates = []int32{
+			int32(sdkView.PlayState[0]),
+			int32(sdkView.PlayState[1]),
+			int32(sdkView.PlayState[2]),
+			int32(sdkView.PlayState[3]),
+		}
 	}
 	// Note: TributePhase is not included in PlayerView proto
 	// Use GetTributeView() separately for tribute phase info

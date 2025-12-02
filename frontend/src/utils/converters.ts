@@ -26,5 +26,8 @@ export function convertProtoPlayerViewToGameState(proto: ProtoPlayerView): Playe
     trick_id: proto.trickIndex?.toString(),
     current_turn: proto.currentTurn,
     plays: convertProtoPlaysToFrontend(proto.plays),
+    play_states: proto.playStates?.length === 4 
+      ? proto.playStates as [number, number, number, number] 
+      : undefined,
   };
 }

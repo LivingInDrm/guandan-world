@@ -765,8 +765,8 @@ func (wso *WebSocketObserver) processEventInOrder(event *sdk.GameEvent) {
 		wso.pendingEvents = make(map[int64]*sdk.GameEvent)
 	}
 
-	// First event: auto-initialize lastSeq
-	if wso.lastSeq == 0 && len(wso.pendingEvents) == 0 {
+	// First event: auto-initialize lastSeq (only MATCH_STARTED can trigger initialization)
+	if wso.lastSeq == 0 && len(wso.pendingEvents) == 0 && event.Type == eventpb.EventType_EVENT_TYPE_MATCH_STARTED {
 		wso.lastSeq = seq - 1
 	}
 
