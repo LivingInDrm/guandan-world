@@ -636,6 +636,11 @@ func (gd *GameDriver) runTrick() error {
 			break
 		}
 
+		// 确保 trick 已启动（发送 trick_started 事件）
+		if err := gd.engine.StartTrickIfNeeded(); err != nil {
+			return fmt.Errorf("failed to start trick: %w", err)
+		}
+
 		// 获取玩家手牌（SDK 原生类型，包含完整 Level）
 		hand := gd.engine.GetPlayerHand(currentPlayer)
 		if hand == nil {

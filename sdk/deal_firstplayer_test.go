@@ -145,7 +145,7 @@ func TestTrickNextLeaderWithTeammate(t *testing.T) {
 	
 	// Start first trick
 	deal.CurrentTrick, _ = NewTrick(0)
-	deal.CurrentTrick.Status = TrickStatusPlaying
+	deal.CurrentTrick.Started = true
 	
 	// Simulate player 0 playing and winning
 	singleCard := []*Card{deal.PlayerCards[0][0]}
@@ -174,8 +174,7 @@ func TestTrickNextLeaderWithTeammate(t *testing.T) {
 		deal.CurrentTrick.Plays = append(deal.CurrentTrick.Plays, pass)
 	}
 	
-	// Mark trick as finished
-	deal.CurrentTrick.Status = TrickStatusFinished
+	// Trick is marked as finished by Winner >= 0 (set at line 161)
 	
 	// Call finishCurrentTrick
 	err = deal.finishCurrentTrick()

@@ -35,9 +35,9 @@ func TestDealResultCalculator_CalculateDealResult(t *testing.T) {
 
 	// Add some trick history for statistics
 	trick1 := &Trick{
-		ID:     "trick1",
-		Winner: 0,
-		Status: TrickStatusFinished,
+		ID:      "trick1",
+		Winner:  0,
+		Started: true,
 		Plays: []*PlayAction{
 			{PlayerSeat: 0, Cards: []*Card{{Number: 5, Color: "Hearts"}}, IsPass: false},
 			{PlayerSeat: 1, IsPass: true},

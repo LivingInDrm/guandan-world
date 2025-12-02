@@ -45,6 +45,7 @@ log.Error("invalid move", "player_id", playerID, "error", err)
 - 格式：`MM-DDThh:mm:ss.sss LEVEL [package.Type] [Method] message key=value`
 - 文件：`./logs/yyyy-mm-dd.log`
 - 示例：`12-01T14:32:05.123 INFO  [sdk.GameEngine] [StartMatch] game started match_id=abc player_count=4`
+- 真实运行的日志目录：`/Users/xiaochunliu/program/guandan-world/backend/logs/`，如果要分析后端日志，请看这里
 
 ---
 
@@ -103,3 +104,4 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
     // ...
 }
 ```
+

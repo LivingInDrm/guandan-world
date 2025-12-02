@@ -113,7 +113,7 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 	}
 
 	// If this is not the first play in trick, validate against lead combination
-	if d.CurrentTrick.LeadComp != nil && !d.canPlayCombination(comp, d.CurrentTrick.LeadComp) {
+	if d.CurrentTrick.LeadComp != nil && !comp.GreaterThan(d.CurrentTrick.LeadComp) {
 		return errors.New("card combination cannot beat current lead")
 	}
 
@@ -353,20 +353,6 @@ func (d *Deal) validatePlayerCards(playerSeat int, cards []*Card) error {
 	return nil
 }
 
-// canPlayCombination checks if a combination can be played against the lead
-func (d *Deal) canPlayCombination(comp, leadComp CardComp) bool {
-	// Must be same type unless it's a bomb
-	if comp.IsBomb() {
-		return true
-	}
-
-	if comp.GetType() != leadComp.GetType() {
-		return false
-	}
-
-	return comp.GreaterThan(leadComp)
-}
-
 // removeCardsFromPlayer removes cards from a player's hand
 func (d *Deal) removeCardsFromPlayer(playerSeat int, cards []*Card) {
 	playerHand := d.PlayerCards[playerSeat]
@@ -447,9 +433,8 @@ func (d *Deal) finishCurrentTrick() error {
 		return errors.New("no current trick to finish")
 	}
 
-	// Set trick winner and status
+	// Set trick winner (Winner >= 0 indicates trick is finished)
 	d.CurrentTrick.Winner = d.CurrentTrick.Leader
-	d.CurrentTrick.Status = TrickStatusFinished
 
 	// Check if deal is finished
 	if d.isDealFinished() {
@@ -633,7 +618,6 @@ func NewTrick(leader int) (*Trick, error) {
 		Plays:       make([]*PlayAction, 0),
 		Winner:      -1,
 		LeadComp:    nil,
-		Status:      TrickStatusWaiting,
 		StartTime:   time.Now(),
 		NextLeader:  -1,
 	}, nil

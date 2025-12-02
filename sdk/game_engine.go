@@ -148,6 +148,15 @@ type GameEngineInterface interface {
 	//   - 将 Deal 状态从 tribute 切换到 playing
 	StartPlayingPhase() error
 
+	// StartTrickIfNeeded 启动当前 Trick（如果尚未启动）
+	// 返回值:
+	//   error: 如果启动失败，返回错误
+	// 功能说明:
+	//   - 检查当前 Trick 是否处于 Waiting 状态
+	//   - 如果是，将状态改为 Playing 并发送 trick_started 事件
+	//   - 应在请求玩家决策之前调用
+	StartTrickIfNeeded() error
+
 	// 状态查询
 
 	// GetGameState 获取当前完整的游戏状态
@@ -511,12 +520,6 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 		return nil, fmt.Errorf("failed to find cards in player hand: %w", err)
 	}
 
-	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the play
-	preEvents := ge.checkPreActionStateTransitions()
-	for _, evt := range preEvents {
-		ge.emitEventLocked(evt)
-	}
-
 	// Execute the play with original cards
 	err = deal.PlayCards(playerSeat, originalCards)
 	if err != nil {
@@ -546,12 +549,6 @@ func (ge *GameEngine) PassTurn(playerSeat int) (*GameEvent, error) {
 	deal, err := ge.requireActiveDeal()
 	if err != nil {
 		return nil, err
-	}
-
-	// Check for pre-action state transitions (e.g., trick starting) BEFORE executing the pass
-	preEvents := ge.checkPreActionStateTransitions()
-	for _, evt := range preEvents {
-		ge.emitEventLocked(evt)
 	}
 
 	// Execute the pass
@@ -837,19 +834,20 @@ func (ge *GameEngine) FlushEvents() {
 	ge.eventWg.Wait()
 }
 
-// checkPreActionStateTransitions checks for state transitions that should happen before player actions
-// Currently only handles trick starting (TrickStatusWaiting -> TrickStatusPlaying)
-func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
-	events := make([]*GameEvent, 0)
+// StartTrickIfNeeded checks if there's a waiting trick and starts it by emitting trick_started event
+// This should be called before requesting player decisions in GameDriver
+func (ge *GameEngine) StartTrickIfNeeded() error {
+	ge.mutex.Lock()
+	defer ge.mutex.Unlock()
 
-	deal := ge.mustActiveDeal()
+	deal, err := ge.requireActiveDeal()
+	if err != nil {
+		return nil
+	}
 
-	// Check if there's a waiting trick that needs to be started
-	if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusWaiting {
-		// Start the new trick
-		deal.CurrentTrick.Status = TrickStatusPlaying
+	if deal.CurrentTrick != nil && !deal.CurrentTrick.Started {
+		deal.CurrentTrick.Started = true
 
-		// Calculate remaining players (all 4 players at start of trick)
 		remainingPlayers := []int{}
 		for i := 0; i < 4; i++ {
 			if len(deal.PlayerCards[i]) > 0 {
@@ -857,13 +855,12 @@ func (ge *GameEngine) checkPreActionStateTransitions() []*GameEvent {
 			}
 		}
 		isFirstTrick := len(deal.TrickHistory) == 0
-		// Note: Timeout is now managed by GameDriver, not set here
 		trickStartedEvent := NewTrickStartedEvent(ge.eventMeta, ge.currentMatch, deal,
 			deal.CurrentTrick, deal.CurrentTrick.Leader, isFirstTrick, remainingPlayers)
-		events = append(events, trickStartedEvent)
+		ge.emitEventLocked(trickStartedEvent)
 	}
 
-	return events
+	return nil
 }
 
 // checkPostActionStateTransitions checks for state transitions that should happen after player actions
@@ -935,8 +932,8 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 				events = append(events, matchEndedEvent)
 			}
 		}
-	} else if deal.CurrentTrick != nil && deal.CurrentTrick.Status == TrickStatusFinished {
-		// Check if current trick is finished
+	} else if deal.CurrentTrick != nil && deal.CurrentTrick.Winner >= 0 {
+		// Check if current trick is finished (Winner >= 0 means trick has ended)
 		// Emit trick ended event
 		finishedTrick := deal.CurrentTrick
 		trickEndedEvent := NewTrickEndedEvent(ge.eventMeta, match, deal, finishedTrick, finishedTrick.Winner)
@@ -948,7 +945,6 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 		// Create new trick with the next leader
 		nextTrick, err := NewTrick(finishedTrick.NextLeader)
 		if err == nil {
-			// Set the new trick but leave it in TrickStatusWaiting
 			deal.CurrentTrick = nextTrick
 		}
 	}

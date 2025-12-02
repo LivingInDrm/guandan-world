@@ -31,15 +31,6 @@ const (
 	DealStatusFinished DealStatus = "finished"
 )
 
-// TrickStatus represents the status of a trick
-type TrickStatus string
-
-const (
-	TrickStatusWaiting  TrickStatus = "waiting"
-	TrickStatusPlaying  TrickStatus = "playing"
-	TrickStatusFinished TrickStatus = "finished"
-)
-
 // PlayState represents a player's state in the current trick
 type PlayState int
 
@@ -88,7 +79,7 @@ type Trick struct {
 	Plays       []*PlayAction `json:"plays"`        // All plays in this trick
 	Winner      int           `json:"winner"`       // Seat number of trick winner (-1 if not finished)
 	LeadComp    CardComp      `json:"lead_comp"`    // Leading card combination
-	Status      TrickStatus   `json:"status"`
+	Started     bool          `json:"started"`      // Whether trick_started event has been sent
 	StartTime   time.Time     `json:"start_time"`
 	NextLeader  int           `json:"next_leader"` // Seat number of next trick leader (set when trick finishes)
 }
