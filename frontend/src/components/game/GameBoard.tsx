@@ -3,6 +3,7 @@ import type { Player } from '../../types';
 import type { PlayAction } from '../../types/proto';
 import { PlayerStatus } from '../../types';
 import CardDisplay from './CardDisplay';
+import TeamLevelDisplay from './TeamLevelDisplay';
 
 interface GameBoardProps {
   teamLevels: [number, number];
@@ -32,11 +33,11 @@ const PlayerArea: React.FC<PlayerAreaProps> = ({
       case 'bottom':
         return 'absolute bottom-4 left-1/2 transform -translate-x-1/2';
       case 'left':
-        return 'absolute left-4 top-1/2 transform -translate-y-1/2 -rotate-90';
+        return 'absolute left-4 top-1/2 transform -translate-y-1/2';
       case 'top':
-        return 'absolute top-4 left-1/2 transform -translate-x-1/2 rotate-180';
+        return 'absolute top-4 left-1/2 transform -translate-x-1/2';
       case 'right':
-        return 'absolute right-4 top-1/2 transform -translate-y-1/2 rotate-90';
+        return 'absolute right-4 top-1/2 transform -translate-y-1/2';
       default:
         return '';
     }
@@ -110,20 +111,16 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position 
     const base = 'absolute flex items-center justify-center';
     switch (position) {
       case 'bottom':
-        return `${base} bottom-2 left-1/2 transform -translate-x-1/2`;
+        return `${base} bottom-4 left-1/2 transform -translate-x-1/2`;
       case 'top':
-        return `${base} top-2 left-1/2 transform -translate-x-1/2`;
+        return `${base} top-4 left-1/2 transform -translate-x-1/2`;
       case 'left':
-        return `${base} left-2 top-1/2 transform -translate-y-1/2`;
+        return `${base} left-4 top-1/2 transform -translate-y-1/2`;
       case 'right':
-        return `${base} right-2 top-1/2 transform -translate-y-1/2`;
+        return `${base} right-4 top-1/2 transform -translate-y-1/2`;
       default:
         return base;
     }
-  };
-
-  const getFlexDirection = () => {
-    return position === 'left' || position === 'right' ? 'flex-col' : 'flex-row';
   };
 
   if (!play) {
@@ -143,12 +140,12 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position 
   if (play.cards && play.cards.length > 0) {
     return (
       <div className={getPositionClasses()}>
-        <div className={`flex ${getFlexDirection()} items-center gap-0.5`}>
+        <div className="flex flex-row items-center gap-0.5">
           {play.cards.map((card, index) => (
             <CardDisplay
               key={card.deckIndex}
               card={card}
-              size="xs"
+              size="small"
               stackIndex={index}
             />
           ))}
@@ -158,49 +155,6 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position 
   }
 
   return <div className={getPositionClasses()} />;
-};
-
-interface TeamLevelDisplayProps {
-  teamLevels: [number, number];
-  currentLevel: number;
-}
-
-const TeamLevelDisplay: React.FC<TeamLevelDisplayProps> = ({ teamLevels, currentLevel }) => {
-  const getLevelText = (level: number) => {
-    if (level <= 10) return level.toString();
-    switch (level) {
-      case 11: return 'J';
-      case 12: return 'Q';
-      case 13: return 'K';
-      case 14: return 'A';
-      default: return level.toString();
-    }
-  };
-
-  // Provide default values if teamLevels is undefined
-  const safeTeamLevels = teamLevels || [2, 2];
-
-  return (
-    <div className="absolute top-4 left-4 bg-white border border-gray-300 rounded-lg p-3 shadow-sm">
-      <div className="text-sm font-medium mb-2">等级信息</div>
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-600">队伍1 (座位0,2):</span>
-          <span className="font-medium text-blue-600">{getLevelText(safeTeamLevels[0])}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-600">队伍2 (座位1,3):</span>
-          <span className="font-medium text-red-600">{getLevelText(safeTeamLevels[1])}</span>
-        </div>
-        <div className="border-t pt-1 mt-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-600">本局等级:</span>
-            <span className="font-medium text-green-600">{getLevelText(currentLevel)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 };
 
 const GameBoard: React.FC<GameBoardProps> = ({ 
@@ -253,11 +207,12 @@ const GameBoard: React.FC<GameBoardProps> = ({
     <div className="relative w-full h-96 bg-green-100 border border-gray-300 rounded-lg">
       <TeamLevelDisplay 
         teamLevels={teamLevels} 
-        currentLevel={currentLevel} 
+        currentLevel={currentLevel}
+        currentPlayerSeat={currentPlayerSeat}
       />
       
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative w-64 h-40 bg-green-200 border-2 border-green-400 rounded-lg">
+        <div className="relative w-[420px] h-[240px] bg-green-200 border-2 border-green-400 rounded-lg">
           <PlayedCardsDisplay 
             play={getPlayForSeat(currentPlayerSeat)}
             position="bottom"

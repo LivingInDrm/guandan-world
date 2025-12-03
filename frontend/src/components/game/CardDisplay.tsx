@@ -34,10 +34,8 @@ const CardCorner: React.FC<{
   rank: number;
   suit: number;
   sizeConfig: SizeConfig;
-  size: CardSize;
-}> = ({ rank, suit, sizeConfig, size }) => {
+}> = ({ rank, suit, sizeConfig }) => {
   const colorClass = getSuitColorClass(suit);
-  const showSuit = size !== 'xs';
   
   return (
     <div 
@@ -51,11 +49,9 @@ const CardCorner: React.FC<{
       <span style={{ fontSize: sizeConfig.fontSize, fontWeight: 700 }}>
         {getRankText(rank)}
       </span>
-      {showSuit && (
-        <span style={{ fontSize: sizeConfig.iconSize, marginTop: '-2px' }}>
-          {SUIT_SYMBOLS[suit]}
-        </span>
-      )}
+      <span style={{ fontSize: sizeConfig.iconSize, marginTop: '-2px' }}>
+        {SUIT_SYMBOLS[suit]}
+      </span>
     </div>
   );
 };
@@ -161,7 +157,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         height: sizeConfig.height,
         borderRadius: sizeConfig.borderRadius,
         zIndex,
-        marginLeft: stackIndex > 0 ? (size === 'small' || size === 'xs' ? '-12px' : '-24px') : '0',
+        marginLeft: stackIndex > 0 ? (size === 'small' ? '-12px' : '-24px') : '0',
         willChange: 'transform',
       }}
       onClick={onClick}
@@ -179,7 +175,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             rank={card.rank} 
             suit={card.suit} 
             sizeConfig={sizeConfig}
-            size={size}
           />
           
           <CardSuitLarge 

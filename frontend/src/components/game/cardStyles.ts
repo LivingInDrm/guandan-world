@@ -1,5 +1,5 @@
 // 卡片尺寸定义
-export type CardSize = 'xs' | 'small' | 'normal';
+export type CardSize = 'small' | 'normal';
 
 export interface SizeConfig {
   width: string;
@@ -16,19 +16,6 @@ export interface SizeConfig {
 }
 
 export const CARD_SIZES: Record<CardSize, SizeConfig> = {
-  xs: {
-    width: '32px',
-    height: '48px',
-    fontSize: '10px',
-    iconSize: '10px',
-    centerIconSize: '14px',
-    borderRadius: '4px',
-    padding: '2px',
-    jokerFontSize: '8px',
-    jokerImgBottom: '4px',
-    jokerTextLeft: '6px',
-    cornerTextLeft: '2px',
-  },
   small: {
     width: '48px',
     height: '68px',
@@ -38,8 +25,8 @@ export const CARD_SIZES: Record<CardSize, SizeConfig> = {
     borderRadius: '6px',
     padding: '4px',
     jokerFontSize: '10px',
-    jokerImgBottom: '4px',
-    jokerTextLeft: '6px',
+    jokerImgBottom: '10px',
+    jokerTextLeft: '2px',
     cornerTextLeft: '2px',
   },
   normal: {
