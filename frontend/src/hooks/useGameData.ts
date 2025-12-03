@@ -1,6 +1,6 @@
 import { useGameStore } from '../store/gameStore';
 
-export const usePlayerViewData = () => {
+export function usePlayerViewData() {
   const playerView = useGameStore(s => s.playerView);
   if (!playerView) return null;
   
@@ -15,4 +15,11 @@ export const usePlayerViewData = () => {
       ? playerView.playStates as [number, number, number, number] 
       : undefined,
   };
-};
+}
+
+export function usePlayerHandData() {
+  const playerView = useGameStore(state => state.playerView);
+  return {
+    hand: playerView?.playerCards ?? [],
+  };
+}

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { WSMessage } from '../types';
-import type { Card, PlayerView } from '../types/proto';
+import type { PlayerView } from '../types/proto';
 import type { DealEndedPayload, MatchEndedPayload } from '../types/generated/event';
 
 interface GameState {
@@ -13,7 +13,6 @@ interface GameState {
   isConnected: boolean;
   error: string | null;
   currentPhase: string;
-  selectedCards: Card[];
   dealResult: DealEndedPayload | null;
   matchResult: MatchEndedPayload | null;
 }
@@ -30,7 +29,6 @@ interface GameActions {
   clearError: () => void;
   reset: () => void;
   setCurrentPhase: (phase: string) => void;
-  setSelectedCards: (cards: Card[]) => void;
   setDealResult: (result: DealEndedPayload | null) => void;
   setMatchResult: (result: MatchEndedPayload | null) => void;
 }
@@ -47,7 +45,6 @@ const initialState: GameState = {
   isConnected: false,
   error: null,
   currentPhase: 'waiting_players',
-  selectedCards: [],
   dealResult: null,
   matchResult: null
 };
@@ -75,8 +72,6 @@ export const useGameStore = create<GameStore>((set) => ({
   clearError: () => set({ error: null }),
   
   setCurrentPhase: (phase: string) => set({ currentPhase: phase }),
-  
-  setSelectedCards: (cards: Card[]) => set({ selectedCards: cards }),
   
   setDealResult: (result: DealEndedPayload | null) => set({ dealResult: result }),
   

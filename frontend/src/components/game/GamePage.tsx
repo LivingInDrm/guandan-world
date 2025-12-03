@@ -6,7 +6,7 @@ import { useGameStore } from '../../store/gameStore';
 import { useTributeStore } from '../../store/tributeStore';
 import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
-import type { Room, WSMessage, GameActionData } from '../../types';
+import type { WSMessage, GameActionData } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import type { GameEvent, Card, PlayerView as ProtoPlayerView } from '../../types/proto';
 import { EventType, eventTypeToJSON } from '../../types/generated/event';
@@ -18,7 +18,7 @@ import DealResult from './DealResult';
 import MatchResult from './MatchResult';
 import { useDealResultData, useMatchResultData } from '../../hooks/useResultData';
 import { useTributeData } from '../../hooks/useTributeData';
-import { usePlayerViewData } from '../../hooks/usePlayerViewData';
+import { usePlayerViewData, usePlayerHandData } from '../../hooks/useGameData';
 
 // 游戏页面状态常量
 const GamePageState = {
@@ -58,11 +58,9 @@ const GamePage: React.FC = () => {
     countdown,
     playerSeat,
     currentPhase,
-    selectedCards,
     isMyTurn,
     setCountdown,
     setCurrentPhase,
-    setSelectedCards,
     setDealResult,
     setMatchResult,
     setPlayerSeat,
@@ -74,9 +72,9 @@ const GamePage: React.FC = () => {
   const matchResultData = useMatchResultData();
   const tributeData = useTributeData();
   const playerViewData = usePlayerViewData();
+  const { hand } = usePlayerHandData();
 
-  const [room, setRoom] = useState<Room | null>(currentRoom);
-  const [playerHand, setPlayerHand] = useState<Card[]>([]);
+  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [canPlay, setCanPlay] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -92,7 +90,6 @@ const GamePage: React.FC = () => {
       try {
         const response = await apiClient.getRoomDetails(roomId);
         if (response.success && response.data) {
-          setRoom(response.data);
           setCurrentRoom(response.data);
           // Only set to WAITING_PLAYERS if we're not already in a game phase
           // This prevents resetting the phase when room updates during gameplay
@@ -114,8 +111,6 @@ const GamePage: React.FC = () => {
 
     if (!currentRoom && roomId) {
       loadRoomDetails();
-    } else if (currentRoom) {
-      setRoom(currentRoom);
     }
   }, [roomId, currentRoom, setCurrentRoom, setRoomError, setLoading, navigate, setCurrentPhase, currentPhase]);
 
@@ -129,7 +124,6 @@ const GamePage: React.FC = () => {
       const roomData = message.data?.room || message.data;
       // 只有当房间数据有id且匹配当前房间时，才更新
       if (roomData?.id && roomData.id === roomId) {
-        setRoom(roomData);
         setCurrentRoom(roomData);
       }
     };
@@ -246,7 +240,6 @@ const GamePage: React.FC = () => {
       const protoPlayerView: ProtoPlayerView = data.player_view;
       
       setPlayerSeat(protoPlayerView.playerSeat);
-      setPlayerHand(protoPlayerView.playerCards);
 
       const currentTrickId = protoPlayerView.trickIndex?.toString();
       if (currentTrickId && currentTrickId !== previousTrickId) {
@@ -297,16 +290,16 @@ const GamePage: React.FC = () => {
 
   // 开始游戏
   const handleStartGame = async () => {
-    if (!room || !user || isStarting) return;
+    if (!currentRoom || !user || isStarting) return;
 
     // 检查是否是房主
-    if (room.owner !== user.id) {
+    if (currentRoom.owner !== user.id) {
       setRoomError('只有房主可以开始游戏');
       return;
     }
 
     // 检查是否有4名玩家
-    const playerCount = room.players.filter(p => p !== null).length;
+    const playerCount = currentRoom.players.filter(p => p !== null).length;
     if (playerCount < 4) {
       setRoomError('需要4名玩家才能开始游戏');
       return;
@@ -314,7 +307,7 @@ const GamePage: React.FC = () => {
 
     setIsStarting(true);
     try {
-      const response = await apiClient.startGame(room.id);
+      const response = await apiClient.startGame(currentRoom.id);
       if (!response.success) {
         setRoomError('开始游戏失败');
       }
@@ -328,11 +321,11 @@ const GamePage: React.FC = () => {
 
   // 离开房间
   const handleLeaveRoom = async () => {
-    if (!room || !user || isLeaving) return;
+    if (!currentRoom || !user || isLeaving) return;
 
     setIsLeaving(true);
     try {
-      await apiClient.leaveRoom(room.id);
+      await apiClient.leaveRoom(currentRoom.id);
       navigate('/lobby', { state: { shouldRefresh: true } });
     } catch (error) {
       console.error('Failed to leave room:', error);
@@ -344,11 +337,11 @@ const GamePage: React.FC = () => {
 
   // 出牌
   const handlePlayCards = async (cards: Card[]) => {
-    if (!room || !user || !canPlay || playerSeat === null) return;
+    if (!currentRoom || !user || !canPlay || playerSeat === null) return;
 
     try {
       const deckIndexes = cards.map(c => c.deckIndex);
-      const response = await apiClient.playCards(room.id, playerSeat, deckIndexes);
+      const response = await apiClient.playCards(currentRoom.id, playerSeat, deckIndexes);
       if (response.success) {
         setSelectedCards([]);
       } else {
@@ -362,10 +355,10 @@ const GamePage: React.FC = () => {
 
   // 不出
   const handlePass = async () => {
-    if (!room || !user || !canPlay || playerSeat === null) return;
+    if (!currentRoom || !user || !canPlay || playerSeat === null) return;
 
     try {
-      const response = await apiClient.pass(room.id, playerSeat);
+      const response = await apiClient.pass(currentRoom.id, playerSeat);
       if (!response.success) {
         setRoomError('操作失败');
       }
@@ -377,10 +370,10 @@ const GamePage: React.FC = () => {
 
   // 选择贡牌
   const handleSelectTribute = async (deckIndex: number) => {
-    if (!room || playerSeat === null) return;
+    if (!currentRoom || playerSeat === null) return;
 
     try {
-      const response = await apiClient.selectTribute(room.id, playerSeat, deckIndex);
+      const response = await apiClient.selectTribute(currentRoom.id, playerSeat, deckIndex);
       if (!response.success) {
         setRoomError('选择贡牌失败');
       }
@@ -392,10 +385,10 @@ const GamePage: React.FC = () => {
 
   // 还贡
   const handleReturnTribute = async (deckIndex: number) => {
-    if (!room || playerSeat === null) return;
+    if (!currentRoom || playerSeat === null) return;
 
     try {
-      const response = await apiClient.returnTribute(room.id, playerSeat, deckIndex);
+      const response = await apiClient.returnTribute(currentRoom.id, playerSeat, deckIndex);
       if (response.success) {
         setSelectedCards([]);
       } else {
@@ -415,13 +408,13 @@ const GamePage: React.FC = () => {
 
   // 再来一局（比赛结束后）
   const handlePlayAgain = async () => {
-    if (!room || !user) return;
+    if (!currentRoom || !user) return;
 
     setMatchResult(null);
     setCurrentPhase(GamePageState.WAITING_PLAYERS);
 
     // 如果是房主，自动开始游戏
-    if (room.owner === user.id) {
+    if (currentRoom.owner === user.id) {
       await handleStartGame();
     }
   };
@@ -433,14 +426,14 @@ const GamePage: React.FC = () => {
 
   // 渲染等待玩家界面
   const renderWaitingPlayers = () => {
-    if (!room) return null;
+    if (!currentRoom) return null;
 
     const getPlayerCount = () => {
-      return room.players?.filter(p => p !== null).length || 0;
+      return currentRoom.players?.filter(p => p !== null).length || 0;
     };
 
     const isRoomOwner = () => {
-      return user && room && room.owner === user.id;
+      return user && currentRoom && currentRoom.owner === user.id;
     };
 
     const canStartGame = () => {
@@ -448,10 +441,10 @@ const GamePage: React.FC = () => {
     };
 
     const renderPlayerSeat = (seatIndex: number) => {
-      const player = room.players?.[seatIndex] || null;
+      const player = currentRoom.players?.[seatIndex] || null;
       const isEmpty = !player;
       const isCurrentUser = player?.id === user?.id;
-      const isOwner = player?.id === room.owner;
+      const isOwner = player?.id === currentRoom.owner;
 
       return (
         <div
@@ -519,7 +512,7 @@ const GamePage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">房间等待</h1>
-              <p className="text-gray-600">房间ID: {room.id}</p>
+              <p className="text-gray-600">房间ID: {currentRoom.id}</p>
             </div>
             <div className="text-right">
               <div className="text-sm text-gray-600">
@@ -610,10 +603,10 @@ const GamePage: React.FC = () => {
   };
 
   const renderPlaying = () => {
-    if (!playerViewData || !room || playerSeat === null) return null;
+    if (!playerViewData || !currentRoom || playerSeat === null) return null;
 
     const { teamLevels, dealLevel, plays, currentTurn, playStates } = playerViewData;
-    const players = room.players;
+    const players = currentRoom.players;
 
     return (
       <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -628,7 +621,7 @@ const GamePage: React.FC = () => {
         />
 
         <PlayerHand
-          cards={playerHand}
+          cards={hand}
           selectedCards={selectedCards}
           onCardSelect={setSelectedCards}
         />
@@ -661,12 +654,12 @@ const GamePage: React.FC = () => {
         );
 
       case GamePageState.TRIBUTE_PHASE:
-        return tributeData && room && playerSeat !== null ? (
+        return tributeData && currentRoom && playerSeat !== null ? (
           <TributeBoard
             tributeData={tributeData}
-            players={room.players}
+            players={currentRoom.players}
             currentPlayerSeat={playerSeat}
-            playerHand={playerHand}
+            playerHand={hand}
             selectedCards={selectedCards}
             onCardSelect={setSelectedCards}
             onSelectTribute={handleSelectTribute}
@@ -709,7 +702,7 @@ const GamePage: React.FC = () => {
     );
   }
 
-  if (!room && currentPhase === GamePageState.WAITING_PLAYERS) {
+  if (!currentRoom && currentPhase === GamePageState.WAITING_PLAYERS) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
