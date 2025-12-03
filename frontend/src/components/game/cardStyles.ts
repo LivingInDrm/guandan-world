@@ -1,5 +1,5 @@
 // 卡片尺寸定义
-export type CardSize = 'xs' | 'small' | 'normal' | 'large';
+export type CardSize = 'xs' | 'small' | 'normal';
 
 export interface SizeConfig {
   width: string;
@@ -9,6 +9,10 @@ export interface SizeConfig {
   centerIconSize: string;
   borderRadius: string;
   padding: string;
+  jokerFontSize: string;
+  jokerImgBottom: string;
+  jokerTextLeft: string;
+  cornerTextLeft: string;
 }
 
 export const CARD_SIZES: Record<CardSize, SizeConfig> = {
@@ -20,6 +24,10 @@ export const CARD_SIZES: Record<CardSize, SizeConfig> = {
     centerIconSize: '14px',
     borderRadius: '4px',
     padding: '2px',
+    jokerFontSize: '8px',
+    jokerImgBottom: '4px',
+    jokerTextLeft: '6px',
+    cornerTextLeft: '2px',
   },
   small: {
     width: '48px',
@@ -29,6 +37,10 @@ export const CARD_SIZES: Record<CardSize, SizeConfig> = {
     centerIconSize: '20px',
     borderRadius: '6px',
     padding: '4px',
+    jokerFontSize: '10px',
+    jokerImgBottom: '4px',
+    jokerTextLeft: '6px',
+    cornerTextLeft: '2px',
   },
   normal: {
     width: '70px',
@@ -38,16 +50,11 @@ export const CARD_SIZES: Record<CardSize, SizeConfig> = {
     centerIconSize: '32px',
     borderRadius: '8px',
     padding: '6px',
+    jokerFontSize: '14px',
+    jokerImgBottom: '16px',
+    jokerTextLeft: '2px',
+    cornerTextLeft: '0',
   },
-  large: {
-    width: '90px',
-    height: '126px',
-    fontSize: '20px',
-    iconSize: '18px',
-    centerIconSize: '40px',
-    borderRadius: '10px',
-    padding: '8px',
-  }
 };
 
 // 花色配置
@@ -68,17 +75,15 @@ export const SUIT_COLORS = {
 export const JOKER_CONFIG = {
   small: {
     rank: 15,
-    text: '小王',
-    color: 'text-gray-900',
+    text: 'JOKER',
+    color: 'text-gray-500',
     bgGradient: 'bg-gradient-to-br from-gray-50 to-gray-200',
-    icon: '⭐',
   },
   big: {
     rank: 16,
-    text: '大王',
+    text: 'JOKER',
     color: 'text-red-600',
     bgGradient: 'bg-gradient-to-br from-yellow-50 via-yellow-100 to-red-100',
-    icon: '👑',
   }
 };
 

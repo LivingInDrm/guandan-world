@@ -9,9 +9,16 @@ import {
   type SizeConfig,
   getCardSizeStyle,
   getSuitColorClass,
-  getSuitShadowClass,
   getRankText
 } from './cardStyles';
+import bigJokerImg from '../../assets/big_joker.png';
+import smallJokerImg from '../../assets/small_joker.png';
+import spadeImg from '../../assets/spade.png';
+import heartImg from '../../assets/heart.png';
+import clubImg from '../../assets/club.png';
+import diamondImg from '../../assets/diamond.png';
+
+const SUIT_IMAGES = [spadeImg, heartImg, clubImg, diamondImg];
 
 interface CardDisplayProps {
   card: Card;
@@ -22,24 +29,23 @@ interface CardDisplayProps {
   className?: string;
 }
 
-// 角标组件
+// 左上角标组件
 const CardCorner: React.FC<{
   rank: number;
   suit: number;
-  position: 'top-left' | 'bottom-right';
   sizeConfig: SizeConfig;
   size: CardSize;
-}> = ({ rank, suit, position, sizeConfig, size }) => {
-  const isBottom = position === 'bottom-right';
+}> = ({ rank, suit, sizeConfig, size }) => {
   const colorClass = getSuitColorClass(suit);
   const showSuit = size !== 'xs';
   
   return (
     <div 
-      className={`absolute flex flex-col items-center leading-none ${colorClass} ${isBottom ? 'rotate-180 bottom-0.5 right-0.5' : 'top-0.5 left-0.5'}`}
+      className={`absolute flex flex-col items-center leading-none top-0.5 ${colorClass}`}
       style={{ 
         padding: sizeConfig.padding,
         width: '1.2em',
+        left: sizeConfig.cornerTextLeft,
       }}
     >
       <span style={{ fontSize: sizeConfig.fontSize, fontWeight: 700 }}>
@@ -54,22 +60,22 @@ const CardCorner: React.FC<{
   );
 };
 
-// 中央花色组件
-const CardCenter: React.FC<{
-  rank: number;
+// 右下大花色组件
+const CardSuitLarge: React.FC<{
   suit: number;
   sizeConfig: SizeConfig;
 }> = ({ suit, sizeConfig }) => {
-  const colorClass = getSuitColorClass(suit);
-  const shadowClass = getSuitShadowClass(suit);
-  
   return (
-    <div 
-      className={`absolute inset-0 flex items-center justify-center ${colorClass} ${shadowClass}`}
-      style={{ fontSize: sizeConfig.centerIconSize }}
-    >
-      {SUIT_SYMBOLS[suit]}
-    </div>
+    <img 
+      src={SUIT_IMAGES[suit]}
+      alt={SUIT_SYMBOLS[suit]}
+      className="absolute bottom-2 right-2"
+      style={{ 
+        width: `calc(${sizeConfig.centerIconSize} * 1.5)`,
+        height: `calc(${sizeConfig.centerIconSize} * 1.5)`,
+        objectFit: 'contain'
+      }}
+    />
   );
 };
 
@@ -78,33 +84,35 @@ const JokerContent: React.FC<{
   card: Card;
   sizeConfig: SizeConfig;
 }> = ({ card, sizeConfig }) => {
-  const config = card.rank === 16 ? JOKER_CONFIG.big : JOKER_CONFIG.small;
+  const isBigJoker = card.rank === 16;
+  const config = isBigJoker ? JOKER_CONFIG.big : JOKER_CONFIG.small;
+  const jokerImg = isBigJoker ? bigJokerImg : smallJokerImg;
   
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center p-1">
+    <div className="absolute inset-0">
       <div 
-        className="absolute top-1 left-1"
-        style={{ fontSize: sizeConfig.iconSize }}
-      >
-        {config.icon}
-      </div>
-      
-      <div 
-        className={`writing-vertical-rl font-bold tracking-widest ${config.color}`}
+        className={`absolute top-1 flex flex-col items-center leading-tight font-bold ${config.color}`}
         style={{ 
-          fontSize: `calc(${sizeConfig.fontSize} * 1.2)`,
-          textShadow: '0 1px 1px rgba(0,0,0,0.1)'
+          fontSize: sizeConfig.jokerFontSize,
+          left: sizeConfig.jokerTextLeft,
         }}
       >
-        {config.text}
+        {'JOKER'.split('').map((letter, i) => (
+          <span key={i}>{letter}</span>
+        ))}
       </div>
       
-      <div 
-        className="absolute bottom-1 right-1 rotate-180"
-        style={{ fontSize: sizeConfig.iconSize }}
-      >
-        {config.icon}
-      </div>
+      <img 
+        src={jokerImg}
+        alt={isBigJoker ? 'Big Joker' : 'Small Joker'}
+        className="absolute right-1"
+        style={{ 
+          bottom: sizeConfig.jokerImgBottom,
+          width: `calc(${sizeConfig.centerIconSize} * 1.6)`,
+          height: `calc(${sizeConfig.centerIconSize} * 1.6)`,
+          objectFit: 'contain'
+        }}
+      />
     </div>
   );
 };
@@ -160,7 +168,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     >
       {/* 卡片内边框装饰 (可选) */}
       {!isJoker(card) && (
-        <div className="absolute inset-1 border border-gray-100 rounded opacity-50 pointer-events-none" />
+        <div className="absolute inset-px border border-gray-100 rounded opacity-50 pointer-events-none" />
       )}
 
       {isJoker(card) ? (
@@ -170,23 +178,13 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           <CardCorner 
             rank={card.rank} 
             suit={card.suit} 
-            position="top-left" 
             sizeConfig={sizeConfig}
             size={size}
           />
           
-          <CardCenter 
-            rank={card.rank} 
+          <CardSuitLarge 
             suit={card.suit} 
             sizeConfig={sizeConfig} 
-          />
-          
-          <CardCorner 
-            rank={card.rank} 
-            suit={card.suit} 
-            position="bottom-right" 
-            sizeConfig={sizeConfig}
-            size={size}
           />
         </>
       )}

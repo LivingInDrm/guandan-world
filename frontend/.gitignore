@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Ladle (component development)
+.ladle/
+**/*.stories.tsx
