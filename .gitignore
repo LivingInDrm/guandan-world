@@ -97,6 +97,7 @@ guandan-simulator
 # 编译的可执行文件
 simulator/cmd/mm
 backend/cmd/ai_players/ai_players
+backend/backend
 
 # 旧文件/备份文件
 old_doc.md
