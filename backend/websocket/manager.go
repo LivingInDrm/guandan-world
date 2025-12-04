@@ -95,6 +95,11 @@ type WSConnection struct {
 	mu       sync.RWMutex
 }
 
+// ReconnectHandler defines the interface for handling player reconnection
+type ReconnectHandler interface {
+	HandlePlayerReconnect(roomID, playerID string) error
+}
+
 // WSManager manages WebSocket connections and message routing
 type WSManager struct {
 	// Connection management
@@ -102,8 +107,9 @@ type WSManager struct {
 	rooms       map[string]map[string]*WSConnection // roomID -> playerID -> connection
 
 	// Services
-	authService auth.AuthService
-	roomService room.RoomService
+	authService      auth.AuthService
+	roomService      room.RoomService
+	reconnectHandler ReconnectHandler
 
 	// Channels for connection lifecycle
 	register   chan *WSConnection
@@ -181,6 +187,13 @@ func (m *WSManager) RegisterHandler(messageType string, handler MessageHandler) 
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.messageHandlers[messageType] = handler
+}
+
+// SetReconnectHandler sets the handler for player reconnection
+func (m *WSManager) SetReconnectHandler(handler ReconnectHandler) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.reconnectHandler = handler
 }
 
 // Run starts the WebSocket manager's main loop
@@ -284,6 +297,15 @@ func (m *WSManager) handleRegister(conn *WSConnection) {
 			m.rooms[playerRoom.ID] = make(map[string]*WSConnection)
 		}
 		m.rooms[playerRoom.ID][conn.playerID] = conn
+
+		// Trigger reconnect handler if player is in a game
+		if m.reconnectHandler != nil {
+			go func(roomID, playerID string) {
+				if err := m.reconnectHandler.HandlePlayerReconnect(roomID, playerID); err != nil {
+					log.Printf("Reconnect handler error for player %s: %v", playerID, err)
+				}
+			}(playerRoom.ID, conn.playerID)
+		}
 	}
 
 	log.Printf("Player %s connected via WebSocket", conn.playerID)

@@ -57,6 +57,9 @@ func main() {
 	driverService := game.NewDriverService(wsManager)
 	gameDriverHandler := handlers.NewGameDriverHandler(driverService)
 
+	// 设置重连处理器
+	wsManager.SetReconnectHandler(driverService)
+
 	// 初始化房间处理器 - 注入 driverService 和 wsManager
 	roomHandler := handlers.NewRoomHandler(roomService, authService, driverService, wsManager)
 

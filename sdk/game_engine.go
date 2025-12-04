@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"guandan-world/pkg/log"
+	eventpb "guandan-world/proto/event"
 	viewpb "guandan-world/proto/view"
 )
 
@@ -53,16 +54,19 @@ const (
 // GameEngine 是管理完整游戏生命周期的主要游戏引擎
 // 它协调所有游戏组件，处理玩家操作，管理游戏状态，并发送事件通知
 type GameEngine struct {
-	id              string                            // 游戏引擎的唯一标识符
-	status          GameStatus                        // 当前游戏状态
-	currentMatch    *Match                            // 当前活跃的比赛实例
-	observers       map[GameEventType][]EventObserver // 事件观察者映射，按事件类型分组
-	eventMeta       *EventMetadataProvider            // 事件元数据提供者
-	currentStateSeq int64                             // 当前状态版本号（由事件seq驱动，用于视图版本控制）
-	mutex           sync.RWMutex                      // 读写锁，保护并发访问游戏状态
-	eventWg         sync.WaitGroup                    // 追踪异步事件完成状态
-	createdAt       time.Time                         // 游戏引擎创建时间
-	updatedAt       time.Time                         // 最后更新时间
+	id                 string                            // 游戏引擎的唯一标识符
+	status             GameStatus                        // 当前游戏状态
+	currentMatch       *Match                            // 当前活跃的比赛实例
+	observers          map[GameEventType][]EventObserver // 事件观察者映射，按事件类型分组
+	eventMeta          *EventMetadataProvider            // 事件元数据提供者
+	currentStateSeq    int64                             // 当前状态版本号（由事件seq驱动，用于视图版本控制）
+	mutex              sync.RWMutex                      // 读写锁，保护并发访问游戏状态
+	eventWg            sync.WaitGroup                    // 追踪异步事件完成状态
+	createdAt          time.Time                         // 游戏引擎创建时间
+	updatedAt          time.Time                         // 最后更新时间
+	dealEndedDelay     time.Duration                     // 牌局结束后的延迟时间（用于计算 deadline）
+	dealEndedPayload   *eventpb.DealEndedPayload         // 牌局结束结果（用于 PlayerView 展示）
+	matchEndedPayload  *eventpb.MatchEndedPayload        // 比赛结束结果（用于 PlayerView 展示）
 }
 
 // GameEngineInterface 定义了游戏引擎的公共接口
@@ -321,6 +325,14 @@ type GameEngineInterface interface {
 	// 返回值:
 	//   []*Card: 玩家手牌列表（如果无牌局或座位号无效返回 nil 或空切片）
 	GetPlayerHand(playerSeat int) []*Card
+
+	// SetDealEndedDelay 设置牌局结束后的延迟时间
+	// 参数:
+	//   delay: 延迟时间
+	// 功能说明:
+	//   - 用于计算 DealEnded 事件中的 NextDealDeadlineMs 字段
+	//   - 应在开始比赛前调用
+	SetDealEndedDelay(delay time.Duration)
 }
 
 // NewGameEngine creates a new game engine instance
@@ -334,6 +346,11 @@ func NewGameEngine() *GameEngine {
 		createdAt: now,
 		updatedAt: now,
 	}
+}
+
+// SetDealEndedDelay 设置牌局结束后的延迟时间
+func (ge *GameEngine) SetDealEndedDelay(delay time.Duration) {
+	ge.dealEndedDelay = delay
 }
 
 // requireActiveMatch 检测是否存在活跃比赛（Public API 用）
@@ -419,6 +436,7 @@ func (ge *GameEngine) StartDeal() error {
 		return fmt.Errorf("failed to start deal: %w", err)
 	}
 
+	ge.dealEndedPayload = nil
 	ge.updatedAt = time.Now()
 
 	deal := match.CurrentDeal
@@ -611,12 +629,18 @@ func (ge *GameEngine) GetPlayerView(playerSeat int) *viewpb.PlayerView {
 	seq := atomic.LoadInt64(&ge.currentStateSeq)
 
 	// 3. 转换为proto
-	return ConvertPlayerViewToProto(
+	protoView := ConvertPlayerViewToProto(
 		sdkView,
 		ge.currentMatch.ID,
 		len(ge.currentMatch.DealHistory),
 		seq,
 	)
+
+	// 4. 填充结果字段
+	protoView.DealResult = ge.dealEndedPayload
+	protoView.MatchResult = ge.matchEndedPayload
+
+	return protoView
 }
 
 // buildInternalPlayerView 构建SDK内部的PlayerView（保留原有逻辑）
@@ -910,29 +934,38 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 			}
 		}
 
+		// Update match with deal result first to know if match will finish
+		err = match.FinishDeal(dealResult)
+		matchFinished := err == nil && match.Status == MatchStatusFinished
+
+		// Calculate next deal deadline
+		var nextDealDeadlineMs int64 = 0
+		if !matchFinished && ge.dealEndedDelay > 0 {
+			nextDealDeadlineMs = time.Now().Add(ge.dealEndedDelay).UnixMilli()
+		}
+
 		// Emit deal ended event
 		durationMs := dealResult.Duration.Milliseconds()
 		dealEndedEvent := NewDealEndedEvent(ge.eventMeta, match, deal,
 			deal.Level, deal.Rankings, dealResult.VictoryType, dealResult.WinningTeam,
-			dealResult.Upgrades, durationMs, len(deal.TrickHistory), playerStats)
+			dealResult.Upgrades, durationMs, len(deal.TrickHistory), playerStats,
+			nextDealDeadlineMs)
 		events = append(events, dealEndedEvent)
+		ge.dealEndedPayload = dealEndedEvent.GetDealEnded()
 
-		// Update match with deal result
-		err = match.FinishDeal(dealResult)
-		if err == nil {
-			// Check if match is finished
-			if match.Status == MatchStatusFinished {
-				ge.status = GameStatusFinished
+		// Check if match is finished
+		if matchFinished {
+			ge.status = GameStatusFinished
 
-				// Create match result
-				matchResult := ge.createMatchResult()
+			// Create match result
+			matchResult := ge.createMatchResult()
 
-				// Emit match ended event
-				durationMs := matchResult.Duration.Milliseconds()
-				matchEndedEvent := NewMatchEndedEvent(ge.eventMeta, match,
-					match.Winner, match.TeamLevels, durationMs, len(match.DealHistory))
-				events = append(events, matchEndedEvent)
-			}
+			// Emit match ended event
+			durationMs := matchResult.Duration.Milliseconds()
+			matchEndedEvent := NewMatchEndedEvent(ge.eventMeta, match,
+				match.Winner, match.TeamLevels, durationMs, len(match.DealHistory))
+			events = append(events, matchEndedEvent)
+			ge.matchEndedPayload = matchEndedEvent.GetMatchEnded()
 		}
 	} else if deal.CurrentTrick != nil && deal.CurrentTrick.Winner >= 0 {
 		// Check if current trick is finished (Winner >= 0 means trick has ended)

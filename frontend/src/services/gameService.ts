@@ -3,6 +3,7 @@ import { wsClient } from './websocket';
 import { useAuthStore } from '../store/authStore';
 import { useRoomStore } from '../store/roomStore';
 import { useGameStore } from '../store/gameStore';
+import { useTributeStore } from '../store/tributeStore';
 import type { WSMessage } from '../types';
 
 class GameService {
@@ -117,6 +118,7 @@ class GameService {
       useAuthStore.getState().logout();
       useRoomStore.getState().reset();
       useGameStore.getState().reset();
+      useTributeStore.getState().reset();
       wsClient.disconnect();
     }
   }

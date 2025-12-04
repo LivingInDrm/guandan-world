@@ -12,6 +12,7 @@ import (
 
 	"guandan-world/backend/websocket"
 	eventpb "guandan-world/proto/event"
+	viewpb "guandan-world/proto/view"
 	"guandan-world/sdk"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -296,6 +297,91 @@ func (ds *DriverService) GetGameStatus(roomID string) (map[string]interface{}, e
 	}
 
 	return status, nil
+}
+
+// HandlePlayerReconnect handles player reconnection and syncs game state
+func (ds *DriverService) HandlePlayerReconnect(roomID, playerID string) error {
+	ds.mu.RLock()
+	driver, exists := ds.drivers[roomID]
+	ds.mu.RUnlock()
+
+	if !exists {
+		return fmt.Errorf("no active game for room %s", roomID)
+	}
+
+	engine := driver.GetEngine()
+	if engine == nil {
+		return fmt.Errorf("no game engine for room %s", roomID)
+	}
+
+	gameState := engine.GetGameState()
+	if gameState == nil || gameState.CurrentMatch == nil {
+		return fmt.Errorf("no active match for room %s", roomID)
+	}
+
+	playerSeat := -1
+	for seat, player := range gameState.CurrentMatch.Players {
+		if player != nil && player.ID == playerID {
+			playerSeat = seat
+			break
+		}
+	}
+
+	if playerSeat < 0 {
+		return fmt.Errorf("player %s not found in room %s", playerID, roomID)
+	}
+
+	_, err := engine.HandlePlayerReconnect(playerSeat)
+	if err != nil {
+		log.Printf("Failed to handle player reconnect in SDK: %v", err)
+	}
+
+	playerView := engine.GetPlayerView(playerSeat)
+	if playerView != nil {
+		playerViewJSON := marshalProtoToRawJSON(playerView, "PlayerView")
+		if playerViewJSON != nil {
+			wsMessage := &websocket.WSMessage{
+				Type: websocket.MSG_PLAYER_VIEW,
+				Data: map[string]interface{}{
+					"player_view": playerViewJSON,
+					"event_type":  "reconnect",
+					"player_seat": playerSeat,
+				},
+				Timestamp: time.Now(),
+				PlayerID:  playerID,
+			}
+
+			if err := ds.wsManager.SendToPlayer(playerID, wsMessage); err != nil {
+				log.Printf("Failed to send player view on reconnect: %v", err)
+			}
+		}
+
+		if playerView.DealStatus == viewpb.DealStatus_DEAL_STATUS_TRIBUTE {
+			tributeView := engine.GetTributeView(playerSeat)
+			if tributeView != nil {
+				tributeViewJSON := marshalProtoToRawJSON(tributeView, "TributeView")
+				if tributeViewJSON != nil {
+					tributeMsg := &websocket.WSMessage{
+						Type: "tribute_view",
+						Data: map[string]interface{}{
+							"tribute_view": tributeViewJSON,
+							"event_type":   "reconnect",
+							"player_seat":  playerSeat,
+						},
+						Timestamp: time.Now(),
+						PlayerID:  playerID,
+					}
+
+					if err := ds.wsManager.SendToPlayer(playerID, tributeMsg); err != nil {
+						log.Printf("Failed to send tribute view on reconnect: %v", err)
+					}
+				}
+			}
+		}
+	}
+
+	log.Printf("Player %s reconnected to room %s (seat %d)", playerID, roomID, playerSeat)
+	return nil
 }
 
 // StopGame stops the game for a room
@@ -907,7 +993,10 @@ func (wso *WebSocketObserver) handleEvent(event *sdk.GameEvent) {
 	case eventpb.EventType_EVENT_TYPE_MATCH_STARTED, // Match begins
 		eventpb.EventType_EVENT_TYPE_DEAL_STARTED,           // New deal starts
 		eventpb.EventType_EVENT_TYPE_CARDS_DEALT,            // Cards dealt to players
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_STARTED,        // Tribute phase starts
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_EXEMPTED,       // Tribute exempted
 		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_SUBMITTED, // Tribute given (hand changes)
+		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_SELECTED,  // Tribute card selected from pool
 		eventpb.EventType_EVENT_TYPE_TRIBUTE_CARD_RETURNED,  // Return tribute (hand changes)
 		eventpb.EventType_EVENT_TYPE_TRIBUTE_COMPLETED,      // Tribute phase completed
 		eventpb.EventType_EVENT_TYPE_TRICK_STARTED,          // New trick starts

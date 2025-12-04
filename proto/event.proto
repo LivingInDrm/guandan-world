@@ -151,6 +151,9 @@ message DealEndedPayload {
   
   // 玩家统计数据
   repeated PlayerDealStats player_stats = 8;
+  
+  // 下一局开始的截止时间戳（毫秒），0 表示比赛已结束无下一局
+  int64 next_deal_deadline_ms = 9;
 }
 
 // ========================================

@@ -89,8 +89,17 @@ message PlayerView {
   // 0=等待 1=已出牌 2=不出 3=已结束
   repeated int32 play_states = 23;
   
-  // ===== 保留扩展字段 (Field 30-99) =====
-  reserved 30 to 99;
+  // ===== 结果字段 (Field 30-39) =====
+  // 用于前端组件展示牌局/比赛结果
+  
+  // 牌局结束结果（仅当 deal_status = FINISHED 时有值）
+  guandan.event.DealEndedPayload deal_result = 30;
+  
+  // 比赛结束结果（仅当比赛结束时有值）
+  guandan.event.MatchEndedPayload match_result = 31;
+  
+  // ===== 保留扩展字段 (Field 32-99) =====
+  reserved 32 to 99;
 }
 
 // ========================================

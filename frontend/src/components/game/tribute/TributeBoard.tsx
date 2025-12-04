@@ -1,35 +1,31 @@
-import React, { useRef, useCallback } from 'react';
-import type { Player, Card } from '../../../types';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
+import type { Player, Card, TributePair } from '../../../types';
+import { WS_MESSAGE_TYPES } from '../../../types';
 import { TributeType } from '../../../types/generated/event';
-import type { TributeStep, FlyingCard } from '../../../store/tributeStore';
-import { useTributeStore } from '../../../store/tributeStore';
+import { TributeStatus } from '../../../types/generated/view';
+import { EventType } from '../../../types/generated/event';
+import { wsClient } from '../../../services/websocket';
 import TributePool from './TributePool';
 import CardFlyAnimation from './CardFlyAnimation';
 import PlayerHand from '../PlayerHand';
 
+interface FlyingCard {
+  id: string;
+  card: Card;
+  fromSeat: number | 'pool';
+  toSeat: number | 'pool';
+  fromPoolSlot?: number;
+  toPoolSlot?: number;
+}
+
 interface TributeData {
-  step: TributeStep;
-  tributeStarted: {
-    tributeType: TributeType;
-    givers: number[];
-    receivers: number[];
-  } | null;
-  tributeExempted: {
-    bigJokerHolders: { [key: number]: number };
-  } | null;
-  submittedCards: { [giverSeat: number]: Card };
-  poolCards: (Card | null)[];
-  selectedCards: { [receiverSeat: number]: Card };
-  returnedCards: Array<{
-    fromSeat: number;
-    toSeat: number;
-    card: Card;
-  }>;
-  messages: string[];
-  currentSelectingSeat: number | null;
-  flyingCards: FlyingCard[];
-  players: Player[];
-  playerSeat: number | null;
+  status: TributeStatus;
+  tributeType: TributeType;
+  givers: number[];
+  receivers: number[];
+  tributePairs: TributePair[];
+  poolCards: Card[];
+  isImmune: boolean;
 }
 
 interface TributeBoardProps {
@@ -65,9 +61,8 @@ interface TributePlayerAreaProps {
   isGiver: boolean;
   isReceiver: boolean;
   hasSubmitted: boolean;
-  hasSelected: boolean;
+  hasReceived: boolean;
   isCurrentSelector: boolean;
-  bigJokerCount?: number;
 }
 
 const TributePlayerArea: React.FC<TributePlayerAreaProps> = ({
@@ -76,9 +71,8 @@ const TributePlayerArea: React.FC<TributePlayerAreaProps> = ({
   isGiver,
   isReceiver,
   hasSubmitted,
-  hasSelected,
+  hasReceived,
   isCurrentSelector,
-  bigJokerCount,
 }) => {
   const getPositionClasses = () => {
     switch (position) {
@@ -110,7 +104,7 @@ const TributePlayerArea: React.FC<TributePlayerAreaProps> = ({
             ? 'bg-yellow-200 text-yellow-800 animate-pulse' 
             : 'bg-green-200 text-green-800'
         }`}>
-          {hasSelected ? '已收贡' : isCurrentSelector ? '选牌中' : '待收贡'}
+          {hasReceived ? '已收贡' : isCurrentSelector ? '选牌中' : '待收贡'}
         </div>
       );
     }
@@ -134,11 +128,6 @@ const TributePlayerArea: React.FC<TributePlayerAreaProps> = ({
       }`}>
         <div className="text-sm font-medium truncate">{player.username}</div>
         {getRoleBadge()}
-        {bigJokerCount !== undefined && bigJokerCount > 0 && (
-          <div className="text-xs px-2 py-1 rounded bg-purple-200 text-purple-800 mt-1">
-            大王 x{bigJokerCount}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -157,63 +146,48 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
   const boardRef = useRef<HTMLDivElement>(null);
   const poolRef = useRef<HTMLDivElement>(null);
   const poolSlotRefs = useRef<{ [slot: number]: HTMLDivElement | null }>({});
+  
+  const [flyingCards, setFlyingCards] = useState<FlyingCard[]>([]);
 
   const { 
-    step, 
-    tributeStarted, 
-    tributeExempted, 
-    submittedCards, 
-    poolCards, 
-    selectedCards: selectedByReceivers, 
-    messages,
-    currentSelectingSeat,
-    flyingCards 
+    status, 
+    tributeType,
+    givers,
+    receivers,
+    tributePairs,
+    poolCards,
+    isImmune,
   } = tributeData;
 
-  const removeFlyingCard = useTributeStore((s) => s.removeFlyingCard);
+  const isGiver = useCallback((seat: number) => givers.includes(seat), [givers]);
+  const isReceiver = useCallback((seat: number) => receivers.includes(seat), [receivers]);
+  
+  const hasSubmitted = useCallback((seat: number) => {
+    return tributePairs.some(pair => pair.giver === seat && pair.tributeCard);
+  }, [tributePairs]);
+  
+  const hasReceived = useCallback((seat: number) => {
+    return tributePairs.some(pair => pair.receiver === seat && pair.tributeCard);
+  }, [tributePairs]);
 
-  const isGiver = (seat: number) => tributeStarted?.givers.includes(seat) ?? false;
-  const isReceiver = (seat: number) => tributeStarted?.receivers.includes(seat) ?? false;
-  const hasSubmitted = (seat: number) => seat in submittedCards;
-  const hasSelected = (seat: number) => seat in selectedByReceivers;
-  const getBigJokerCount = (seat: number) => tributeExempted?.bigJokerHolders[seat];
+  const getCurrentSelectingSeat = useCallback((): number | null => {
+    if (status !== TributeStatus.TRIBUTE_STATUS_SELECTING) return null;
+    for (const receiver of receivers) {
+      const received = tributePairs.some(pair => pair.receiver === receiver && pair.tributeCard);
+      if (!received) return receiver;
+    }
+    return null;
+  }, [status, receivers, tributePairs]);
+
+  const currentSelectingSeat = getCurrentSelectingSeat();
 
   const canSelectFromPool = 
-    step === 'selecting' && 
+    status === TributeStatus.TRIBUTE_STATUS_SELECTING && 
     currentSelectingSeat === currentPlayerSeat;
   
-  const canReturnTribute = step === 'returning' && isReceiver(currentPlayerSeat);
-
-  const handlePoolCardSelect = (card: Card) => {
-    if (canSelectFromPool) {
-      onSelectTribute(card.deckIndex);
-    }
-  };
-
-  const handleReturnCard = () => {
-    if (canReturnTribute && selectedCards.length === 1) {
-      onReturnTribute(selectedCards[0].deckIndex);
-    }
-  };
-
-  const getStepTitle = () => {
-    switch (step) {
-      case 'started':
-        return '上贡阶段开始';
-      case 'exempted':
-        return '抗贡成功';
-      case 'submitting':
-        return '等待进贡';
-      case 'selecting':
-        return currentSelectingSeat === currentPlayerSeat ? '请选择贡牌' : '等待选牌';
-      case 'returning':
-        return '还贡阶段';
-      case 'completed':
-        return '上贡完成';
-      default:
-        return '进贡阶段';
-    }
-  };
+  const canReturnTribute = 
+    status === TributeStatus.TRIBUTE_STATUS_RETURNING && 
+    isReceiver(currentPlayerSeat);
 
   const getPositionForSeat = useCallback((
     seat: number | 'pool',
@@ -258,24 +232,157 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
     }
   }, [currentPlayerSeat]);
 
-  const handleAnimationComplete = useCallback((id: string) => {
-    removeFlyingCard(id);
-  }, [removeFlyingCard]);
+  const removeFlyingCard = useCallback((id: string) => {
+    setFlyingCards(prev => prev.filter(fc => fc.id !== id));
+  }, []);
+
+  useEffect(() => {
+    const handleGameEvent = (message: { data: any }) => {
+      const event = message.data;
+      if (!event || !event.type) return;
+
+      switch (event.type) {
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_SUBMITTED: {
+          if (event.tributeCardSubmitted?.submittedCard && event.actorSeat !== undefined) {
+            const card = event.tributeCardSubmitted.submittedCard as Card;
+            const actorSeat = event.actorSeat as number;
+            
+            const occupiedSlots = new Set(
+              flyingCards
+                .filter(fc => fc.toSeat === 'pool' && fc.toPoolSlot !== undefined)
+                .map(fc => fc.toPoolSlot)
+            );
+            const maxSlots = tributeType === TributeType.TRIBUTE_TYPE_DOUBLE_DOWN ? 2 : 1;
+            let toPoolSlot = 0;
+            for (let i = 0; i < maxSlots; i++) {
+              if (!occupiedSlots.has(i) && !poolCards[i]) {
+                toPoolSlot = i;
+                break;
+              }
+            }
+
+            const flyingCard: FlyingCard = {
+              id: `submit-${actorSeat}-${Date.now()}`,
+              card,
+              fromSeat: actorSeat,
+              toSeat: 'pool',
+              toPoolSlot,
+            };
+            setFlyingCards(prev => [...prev, flyingCard]);
+          }
+          break;
+        }
+
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_SELECTED: {
+          if (event.tributeCardSelected?.selectedCard && event.actorSeat !== undefined) {
+            const card = event.tributeCardSelected.selectedCard as Card;
+            const actorSeat = event.actorSeat as number;
+            
+            const fromPoolSlot = poolCards.findIndex(
+              c => c && c.deckIndex === card.deckIndex
+            );
+
+            const flyingCard: FlyingCard = {
+              id: `select-${actorSeat}-${Date.now()}`,
+              card,
+              fromSeat: 'pool',
+              toSeat: actorSeat,
+              fromPoolSlot: fromPoolSlot >= 0 ? fromPoolSlot : undefined,
+            };
+            setFlyingCards(prev => [...prev, flyingCard]);
+          }
+          break;
+        }
+
+        case EventType.EVENT_TYPE_TRIBUTE_CARD_RETURNED: {
+          if (event.tributeCardReturned?.returnedCard && event.actorSeat !== undefined) {
+            const card = event.tributeCardReturned.returnedCard as Card;
+            const actorSeat = event.actorSeat as number;
+            const targetPlayer = event.tributeCardReturned.targetPlayer as number;
+
+            const flyingCard: FlyingCard = {
+              id: `return-${actorSeat}-${Date.now()}`,
+              card,
+              fromSeat: actorSeat,
+              toSeat: targetPlayer,
+            };
+            setFlyingCards(prev => [...prev, flyingCard]);
+          }
+          break;
+        }
+
+        case EventType.EVENT_TYPE_TRIBUTE_STARTED:
+        case EventType.EVENT_TYPE_TRIBUTE_COMPLETED: {
+          setFlyingCards([]);
+          break;
+        }
+      }
+    };
+
+    wsClient.on(WS_MESSAGE_TYPES.GAME_EVENT, handleGameEvent);
+    return () => {
+      wsClient.off(WS_MESSAGE_TYPES.GAME_EVENT, handleGameEvent);
+    };
+  }, [tributeType, poolCards, flyingCards]);
+
+  const handlePoolCardSelect = (card: Card) => {
+    if (canSelectFromPool) {
+      onSelectTribute(card.deckIndex);
+    }
+  };
+
+  const handleReturnCard = () => {
+    if (canReturnTribute && selectedCards.length === 1) {
+      onReturnTribute(selectedCards[0].deckIndex);
+    }
+  };
+
+  const getStepTitle = () => {
+    if (isImmune) return '抗贡成功';
+    switch (status) {
+      case TributeStatus.TRIBUTE_STATUS_WAITING:
+        return '等待进贡';
+      case TributeStatus.TRIBUTE_STATUS_SELECTING:
+        return currentSelectingSeat === currentPlayerSeat ? '请选择贡牌' : '等待选牌';
+      case TributeStatus.TRIBUTE_STATUS_RETURNING:
+        return '还贡阶段';
+      case TributeStatus.TRIBUTE_STATUS_FINISHED:
+        return '上贡完成';
+      default:
+        return '进贡阶段';
+    }
+  };
 
   const handleSlotRefReady = useCallback((slotIndex: number, element: HTMLDivElement | null) => {
     poolSlotRefs.current[slotIndex] = element;
   }, []);
+
+  const renderPlayerArea = (relativeSeat: number) => {
+    const seat = (currentPlayerSeat + relativeSeat) % 4;
+    const positions: Array<'bottom' | 'left' | 'top' | 'right'> = ['bottom', 'left', 'top', 'right'];
+    return (
+      <TributePlayerArea
+        key={seat}
+        player={players[seat]}
+        position={positions[relativeSeat]}
+        seat={seat}
+        isGiver={isGiver(seat)}
+        isReceiver={isReceiver(seat)}
+        hasSubmitted={hasSubmitted(seat)}
+        hasReceived={hasReceived(seat)}
+        isCurrentSelector={currentSelectingSeat === seat}
+      />
+    );
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div ref={boardRef} className="relative w-full h-96 bg-green-100 border border-gray-300 rounded-lg">
         <div className="absolute top-4 left-4 bg-white border border-gray-300 rounded-lg p-3 shadow-sm z-10">
           <div className="text-sm font-medium mb-2">{getStepTitle()}</div>
-          {tributeStarted && (
-            <div className="text-xs text-gray-600">
-              类型: {getTributeTypeName(tributeStarted.tributeType)}
-            </div>
-          )}
+          <div className="text-xs text-gray-600">
+            类型: {getTributeTypeName(tributeType)}
+          </div>
         </div>
 
         <div ref={poolRef} className="absolute inset-0 flex items-center justify-center">
@@ -283,59 +390,13 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
             poolCards={poolCards}
             canSelect={canSelectFromPool}
             onSelectCard={handlePoolCardSelect}
-            tributeType={tributeStarted?.tributeType ?? TributeType.TRIBUTE_TYPE_UNSPECIFIED}
-            messages={messages}
+            tributeType={tributeType}
+            messages={[]}
             onSlotRefReady={handleSlotRefReady}
           />
         </div>
 
-        <TributePlayerArea
-          player={players[currentPlayerSeat]}
-          position="bottom"
-          seat={currentPlayerSeat}
-          isGiver={isGiver(currentPlayerSeat)}
-          isReceiver={isReceiver(currentPlayerSeat)}
-          hasSubmitted={hasSubmitted(currentPlayerSeat)}
-          hasSelected={hasSelected(currentPlayerSeat)}
-          isCurrentSelector={currentSelectingSeat === currentPlayerSeat}
-          bigJokerCount={getBigJokerCount(currentPlayerSeat)}
-        />
-
-        <TributePlayerArea
-          player={players[(currentPlayerSeat + 1) % 4]}
-          position="left"
-          seat={(currentPlayerSeat + 1) % 4}
-          isGiver={isGiver((currentPlayerSeat + 1) % 4)}
-          isReceiver={isReceiver((currentPlayerSeat + 1) % 4)}
-          hasSubmitted={hasSubmitted((currentPlayerSeat + 1) % 4)}
-          hasSelected={hasSelected((currentPlayerSeat + 1) % 4)}
-          isCurrentSelector={currentSelectingSeat === (currentPlayerSeat + 1) % 4}
-          bigJokerCount={getBigJokerCount((currentPlayerSeat + 1) % 4)}
-        />
-
-        <TributePlayerArea
-          player={players[(currentPlayerSeat + 2) % 4]}
-          position="top"
-          seat={(currentPlayerSeat + 2) % 4}
-          isGiver={isGiver((currentPlayerSeat + 2) % 4)}
-          isReceiver={isReceiver((currentPlayerSeat + 2) % 4)}
-          hasSubmitted={hasSubmitted((currentPlayerSeat + 2) % 4)}
-          hasSelected={hasSelected((currentPlayerSeat + 2) % 4)}
-          isCurrentSelector={currentSelectingSeat === (currentPlayerSeat + 2) % 4}
-          bigJokerCount={getBigJokerCount((currentPlayerSeat + 2) % 4)}
-        />
-
-        <TributePlayerArea
-          player={players[(currentPlayerSeat + 3) % 4]}
-          position="right"
-          seat={(currentPlayerSeat + 3) % 4}
-          isGiver={isGiver((currentPlayerSeat + 3) % 4)}
-          isReceiver={isReceiver((currentPlayerSeat + 3) % 4)}
-          hasSubmitted={hasSubmitted((currentPlayerSeat + 3) % 4)}
-          hasSelected={hasSelected((currentPlayerSeat + 3) % 4)}
-          isCurrentSelector={currentSelectingSeat === (currentPlayerSeat + 3) % 4}
-          bigJokerCount={getBigJokerCount((currentPlayerSeat + 3) % 4)}
-        />
+        {[0, 1, 2, 3].map(renderPlayerArea)}
 
         {flyingCards.map((fc) => (
           <CardFlyAnimation
@@ -343,12 +404,12 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
             card={fc.card}
             fromPosition={getPositionForSeat(fc.fromSeat, fc.fromPoolSlot)}
             toPosition={getPositionForSeat(fc.toSeat, fc.toPoolSlot)}
-            onComplete={() => handleAnimationComplete(fc.id)}
+            onComplete={() => removeFlyingCard(fc.id)}
           />
         ))}
       </div>
 
-      {step === 'returning' && canReturnTribute && (
+      {status === TributeStatus.TRIBUTE_STATUS_RETURNING && canReturnTribute && (
         <>
           <PlayerHand
             cards={playerHand}
@@ -369,17 +430,6 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
             </button>
           </div>
         </>
-      )}
-
-      {step !== 'returning' && (
-        <div className="bg-white rounded-lg p-4 shadow">
-          <h3 className="text-sm font-medium mb-2">消息记录</h3>
-          <div className="text-xs text-gray-600 space-y-1">
-            {messages.map((msg, i) => (
-              <div key={i}>{msg}</div>
-            ))}
-          </div>
-        </div>
       )}
     </div>
   );

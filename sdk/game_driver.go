@@ -81,6 +81,9 @@ type GameDriverConfig struct {
 	TributeSelectingDelay time.Duration `json:"tribute_selecting_delay"` // Selecting 阶段结束后延时
 	TributeReturningDelay time.Duration `json:"tribute_returning_delay"` // Returning 阶段结束后延时
 	TributeFinishedDelay  time.Duration `json:"tribute_finished_delay"`  // Finished 阶段（完成）后延时
+
+	// 局间延时配置
+	DealEndedDelay time.Duration `json:"deal_ended_delay"` // 牌局结束后展示结算画面的延时
 }
 
 // DefaultGameDriverConfig 返回默认的游戏驱动器配置
@@ -97,6 +100,7 @@ func DefaultGameDriverConfig() *GameDriverConfig {
 		TributeSelectingDelay: 2000 * time.Millisecond,     // Selecting 阶段结束后延时
 		TributeReturningDelay: 2000 * time.Millisecond,     // Returning 阶段结束后延时
 		TributeFinishedDelay:  2000 * time.Millisecond,     // 阶段完成后延时
+		DealEndedDelay:        10 * time.Second,            // 牌局结束后10秒展示结算画面
 	}
 }
 
@@ -350,6 +354,9 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 	}
 	gd.registrationMu.Unlock()
 
+	// 设置牌局结束延迟，用于计算 DealEnded 事件中的 deadline
+	gd.engine.SetDealEndedDelay(gd.config.DealEndedDelay)
+
 	// 开始比赛
 	if err := gd.engine.StartMatch(players); err != nil {
 		return nil, fmt.Errorf("failed to start match: %w", err)
@@ -367,6 +374,13 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 
 		if err := gd.runDeal(); err != nil {
 			return nil, fmt.Errorf("failed to run deal %d: %w", dealCount, err)
+		}
+
+		// 局间等待，让前端展示结算画面
+		if !gd.engine.IsGameFinished() && gd.config.DealEndedDelay > 0 {
+			if !gd.sleepWithContext(gd.config.DealEndedDelay) {
+				return nil, fmt.Errorf("game cancelled during deal ended delay")
+			}
 		}
 	}
 

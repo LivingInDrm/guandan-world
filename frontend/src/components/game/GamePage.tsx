@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useRoomStore } from '../../store/roomStore';
@@ -9,7 +9,7 @@ import { apiClient } from '../../services/api';
 import type { WSMessage, GameActionData, TurnDeadlineData } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import type { GameEvent, Card, PlayerView as ProtoPlayerView } from '../../types/proto';
-import { EventType, eventTypeToJSON } from '../../types/generated/event';
+import { eventTypeToJSON } from '../../types/generated/event';
 import GameBoard from './GameBoard';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
@@ -30,24 +30,6 @@ const GamePageState = {
   MATCH_RESULT: 'match_result'
 } as const;
 
-// 事件类型 → GamePage Phase 映射
-const EVENT_TO_PHASE_MAP: Partial<Record<EventType, string>> = {
-  [EventType.EVENT_TYPE_DEAL_STARTED]: GamePageState.PLAYING,
-  [EventType.EVENT_TYPE_TRIBUTE_STARTED]: GamePageState.TRIBUTE_PHASE,
-  [EventType.EVENT_TYPE_TRIBUTE_COMPLETED]: GamePageState.PLAYING,
-  [EventType.EVENT_TYPE_DEAL_ENDED]: GamePageState.DEAL_RESULT,
-  [EventType.EVENT_TYPE_MATCH_ENDED]: GamePageState.MATCH_RESULT,
-};
-
-// 根据游戏事件更新 Phase
-const updatePhaseFromEvent = (event: GameEvent, setCurrentPhase: (phase: string) => void) => {
-  const newPhase = EVENT_TO_PHASE_MAP[event.type];
-  if (newPhase) {
-    console.log('[Phase Transition]', eventTypeToJSON(event.type), '→', newPhase);
-    setCurrentPhase(newPhase);
-  }
-};
-
 const GamePage: React.FC = () => {
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
@@ -61,8 +43,6 @@ const GamePage: React.FC = () => {
     isMyTurn,
     setCountdown,
     setCurrentPhase,
-    setDealResult,
-    setMatchResult,
     setPlayerSeat,
     setPlayerView,
     setMyTurn
@@ -161,73 +141,10 @@ const GamePage: React.FC = () => {
       }
     };
 
-    // 游戏事件
+    // 游戏事件（仅日志，phase 由 PlayerView 驱动）
     const handleGameEvent = (message: WSMessage) => {
       const event: GameEvent = message.data as GameEvent;
       console.log('[game_event]', eventTypeToJSON(event.type), event);
-      
-      const roomIdFromMsg = message.data?.room_id;
-      if (roomIdFromMsg && roomIdFromMsg !== roomId) return;
-
-      // 统一处理 phase 转换
-      updatePhaseFromEvent(event, setCurrentPhase);
-
-      const tributeActions = useTributeStore.getState();
-
-      // 处理事件数据
-      switch (event.type) {
-        case EventType.EVENT_TYPE_TRIBUTE_STARTED:
-          if (event.tributeStarted) {
-            tributeActions.handleTributeStarted(event.tributeStarted);
-          }
-          break;
-
-        case EventType.EVENT_TYPE_TRIBUTE_EXEMPTED:
-          if (event.tributeExempted) {
-            tributeActions.handleTributeExempted(event.tributeExempted);
-          }
-          break;
-
-        case EventType.EVENT_TYPE_TRIBUTE_CARD_SUBMITTED:
-          if (event.tributeCardSubmitted?.submittedCard && event.actorSeat !== undefined) {
-            tributeActions.handleCardSubmitted(
-              event.actorSeat,
-              event.tributeCardSubmitted.submittedCard as Card
-            );
-          }
-          break;
-
-        case EventType.EVENT_TYPE_TRIBUTE_CARD_SELECTED:
-          if (event.tributeCardSelected?.selectedCard && event.actorSeat !== undefined) {
-            tributeActions.handleCardSelected(
-              event.actorSeat,
-              event.tributeCardSelected.selectedCard as Card
-            );
-          }
-          break;
-
-        case EventType.EVENT_TYPE_TRIBUTE_CARD_RETURNED:
-          if (event.tributeCardReturned && event.actorSeat !== undefined) {
-            tributeActions.handleCardReturned(event.actorSeat, event.tributeCardReturned);
-          }
-          break;
-
-        case EventType.EVENT_TYPE_TRIBUTE_COMPLETED:
-          tributeActions.handleCompleted();
-          break;
-          
-        case EventType.EVENT_TYPE_DEAL_ENDED:
-          if (event.dealEnded) {
-            setDealResult(event.dealEnded);
-          }
-          break;
-          
-        case EventType.EVENT_TYPE_MATCH_ENDED:
-          if (event.matchEnded) {
-            setMatchResult(event.matchEnded);
-          }
-          break;
-      }
     };
 
     // 玩家视角
@@ -253,6 +170,26 @@ const GamePage: React.FC = () => {
       setCanPlay(canPlayValue);
       setMyTurn(isMyTurnValue);
 
+      // 根据 dealStatus 推导 currentPhase（仅在变化时更新）
+      let newPhase: string | null = null;
+      switch (protoPlayerView.dealStatus) {
+        case DealStatus.TRIBUTE:
+          newPhase = GamePageState.TRIBUTE_PHASE;
+          break;
+        case DealStatus.PLAYING:
+          newPhase = GamePageState.PLAYING;
+          break;
+        case DealStatus.FINISHED:
+          newPhase = protoPlayerView.matchResult
+            ? GamePageState.MATCH_RESULT
+            : GamePageState.DEAL_RESULT;
+          break;
+      }
+      if (newPhase && newPhase !== useGameStore.getState().currentPhase) {
+        console.log('[Phase Transition]', protoPlayerView.dealStatus, '→', newPhase);
+        setCurrentPhase(newPhase);
+      }
+
       setPlayerView(protoPlayerView);
     };
 
@@ -274,6 +211,14 @@ const GamePage: React.FC = () => {
       });
     };
 
+    const handleTributeView = (message: WSMessage) => {
+      console.log('[tribute_view]', message.data);
+      const tributeView = message.data?.tribute_view;
+      if (tributeView) {
+        useTributeStore.getState().setTributeView(tributeView);
+      }
+    };
+
     // 注册所有监听器
     wsClient.on(WS_MESSAGE_TYPES.ROOM_UPDATE, handleRoomUpdate);
     wsClient.on(WS_MESSAGE_TYPES.GAME_PREPARE, handleGamePrepare);
@@ -283,6 +228,7 @@ const GamePage: React.FC = () => {
     wsClient.on(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
     wsClient.on(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
     wsClient.on(WS_MESSAGE_TYPES.TURN_DEADLINE, handleTurnDeadline);
+    wsClient.on(WS_MESSAGE_TYPES.TRIBUTE_VIEW, handleTributeView);
 
     // 清理函数
     return () => {
@@ -294,8 +240,9 @@ const GamePage: React.FC = () => {
       wsClient.off(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
       wsClient.off(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
       wsClient.off(WS_MESSAGE_TYPES.TURN_DEADLINE, handleTurnDeadline);
+      wsClient.off(WS_MESSAGE_TYPES.TRIBUTE_VIEW, handleTributeView);
     };
-  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setDealResult, setMatchResult, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom]);
+  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom]);
 
   // 开始游戏
   const handleStartGame = async () => {
@@ -410,16 +357,14 @@ const GamePage: React.FC = () => {
   };
 
   // 继续游戏（局结算后）
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     setCurrentPhase(GamePageState.WAITING_PLAYERS);
-    setDealResult(null);
-  };
+  }, [setCurrentPhase]);
 
   // 再来一局（比赛结束后）
   const handlePlayAgain = async () => {
     if (!currentRoom || !user) return;
 
-    setMatchResult(null);
     setCurrentPhase(GamePageState.WAITING_PLAYERS);
 
     // 如果是房主，自动开始游戏

@@ -3,10 +3,10 @@ import { useRoomStore } from '../store/roomStore';
 import type { Player } from '../types';
 
 export const useDealResultData = () => {
-  const dealResult = useGameStore(s => s.dealResult);
-  const room = useRoomStore(s => s.currentRoom);
   const playerView = useGameStore(s => s.playerView);
+  const room = useRoomStore(s => s.currentRoom);
   
+  const dealResult = playerView?.dealResult;
   if (!dealResult || !room) return null;
   
   return {
@@ -19,9 +19,10 @@ export const useDealResultData = () => {
 };
 
 export const useMatchResultData = () => {
-  const matchResult = useGameStore(s => s.matchResult);
+  const playerView = useGameStore(s => s.playerView);
   const room = useRoomStore(s => s.currentRoom);
   
+  const matchResult = playerView?.matchResult;
   if (!matchResult || !room) return null;
   
   return {

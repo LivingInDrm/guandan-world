@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Player } from '../../types';
 import type { DealEndedPayload } from '../../types/generated/event';
 import { VictoryType } from '../../types/proto';
@@ -20,6 +20,40 @@ const DealResult: React.FC<DealResultProps> = ({
   onExit,
   isMatchFinished
 }) => {
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    const deadlineMs = dealResult.nextDealDeadlineMs;
+    if (!deadlineMs || deadlineMs === 0) {
+      setCountdown(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000));
+      setCountdown(remaining);
+
+      if (remaining === 0) {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        onContinue();
+      }
+    };
+
+    updateCountdown();
+    timerRef.current = setInterval(updateCountdown, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [dealResult.nextDealDeadlineMs, onContinue]);
+
   // Helper function to get team for player
   const getTeamForPlayer = (playerSeat: number): number => {
     return playerSeat % 2; // Team 0: seats 0,2; Team 1: seats 1,3
@@ -220,14 +254,11 @@ const DealResult: React.FC<DealResultProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-center space-x-4">
-          {!isMatchFinished && (
-            <button
-              onClick={onContinue}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              继续游戏
-            </button>
+        <div className="flex flex-col items-center space-y-3">
+          {countdown !== null && countdown > 0 && (
+            <div className="text-gray-500 text-sm">
+              下一局开始倒计时：<span className="text-gray-800 font-bold">{countdown}</span> 秒
+            </div>
           )}
           <button
             onClick={onExit}

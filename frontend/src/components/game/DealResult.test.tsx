@@ -50,7 +50,8 @@ const mockDealResult: DealEndedPayload = {
       passCount: 8,
       finishRank: 4
     }
-  ]
+  ],
+  nextDealDeadlineMs: 0
 };
 
 const mockTeamLevels: [number, number] = [5, 3]; // Team 0 at level 5, Team 1 at level 3
