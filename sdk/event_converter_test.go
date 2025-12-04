@@ -5,6 +5,7 @@ import (
 	"time"
 
 	commonpb "guandan-world/proto/common"
+	eventpb "guandan-world/proto/event"
 	viewpb "guandan-world/proto/view"
 )
 
@@ -260,12 +261,14 @@ func TestConvertPlayerViewToProto(t *testing.T) {
 // TestConvertTributeViewToProto tests TributeView conversion
 func TestConvertTributeViewToProto(t *testing.T) {
 	sdkPhase := &TributePhase{
-		Status: TributeStatusSelecting,
+		Status:      TributeStatusSelecting,
+		TributeType: "single_last",
+		Givers:      []int{3},
+		Receivers:   []int{0},
 		TributePairs: []*TributePair{
 			{Giver: 3, Receiver: -1, TributeCard: &Card{Number: 14, Color: "Spade", DeckIndex: 50}},
 		},
 		PoolCards: []*Card{{Number: 14, Color: "Spade", DeckIndex: 50}},
-		Winners:   []int{0},
 		IsImmune:  false,
 	}
 
@@ -302,6 +305,19 @@ func TestConvertTributeViewToProto(t *testing.T) {
 
 	if protoView.IsImmune != false {
 		t.Errorf("Expected IsImmune=false, got %v", protoView.IsImmune)
+	}
+
+	// Check new fields: TributeType, Givers, Receivers
+	if protoView.TributeType != eventpb.TributeType_TRIBUTE_TYPE_SINGLE_LAST {
+		t.Errorf("Expected TributeType=SINGLE_LAST, got %v", protoView.TributeType)
+	}
+
+	if len(protoView.Givers) != 1 || protoView.Givers[0] != 3 {
+		t.Errorf("Expected Givers=[3], got %v", protoView.Givers)
+	}
+
+	if len(protoView.Receivers) != 1 || protoView.Receivers[0] != 0 {
+		t.Errorf("Expected Receivers=[0], got %v", protoView.Receivers)
 	}
 
 	// Test nil

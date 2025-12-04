@@ -33,9 +33,10 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 
 	tributePhase := &TributePhase{
 		Status:       TributeStatusWaiting,
+		Givers:       []int{},
+		Receivers:    []int{},
 		TributePairs: make([]*TributePair, 0),
 		PoolCards:    make([]*Card, 0),
-		Winners:      []int{},
 	}
 
 	// 按排名获取玩家
@@ -51,7 +52,9 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 		// Double Down: rank1, rank2 同队
 		// Rank3 和 Rank4 各上交 1 张贡牌到贡牌池
 		// Rank1 优先从贡牌池中挑选其一；Rank2 获得剩下的一张贡牌
-		tributePhase.Winners = []int{rank1, rank2}
+		tributePhase.TributeType = "double_down"
+		tributePhase.Givers = []int{rank3, rank4}
+		tributePhase.Receivers = []int{rank1, rank2}
 		tributePhase.TributePairs = append(tributePhase.TributePairs,
 			&TributePair{Giver: rank3, Receiver: -1, TributeCard: nil, ReturnCard: nil},
 			&TributePair{Giver: rank4, Receiver: -1, TributeCard: nil, ReturnCard: nil},
@@ -60,7 +63,9 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 	case VictoryTypeSingleLast:
 		// Single Last: rank1, rank3 同队
 		// Rank4 上交 1 张贡牌到贡牌池，Rank1 自动获得
-		tributePhase.Winners = []int{rank1}
+		tributePhase.TributeType = "single_last"
+		tributePhase.Givers = []int{rank4}
+		tributePhase.Receivers = []int{rank1}
 		tributePhase.TributePairs = append(tributePhase.TributePairs,
 			&TributePair{Giver: rank4, Receiver: -1, TributeCard: nil, ReturnCard: nil},
 		)
@@ -68,7 +73,9 @@ func NewTributePhase(lastResult *DealResult) (*TributePhase, error) {
 	case VictoryTypePartnerLast:
 		// Partner Last: rank1, rank4 同队
 		// Rank3 上交 1 张贡牌到贡牌池，Rank1 自动获得
-		tributePhase.Winners = []int{rank1}
+		tributePhase.TributeType = "partner_last"
+		tributePhase.Givers = []int{rank3}
+		tributePhase.Receivers = []int{rank1}
 		tributePhase.TributePairs = append(tributePhase.TributePairs,
 			&TributePair{Giver: rank3, Receiver: -1, TributeCard: nil, ReturnCard: nil},
 		)
@@ -141,7 +148,7 @@ func (tm *TributeManager) countBigJokers(hand []*Card) int {
 	return count
 }
 
-// GetNextReceiver 找下一个待分配的 receiver（Winners 中还没成为任何 TributePair.Receiver 的第一个）
+// GetNextReceiver 找下一个待分配的 receiver（Receivers 中还没成为任何 TributePair.Receiver 的第一个）
 func (tm *TributeManager) GetNextReceiver(phase *TributePhase) int {
 	assignedReceivers := make(map[int]bool)
 	// 收集所有已分配的接收者
@@ -151,10 +158,10 @@ func (tm *TributeManager) GetNextReceiver(phase *TributePhase) int {
 		}
 	}
 
-	// 选择第一个尚未被分配的获胜者
-	for _, winner := range phase.Winners {
-		if !assignedReceivers[winner] {
-			return winner
+	// 选择第一个尚未被分配的接收者
+	for _, receiver := range phase.Receivers {
+		if !assignedReceivers[receiver] {
+			return receiver
 		}
 	}
 	return -1
@@ -319,12 +326,12 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 	result := &TributeStepResult{}
 
 	// 双下场景：PoolCards == 2，需要第一名选择
-	if len(phase.PoolCards) == 2 && len(phase.Winners) > 0 {
+	if len(phase.PoolCards) == 2 && len(phase.Receivers) > 0 {
 		if input == nil {
 			// 需要用户输入
 			result.PendingAction = &TributeAction{
 				Type:     TributeActionSelect,
-				PlayerID: phase.Winners[0],
+				PlayerID: phase.Receivers[0],
 				Options:  phase.PoolCards,
 			}
 			return result
@@ -352,7 +359,7 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 		}
 
 		// 验证是否轮到该玩家选择
-		if len(phase.Winners) == 0 || phase.Winners[0] != input.PlayerID {
+		if len(phase.Receivers) == 0 || phase.Receivers[0] != input.PlayerID {
 			log.Warn("not player's turn to select", "player_id", input.PlayerID)
 			result.Error = fmt.Errorf("not player %d's turn to select", input.PlayerID)
 			return result

@@ -472,9 +472,10 @@ func ConvertTributeViewToProto(
 		UpdatedAtMs: time.Now().UnixMilli(),
 
 		// Tribute phase info
-		Status:   ConvertTributeStatusToProto(phase.Status),
-		IsImmune: phase.IsImmune,
-		PoolCards:       ConvertCardsToProto(phase.PoolCards),
+		Status:      ConvertTributeStatusToProto(phase.Status),
+		IsImmune:    phase.IsImmune,
+		PoolCards:   ConvertCardsToProto(phase.PoolCards),
+		TributeType: ConvertTributeTypeToProto(phase.TributeType),
 	}
 
 	// Convert tribute pairs
@@ -484,5 +485,18 @@ func ConvertTributeViewToProto(
 	}
 	protoView.TributePairs = protoPairs
 
+	// Use Givers and Receivers directly from phase
+	protoView.Givers = convertIntsToInt32s(phase.Givers)
+	protoView.Receivers = convertIntsToInt32s(phase.Receivers)
+
 	return protoView
+}
+
+// convertIntsToInt32s converts []int to []int32
+func convertIntsToInt32s(ints []int) []int32 {
+	result := make([]int32, len(ints))
+	for i, v := range ints {
+		result[i] = int32(v)
+	}
+	return result
 }

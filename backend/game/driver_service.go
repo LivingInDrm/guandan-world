@@ -434,6 +434,19 @@ func (rip *RoomInputProvider) RequestPlayDecision(ctx context.Context, playerSea
 		return nil, fmt.Errorf("failed to send play request: %w", err)
 	}
 
+	// Broadcast deadline to all players in the room
+	if deadline, ok := ctx.Deadline(); ok {
+		rip.wsManager.BroadcastToRoom(rip.roomID, &websocket.WSMessage{
+			Type: websocket.MSG_TURN_DEADLINE,
+			Data: map[string]interface{}{
+				"player_seat":    playerSeat,
+				"action_type":    "play_decision",
+				"deadline_at_ms": deadline.UnixMilli(),
+			},
+			Timestamp: time.Now(),
+		})
+	}
+
 	// Wait for decision or context cancellation
 	select {
 	case decision, ok := <-decisionChan:
@@ -491,6 +504,19 @@ func (rip *RoomInputProvider) RequestTributeSelection(ctx context.Context, playe
 		return nil, fmt.Errorf("failed to send tribute selection request: %w", err)
 	}
 
+	// Broadcast deadline to all players in the room
+	if deadline, ok := ctx.Deadline(); ok {
+		rip.wsManager.BroadcastToRoom(rip.roomID, &websocket.WSMessage{
+			Type: websocket.MSG_TURN_DEADLINE,
+			Data: map[string]interface{}{
+				"player_seat":    playerSeat,
+				"action_type":    "tribute_selection",
+				"deadline_at_ms": deadline.UnixMilli(),
+			},
+			Timestamp: time.Now(),
+		})
+	}
+
 	// Wait for selection or context cancellation
 	select {
 	case card, ok := <-selectionChan:
@@ -546,6 +572,19 @@ func (rip *RoomInputProvider) RequestReturnTribute(ctx context.Context, playerSe
 
 	if err := rip.sendToPlayer(playerSeat, wsMessage); err != nil {
 		return nil, fmt.Errorf("failed to send return tribute request: %w", err)
+	}
+
+	// Broadcast deadline to all players in the room
+	if deadline, ok := ctx.Deadline(); ok {
+		rip.wsManager.BroadcastToRoom(rip.roomID, &websocket.WSMessage{
+			Type: websocket.MSG_TURN_DEADLINE,
+			Data: map[string]interface{}{
+				"player_seat":    playerSeat,
+				"action_type":    "return_tribute",
+				"deadline_at_ms": deadline.UnixMilli(),
+			},
+			Timestamp: time.Now(),
+		})
 	}
 
 	// Wait for return or context cancellation

@@ -3,6 +3,7 @@ syntax = "proto3";
 package guandan.view;
 
 import "common.proto";
+import "event.proto";
 
 option go_package = "guandan-world/proto/view";
 
@@ -148,6 +149,15 @@ message TributeView {
   // 是否免贡
   bool is_immune = 14;
   
-  // ===== 保留扩展字段 (Field 20-99) =====
-  reserved 20 to 99;
+  // 进贡类型
+  guandan.event.TributeType tribute_type = 15;
+  
+  // 进贡方座位列表
+  repeated int32 givers = 16;
+  
+  // 收贡方座位列表
+  repeated int32 receivers = 17;
+  
+  // ===== 保留扩展字段 (Field 18-99) =====
+  reserved 18 to 99;
 }

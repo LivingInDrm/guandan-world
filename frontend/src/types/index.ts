@@ -176,7 +176,10 @@ export const WS_MESSAGE_TYPES = {
   // Timeout and auto-play
   PLAYER_TIMEOUT: 'player_timeout',
   AUTO_PLAY: 'auto_play',
-  RECONNECT: 'reconnect'
+  RECONNECT: 'reconnect',
+  
+  // Turn deadline broadcast
+  TURN_DEADLINE: 'turn_deadline'
 } as const;
 
 export type WSMessageType = typeof WS_MESSAGE_TYPES[keyof typeof WS_MESSAGE_TYPES];
@@ -224,6 +227,12 @@ export interface GameActionData {
   trick_info?: TrickInfo;
   timeout?: number;
   options?: Card[];
+}
+
+export interface TurnDeadlineData {
+  player_seat: number;
+  action_type: 'play_decision' | 'tribute_selection' | 'return_tribute';
+  deadline_at_ms: number;
 }
 
 // ========== Deal and Tribute Status (使用 Proto) ==========

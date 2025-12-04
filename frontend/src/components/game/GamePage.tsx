@@ -6,7 +6,7 @@ import { useGameStore } from '../../store/gameStore';
 import { useTributeStore } from '../../store/tributeStore';
 import { wsClient } from '../../services/websocket';
 import { apiClient } from '../../services/api';
-import type { WSMessage, GameActionData } from '../../types';
+import type { WSMessage, GameActionData, TurnDeadlineData } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import type { GameEvent, Card, PlayerView as ProtoPlayerView } from '../../types/proto';
 import { EventType, eventTypeToJSON } from '../../types/generated/event';
@@ -79,7 +79,10 @@ const GamePage: React.FC = () => {
   const [isStarting, setIsStarting] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [turnTimeoutSeconds, setTurnTimeoutSeconds] = useState<number>(20);
-  const [previousTrickId, setPreviousTrickId] = useState<string | null>(null);
+  const [turnDeadline, setTurnDeadline] = useState<{
+    playerSeat: number;
+    deadlineAtMs: number;
+  } | null>(null);
 
   // 初始加载房间信息
   useEffect(() => {
@@ -241,11 +244,6 @@ const GamePage: React.FC = () => {
       
       setPlayerSeat(protoPlayerView.playerSeat);
 
-      const currentTrickId = protoPlayerView.trickIndex?.toString();
-      if (currentTrickId && currentTrickId !== previousTrickId) {
-        setPreviousTrickId(currentTrickId);
-      }
-
       const isPlayingPhase = protoPlayerView.dealStatus === DealStatus.PLAYING;
       const isMyTurnValue = isPlayingPhase &&
         protoPlayerView.currentTurn === protoPlayerView.playerSeat;
@@ -267,6 +265,15 @@ const GamePage: React.FC = () => {
       }
     };
 
+    const handleTurnDeadline = (message: WSMessage) => {
+      console.log('[turn_deadline]', message);
+      const data = message.data as TurnDeadlineData;
+      setTurnDeadline({
+        playerSeat: data.player_seat,
+        deadlineAtMs: data.deadline_at_ms,
+      });
+    };
+
     // 注册所有监听器
     wsClient.on(WS_MESSAGE_TYPES.ROOM_UPDATE, handleRoomUpdate);
     wsClient.on(WS_MESSAGE_TYPES.GAME_PREPARE, handleGamePrepare);
@@ -275,6 +282,7 @@ const GamePage: React.FC = () => {
     wsClient.on(WS_MESSAGE_TYPES.GAME_EVENT, handleGameEvent);
     wsClient.on(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
     wsClient.on(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
+    wsClient.on(WS_MESSAGE_TYPES.TURN_DEADLINE, handleTurnDeadline);
 
     // 清理函数
     return () => {
@@ -285,6 +293,7 @@ const GamePage: React.FC = () => {
       wsClient.off(WS_MESSAGE_TYPES.GAME_EVENT, handleGameEvent);
       wsClient.off(WS_MESSAGE_TYPES.PLAYER_VIEW, handlePlayerView);
       wsClient.off(WS_MESSAGE_TYPES.GAME_ACTION, handleGameAction);
+      wsClient.off(WS_MESSAGE_TYPES.TURN_DEADLINE, handleTurnDeadline);
     };
   }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setDealResult, setMatchResult, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom]);
 
@@ -618,6 +627,7 @@ const GamePage: React.FC = () => {
           players={players}
           currentPlayerSeat={playerSeat}
           playStates={playStates}
+          turnDeadline={turnDeadline}
         />
 
         <PlayerHand

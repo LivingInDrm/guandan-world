@@ -11,7 +11,8 @@ func TestProcessTributeStep_Waiting_ToSelecting(t *testing.T) {
 			{Giver: 3, Receiver: -1, TributeCard: nil, ReturnCard: nil},
 		},
 		PoolCards: []*Card{},
-		Winners:   []int{0},
+		Givers:    []int{3},
+		Receivers: []int{0},
 	}
 
 	playerHands := [4][]*Card{
@@ -63,7 +64,8 @@ func TestProcessTributeStep_Selecting_DoubleDown_NeedsInput(t *testing.T) {
 			{Giver: 3, Receiver: -1, TributeCard: card2, ReturnCard: nil},
 		},
 		PoolCards: []*Card{card1, card2},
-		Winners:   []int{0, 1},
+		Givers:    []int{2, 3},
+		Receivers: []int{0, 1},
 	}
 
 	playerHands := [4][]*Card{{}, {}, {}, {}}
@@ -98,7 +100,8 @@ func TestProcessTributeStep_Selecting_DoubleDown_WithInput(t *testing.T) {
 			{Giver: 3, Receiver: -1, TributeCard: card2, ReturnCard: nil},
 		},
 		PoolCards: []*Card{card1, card2},
-		Winners:   []int{0, 1},
+		Givers:    []int{2, 3},
+		Receivers: []int{0, 1},
 	}
 
 	playerHands := [4][]*Card{{}, {}, {}, {}}
@@ -142,7 +145,8 @@ func TestProcessTributeStep_Selecting_SingleTribute_AutoAssign(t *testing.T) {
 			{Giver: 3, Receiver: -1, TributeCard: card, ReturnCard: nil},
 		},
 		PoolCards: []*Card{card},
-		Winners:   []int{0},
+		Givers:    []int{3},
+		Receivers: []int{0},
 	}
 
 	playerHands := [4][]*Card{{}, {}, {}, {}}
@@ -173,7 +177,8 @@ func TestProcessTributeStep_Selecting_ToReturning(t *testing.T) {
 			{Giver: 3, Receiver: 0, TributeCard: &Card{DeckIndex: 1}, ReturnCard: nil},
 		},
 		PoolCards: []*Card{},
-		Winners:   []int{0},
+		Givers:    []int{3},
+		Receivers: []int{0},
 	}
 
 	playerHands := [4][]*Card{{}, {}, {}, {}}
@@ -195,7 +200,8 @@ func TestProcessTributeStep_Returning_NeedsInput(t *testing.T) {
 			{Giver: 3, Receiver: 0, TributeCard: &Card{DeckIndex: 1}, ReturnCard: nil},
 		},
 		PoolCards: []*Card{},
-		Winners:   []int{0},
+		Givers:    []int{3},
+		Receivers: []int{0},
 	}
 
 	playerHands := [4][]*Card{
@@ -233,7 +239,8 @@ func TestProcessTributeStep_Returning_WithInput(t *testing.T) {
 			{Giver: 3, Receiver: 0, TributeCard: &Card{DeckIndex: 1}, ReturnCard: nil},
 		},
 		PoolCards: []*Card{},
-		Winners:   []int{0},
+		Givers:    []int{3},
+		Receivers: []int{0},
 	}
 
 	playerHands := [4][]*Card{
@@ -277,7 +284,8 @@ func TestProcessTributeStep_Returning_AllDone(t *testing.T) {
 			{Giver: 3, Receiver: 0, TributeCard: &Card{DeckIndex: 1}, ReturnCard: &Card{DeckIndex: 10}},
 		},
 		PoolCards: []*Card{},
-		Winners:   []int{0},
+		Givers:    []int{3},
+		Receivers: []int{0},
 	}
 
 	playerHands := [4][]*Card{{}, {}, {}, {}}
@@ -372,7 +380,8 @@ func TestProcessTributeStep_Selecting_InvalidCard(t *testing.T) {
 			{Giver: 3, Receiver: -1, TributeCard: card2, ReturnCard: nil},
 		},
 		PoolCards: []*Card{card1, card2},
-		Winners:   []int{0, 1},
+		Givers:    []int{2, 3},
+		Receivers: []int{0, 1},
 	}
 
 	playerHands := [4][]*Card{{}, {}, {}, {}}
@@ -397,7 +406,8 @@ func TestProcessTributeStep_Returning_DoubleDown_NeedsInput(t *testing.T) {
 			{Giver: 3, Receiver: 1, TributeCard: &Card{DeckIndex: 2}, ReturnCard: nil},
 		},
 		PoolCards: []*Card{},
-		Winners:   []int{0, 1},
+		Givers:    []int{2, 3},
+		Receivers: []int{0, 1},
 	}
 
 	playerHands := [4][]*Card{
@@ -436,7 +446,8 @@ func TestProcessTributeStep_Returning_DoubleDown_WithInput(t *testing.T) {
 			{Giver: 3, Receiver: 1, TributeCard: &Card{DeckIndex: 2}, ReturnCard: nil},
 		},
 		PoolCards: []*Card{},
-		Winners:   []int{0, 1},
+		Givers:    []int{2, 3},
+		Receivers: []int{0, 1},
 	}
 
 	playerHands := [4][]*Card{
@@ -489,7 +500,8 @@ func TestProcessTributeStep_Returning_AllDone_WithInput(t *testing.T) {
 			{Giver: 3, Receiver: 0, TributeCard: &Card{DeckIndex: 1}, ReturnCard: &Card{DeckIndex: 10}},
 		},
 		PoolCards: []*Card{},
-		Winners:   []int{0},
+		Givers:    []int{3},
+		Receivers: []int{0},
 	}
 
 	playerHands := [4][]*Card{

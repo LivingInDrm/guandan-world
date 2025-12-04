@@ -40,6 +40,9 @@ const (
 	MSG_GAME_PREPARE = "game_prepare"
 	MSG_COUNTDOWN    = "countdown"
 	MSG_GAME_BEGIN   = "game_begin"
+
+	// Turn deadline broadcast
+	MSG_TURN_DEADLINE = "turn_deadline"
 )
 
 // JoinRoomData represents the data for joining a room

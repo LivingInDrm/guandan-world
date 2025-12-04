@@ -4,6 +4,7 @@ import type { PlayAction } from '../../types/proto';
 import { PlayerStatus } from '../../types';
 import CardDisplay from './CardDisplay';
 import TeamLevelDisplay from './TeamLevelDisplay';
+import Countdown from './Countdown';
 
 interface GameBoardProps {
   teamLevels: [number, number];
@@ -13,6 +14,7 @@ interface GameBoardProps {
   players: (Player | null)[];
   currentPlayerSeat: number;
   playStates?: [number, number, number, number];
+  turnDeadline?: { playerSeat: number; deadlineAtMs: number } | null;
 }
 
 interface PlayerAreaProps {
@@ -20,13 +22,15 @@ interface PlayerAreaProps {
   position: 'bottom' | 'left' | 'top' | 'right';
   status: PlayerStatus;
   isCurrentTurn: boolean;
+  deadlineAtMs?: number;
 }
 
 const PlayerArea: React.FC<PlayerAreaProps> = ({ 
   player, 
   position, 
   status,
-  isCurrentTurn 
+  isCurrentTurn,
+  deadlineAtMs
 }) => {
   const getPositionClasses = () => {
     switch (position) {
@@ -88,8 +92,8 @@ const PlayerArea: React.FC<PlayerAreaProps> = ({
   }
 
   return (
-    <div className={`${getPositionClasses()} w-32 h-20`}>
-      <div className={`border-2 rounded-lg p-2 text-center ${
+    <div className={`${getPositionClasses()} flex items-center gap-2`}>
+      <div className={`w-32 border-2 rounded-lg p-2 text-center ${
         isCurrentTurn ? 'border-yellow-400 shadow-lg' : 'border-gray-300'
       }`}>
         <div className="text-sm font-medium truncate">{player.username}</div>
@@ -97,6 +101,9 @@ const PlayerArea: React.FC<PlayerAreaProps> = ({
           {getStatusText()}
         </div>
       </div>
+      {isCurrentTurn && deadlineAtMs && (
+        <Countdown deadlineAtMs={deadlineAtMs} size="small" />
+      )}
     </div>
   );
 };
@@ -164,7 +171,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
   currentTurn,
   players, 
   currentPlayerSeat,
-  playStates
+  playStates,
+  turnDeadline
 }) => {
   const getPlayerStatus = (seat: number): PlayerStatus => {
     if (playStates) {
@@ -237,6 +245,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         position="bottom"
         status={getPlayerStatus(currentPlayerSeat)}
         isCurrentTurn={currentTurn === currentPlayerSeat}
+        deadlineAtMs={turnDeadline?.playerSeat === currentPlayerSeat ? turnDeadline.deadlineAtMs : undefined}
       />
       
       <PlayerArea
@@ -244,6 +253,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         position="left"
         status={getPlayerStatus((currentPlayerSeat + 1) % 4)}
         isCurrentTurn={currentTurn === (currentPlayerSeat + 1) % 4}
+        deadlineAtMs={turnDeadline?.playerSeat === (currentPlayerSeat + 1) % 4 ? turnDeadline.deadlineAtMs : undefined}
       />
       
       <PlayerArea
@@ -251,6 +261,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         position="top"
         status={getPlayerStatus((currentPlayerSeat + 2) % 4)}
         isCurrentTurn={currentTurn === (currentPlayerSeat + 2) % 4}
+        deadlineAtMs={turnDeadline?.playerSeat === (currentPlayerSeat + 2) % 4 ? turnDeadline.deadlineAtMs : undefined}
       />
       
       <PlayerArea
@@ -258,6 +269,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         position="right"
         status={getPlayerStatus((currentPlayerSeat + 3) % 4)}
         isCurrentTurn={currentTurn === (currentPlayerSeat + 3) % 4}
+        deadlineAtMs={turnDeadline?.playerSeat === (currentPlayerSeat + 3) % 4 ? turnDeadline.deadlineAtMs : undefined}
       />
     </div>
   );

@@ -104,9 +104,11 @@ type TributePair struct {
 // TributePhase represents the tribute phase of a deal
 type TributePhase struct {
 	Status       TributeStatus  `json:"status"`
+	TributeType  string         `json:"tribute_type"`  // Tribute type: "double_down", "single_last", "partner_last"
+	Givers       []int          `json:"givers"`        // Tribute givers (losing players)
+	Receivers    []int          `json:"receivers"`     // Tribute receivers (winning players)
 	TributePairs []*TributePair `json:"tribute_pairs"` // All tribute relationships (single source of truth)
 	PoolCards    []*Card        `json:"pool_cards"`    // Cards in tribute pool (for double-down selection UI)
-	Winners      []int          `json:"winners"`       // Winning players (DoubleDown: [rank1, rank2], others: [rank1])
 	IsImmune     bool           `json:"is_immune"`     // Whether tribute was skipped due to immunity
 }
 
