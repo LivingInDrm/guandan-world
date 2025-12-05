@@ -34,20 +34,18 @@ const TeamLevelDisplay: React.FC<TeamLevelDisplayProps> = ({
     isMyTeam: boolean;
     isCurrentLevel: boolean;
   }> = ({ label, level, isMyTeam, isCurrentLevel }) => (
-    <div className={`w-16 flex flex-col items-center rounded-lg overflow-hidden shadow-md ${
-      isMyTeam ? 'bg-gray-600' : 'bg-red-800'
+    <div className={`w-16 flex flex-col items-center rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.15)] bg-gradient-to-b text-white ${
+      isMyTeam ? 'from-[#525E6B] to-[#3E4854]' : 'from-[#9E3737] to-[#7B2A2A]'
     }`}>
-      <div className={`w-full text-center py-1 text-white text-sm font-medium ${
-        isMyTeam ? 'bg-gray-700' : 'bg-red-900'
-      }`}>
+      <div className="w-full text-center py-1 text-sm font-semibold backdrop-brightness-95 bg-black/10">
         {label}
       </div>
-      <div className="py-1.5 text-white text-2xl font-bold">
+      <div className="py-1.5 text-2xl font-extrabold tracking-wide drop-shadow-sm">
         {getLevelText(level)}
       </div>
       <div className="h-4 flex items-center justify-center">
         {isCurrentLevel && (
-          <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-b-[8px] border-l-transparent border-r-transparent border-b-white" />
+          <div className="w-0 h-0 border-l-[7px] border-r-[7px] border-b-[9px] border-l-transparent border-r-transparent border-b-white drop-shadow" />
         )}
       </div>
     </div>

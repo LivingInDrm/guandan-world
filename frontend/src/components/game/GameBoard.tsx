@@ -156,7 +156,18 @@ const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <div className="relative w-full h-96 bg-green-100 border border-gray-300 rounded-lg">
+    <div 
+      className="relative w-full h-96 rounded-lg overflow-hidden"
+      style={{
+        background: 'linear-gradient(180deg, #EAF4EF 0%, #DDEEE5 40%, #D2E8DD 100%)',
+      }}
+    >
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.06) 100%)',
+        }}
+      />
       <TeamLevelDisplay 
         teamLevels={teamLevels} 
         currentLevel={currentLevel}
@@ -164,7 +175,16 @@ const GameBoard: React.FC<GameBoardProps> = ({
       />
       
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative w-[420px] h-[240px] bg-green-200 border-2 border-green-400 rounded-lg">
+        <div 
+          className="relative w-[420px] h-[240px] rounded-[20px]"
+          style={{
+            background: 'rgba(140, 170, 150, 0.18)',
+            backdropFilter: 'blur(10px)',
+            border: '1.5px solid rgba(80, 110, 90, 0.35)',
+            boxShadow: 'inset 0 0 12px rgba(0,0,0,0.08)',
+            padding: '24px',
+          }}
+        >
           <PlayedCardsDisplay 
             play={getPlayForSeat(currentPlayerSeat)}
             position="bottom"
