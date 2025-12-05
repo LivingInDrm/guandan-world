@@ -5,6 +5,7 @@ import {
   SUIT_SYMBOLS, 
   JOKER_CONFIG, 
   ANIMATIONS,
+  STACK_OVERLAP,
   type CardSize,
   type SizeConfig,
   getCardSizeStyle,
@@ -25,6 +26,7 @@ interface CardDisplayProps {
   isSelected?: boolean;
   onClick?: () => void;
   stackIndex?: number;
+  stackDirection?: 'horizontal' | 'vertical';
   size?: CardSize;
   className?: string;
 }
@@ -34,22 +36,25 @@ const CardCorner: React.FC<{
   rank: number;
   suit: number;
   sizeConfig: SizeConfig;
-}> = ({ rank, suit, sizeConfig }) => {
+  size: CardSize;
+}> = ({ rank, suit, sizeConfig, size }) => {
   const colorClass = getSuitColorClass(suit);
+  const isNormal = size === 'normal';
   
   return (
     <div 
-      className={`absolute flex flex-col items-center leading-none top-0.5 ${colorClass}`}
+      className={`absolute flex ${isNormal ? 'flex-row items-center' : 'flex-col items-center'} leading-none top-0.5 ${colorClass}`}
       style={{ 
         padding: sizeConfig.padding,
-        width: '1.2em',
+        width: isNormal ? 'auto' : '1.2em',
         left: sizeConfig.cornerTextLeft,
+        gap: isNormal ? '2px' : undefined,
       }}
     >
       <span style={{ fontSize: sizeConfig.fontSize, fontWeight: 700 }}>
         {getRankText(rank)}
       </span>
-      <span style={{ fontSize: sizeConfig.iconSize, marginTop: '-2px' }}>
+      <span style={{ fontSize: sizeConfig.iconSize, marginTop: isNormal ? undefined : '-2px' }}>
         {SUIT_SYMBOLS[suit]}
       </span>
     </div>
@@ -60,16 +65,21 @@ const CardCorner: React.FC<{
 const CardSuitLarge: React.FC<{
   suit: number;
   sizeConfig: SizeConfig;
-}> = ({ suit, sizeConfig }) => {
+  size: CardSize;
+}> = ({ suit, sizeConfig, size }) => {
+  const scale = size === 'normal' ? 1.2 : 1.5;
+  const isNormal = size === 'normal';
   return (
     <img 
       src={SUIT_IMAGES[suit]}
       alt={SUIT_SYMBOLS[suit]}
-      className="absolute bottom-2 right-2"
+      className="absolute"
       style={{ 
-        width: `calc(${sizeConfig.centerIconSize} * 1.5)`,
-        height: `calc(${sizeConfig.centerIconSize} * 1.5)`,
-        objectFit: 'contain'
+        width: `calc(${sizeConfig.centerIconSize} * ${scale})`,
+        height: `calc(${sizeConfig.centerIconSize} * ${scale})`,
+        objectFit: 'contain',
+        bottom: isNormal ? 'calc(var(--spacing) * 5)' : 'calc(var(--spacing) * 2)',
+        right: isNormal ? 'calc(var(--spacing) * 3.5)' : 'calc(var(--spacing) * 2)',
       }}
     />
   );
@@ -118,6 +128,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   isSelected = false, 
   onClick, 
   stackIndex = 0,
+  stackDirection = 'horizontal',
   size = 'normal',
   className = ''
 }) => {
@@ -157,7 +168,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         height: sizeConfig.height,
         borderRadius: sizeConfig.borderRadius,
         zIndex,
-        marginLeft: stackIndex > 0 ? (size === 'small' ? '-12px' : '-24px') : '0',
+        marginLeft: stackDirection === 'horizontal' && stackIndex > 0 ? `${-parseFloat(sizeConfig.width) * STACK_OVERLAP.horizontal}px` : '0',
+        marginTop: stackDirection === 'vertical' && stackIndex > 0 ? `${-parseFloat(sizeConfig.height) * STACK_OVERLAP.vertical}px` : '0',
         willChange: 'transform',
       }}
       onClick={onClick}
@@ -175,11 +187,13 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             rank={card.rank} 
             suit={card.suit} 
             sizeConfig={sizeConfig}
+            size={size}
           />
           
           <CardSuitLarge 
             suit={card.suit} 
-            sizeConfig={sizeConfig} 
+            sizeConfig={sizeConfig}
+            size={size}
           />
         </>
       )}

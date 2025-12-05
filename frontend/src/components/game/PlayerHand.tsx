@@ -52,7 +52,7 @@ const CardGroup: React.FC<CardGroupProps> = ({
       <div className="text-xs text-gray-600 mb-1 font-medium">
         {getRankText(rank)} ({safeCards.length})
       </div>
-      <div className="flex items-end">
+      <div className="flex flex-col items-center">
         {sortedCards.map((card, index) => (
           <CardDisplay
             key={card.deckIndex}
@@ -60,6 +60,7 @@ const CardGroup: React.FC<CardGroupProps> = ({
             isSelected={selectedCards.some(c => c.deckIndex === card.deckIndex)}
             onClick={() => handleCardClick(card)}
             stackIndex={index}
+            stackDirection="vertical"
           />
         ))}
       </div>
@@ -128,7 +129,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
         </div>
       </div>
       
-      <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center max-h-64 overflow-y-auto">
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-2 justify-center max-h-64 overflow-y-auto">
         {sortedRanks.map(rank => (
           <CardGroup
             key={rank}

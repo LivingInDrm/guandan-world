@@ -104,3 +104,8 @@ export const getRankText = (rank: number): string => {
     default: return rank.toString();
   }
 };
+
+export const STACK_OVERLAP = {
+  vertical: 0.7,
+  horizontal: 0.8,
+};
