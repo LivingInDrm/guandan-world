@@ -519,8 +519,9 @@ func TestMatch_FinishDeal(t *testing.T) {
 		t.Fatalf("Failed to create match: %v", err)
 	}
 	
-	// Create a deal
+	// Create a deal and mark it as finished (simulating normal game flow)
 	deal, _ := NewDeal(2, nil)
+	deal.Status = DealStatusFinished
 	match.CurrentDeal = deal
 	
 	// Create deal result
@@ -545,9 +546,12 @@ func TestMatch_FinishDeal(t *testing.T) {
 		t.Errorf("Expected team 0 level 3, got %d", match.TeamLevels[0])
 	}
 	
-	// Verify current deal was cleared
-	if match.CurrentDeal != nil {
-		t.Error("Expected current deal to be cleared")
+	// Verify current deal is still accessible but finished
+	// (CurrentDeal is kept for GetPlayerView to build result display)
+	if match.CurrentDeal == nil {
+		t.Error("Expected current deal to be kept (not cleared)")
+	} else if match.CurrentDeal.Status != DealStatusFinished {
+		t.Errorf("Expected current deal status Finished, got %v", match.CurrentDeal.Status)
 	}
 	
 	// Verify status is waiting (not finished)
@@ -556,7 +560,6 @@ func TestMatch_FinishDeal(t *testing.T) {
 	}
 	
 	// Test finishing with A level
-	match.CurrentDeal = deal
 	result = &DealResult{
 		WinningTeam: 0,
 		Upgrades:    [2]int{11, 0}, // This should bring team 0 to level 14

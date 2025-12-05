@@ -143,8 +143,10 @@ func (m *Match) FinishDeal(result *DealResult) error {
 		m.Status = MatchStatusWaiting
 	}
 
-	// Clear current deal
-	m.CurrentDeal = nil
+	// Note: CurrentDeal is NOT cleared here.
+	// It remains pointing to the finished deal (with Status=Finished) so that
+	// GetPlayerView can still build a valid PlayerView for result display.
+	// StartNewDeal will replace it when the next deal begins.
 
 	return nil
 }

@@ -244,6 +244,17 @@ const GamePage: React.FC = () => {
     };
   }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom]);
 
+  // 连接成功后请求同步游戏状态（防抖 300ms，避免网络抖动时重复请求）
+  useEffect(() => {
+    if (!isConnected || !roomId) return;
+
+    const timer = setTimeout(() => {
+      wsClient.send(WS_MESSAGE_TYPES.SYNC_GAME_STATE, { room_id: roomId });
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [isConnected, roomId]);
+
   // 开始游戏
   const handleStartGame = async () => {
     if (!currentRoom || !user || isStarting) return;

@@ -179,7 +179,10 @@ export const WS_MESSAGE_TYPES = {
   RECONNECT: 'reconnect',
   
   // Turn deadline broadcast
-  TURN_DEADLINE: 'turn_deadline'
+  TURN_DEADLINE: 'turn_deadline',
+
+  // Client sync request
+  SYNC_GAME_STATE: 'sync_game_state'
 } as const;
 
 export type WSMessageType = typeof WS_MESSAGE_TYPES[keyof typeof WS_MESSAGE_TYPES];

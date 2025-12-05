@@ -43,6 +43,9 @@ const (
 
 	// Turn deadline broadcast
 	MSG_TURN_DEADLINE = "turn_deadline"
+
+	// Client sync request
+	MSG_SYNC_GAME_STATE = "sync_game_state"
 )
 
 // JoinRoomData represents the data for joining a room
@@ -173,10 +176,11 @@ func NewWSManager(authService auth.AuthService, roomService room.RoomService) *W
 // Following command-query separation principle:
 // - WebSocket is read-only from client perspective (only receives server pushes)
 // - All write operations (join room, play cards, etc.) use HTTP REST API
-// - Only ping/pong heartbeat is handled via WebSocket
+// - Only ping/pong heartbeat and sync requests are handled via WebSocket
 func (m *WSManager) registerDefaultHandlers() {
 	m.messageHandlers[MSG_PING] = m.handlePing
-	
+	m.messageHandlers[MSG_SYNC_GAME_STATE] = m.handleSyncGameState
+
 	// Business message handlers removed - use HTTP API instead:
 	// - JOIN_ROOM, LEAVE_ROOM, START_GAME: handled by /api/rooms endpoints
 	// - PLAY_CARDS, PASS, TRIBUTE_SELECT, TRIBUTE_RETURN: handled by /api/game/driver endpoints
@@ -194,6 +198,18 @@ func (m *WSManager) SetReconnectHandler(handler ReconnectHandler) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.reconnectHandler = handler
+}
+
+// handleSyncGameState handles client sync request for game state recovery.
+// Uses conn.roomID (server's source of truth) instead of client-provided room_id,
+// because the server knows which room the player is actually in.
+func (m *WSManager) handleSyncGameState(conn *WSConnection, message *WSMessage) error {
+	if conn.roomID != "" && m.reconnectHandler != nil {
+		if err := m.reconnectHandler.HandlePlayerReconnect(conn.roomID, conn.playerID); err != nil {
+			log.Printf("Sync game state failed for player %s: %v", conn.playerID, err)
+		}
+	}
+	return nil
 }
 
 // Run starts the WebSocket manager's main loop
@@ -298,7 +314,8 @@ func (m *WSManager) handleRegister(conn *WSConnection) {
 		}
 		m.rooms[playerRoom.ID][conn.playerID] = conn
 
-		// Trigger reconnect handler if player is in a game
+		// Fallback: trigger reconnect handler on connection registration (idempotent).
+		// This ensures state sync even if client fails to send sync_game_state request.
 		if m.reconnectHandler != nil {
 			go func(roomID, playerID string) {
 				if err := m.reconnectHandler.HandlePlayerReconnect(roomID, playerID); err != nil {
@@ -547,7 +564,7 @@ func (m *WSManager) handlePing(conn *WSConnection, message *WSMessage) error {
 // Following command-query separation principle:
 // - All write operations (join room, leave room, start game, play cards) should use HTTP REST API
 // - WebSocket is used only for server-to-client state synchronization and heartbeat
-// 
+//
 // Kept here for reference only. These methods are not called since they are not registered
 // in registerDefaultHandlers().
 // ============================================================================
