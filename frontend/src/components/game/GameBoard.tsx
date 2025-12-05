@@ -1,10 +1,46 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Player } from '../../types';
 import type { PlayAction } from '../../types/proto';
-import { PlayerStatus } from '../../types';
 import TeamLevelDisplay from './TeamLevelDisplay';
 import Countdown from './Countdown';
 import PlayedCardsDisplay from './PlayedCardsDisplay';
+
+import avatar001 from '../../assets/avatar_set/avatar_001.jpg';
+import avatar002 from '../../assets/avatar_set/avatar_002.jpg';
+import avatar003 from '../../assets/avatar_set/avatar_003.jpg';
+import avatar004 from '../../assets/avatar_set/avatar_004.jpg';
+import avatar005 from '../../assets/avatar_set/avatar_005.jpg';
+import avatar006 from '../../assets/avatar_set/avatar_006.jpg';
+import avatar007 from '../../assets/avatar_set/avatar_007.jpg';
+import avatar008 from '../../assets/avatar_set/avatar_008.jpg';
+import avatar009 from '../../assets/avatar_set/avatar_009.jpg';
+import avatar010 from '../../assets/avatar_set/avatar_010.jpg';
+import avatar011 from '../../assets/avatar_set/avatar_011.jpg';
+import avatar012 from '../../assets/avatar_set/avatar_012.jpg';
+import avatar013 from '../../assets/avatar_set/avatar_013.jpg';
+import avatar014 from '../../assets/avatar_set/avatar_014.jpg';
+import avatar015 from '../../assets/avatar_set/avatar_015.jpg';
+import avatar016 from '../../assets/avatar_set/avatar_016.jpg';
+import avatar017 from '../../assets/avatar_set/avatar_017.jpg';
+import avatar018 from '../../assets/avatar_set/avatar_018.jpg';
+import avatar019 from '../../assets/avatar_set/avatar_019.jpg';
+import avatar020 from '../../assets/avatar_set/avatar_020.jpg';
+
+const avatars = [
+  avatar001, avatar002, avatar003, avatar004, avatar005,
+  avatar006, avatar007, avatar008, avatar009, avatar010,
+  avatar011, avatar012, avatar013, avatar014, avatar015,
+  avatar016, avatar017, avatar018, avatar019, avatar020,
+];
+
+const getAvatarByUsername = (username: string): string => {
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = ((hash << 5) - hash) + username.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return avatars[Math.abs(hash) % avatars.length];
+};
 
 interface GameBoardProps {
   teamLevels: [number, number];
@@ -20,7 +56,6 @@ interface GameBoardProps {
 interface PlayerAreaProps {
   player: Player | null;
   position: 'bottom' | 'left' | 'top' | 'right';
-  status: PlayerStatus;
   isCurrentTurn: boolean;
   deadlineAtMs?: number;
 }
@@ -28,10 +63,13 @@ interface PlayerAreaProps {
 const PlayerArea: React.FC<PlayerAreaProps> = ({ 
   player, 
   position, 
-  status,
   isCurrentTurn,
   deadlineAtMs
 }) => {
+  const avatar = useMemo(() => {
+    return player ? getAvatarByUsername(player.username) : null;
+  }, [player?.username]);
+
   const getPositionClasses = () => {
     switch (position) {
       case 'bottom':
@@ -47,45 +85,12 @@ const PlayerArea: React.FC<PlayerAreaProps> = ({
     }
   };
 
-  const getStatusColor = () => {
-    switch (status) {
-      case PlayerStatus.WAITING:
-        return 'bg-gray-200 text-gray-600';
-      case PlayerStatus.PLAYING:
-        return 'bg-yellow-200 text-yellow-800';
-      case PlayerStatus.PLAYED:
-        return 'bg-green-200 text-green-800';
-      case PlayerStatus.PASSED:
-        return 'bg-red-200 text-red-800';
-      case PlayerStatus.FINISHED:
-        return 'bg-blue-200 text-blue-800';
-      default:
-        return 'bg-gray-200 text-gray-600';
-    }
-  };
-
-  const getStatusText = () => {
-    switch (status) {
-      case PlayerStatus.WAITING:
-        return '等待';
-      case PlayerStatus.PLAYING:
-        return '出牌中';
-      case PlayerStatus.PLAYED:
-        return '已出牌';
-      case PlayerStatus.PASSED:
-        return '不出';
-      case PlayerStatus.FINISHED:
-        return '已结束';
-      default:
-        return '等待';
-    }
-  };
-
   if (!player) {
     return (
-      <div className={`${getPositionClasses()} w-24 h-16`}>
-        <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-2 text-center">
-          <div className="text-sm text-gray-400">空座位</div>
+      <div className={`${getPositionClasses()}`}>
+        <div className="flex flex-col items-center px-3 py-2 rounded-xl bg-white/70 backdrop-blur-sm shadow-sm w-fit">
+          <div className="w-14 h-14 rounded-lg bg-gray-200 shadow-sm ring-1 ring-white/70" />
+          <span className="mt-1 text-xs font-medium text-slate-400">空座位</span>
         </div>
       </div>
     );
@@ -93,13 +98,17 @@ const PlayerArea: React.FC<PlayerAreaProps> = ({
 
   return (
     <div className={`${getPositionClasses()} flex items-center gap-2`}>
-      <div className={`w-32 border-2 rounded-lg p-2 text-center ${
-        isCurrentTurn ? 'border-yellow-400 shadow-lg' : 'border-gray-300'
+      <div className={`flex flex-col items-center px-3 py-2 rounded-xl bg-white/70 backdrop-blur-sm shadow-sm w-fit ${
+        isCurrentTurn ? 'ring-2 ring-yellow-400' : ''
       }`}>
-        <div className="text-sm font-medium truncate">{player.username}</div>
-        <div className={`text-xs px-2 py-1 rounded mt-1 ${getStatusColor()}`}>
-          {getStatusText()}
-        </div>
+        <img
+          src={avatar!}
+          alt={player.username}
+          className="w-14 h-14 rounded-lg object-cover shadow-sm ring-1 ring-white/70"
+        />
+        <span className="mt-1 max-w-[80px] text-xs font-medium text-slate-800 truncate text-center">
+          {player.username}
+        </span>
       </div>
       {isCurrentTurn && deadlineAtMs && (
         <Countdown deadlineAtMs={deadlineAtMs} size="small" />
@@ -115,37 +124,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
   currentTurn,
   players, 
   currentPlayerSeat,
-  playStates,
   turnDeadline
 }) => {
-  const getPlayerStatus = (seat: number): PlayerStatus => {
-    if (playStates) {
-      const state = playStates[seat];
-      if (state === 0 && currentTurn === seat) {
-        return PlayerStatus.PLAYING;
-      }
-      switch (state) {
-        case 0: return PlayerStatus.WAITING;
-        case 1: return PlayerStatus.PLAYED;
-        case 2: return PlayerStatus.PASSED;
-        case 3: return PlayerStatus.FINISHED;
-      }
-    }
-    
-    if (currentTurn === seat) {
-      return PlayerStatus.PLAYING;
-    }
-    
-    const playerPlays = plays.filter(p => p.playerSeat === seat);
-    const lastPlay = playerPlays.length > 0 ? playerPlays[playerPlays.length - 1] : null;
-    
-    if (lastPlay) {
-      return lastPlay.isPass ? PlayerStatus.PASSED : PlayerStatus.PLAYED;
-    }
-    
-    return PlayerStatus.WAITING;
-  };
-
   const getPlayForSeat = (seat: number): PlayAction | null => {
     if (currentTurn === seat) {
       return null;
@@ -157,7 +137,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   return (
     <div 
-      className="relative w-full h-96 rounded-lg overflow-hidden"
+      className="relative w-full h-[30rem] rounded-lg overflow-hidden"
       style={{
         background: 'linear-gradient(180deg, #EAF4EF 0%, #DDEEE5 40%, #D2E8DD 100%)',
       }}
@@ -209,17 +189,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
       </div>
       
       <PlayerArea
-        player={players[currentPlayerSeat]}
-        position="bottom"
-        status={getPlayerStatus(currentPlayerSeat)}
-        isCurrentTurn={currentTurn === currentPlayerSeat}
-        deadlineAtMs={turnDeadline?.playerSeat === currentPlayerSeat ? turnDeadline.deadlineAtMs : undefined}
-      />
-      
-      <PlayerArea
         player={players[(currentPlayerSeat + 1) % 4]}
         position="left"
-        status={getPlayerStatus((currentPlayerSeat + 1) % 4)}
         isCurrentTurn={currentTurn === (currentPlayerSeat + 1) % 4}
         deadlineAtMs={turnDeadline?.playerSeat === (currentPlayerSeat + 1) % 4 ? turnDeadline.deadlineAtMs : undefined}
       />
@@ -227,7 +198,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
       <PlayerArea
         player={players[(currentPlayerSeat + 2) % 4]}
         position="top"
-        status={getPlayerStatus((currentPlayerSeat + 2) % 4)}
         isCurrentTurn={currentTurn === (currentPlayerSeat + 2) % 4}
         deadlineAtMs={turnDeadline?.playerSeat === (currentPlayerSeat + 2) % 4 ? turnDeadline.deadlineAtMs : undefined}
       />
@@ -235,7 +205,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
       <PlayerArea
         player={players[(currentPlayerSeat + 3) % 4]}
         position="right"
-        status={getPlayerStatus((currentPlayerSeat + 3) % 4)}
         isCurrentTurn={currentTurn === (currentPlayerSeat + 3) % 4}
         deadlineAtMs={turnDeadline?.playerSeat === (currentPlayerSeat + 3) % 4 ? turnDeadline.deadlineAtMs : undefined}
       />
