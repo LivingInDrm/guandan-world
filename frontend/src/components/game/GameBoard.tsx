@@ -168,18 +168,22 @@ const GameBoard: React.FC<GameBoardProps> = ({
           <PlayedCardsDisplay 
             play={getPlayForSeat(currentPlayerSeat)}
             position="bottom"
+            currentLevel={currentLevel}
           />
           <PlayedCardsDisplay 
             play={getPlayForSeat((currentPlayerSeat + 1) % 4)}
             position="left"
+            currentLevel={currentLevel}
           />
           <PlayedCardsDisplay 
             play={getPlayForSeat((currentPlayerSeat + 2) % 4)}
             position="top"
+            currentLevel={currentLevel}
           />
           <PlayedCardsDisplay 
             play={getPlayForSeat((currentPlayerSeat + 3) % 4)}
             position="right"
+            currentLevel={currentLevel}
           />
         </div>
       </div>

@@ -37,7 +37,7 @@ const Container: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export const Empty: Story = () => (
   <Container>
-    <PlayedCardsDisplay play={null} position="bottom" />
+    <PlayedCardsDisplay play={null} position="bottom" currentLevel={13} />
   </Container>
 );
 
@@ -50,7 +50,7 @@ export const Pass: Story = () => {
 
   return (
     <Container>
-      <PlayedCardsDisplay play={passPlay} position="bottom" />
+      <PlayedCardsDisplay play={passPlay} position="bottom" currentLevel={13} />
     </Container>
   );
 };
@@ -64,7 +64,7 @@ export const SingleCard: Story = () => {
 
   return (
     <Container>
-      <PlayedCardsDisplay play={play} position="bottom" />
+      <PlayedCardsDisplay play={play} position="bottom" currentLevel={13} />
     </Container>
   );
 };
@@ -78,7 +78,7 @@ export const MultipleCards: Story = () => {
 
   return (
     <Container>
-      <PlayedCardsDisplay play={play} position="bottom" />
+      <PlayedCardsDisplay play={play} position="bottom" currentLevel={13} />
     </Container>
   );
 };
@@ -92,7 +92,7 @@ export const ManyCards: Story = () => {
 
   return (
     <Container>
-      <PlayedCardsDisplay play={play} position="bottom" />
+      <PlayedCardsDisplay play={play} position="bottom" currentLevel={13} />
     </Container>
   );
 };
@@ -106,7 +106,7 @@ export const WithJokers: Story = () => {
 
   return (
     <Container>
-      <PlayedCardsDisplay play={play} position="bottom" />
+      <PlayedCardsDisplay play={play} position="bottom" currentLevel={13} />
     </Container>
   );
 };
@@ -129,10 +129,10 @@ export const AllPositions: Story = () => {
       className="relative bg-green-200 border-2 border-green-400 rounded-lg"
       style={{ width: 500, height: 300 }}
     >
-      <PlayedCardsDisplay play={play} position="bottom" />
-      <PlayedCardsDisplay play={passPlay} position="left" />
-      <PlayedCardsDisplay play={play} position="top" />
-      <PlayedCardsDisplay play={null} position="right" />
+      <PlayedCardsDisplay play={play} position="bottom" currentLevel={13} />
+      <PlayedCardsDisplay play={passPlay} position="left" currentLevel={13} />
+      <PlayedCardsDisplay play={play} position="top" currentLevel={13} />
+      <PlayedCardsDisplay play={null} position="right" currentLevel={13} />
     </div>
   );
 };

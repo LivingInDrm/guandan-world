@@ -5,6 +5,7 @@ import CardDisplay from './CardDisplay';
 export interface PlayedCardsDisplayProps {
   play: PlayAction | null;
   position: 'bottom' | 'left' | 'top' | 'right';
+  currentLevel?: number;
 }
 
 const getPositionClasses = (position: PlayedCardsDisplayProps['position']): string => {
@@ -23,7 +24,7 @@ const getPositionClasses = (position: PlayedCardsDisplayProps['position']): stri
   }
 };
 
-const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position }) => {
+const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position, currentLevel }) => {
   if (!play) {
     return <div className={getPositionClasses(position)} />;
   }
@@ -48,6 +49,7 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position 
               card={card}
               size="small"
               stackIndex={index}
+              currentLevel={currentLevel}
             />
           ))}
         </div>

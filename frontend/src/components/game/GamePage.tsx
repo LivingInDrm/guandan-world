@@ -590,6 +590,7 @@ const GamePage: React.FC = () => {
           cards={hand}
           selectedCards={selectedCards}
           onCardSelect={setSelectedCards}
+          currentLevel={dealLevel}
         />
 
         <GameControls

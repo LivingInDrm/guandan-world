@@ -27,7 +27,7 @@ export const CARD_SIZES: Record<CardSize, SizeConfig> = {
     jokerFontSize: '10px',
     jokerImgBottom: '10px',
     jokerTextLeft: '2px',
-    cornerTextLeft: '2px',
+    cornerTextLeft: '0',
   },
   normal: {
     width: '70px',
@@ -74,11 +74,30 @@ export const JOKER_CONFIG = {
   }
 };
 
+// 选中状态颜色配置
+export const SELECTED_COLORS = {
+  border: 'rgba(255, 193, 7, 1)',
+  overlay: 'rgba(255, 193, 7, 0.15)',
+  glow: 'rgba(255, 193, 7, 0.6)',
+};
+
+// 级牌角标配置
+export const LEVEL_BADGE_CONFIG = {
+  normal: {
+    bgColor: '#22c55e',
+    text: '级',
+  },
+  wild: {
+    bgColor: '#ef4444',
+    text: '万',
+  }
+};
+
 // 动画配置
 export const ANIMATIONS = {
   hover: 'hover:scale-105 hover:shadow-lg',
-  selected: 'transform -translate-y-5 shadow-xl',
-  transition: 'transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+  selected: '',
+  transition: 'transition-[transform,box-shadow,border-color] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
 };
 
 // 工具函数
@@ -107,5 +126,5 @@ export const getRankText = (rank: number): string => {
 
 export const STACK_OVERLAP = {
   vertical: 0.7,
-  horizontal: 0.8,
+  horizontal: 0.7,
 };

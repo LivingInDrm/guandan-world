@@ -49,9 +49,10 @@ function createJokerHand(): Card[] {
   ];
 }
 
-const InteractiveWrapper: React.FC<{ initialCards: Card[]; initialSelected?: Card[] }> = ({ 
+const InteractiveWrapper: React.FC<{ initialCards: Card[]; initialSelected?: Card[]; currentLevel?: number }> = ({ 
   initialCards, 
-  initialSelected = [] 
+  initialSelected = [],
+  currentLevel = 10
 }) => {
   const [selectedCards, setSelectedCards] = useState<Card[]>(initialSelected);
   
@@ -61,6 +62,7 @@ const InteractiveWrapper: React.FC<{ initialCards: Card[]; initialSelected?: Car
         cards={initialCards}
         selectedCards={selectedCards}
         onCardSelect={setSelectedCards}
+        currentLevel={currentLevel}
       />
     </div>
   );

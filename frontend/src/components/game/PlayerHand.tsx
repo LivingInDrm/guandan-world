@@ -1,12 +1,13 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import type { Card } from '../../types/proto';
 import { isJoker } from '../../utils/cardUtils';
-import CardDisplay, { getRankText } from './CardDisplay';
+import CardDisplay from './CardDisplay';
 
 interface PlayerHandProps {
   cards: Card[];
   selectedCards: Card[];
   onCardSelect: (cards: Card[]) => void;
+  currentLevel?: number;
 }
 
 interface CardGroupProps {
@@ -14,13 +15,17 @@ interface CardGroupProps {
   cards: Card[];
   selectedCards: Card[];
   onCardSelect: (cards: Card[]) => void;
+  onCardPointerEnter?: (card: Card) => void;
+  currentLevel?: number;
 }
 
 const CardGroup: React.FC<CardGroupProps> = ({ 
   rank, 
   cards, 
   selectedCards, 
-  onCardSelect
+  onCardSelect,
+  onCardPointerEnter,
+  currentLevel
 }) => {
   const safeCards = Array.isArray(cards) ? cards : [];
 
@@ -29,7 +34,7 @@ const CardGroup: React.FC<CardGroupProps> = ({
     if (isJoker(a)) return -1;
     if (isJoker(b)) return 1;
     
-    const suitPriority = [3, 1, 2, 0];
+    const suitPriority = [2, 0, 3, 1];
     const aPriority = suitPriority.indexOf(a.suit);
     const bPriority = suitPriority.indexOf(b.suit);
     return aPriority - bPriority;
@@ -49,18 +54,18 @@ const CardGroup: React.FC<CardGroupProps> = ({
 
   return (
     <div className="flex flex-col items-center mb-4">
-      <div className="text-xs text-gray-600 mb-1 font-medium">
-        {getRankText(rank)} ({safeCards.length})
-      </div>
       <div className="flex flex-col items-center">
         {sortedCards.map((card, index) => (
           <CardDisplay
             key={card.deckIndex}
             card={card}
+            deckIndex={card.deckIndex}
             isSelected={selectedCards.some(c => c.deckIndex === card.deckIndex)}
             onClick={() => handleCardClick(card)}
+            onPointerEnter={() => onCardPointerEnter?.(card)}
             stackIndex={index}
             stackDirection="vertical"
+            currentLevel={currentLevel}
           />
         ))}
       </div>
@@ -71,12 +76,16 @@ const CardGroup: React.FC<CardGroupProps> = ({
 const PlayerHand: React.FC<PlayerHandProps> = ({ 
   cards, 
   selectedCards, 
-  onCardSelect
+  onCardSelect,
+  currentLevel
 }) => {
-  // Ensure cards is an array
+  const isDraggingRef = useRef(false);
+  const touchedIndexesRef = useRef<Set<number>>(new Set());
+  const selectedCardsRef = useRef(selectedCards);
+  selectedCardsRef.current = selectedCards;
+
   const safeCards = Array.isArray(cards) ? cards : [];
   
-  // Group cards by rank
   const groupedCards = safeCards.reduce((groups, card) => {
     const rank = card.rank;
     if (!groups[rank]) {
@@ -86,7 +95,6 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     return groups;
   }, {} as Record<number, Card[]>);
 
-  // Sort ranks in descending order (big joker, small joker, A, K, Q, J, 10, 9, ..., 2)
   const sortedRanks = Object.keys(groupedCards)
     .map(Number)
     .sort((a, b) => b - a);
@@ -99,8 +107,38 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     onCardSelect([...safeCards]);
   }, [safeCards, onCardSelect]);
 
+  const handlePointerDown = useCallback(() => {
+    isDraggingRef.current = true;
+    touchedIndexesRef.current = new Set();
+  }, []);
+
+  const handlePointerUp = useCallback(() => {
+    isDraggingRef.current = false;
+    touchedIndexesRef.current = new Set();
+  }, []);
+
+  const handleCardPointerEnter = useCallback((card: Card) => {
+    if (!isDraggingRef.current) return;
+    if (touchedIndexesRef.current.has(card.deckIndex)) return;
+
+    touchedIndexesRef.current.add(card.deckIndex);
+
+    const currentSelected = selectedCardsRef.current;
+    const isCardSelected = currentSelected.some(c => c.deckIndex === card.deckIndex);
+
+    if (isCardSelected) {
+      onCardSelect(currentSelected.filter(c => c.deckIndex !== card.deckIndex));
+    } else {
+      onCardSelect([...currentSelected, card]);
+    }
+  }, [onCardSelect]);
+
   return (
-    <div className="bg-white border border-gray-300 rounded-lg p-4">
+    <div 
+      className="bg-white border border-gray-300 rounded-lg p-4 select-none"
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+    >
       <div className="flex justify-between items-center mb-3">
         <div className="text-sm font-medium text-gray-700">
           手牌 ({safeCards.length}张)
@@ -129,7 +167,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
         </div>
       </div>
       
-      <div className="flex flex-wrap items-end gap-x-4 gap-y-2 justify-center max-h-64 overflow-y-auto">
+      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 justify-center max-h-64 overflow-y-auto">
         {sortedRanks.map(rank => (
           <CardGroup
             key={rank}
@@ -137,6 +175,8 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
             cards={groupedCards[rank] || []}
             selectedCards={selectedCards}
             onCardSelect={onCardSelect}
+            onCardPointerEnter={handleCardPointerEnter}
+            currentLevel={currentLevel}
           />
         ))}
       </div>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import type { Card } from '../../types/proto';
 import { isJoker } from '../../utils/cardUtils';
 import { 
@@ -6,6 +6,8 @@ import {
   JOKER_CONFIG, 
   ANIMATIONS,
   STACK_OVERLAP,
+  SELECTED_COLORS,
+  LEVEL_BADGE_CONFIG,
   type CardSize,
   type SizeConfig,
   getCardSizeStyle,
@@ -25,10 +27,13 @@ interface CardDisplayProps {
   card: Card;
   isSelected?: boolean;
   onClick?: () => void;
+  onPointerEnter?: () => void;
+  deckIndex?: number;
   stackIndex?: number;
   stackDirection?: 'horizontal' | 'vertical';
   size?: CardSize;
   className?: string;
+  currentLevel?: number;
 }
 
 // 左上角标组件
@@ -54,7 +59,7 @@ const CardCorner: React.FC<{
       <span style={{ fontSize: sizeConfig.fontSize, fontWeight: 700 }}>
         {getRankText(rank)}
       </span>
-      <span style={{ fontSize: sizeConfig.iconSize, marginTop: isNormal ? undefined : '-2px' }}>
+      <span style={{ fontSize: sizeConfig.iconSize, marginTop: isNormal ? undefined : '-1px' }}>
         {SUIT_SYMBOLS[suit]}
       </span>
     </div>
@@ -82,6 +87,57 @@ const CardSuitLarge: React.FC<{
         right: isNormal ? 'calc(var(--spacing) * 3.5)' : 'calc(var(--spacing) * 2)',
       }}
     />
+  );
+};
+
+// 级牌角标组件
+const LevelBadge: React.FC<{
+  suit: number;
+  size: CardSize;
+}> = ({ suit, size }) => {
+  const isHeart = suit === 1;
+  const config = isHeart ? LEVEL_BADGE_CONFIG.wild : LEVEL_BADGE_CONFIG.normal;
+  const badgeSize = size === 'normal' ? 24 : 18;
+  const fontSize = size === 'normal' ? 12 : 9;
+  const isNormal = size === 'normal';
+  
+  const positionClass = isNormal 
+    ? "absolute top-0 right-0" 
+    : "absolute bottom-0 left-0";
+  
+  const trianglePoints = isNormal
+    ? `${badgeSize},0 ${badgeSize},${badgeSize} 0,0`
+    : `0,${badgeSize} ${badgeSize},${badgeSize} 0,0`;
+  
+  const textX = badgeSize * (isNormal ? 0.68 : 0.32);
+  const textY = badgeSize * (isNormal ? 0.42 : 0.69);
+  
+  return (
+    <div 
+      className={`${positionClass} pointer-events-none`}
+      style={{
+        width: badgeSize,
+        height: badgeSize,
+      }}
+    >
+      <svg width={badgeSize} height={badgeSize} viewBox={`0 0 ${badgeSize} ${badgeSize}`}>
+        <polygon 
+          points={trianglePoints}
+          fill={config.bgColor}
+        />
+        <text
+          x={textX}
+          y={textY}
+          fill="white"
+          fontSize={fontSize}
+          fontWeight="bold"
+          textAnchor="middle"
+          dominantBaseline="middle"
+        >
+          {config.text}
+        </text>
+      </svg>
+    </div>
   );
 };
 
@@ -126,13 +182,15 @@ const JokerContent: React.FC<{
 const CardDisplay: React.FC<CardDisplayProps> = ({ 
   card, 
   isSelected = false, 
-  onClick, 
+  onClick,
+  onPointerEnter,
+  deckIndex,
   stackIndex = 0,
   stackDirection = 'horizontal',
   size = 'normal',
-  className = ''
+  className = '',
+  currentLevel
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
   const sizeConfig = useMemo(() => getCardSizeStyle(size), [size]);
   
   const bgClass = useMemo(() => {
@@ -142,25 +200,21 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     return 'bg-white';
   }, [card]);
   
-  const zIndex = useMemo(() => {
-    if (isSelected) return 100;
-    if (isHovered) return 50;
-    return stackIndex;
-  }, [isSelected, isHovered, stackIndex]);
+  const zIndex = stackIndex;
 
   return (
     <div
       role="button"
       aria-pressed={isSelected}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      data-deck-index={deckIndex}
+      onPointerEnter={onPointerEnter}
       className={`
         relative select-none
-        card-3d-shadow border border-gray-200
+        card-3d-shadow
         ${bgClass}
         ${ANIMATIONS.transition}
         cursor-pointer
-        ${isSelected ? ANIMATIONS.selected : onClick ? ANIMATIONS.hover : ''}
+        ${!isSelected && onClick ? ANIMATIONS.hover : ''}
         ${className}
       `}
       style={{
@@ -171,9 +225,20 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         marginLeft: stackDirection === 'horizontal' && stackIndex > 0 ? `${-parseFloat(sizeConfig.width) * STACK_OVERLAP.horizontal}px` : '0',
         marginTop: stackDirection === 'vertical' && stackIndex > 0 ? `${-parseFloat(sizeConfig.height) * STACK_OVERLAP.vertical}px` : '0',
         willChange: 'transform',
+        border: isSelected ? `2px solid ${SELECTED_COLORS.border}` : '1px solid rgb(229, 231, 235)',
+        boxShadow: isSelected ? `0 0 10px ${SELECTED_COLORS.glow}` : undefined,
       }}
       onClick={onClick}
     >
+      {isSelected && (
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{ 
+            background: SELECTED_COLORS.overlay,
+            borderRadius: `calc(${sizeConfig.borderRadius} - 2px)`,
+          }}
+        />
+      )}
       {/* 卡片内边框装饰 (可选) */}
       {!isJoker(card) && (
         <div className="absolute inset-px border border-gray-100 rounded opacity-50 pointer-events-none" />
@@ -195,6 +260,10 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             sizeConfig={sizeConfig}
             size={size}
           />
+          
+          {currentLevel !== undefined && card.rank === currentLevel && (
+            <LevelBadge suit={card.suit} size={size} />
+          )}
         </>
       )}
     </div>
