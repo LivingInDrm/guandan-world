@@ -574,7 +574,7 @@ const GamePage: React.FC = () => {
     const players = currentRoom.players;
 
     return (
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-6xl mx-auto p-6">
         <GameBoard
           teamLevels={teamLevels || [2, 2]}
           currentLevel={dealLevel || 2}
@@ -586,22 +586,26 @@ const GamePage: React.FC = () => {
           turnDeadline={turnDeadline}
         />
 
-        <PlayerHand
-          cards={hand}
-          selectedCards={selectedCards}
-          onCardSelect={setSelectedCards}
-          currentLevel={dealLevel}
-        />
+        <div className="-mt-24 relative z-10">
+          <PlayerHand
+            cards={hand}
+            selectedCards={selectedCards}
+            onCardSelect={setSelectedCards}
+            currentLevel={dealLevel}
+          />
+        </div>
 
-        <GameControls
-          selectedCards={selectedCards}
-          canPlay={canPlay}
-          isMyTurn={isMyTurn}
-          turnTimeoutSeconds={turnTimeoutSeconds}
-          onPlayCards={handlePlayCards}
-          onPass={handlePass}
-          disabled={false}
-        />
+        <div className="mt-4">
+          <GameControls
+            selectedCards={selectedCards}
+            canPlay={canPlay}
+            isMyTurn={isMyTurn}
+            turnTimeoutSeconds={turnTimeoutSeconds}
+            onPlayCards={handlePlayCards}
+            onPass={handlePass}
+            disabled={false}
+          />
+        </div>
       </div>
     );
   };
