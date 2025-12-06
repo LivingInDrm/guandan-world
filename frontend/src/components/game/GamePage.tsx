@@ -640,6 +640,7 @@ const GamePage: React.FC = () => {
             onContinue={handleContinue}
             onExit={handleReturnToLobby}
             isMatchFinished={false}
+            currentPlayerSeat={playerSeat ?? 0}
           />
         ) : null;
 

@@ -10,6 +10,7 @@ interface DealResultProps {
   onContinue: () => void;
   onExit: () => void;
   isMatchFinished: boolean;
+  currentPlayerSeat: number;
 }
 
 const DealResult: React.FC<DealResultProps> = ({
@@ -18,7 +19,8 @@ const DealResult: React.FC<DealResultProps> = ({
   teamLevels,
   onContinue,
   onExit,
-  isMatchFinished
+  isMatchFinished,
+  currentPlayerSeat
 }) => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -121,47 +123,75 @@ const DealResult: React.FC<DealResultProps> = ({
   const teamRankings = getTeamRankings();
   const winningTeam = dealResult.winningTeam;
   const losingTeam = 1 - winningTeam;
+  const myTeam = currentPlayerSeat % 2;
+  const isWinner = myTeam === winningTeam;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gradient-to-b from-[#EAF4EF] via-[#DDEEE5] to-[#D2E8DD] rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-white/30">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            {isMatchFinished ? '比赛结束' : '局结算'}
-          </h2>
-          <div className="text-lg text-gray-600">
-            {getVictoryTypeText(dealResult.victoryType)} - 
-            队伍{winningTeam + 1}获胜 (+{dealResult.levelChange[winningTeam]}级)
-          </div>
+          {isWinner ? (
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-32 h-32 bg-gradient-radial from-yellow-300/40 via-amber-400/20 to-transparent rounded-full blur-xl animate-pulse"></div>
+              </div>
+              <h2 
+                className="relative text-5xl font-black tracking-[0.3em] bg-gradient-to-b from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent animate-bounce"
+                style={{ 
+                  textShadow: '0 0 30px rgba(251, 191, 36, 0.8), 0 0 60px rgba(251, 191, 36, 0.4)',
+                  WebkitTextStroke: '1px rgba(180, 120, 0, 0.3)'
+                }}
+              >
+                胜 利
+              </h2>
+              <div className="flex justify-center gap-2 mt-2">
+                <span className="text-2xl animate-bounce" style={{ animationDelay: '0.1s' }}>⭐</span>
+                <span className="text-3xl animate-bounce" style={{ animationDelay: '0.2s' }}>🏆</span>
+                <span className="text-2xl animate-bounce" style={{ animationDelay: '0.3s' }}>⭐</span>
+              </div>
+            </div>
+          ) : (
+            <div className="relative py-4">
+              <h2 
+                className="text-5xl font-black tracking-[0.3em] bg-gradient-to-b from-slate-400 via-slate-500 to-slate-600 bg-clip-text text-transparent"
+                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.2)' }}
+              >
+                失 败
+              </h2>
+              <div className="text-gray-400 mt-2 text-sm">再接再厉！</div>
+            </div>
+          )}
         </div>
 
         {/* Team Rankings */}
-        <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-2 gap-5 mb-6">
           {/* Winning Team */}
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-green-800 mb-3 text-center">
+          <div className="bg-gradient-to-b from-[#525E6B] to-[#3E4854] rounded-xl p-4 shadow-xl border-2 border-amber-400/60 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-transparent rounded-bl-3xl"></div>
+            <h3 className="text-lg font-bold text-amber-400 mb-4 text-center tracking-wide flex items-center justify-center gap-2">
+              <span className="text-2xl">🏆</span>
               队伍{winningTeam + 1} (胜方)
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {teamRankings[winningTeam].map(({ rank, player }) => (
-                <div key={player.seat} className="flex justify-between items-center">
-                  <span className="font-medium">{player.username}</span>
-                  <span className="text-sm bg-green-100 px-2 py-1 rounded">
+                <div key={player.seat} className="flex justify-between items-center bg-white/5 rounded-lg px-3 py-1.5">
+                  <span className="font-medium text-white tracking-wide">{player.username}</span>
+                  <span className="text-xs bg-amber-400 text-gray-900 px-2.5 py-1 rounded-md font-bold shadow-sm">
                     第{rank}名
                   </span>
                 </div>
               ))}
             </div>
-            <div className="mt-3 pt-3 border-t border-green-200">
-              <div className="flex justify-between text-sm">
-                <span>当前等级:</span>
-                <span className="font-medium">
+            <div className="mt-4 pt-3 border-t border-white/10">
+              <div className="flex justify-between text-sm text-gray-300 mb-1">
+                <span>当前等级</span>
+                <span className="font-bold text-white text-base">
                   {getLevelText(teamLevels[winningTeam])}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>升级:</span>
-                <span className="font-medium text-green-600">
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>升级</span>
+                <span className="font-extrabold text-emerald-400 text-base">
                   +{dealResult.levelChange[winningTeam]}级
                 </span>
               </div>
@@ -169,30 +199,31 @@ const DealResult: React.FC<DealResultProps> = ({
           </div>
 
           {/* Losing Team */}
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-red-800 mb-3 text-center">
+          <div className="bg-gradient-to-b from-[#9E3737] to-[#7B2A2A] rounded-xl p-4 shadow-xl border border-white/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-black/10 to-transparent rounded-bl-3xl"></div>
+            <h3 className="text-lg font-bold text-gray-100 mb-4 text-center tracking-wide">
               队伍{losingTeam + 1} (负方)
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {teamRankings[losingTeam].map(({ rank, player }) => (
-                <div key={player.seat} className="flex justify-between items-center">
-                  <span className="font-medium">{player.username}</span>
-                  <span className="text-sm bg-red-100 px-2 py-1 rounded">
+                <div key={player.seat} className="flex justify-between items-center bg-black/10 rounded-lg px-3 py-1.5">
+                  <span className="font-medium text-gray-100 tracking-wide">{player.username}</span>
+                  <span className="text-xs bg-gray-200/20 text-gray-100 border border-gray-400/30 px-2.5 py-1 rounded-md font-medium">
                     第{rank}名
                   </span>
                 </div>
               ))}
             </div>
-            <div className="mt-3 pt-3 border-t border-red-200">
-              <div className="flex justify-between text-sm">
-                <span>当前等级:</span>
-                <span className="font-medium">
+            <div className="mt-4 pt-3 border-t border-white/10">
+              <div className="flex justify-between text-sm text-gray-300 mb-1">
+                <span>当前等级</span>
+                <span className="font-bold text-gray-100 text-base">
                   {getLevelText(teamLevels[losingTeam])}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>升级:</span>
-                <span className="font-medium text-gray-500">
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>升级</span>
+                <span className="font-bold text-gray-400 text-base">
                   +{dealResult.levelChange[losingTeam]}级
                 </span>
               </div>
@@ -201,50 +232,60 @@ const DealResult: React.FC<DealResultProps> = ({
         </div>
 
         {/* Deal Statistics */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">本局统计</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex justify-between">
-              <span>游戏时长:</span>
-              <span className="font-medium">{formatDuration(dealResult.durationMs)}</span>
+        <div className="bg-white/80 backdrop-blur-md rounded-xl p-5 mb-5 border border-white/50 shadow-sm">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col items-center bg-emerald-50/50 rounded-xl p-3 border border-emerald-100/50">
+              <span className="text-emerald-600/70 text-xs font-medium mb-1">游戏时长</span>
+              <span className="font-bold text-emerald-900 text-lg">{formatDuration(dealResult.durationMs)}</span>
             </div>
-            <div className="flex justify-between">
-              <span>总轮次:</span>
-              <span className="font-medium">{dealResult.trickCount}</span>
+            <div className="flex flex-col items-center bg-blue-50/50 rounded-xl p-3 border border-blue-100/50">
+              <span className="text-blue-600/70 text-xs font-medium mb-1">总轮次</span>
+              <span className="font-bold text-blue-900 text-lg">{dealResult.trickCount}</span>
             </div>
-            <div className="flex justify-between">
-              <span>胜利类型:</span>
-              <span className="font-medium">{getVictoryTypeText(dealResult.victoryType)}</span>
+            <div className="flex flex-col items-center bg-amber-50/50 rounded-xl p-3 border border-amber-100/50">
+              <span className="text-amber-600/70 text-xs font-medium mb-1">胜利类型</span>
+              <span className="font-bold text-amber-700 text-lg">{getVictoryTypeText(dealResult.victoryType)}</span>
             </div>
           </div>
         </div>
 
         {/* Player Statistics */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">玩家统计</h3>
+        <div className="bg-white/80 backdrop-blur-md rounded-xl p-5 mb-6 border border-white/50 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-300">
-                  <th className="text-left py-2">玩家</th>
-                  <th className="text-center py-2">排名</th>
-                  <th className="text-center py-2">出牌次数</th>
-                  <th className="text-center py-2">获胜轮次</th>
-                  <th className="text-center py-2">过牌次数</th>
+                <tr className="bg-gray-50/80 text-gray-500 border-b border-gray-100">
+                  <th className="text-left py-3 px-4 rounded-tl-lg font-medium">玩家</th>
+                  <th className="text-center py-3 px-2 font-medium">排名</th>
+                  <th className="text-center py-3 px-2 font-medium">出牌</th>
+                  <th className="text-center py-3 px-2 font-medium">胜轮</th>
+                  <th className="text-center py-3 px-4 rounded-tr-lg font-medium">过牌</th>
                 </tr>
               </thead>
               <tbody>
-                {dealResult.playerStats.map((stats) => {
+                {dealResult.playerStats.map((stats, index) => {
                   const player = getPlayerBySeat(stats.playerSeat);
+                  const isWinner = stats.finishRank <= 2;
                   return (
-                    <tr key={stats.playerSeat} className="border-b border-gray-200">
-                      <td className="py-2 font-medium">
+                    <tr 
+                      key={stats.playerSeat} 
+                      className={`border-b border-gray-50 hover:bg-emerald-50/30 transition-colors ${index % 2 === 0 ? 'bg-white/40' : 'bg-transparent'}`}
+                    >
+                      <td className="py-3 px-4 font-medium text-gray-700">
                         {player?.username || `玩家${stats.playerSeat + 1}`}
                       </td>
-                      <td className="text-center py-2">第{stats.finishRank}名</td>
-                      <td className="text-center py-2">{stats.cardsPlayed}</td>
-                      <td className="text-center py-2">{stats.tricksWon}</td>
-                      <td className="text-center py-2">{stats.passCount}</td>
+                      <td className="text-center py-3 px-2">
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm ${
+                          isWinner 
+                            ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-400/20' 
+                            : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          第{stats.finishRank}名
+                        </span>
+                      </td>
+                      <td className="text-center py-3 px-2 text-gray-600 font-medium">{stats.cardsPlayed}</td>
+                      <td className="text-center py-3 px-2 text-gray-600 font-medium">{stats.tricksWon}</td>
+                      <td className="text-center py-3 px-4 text-gray-400">{stats.passCount}</td>
                     </tr>
                   );
                 })}
@@ -254,15 +295,18 @@ const DealResult: React.FC<DealResultProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col items-center space-y-3">
+        <div className="flex flex-col items-center space-y-5 pt-2">
           {countdown !== null && countdown > 0 && (
-            <div className="text-gray-500 text-sm">
-              下一局开始倒计时：<span className="text-gray-800 font-bold">{countdown}</span> 秒
+            <div className="bg-white/90 backdrop-blur-md rounded-full px-6 py-2 border border-emerald-100 shadow-sm flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-gray-500 text-sm font-medium">下一局开始倒计时</span>
+              <span className="text-emerald-600 font-bold text-xl tabular-nums">{countdown}</span>
+              <span className="text-gray-400 text-xs self-end mb-1">s</span>
             </div>
           )}
           <button
             onClick={onExit}
-            className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            className="px-10 py-3 bg-gradient-to-b from-slate-600 to-slate-700 text-white rounded-xl font-bold shadow-lg shadow-slate-300/50 hover:from-slate-500 hover:to-slate-600 hover:scale-105 active:scale-95 transition-all duration-200 border-t border-white/20"
           >
             返回大厅
           </button>

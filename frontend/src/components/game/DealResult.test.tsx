@@ -76,6 +76,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -99,6 +100,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -132,6 +134,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -156,6 +159,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -175,6 +179,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -209,6 +214,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -226,6 +232,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -242,6 +249,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -258,6 +266,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={true}
+        currentPlayerSeat={0}
       />
     );
 
@@ -275,6 +284,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -291,6 +301,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
@@ -312,6 +323,7 @@ describe('DealResult', () => {
         onContinue={mockOnContinue}
         onExit={mockOnExit}
         isMatchFinished={false}
+        currentPlayerSeat={0}
       />
     );
 
