@@ -263,12 +263,11 @@ const RoomLobby: React.FC = () => {
       />
 
       {/* Create Room Modal */}
-      {showCreateModal && (
-        <CreateRoomModal
-          onClose={() => setShowCreateModal(false)}
-          onConfirm={handleCreateRoom}
-        />
-      )}
+      <CreateRoomModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onConfirm={handleCreateRoom}
+      />
     </div>
   );
 };

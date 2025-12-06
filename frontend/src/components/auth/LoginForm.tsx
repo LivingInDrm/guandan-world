@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import type { LoginRequest } from '../../types';
+import { Input, Button } from '../ui';
 
 const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState<LoginRequest>({
@@ -83,72 +84,44 @@ const LoginForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-          用户名
-        </label>
-        <input
-          id="username"
-          name="username"
-          type="text"
-          value={formData.username}
-          onChange={handleInputChange}
-          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-            errors.username ? 'border-red-300' : 'border-gray-300'
-          }`}
-          placeholder="请输入用户名"
-          disabled={isLoading}
-        />
-        {errors.username && (
-          <p className="mt-1 text-sm text-red-600">{errors.username}</p>
-        )}
-      </div>
+      <Input
+        id="username"
+        name="username"
+        type="text"
+        label="用户名"
+        value={formData.username}
+        onChange={handleInputChange}
+        error={errors.username}
+        placeholder="请输入用户名"
+        disabled={isLoading}
+      />
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-          密码
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          value={formData.password}
-          onChange={handleInputChange}
-          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-            errors.password ? 'border-red-300' : 'border-gray-300'
-          }`}
-          placeholder="请输入密码"
-          disabled={isLoading}
-        />
-        {errors.password && (
-          <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-        )}
-      </div>
+      <Input
+        id="password"
+        name="password"
+        type="password"
+        label="密码"
+        value={formData.password}
+        onChange={handleInputChange}
+        error={errors.password}
+        placeholder="请输入密码"
+        disabled={isLoading}
+      />
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3">
+        <div className="bg-red-50 border border-red-200 rounded-card p-3">
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
-      <button
+      <Button
         type="submit"
-        disabled={isLoading}
-        className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-          isLoading
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-        }`}
+        variant="primary"
+        fullWidth
+        loading={isLoading}
       >
-        {isLoading ? (
-          <div className="flex items-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            登录中...
-          </div>
-        ) : (
-          '登录'
-        )}
-      </button>
+        {isLoading ? '登录中...' : '登录'}
+      </Button>
     </form>
   );
 };

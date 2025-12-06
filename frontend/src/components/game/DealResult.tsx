@@ -135,19 +135,21 @@ const DealResult: React.FC<DealResultProps> = ({
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-32 h-32 bg-gradient-radial from-yellow-300/40 via-amber-400/20 to-transparent rounded-full blur-xl animate-pulse"></div>
               </div>
-              <h2 
-                className="relative text-5xl font-black tracking-[0.3em] bg-gradient-to-b from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent animate-bounce"
-                style={{ 
-                  textShadow: '0 0 30px rgba(251, 191, 36, 0.8), 0 0 60px rgba(251, 191, 36, 0.4)',
-                  WebkitTextStroke: '1px rgba(180, 120, 0, 0.3)'
-                }}
-              >
-                胜 利
-              </h2>
-              <div className="flex justify-center gap-2 mt-2">
-                <span className="text-2xl animate-bounce" style={{ animationDelay: '0.1s' }}>⭐</span>
-                <span className="text-3xl animate-bounce" style={{ animationDelay: '0.2s' }}>🏆</span>
-                <span className="text-2xl animate-bounce" style={{ animationDelay: '0.3s' }}>⭐</span>
+              <div className="flex flex-col items-center">
+                <h2 
+                  className="relative text-5xl font-black tracking-[0.3em] bg-gradient-to-b from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent animate-bounce pl-[0.3em]"
+                  style={{ 
+                    textShadow: '0 0 30px rgba(251, 191, 36, 0.8), 0 0 60px rgba(251, 191, 36, 0.4)',
+                    WebkitTextStroke: '1px rgba(180, 120, 0, 0.3)'
+                  }}
+                >
+                  胜 利
+                </h2>
+                <div className="flex justify-center gap-2 mt-2">
+                  <span className="text-2xl animate-bounce" style={{ animationDelay: '0.1s' }}>⭐</span>
+                  <span className="text-3xl animate-bounce" style={{ animationDelay: '0.2s' }}>🏆</span>
+                  <span className="text-2xl animate-bounce" style={{ animationDelay: '0.3s' }}>⭐</span>
+                </div>
               </div>
             </div>
           ) : (
