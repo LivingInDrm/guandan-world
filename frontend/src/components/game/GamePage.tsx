@@ -11,8 +11,7 @@ import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import type { GameEvent, Card, PlayerView as ProtoPlayerView } from '../../types/proto';
 import { eventTypeToJSON } from '../../types/generated/event';
 import GameBoard from './GameBoard';
-import PlayerHand from './PlayerHand';
-import GameControls from './GameControls';
+import PlayerControlPanel from './PlayerControlPanel';
 import TributeBoard from './tribute/TributeBoard';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
@@ -58,7 +57,6 @@ const GamePage: React.FC = () => {
   const [canPlay, setCanPlay] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
-  const [turnTimeoutSeconds, setTurnTimeoutSeconds] = useState<number>(20);
   const [turnDeadline, setTurnDeadline] = useState<{
     playerSeat: number;
     deadlineAtMs: number;
@@ -587,20 +585,14 @@ const GamePage: React.FC = () => {
         />
 
         <div className="-mt-24 relative z-10">
-          <PlayerHand
+          <PlayerControlPanel
             cards={hand}
             selectedCards={selectedCards}
             onCardSelect={setSelectedCards}
             currentLevel={dealLevel}
-          />
-        </div>
-
-        <div className="mt-4">
-          <GameControls
-            selectedCards={selectedCards}
             canPlay={canPlay}
             isMyTurn={isMyTurn}
-            turnTimeoutSeconds={turnTimeoutSeconds}
+            turnDeadlineAtMs={turnDeadline?.deadlineAtMs || 0}
             onPlayCards={handlePlayCards}
             onPass={handlePass}
             disabled={false}
