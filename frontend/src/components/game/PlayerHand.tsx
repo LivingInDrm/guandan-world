@@ -103,10 +103,6 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     onCardSelect([]);
   }, [onCardSelect]);
 
-  const handleSelectAll = useCallback(() => {
-    onCardSelect([...safeCards]);
-  }, [safeCards, onCardSelect]);
-
   const handlePointerDown = useCallback(() => {
     isDraggingRef.current = true;
     touchedIndexesRef.current = new Set();
@@ -139,35 +135,16 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
-      <div className="flex justify-between items-center mb-3">
-        <div className="text-sm font-medium text-gray-700">
-          手牌 ({safeCards.length}张)
-          {selectedCards.length > 0 && (
-            <span className="ml-2 text-blue-600">
-              已选择 {selectedCards.length}张
-            </span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {selectedCards.length > 0 && (
-            <button
-              onClick={handleClearSelection}
-              className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50"
-            >
-              清空选择
-            </button>
-          )}
-          <button
-            onClick={handleSelectAll}
-            disabled={safeCards.length === 0}
-            className="text-xs px-2 py-1 bg-blue-200 text-blue-700 rounded hover:bg-blue-300 disabled:opacity-50"
-          >
-            全选
-          </button>
-        </div>
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={handleClearSelection}
+          className={`text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 ${selectedCards.length > 0 ? '' : 'invisible'}`}
+        >
+          清空选择
+        </button>
       </div>
       
-      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 justify-center max-h-64 overflow-y-auto">
+      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 justify-center h-64 overflow-y-auto">
         {sortedRanks.map(rank => (
           <CardGroup
             key={rank}

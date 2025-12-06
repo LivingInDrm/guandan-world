@@ -225,7 +225,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         marginLeft: stackDirection === 'horizontal' && stackIndex > 0 ? `${-parseFloat(sizeConfig.width) * STACK_OVERLAP.horizontal}px` : '0',
         marginTop: stackDirection === 'vertical' && stackIndex > 0 ? `${-parseFloat(sizeConfig.height) * STACK_OVERLAP.vertical}px` : '0',
         willChange: 'transform',
-        border: isSelected ? `2px solid ${SELECTED_COLORS.border}` : '1px solid rgb(229, 231, 235)',
+        border: '1px solid rgb(229, 231, 235)',
+        outline: isSelected ? `2px solid ${SELECTED_COLORS.border}` : 'none',
         boxShadow: isSelected ? `0 0 10px ${SELECTED_COLORS.glow}` : undefined,
       }}
       onClick={onClick}

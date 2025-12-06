@@ -18,6 +18,8 @@ const calculateRemaining = (deadlineAtMs: number): number => {
   return Math.max(0, Math.ceil(remaining / 1000));
 };
 
+const DEFAULT_SECONDS = 30;
+
 const Countdown: React.FC<CountdownProps> = ({
   deadlineAtMs,
   isActive = true,
@@ -72,22 +74,33 @@ const Countdown: React.FC<CountdownProps> = ({
     return null;
   }
 
+  const displaySeconds = isActive ? secondsLeft : DEFAULT_SECONDS;
+  const displayProgress = isActive 
+    ? Math.max(0, Math.min(secondsLeft / (totalSecondsRef.current || 1), 1))
+    : 1;
+
   const config = sizeConfig[size];
   const circumference = 2 * Math.PI * config.radius;
-  const totalSeconds = totalSecondsRef.current || 1;
-  const progress = Math.max(0, Math.min(secondsLeft / totalSeconds, 1));
-  const offset = circumference * (1 - progress);
+  const offset = circumference * (1 - displayProgress);
 
   const getRingColor = (): string => {
+    if (!isActive) return '#94a3b8';
     if (secondsLeft <= 5) return '#ef4444';
     if (secondsLeft <= 10) return '#f97316';
     return '#fbbf24';
   };
 
   const getTextColor = (): string => {
+    if (!isActive) return '#94a3b8';
     if (secondsLeft <= 5) return '#ef4444';
     if (secondsLeft <= 10) return '#f97316';
     return '#4b5563';
+  };
+
+  const getRingFilter = (): string => {
+    if (!isActive) return 'none';
+    if (secondsLeft <= 5) return 'drop-shadow(0 0 6px rgba(239,68,68,0.7))';
+    return 'drop-shadow(0 0 4px rgba(251,191,36,0.6))';
   };
 
   const viewBoxSize = config.radius * 2 + config.strokeWidth * 2;
@@ -150,9 +163,8 @@ return (
         strokeLinecap="round"
         transform={`rotate(-90 ${center} ${center})`}
         style={{
-          filter: secondsLeft <= 5 ? 'drop-shadow(0 0 6px rgba(239,68,68,0.7))'
-                                   : 'drop-shadow(0 0 4px rgba(251,191,36,0.6))',
-          transition: 'stroke 0.2s ease-out',
+          filter: getRingFilter(),
+          transition: 'stroke 0.2s ease-out, filter 0.2s ease-out',
         }}
       />
     </svg>
@@ -166,7 +178,7 @@ return (
         textShadow: '0 1px 2px rgba(0,0,0,0.4)',
       }}
     >
-      {secondsLeft}
+      {displaySeconds}
     </div>
   </div>
   );

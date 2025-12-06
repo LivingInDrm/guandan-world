@@ -97,22 +97,26 @@ const PlayerArea: React.FC<PlayerAreaProps> = ({
   }
 
   return (
-    <div className={`${getPositionClasses()} flex items-center gap-2`}>
-      <div className={`flex flex-col items-center px-3 py-2 rounded-xl bg-white/70 backdrop-blur-sm shadow-sm w-fit ${
-        isCurrentTurn ? 'ring-2 ring-yellow-400' : ''
-      }`}>
-        <img
-          src={avatar!}
-          alt={player.username}
-          className="w-14 h-14 rounded-lg object-cover shadow-sm ring-1 ring-white/70"
-        />
-        <span className="mt-1 max-w-[80px] text-xs font-medium text-slate-800 truncate text-center">
-          {player.username}
-        </span>
+    <div className={`${getPositionClasses()}`}>
+      <div className="relative">
+        <div className={`flex flex-col items-center px-3 py-2 rounded-xl bg-white/70 backdrop-blur-sm shadow-sm w-fit ${
+          isCurrentTurn ? 'ring-2 ring-yellow-400' : ''
+        }`}>
+          <img
+            src={avatar!}
+            alt={player.username}
+            className="w-14 h-14 rounded-lg object-cover shadow-sm ring-1 ring-white/70"
+          />
+          <span className="mt-1 max-w-[80px] text-xs font-medium text-slate-800 truncate text-center">
+            {player.username}
+          </span>
+        </div>
+        {isCurrentTurn && deadlineAtMs && (
+          <div className={`absolute top-1/2 -translate-y-1/2 ${position === 'right' ? 'right-full mr-2' : 'left-full ml-2'}`}>
+            <Countdown deadlineAtMs={deadlineAtMs} size="small" />
+          </div>
+        )}
       </div>
-      {isCurrentTurn && deadlineAtMs && (
-        <Countdown deadlineAtMs={deadlineAtMs} size="small" />
-      )}
     </div>
   );
 };
