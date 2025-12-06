@@ -135,7 +135,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
 
   return (
     <div 
-      className="bg-white border border-gray-300 rounded-lg p-4 select-none"
+      className="bg-transparent pt-4 px-4 pb-2 select-none"
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >

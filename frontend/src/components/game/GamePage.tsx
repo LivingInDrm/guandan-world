@@ -11,8 +11,7 @@ import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import type { GameEvent, Card, PlayerView as ProtoPlayerView } from '../../types/proto';
 import { eventTypeToJSON } from '../../types/generated/event';
 import GameBoard from './GameBoard';
-import PlayerHand from './PlayerHand';
-import GameControls from './GameControls';
+import PlayerControlPanel from './PlayerControlPanel';
 import TributeBoard from './tribute/TributeBoard';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
@@ -58,7 +57,6 @@ const GamePage: React.FC = () => {
   const [canPlay, setCanPlay] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
-  const [turnTimeoutSeconds, setTurnTimeoutSeconds] = useState<number>(20);
   const [turnDeadline, setTurnDeadline] = useState<{
     playerSeat: number;
     deadlineAtMs: number;
@@ -574,7 +572,7 @@ const GamePage: React.FC = () => {
     const players = currentRoom.players;
 
     return (
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-6xl mx-auto p-6">
         <GameBoard
           teamLevels={teamLevels || [2, 2]}
           currentLevel={dealLevel || 2}
@@ -586,22 +584,20 @@ const GamePage: React.FC = () => {
           turnDeadline={turnDeadline}
         />
 
-        <PlayerHand
-          cards={hand}
-          selectedCards={selectedCards}
-          onCardSelect={setSelectedCards}
-          currentLevel={dealLevel}
-        />
-
-        <GameControls
-          selectedCards={selectedCards}
-          canPlay={canPlay}
-          isMyTurn={isMyTurn}
-          turnTimeoutSeconds={turnTimeoutSeconds}
-          onPlayCards={handlePlayCards}
-          onPass={handlePass}
-          disabled={false}
-        />
+        <div className="-mt-24 relative z-10">
+          <PlayerControlPanel
+            cards={hand}
+            selectedCards={selectedCards}
+            onCardSelect={setSelectedCards}
+            currentLevel={dealLevel}
+            canPlay={canPlay}
+            isMyTurn={isMyTurn}
+            turnDeadlineAtMs={turnDeadline?.deadlineAtMs || 0}
+            onPlayCards={handlePlayCards}
+            onPass={handlePass}
+            disabled={false}
+          />
+        </div>
       </div>
     );
   };

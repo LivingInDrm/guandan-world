@@ -1,6 +1,7 @@
 export { default as GameBoard } from './GameBoard';
 export { default as PlayerHand } from './PlayerHand';
 export { default as GameControls } from './GameControls';
+export { default as PlayerControlPanel } from './PlayerControlPanel';
 export { default as TributeBoard } from './tribute/TributeBoard';
 export { default as DealResult } from './DealResult';
 export { default as MatchResult } from './MatchResult';
