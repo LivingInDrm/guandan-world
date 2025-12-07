@@ -82,39 +82,39 @@ func (d *Deal) StartDeal() error {
 }
 
 // PlayCards handles a player playing cards
-func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
+func (d *Deal) PlayCards(playerSeat int, cards []*Card) (CompType, error) {
 	if d.Status != DealStatusPlaying {
-		return fmt.Errorf("deal is not in playing status: %s", d.Status)
+		return TypeIllegal, fmt.Errorf("deal is not in playing status: %s", d.Status)
 	}
 
 	if d.CurrentTrick == nil {
-		return errors.New("no active trick")
+		return TypeIllegal, errors.New("no active trick")
 	}
 
 	if len(cards) == 0 {
-		return errors.New("cannot play empty cards")
+		return TypeIllegal, errors.New("cannot play empty cards")
 	}
 
 	// Validate it's the player's turn
 	if d.CurrentTrick.CurrentTurn != playerSeat {
-		return fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, d.CurrentTrick.CurrentTurn)
+		return TypeIllegal, fmt.Errorf("not player %d's turn, current turn is %d", playerSeat, d.CurrentTrick.CurrentTurn)
 	}
 
 	// Validate cards are from player's hand
 	err := d.validatePlayerCards(playerSeat, cards)
 	if err != nil {
-		return fmt.Errorf("invalid cards: %w", err)
+		return TypeIllegal, fmt.Errorf("invalid cards: %w", err)
 	}
 
 	// Create card combination and validate it
 	comp := FromCardList(cards, d.CurrentTrick.LeadComp)
 	if !comp.IsValid() {
-		return errors.New("invalid card combination")
+		return TypeIllegal, errors.New("invalid card combination")
 	}
 
 	// If this is not the first play in trick, validate against lead combination
 	if d.CurrentTrick.LeadComp != nil && !comp.GreaterThan(d.CurrentTrick.LeadComp) {
-		return errors.New("card combination cannot beat current lead")
+		return TypeIllegal, errors.New("card combination cannot beat current lead")
 	}
 
 	// Remove cards from player's hand
@@ -152,7 +152,7 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 				
 				// Check if deal is finished
 				if d.isDealFinished() {
-					return d.finishDeal()
+					return comp.GetType(), d.finishDeal()
 				}
 			} else {
 				d.PlayState[i] = PlayStatePlayed
@@ -171,11 +171,11 @@ func (d *Deal) PlayCards(playerSeat int, cards []*Card) error {
 	if d.isTrickFinished() {
 		err = d.finishCurrentTrick()
 		if err != nil {
-			return fmt.Errorf("failed to finish trick: %w", err)
+			return TypeIllegal, fmt.Errorf("failed to finish trick: %w", err)
 		}
 	}
 
-	return nil
+	return comp.GetType(), nil
 }
 
 // PassTurn handles a player passing their turn

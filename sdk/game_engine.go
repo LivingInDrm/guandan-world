@@ -540,7 +540,7 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	}
 
 	// Execute the play with original cards
-	err = deal.PlayCards(playerSeat, originalCards)
+	compType, err := deal.PlayCards(playerSeat, originalCards)
 	if err != nil {
 		return nil, fmt.Errorf("failed to play cards: %w", err)
 	}
@@ -548,7 +548,7 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	ge.updatedAt = time.Now()
 
 	// Create and emit player played event with original cards
-	event := NewPlayerPlayedEvent(ge.eventMeta, ge.currentMatch, deal, deal.CurrentTrick, playerSeat, originalCards)
+	event := NewPlayerPlayedEvent(ge.eventMeta, ge.currentMatch, deal, deal.CurrentTrick, playerSeat, originalCards, compType)
 	ge.emitEventLocked(event)
 
 	// Check for post-action state transitions (e.g., trick ending, deal ending)

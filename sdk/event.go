@@ -444,6 +444,7 @@ func NewPlayerPlayedEvent(
 	trick *Trick,
 	playerSeat int,
 	cards []*Card,
+	compType CompType,
 ) *GameEvent {
 	event := emp.CreateBaseEvent(
 		eventpb.EventType_EVENT_TYPE_PLAYER_PLAYED,
@@ -452,7 +453,8 @@ func NewPlayerPlayedEvent(
 
 	event.Payload = &eventpb.GameEvent_PlayerPlayed{
 		PlayerPlayed: &eventpb.PlayerPlayedPayload{
-			Cards: ConvertCardsToProto(cards),
+			Cards:    ConvertCardsToProto(cards),
+			CompType: ConvertCompTypeToProto(compType),
 		},
 	}
 

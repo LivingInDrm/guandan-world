@@ -9,7 +9,8 @@ import { apiClient } from '../../services/api';
 import type { WSMessage, GameActionData, TurnDeadlineData } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
 import type { GameEvent, Card, PlayerView as ProtoPlayerView } from '../../types/proto';
-import { eventTypeToJSON } from '../../types/generated/event';
+import { eventTypeToJSON, EventType } from '../../types/generated/event';
+import { audioService } from '../../services/audioService';
 import GameBoard from './GameBoard';
 import PlayerControlPanel from './PlayerControlPanel';
 import TributeBoard from './tribute/TributeBoard';
@@ -143,6 +144,12 @@ const GamePage: React.FC = () => {
     const handleGameEvent = (message: WSMessage) => {
       const event: GameEvent = message.data as GameEvent;
       console.log('[game_event]', eventTypeToJSON(event.type), event);
+
+      if (event.type === EventType.EVENT_TYPE_PLAYER_PLAYED && event.playerPlayed) {
+        audioService.playCardSound(event.playerPlayed.compType);
+      } else if (event.type === EventType.EVENT_TYPE_PLAYER_PASSED) {
+        audioService.playPassSound();
+      }
     };
 
     // 玩家视角

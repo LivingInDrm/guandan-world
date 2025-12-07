@@ -1,29 +1,24 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it } from 'vitest';
 import { findMinPlay } from '../src/findMinPlay';
 import { SdkCard } from '../src/card';
 import { fromCardList } from '../src/fromCardList';
-import { CompType } from '../src/compType';
 import { Suit } from '../src/types';
+import { expectCardsEqual, createStandardHandCards } from './testHelpers';
+import { groundTruth } from './groundTruth';
 
 describe('findMinPlay', () => {
   const level = 5;
 
-  it('should return null when no valid play exists (framework placeholder)', () => {
+  it('should return null when no valid play exists', () => {
     const handCards = [
       new SdkCard(3, 0, level, 0),
       new SdkCard(4, 0, level, 1),
       new SdkCard(6, 0, level, 2),
     ];
-
     const prevCards = [new SdkCard(7, 0, level, 10)];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).toBeNull();
-  });
-
-  it('should be a function that accepts cards and prev', () => {
-    expect(typeof findMinPlay).toBe('function');
+    expectCardsEqual(result, groundTruth['findMinPlay: should return null when no valid play exists']);
   });
 });
 
@@ -37,14 +32,10 @@ describe('findMinBomb', () => {
       new SdkCard(3, 2, level, 2),
       new SdkCard(3, 3, level, 3),
     ];
-
     const prevCards = [new SdkCard(14, 0, level, 10)];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
-    expect(result!.getCards().length).toBe(4);
+    expectCardsEqual(result, groundTruth['findMinBomb: should find 4-card NaiveBomb to beat a Single']);
   });
 
   it('should find the smallest NaiveBomb among multiple options', () => {
@@ -58,14 +49,10 @@ describe('findMinBomb', () => {
       new SdkCard(7, 2, level, 6),
       new SdkCard(7, 3, level, 7),
     ];
-
     const prevCards = [new SdkCard(14, 0, level, 10)];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
-    expect(result!.getCards()[0].rank).toBe(3);
+    expectCardsEqual(result, groundTruth['findMinBomb: should find the smallest NaiveBomb among multiple options']);
   });
 
   it('should find bigger NaiveBomb to beat smaller NaiveBomb', () => {
@@ -75,7 +62,6 @@ describe('findMinBomb', () => {
       new SdkCard(7, 2, level, 2),
       new SdkCard(7, 3, level, 3),
     ];
-
     const prevCards = [
       new SdkCard(3, 0, level, 10),
       new SdkCard(3, 1, level, 11),
@@ -83,11 +69,8 @@ describe('findMinBomb', () => {
       new SdkCard(3, 3, level, 13),
     ];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
-    expect(result!.getCards()[0].rank).toBe(7);
+    expectCardsEqual(result, groundTruth['findMinBomb: should find bigger NaiveBomb to beat smaller NaiveBomb']);
   });
 
   it('should return null when no bomb can beat prev bomb', () => {
@@ -97,7 +80,6 @@ describe('findMinBomb', () => {
       new SdkCard(3, 2, level, 2),
       new SdkCard(3, 3, level, 3),
     ];
-
     const prevCards = [
       new SdkCard(7, 0, level, 10),
       new SdkCard(7, 1, level, 11),
@@ -105,9 +87,8 @@ describe('findMinBomb', () => {
       new SdkCard(7, 3, level, 13),
     ];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).toBeNull();
+    expectCardsEqual(result, groundTruth['findMinBomb: should return null when no bomb can beat prev bomb']);
   });
 
   it('should find StraightFlush to beat a smaller bomb', () => {
@@ -118,7 +99,6 @@ describe('findMinBomb', () => {
       new SdkCard(6, 0, level, 3),
       new SdkCard(7, 0, level, 4),
     ];
-
     const prevCards = [
       new SdkCard(2, 0, level, 10),
       new SdkCard(2, 1, level, 11),
@@ -126,10 +106,8 @@ describe('findMinBomb', () => {
       new SdkCard(2, 3, level, 13),
     ];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.StraightFlush);
+    expectCardsEqual(result, groundTruth['findMinBomb: should find StraightFlush to beat a smaller bomb']);
   });
 
   it('should find JokerBomb to beat a big bomb', () => {
@@ -139,7 +117,6 @@ describe('findMinBomb', () => {
       new SdkCard(16, Suit.Joker, level, 2),
       new SdkCard(16, Suit.Joker, level, 3),
     ];
-
     const prevCards = [
       new SdkCard(14, 0, level, 0),
       new SdkCard(14, 1, level, 0),
@@ -151,10 +128,8 @@ describe('findMinBomb', () => {
       new SdkCard(14, 3, level, 1),
     ];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.JokerBomb);
+    expectCardsEqual(result, groundTruth['findMinBomb: should find JokerBomb to beat a big bomb']);
   });
 
   it('should find NaiveBomb with wildcard to beat a smaller bomb', () => {
@@ -164,7 +139,6 @@ describe('findMinBomb', () => {
       new SdkCard(3, 2, level, 2),
       new SdkCard(level, Suit.Heart, level, 3),
     ];
-
     const prevCards = [
       new SdkCard(2, 0, level, 10),
       new SdkCard(2, 1, level, 11),
@@ -172,11 +146,8 @@ describe('findMinBomb', () => {
       new SdkCard(2, 3, level, 13),
     ];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
-    expect(result!.getCards().length).toBe(4);
+    expectCardsEqual(result, groundTruth['findMinBomb: should find NaiveBomb with wildcard to beat a smaller bomb']);
   });
 
   it('should prefer smaller bomb over larger bomb when beating a bomb', () => {
@@ -191,7 +162,6 @@ describe('findMinBomb', () => {
       new SdkCard(7, 3, level, 7),
       new SdkCard(level, Suit.Heart, level, 8),
     ];
-
     const prevCards = [
       new SdkCard(2, 0, level, 10),
       new SdkCard(2, 1, level, 11),
@@ -199,46 +169,14 @@ describe('findMinBomb', () => {
       new SdkCard(2, 3, level, 13),
     ];
     const prev = fromCardList(prevCards);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
-    expect(result!.getCards().length).toBe(4);
+    expectCardsEqual(result, groundTruth['findMinBomb: should prefer smaller bomb over larger bomb when beating a bomb']);
   });
 });
 
 describe('findMinBomb with level=5 and 2 wildcards (27 cards)', () => {
   const level = 5;
-
-  const handCards = [
-    new SdkCard(5, Suit.Heart, level, 0),
-    new SdkCard(5, Suit.Heart, level, 1),
-    new SdkCard(7, 0, level, 0),
-    new SdkCard(7, 0, level, 1),
-    new SdkCard(7, Suit.Heart, level, 0),
-    new SdkCard(7, Suit.Club, level, 0),
-    new SdkCard(13, 0, level, 0),
-    new SdkCard(13, Suit.Heart, level, 0),
-    new SdkCard(13, Suit.Club, level, 0),
-    new SdkCard(13, Suit.Club, level, 1),
-    new SdkCard(8, 0, level, 0),
-    new SdkCard(8, Suit.Heart, level, 0),
-    new SdkCard(8, Suit.Club, level, 0),
-    new SdkCard(3, 0, level, 0),
-    new SdkCard(3, 0, level, 1),
-    new SdkCard(4, 0, level, 0),
-    new SdkCard(4, 0, level, 1),
-    new SdkCard(6, 0, level, 0),
-    new SdkCard(6, 0, level, 1),
-    new SdkCard(9, Suit.Heart, level, 0),
-    new SdkCard(9, Suit.Club, level, 0),
-    new SdkCard(10, Suit.Heart, level, 0),
-    new SdkCard(10, Suit.Club, level, 0),
-    new SdkCard(15, Suit.Joker, level, 0),
-    new SdkCard(15, Suit.Joker, level, 1),
-    new SdkCard(16, Suit.Joker, level, 0),
-    new SdkCard(16, Suit.Joker, level, 1),
-  ];
+  const handCards = createStandardHandCards(level);
 
   it('场景1: prev = 4个9', () => {
     const prev = fromCardList([
@@ -248,10 +186,7 @@ describe('findMinBomb with level=5 and 2 wildcards (27 cards)', () => {
       new SdkCard(9, Suit.Diamond, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
-    expect(result!.getCards().length).toBe(4);
-    expect(result!.getCards()[0].rank).toBe(10);
+    expectCardsEqual(result, groundTruth['findMinBomb 27cards: 场景1 prev = 4个9']);
   });
 
   it('场景2: prev = 5个10', () => {
@@ -263,10 +198,7 @@ describe('findMinBomb with level=5 and 2 wildcards (27 cards)', () => {
       new SdkCard(10, Suit.Diamond, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
-    expect(result!.getCards().length).toBe(5);
-    expect(result!.getCards()[0].rank).toBe(13);
+    expectCardsEqual(result, groundTruth['findMinBomb 27cards: 场景2 prev = 5个10']);
   });
 
   it('场景3: prev = 6个5', () => {
@@ -279,8 +211,7 @@ describe('findMinBomb with level=5 and 2 wildcards (27 cards)', () => {
       new SdkCard(5, Suit.Diamond, level, 1),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.JokerBomb);
+    expectCardsEqual(result, groundTruth['findMinBomb 27cards: 场景3 prev = 6个5']);
   });
 
   it('场景4: prev = 7个6', () => {
@@ -294,8 +225,7 @@ describe('findMinBomb with level=5 and 2 wildcards (27 cards)', () => {
       new SdkCard(6, Suit.Diamond, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.JokerBomb);
+    expectCardsEqual(result, groundTruth['findMinBomb 27cards: 场景4 prev = 7个6']);
   });
 
   it('场景5: prev = 8个2', () => {
@@ -310,8 +240,7 @@ describe('findMinBomb with level=5 and 2 wildcards (27 cards)', () => {
       new SdkCard(2, Suit.Diamond, level, 1),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.JokerBomb);
+    expectCardsEqual(result, groundTruth['findMinBomb 27cards: 场景5 prev = 8个2']);
   });
 
   it('场景6: prev = Heart 3,4,5,6,7 (红桃同花顺)', () => {
@@ -323,8 +252,7 @@ describe('findMinBomb with level=5 and 2 wildcards (27 cards)', () => {
       new SdkCard(7, Suit.Heart, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.StraightFlush);
+    expectCardsEqual(result, groundTruth['findMinBomb 27cards: 场景6 prev = Heart 3,4,5,6,7']);
   });
 
   it('场景7: prev = Club 5,6,7,8,9 (梅花同花顺)', () => {
@@ -336,8 +264,7 @@ describe('findMinBomb with level=5 and 2 wildcards (27 cards)', () => {
       new SdkCard(9, Suit.Club, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.StraightFlush);
+    expectCardsEqual(result, groundTruth['findMinBomb 27cards: 场景7 prev = Club 5,6,7,8,9']);
   });
 });
 
@@ -352,11 +279,8 @@ describe('findMinSameNumber', () => {
         new SdkCard(10, 0, level, 2),
       ];
       const prev = fromCardList([new SdkCard(6, 0, level, 10)]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).not.toBeNull();
-      expect(result!.getType()).toBe(CompType.Single);
-      expect(result!.getCards()[0].rank).toBe(7);
+      expectCardsEqual(result, groundTruth['Single: should find smallest single to beat prev single']);
     });
 
     it('should return null when no single can beat prev', () => {
@@ -365,9 +289,8 @@ describe('findMinSameNumber', () => {
         new SdkCard(4, 0, level, 1),
       ];
       const prev = fromCardList([new SdkCard(10, 0, level, 10)]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).toBeNull();
+      expectCardsEqual(result, groundTruth['Single: should return null when no single can beat prev']);
     });
 
     it('should use wildcard as single', () => {
@@ -376,11 +299,8 @@ describe('findMinSameNumber', () => {
         new SdkCard(level, Suit.Heart, level, 1),
       ];
       const prev = fromCardList([new SdkCard(10, 0, level, 10)]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).not.toBeNull();
-      expect(result!.getType()).toBe(CompType.Single);
-      expect(result!.getCards()[0].isWildcard()).toBe(true);
+      expectCardsEqual(result, groundTruth['Single: should use wildcard as single']);
     });
   });
 
@@ -398,11 +318,8 @@ describe('findMinSameNumber', () => {
         new SdkCard(6, 0, level, 10),
         new SdkCard(6, 1, level, 11),
       ]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).not.toBeNull();
-      expect(result!.getType()).toBe(CompType.Pair);
-      expect(result!.getCards()[0].rank).toBe(7);
+      expectCardsEqual(result, groundTruth['Pair: should find smallest pair to beat prev pair']);
     });
 
     it('should find pair with wildcard', () => {
@@ -414,10 +331,8 @@ describe('findMinSameNumber', () => {
         new SdkCard(6, 0, level, 10),
         new SdkCard(6, 1, level, 11),
       ]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).not.toBeNull();
-      expect(result!.getType()).toBe(CompType.Pair);
+      expectCardsEqual(result, groundTruth['Pair: should find pair with wildcard']);
     });
 
     it('should return null when no pair can beat prev', () => {
@@ -429,9 +344,8 @@ describe('findMinSameNumber', () => {
         new SdkCard(10, 0, level, 10),
         new SdkCard(10, 1, level, 11),
       ]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).toBeNull();
+      expectCardsEqual(result, groundTruth['Pair: should return null when no pair can beat prev']);
     });
   });
 
@@ -450,11 +364,8 @@ describe('findMinSameNumber', () => {
         new SdkCard(6, 1, level, 11),
         new SdkCard(6, 2, level, 12),
       ]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).not.toBeNull();
-      expect(result!.getType()).toBe(CompType.Triple);
-      expect(result!.getCards()[0].rank).toBe(8);
+      expectCardsEqual(result, groundTruth['Triple: should find smallest triple to beat prev triple']);
     });
 
     it('should find triple with wildcard', () => {
@@ -468,10 +379,8 @@ describe('findMinSameNumber', () => {
         new SdkCard(6, 1, level, 11),
         new SdkCard(6, 2, level, 12),
       ]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).not.toBeNull();
-      expect(result!.getType()).toBe(CompType.Triple);
+      expectCardsEqual(result, groundTruth['Triple: should find triple with wildcard']);
     });
 
     it('should use pure wildcards as triple', () => {
@@ -485,127 +394,56 @@ describe('findMinSameNumber', () => {
         new SdkCard(10, 1, level, 11),
         new SdkCard(10, 2, level, 12),
       ]);
-
       const result = findMinPlay(handCards, prev);
-      expect(result).not.toBeNull();
-      expect(result!.getType()).toBe(CompType.Triple);
+      expectCardsEqual(result, groundTruth['Triple: should use pure wildcards as triple']);
     });
   });
 });
 
 describe('findMinSameType - Single (27 cards)', () => {
   const level = 5;
-
-  const handCards = [
-    new SdkCard(5, Suit.Heart, level, 0),
-    new SdkCard(5, Suit.Heart, level, 1),
-    new SdkCard(7, 0, level, 0),
-    new SdkCard(7, 0, level, 1),
-    new SdkCard(7, Suit.Heart, level, 0),
-    new SdkCard(7, Suit.Club, level, 0),
-    new SdkCard(13, 0, level, 0),
-    new SdkCard(13, Suit.Heart, level, 0),
-    new SdkCard(13, Suit.Club, level, 0),
-    new SdkCard(13, Suit.Club, level, 1),
-    new SdkCard(8, 0, level, 0),
-    new SdkCard(8, Suit.Heart, level, 0),
-    new SdkCard(8, Suit.Club, level, 0),
-    new SdkCard(3, 0, level, 0),
-    new SdkCard(3, 0, level, 1),
-    new SdkCard(4, 0, level, 0),
-    new SdkCard(4, 0, level, 1),
-    new SdkCard(6, 0, level, 0),
-    new SdkCard(6, 0, level, 1),
-    new SdkCard(9, Suit.Heart, level, 0),
-    new SdkCard(9, Suit.Club, level, 0),
-    new SdkCard(10, Suit.Heart, level, 0),
-    new SdkCard(10, Suit.Club, level, 0),
-    new SdkCard(15, Suit.Joker, level, 0),
-    new SdkCard(15, Suit.Joker, level, 1),
-    new SdkCard(16, Suit.Joker, level, 0),
-    new SdkCard(16, Suit.Joker, level, 1),
-  ];
+  const handCards = createStandardHandCards(level);
 
   it('场景1: prev = 单张黑桃3', () => {
     const prev = fromCardList([new SdkCard(3, 0, level, 0)]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Single);
-    expect(result!.getCards()[0].rank).toBe(4);
+    expectCardsEqual(result, groundTruth['Single 27cards: 场景1 prev = 单张黑桃3']);
   });
 
   it('场景2: prev = 单张黑桃K', () => {
     const prev = fromCardList([new SdkCard(13, 0, level, 0)]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Single);
-    expect(result!.getCards()[0].isWildcard()).toBe(true);
+    expectCardsEqual(result, groundTruth['Single 27cards: 场景2 prev = 单张黑桃K']);
   });
 
   it('场景3: prev = 单张A', () => {
     const prev = fromCardList([new SdkCard(14, 0, level, 0)]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Single);
-    expect(result!.getCards()[0].isWildcard()).toBe(true);
+    expectCardsEqual(result, groundTruth['Single 27cards: 场景3 prev = 单张A']);
   });
 
   it('场景4: prev = 单张小王', () => {
     const prev = fromCardList([new SdkCard(15, Suit.Joker, level, 0)]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Single);
-    expect(result!.getCards()[0].isBigJoker()).toBe(true);
+    expectCardsEqual(result, groundTruth['Single 27cards: 场景4 prev = 单张小王']);
   });
 
   it('场景5: prev = 单张大王', () => {
     const prev = fromCardList([new SdkCard(16, Suit.Joker, level, 0)]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
+    expectCardsEqual(result, groundTruth['Single 27cards: 场景5 prev = 单张大王']);
   });
 
   it('场景6: prev = 单张5 (级牌)', () => {
     const prev = fromCardList([new SdkCard(5, 0, level, 0)]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Single);
-    expect(result!.getCards()[0].isSmallJoker()).toBe(true);
+    expectCardsEqual(result, groundTruth['Single 27cards: 场景6 prev = 单张5 (级牌)']);
   });
 });
 
 describe('findMinSameType - Pair (27 cards)', () => {
   const level = 5;
-
-  const handCards = [
-    new SdkCard(5, Suit.Heart, level, 0),
-    new SdkCard(5, Suit.Heart, level, 1),
-    new SdkCard(7, 0, level, 0),
-    new SdkCard(7, 0, level, 1),
-    new SdkCard(7, Suit.Heart, level, 0),
-    new SdkCard(7, Suit.Club, level, 0),
-    new SdkCard(13, 0, level, 0),
-    new SdkCard(13, Suit.Heart, level, 0),
-    new SdkCard(13, Suit.Club, level, 0),
-    new SdkCard(13, Suit.Club, level, 1),
-    new SdkCard(8, 0, level, 0),
-    new SdkCard(8, Suit.Heart, level, 0),
-    new SdkCard(8, Suit.Club, level, 0),
-    new SdkCard(3, 0, level, 0),
-    new SdkCard(3, 0, level, 1),
-    new SdkCard(4, 0, level, 0),
-    new SdkCard(4, 0, level, 1),
-    new SdkCard(6, 0, level, 0),
-    new SdkCard(6, 0, level, 1),
-    new SdkCard(9, Suit.Heart, level, 0),
-    new SdkCard(9, Suit.Club, level, 0),
-    new SdkCard(10, Suit.Heart, level, 0),
-    new SdkCard(10, Suit.Club, level, 0),
-    new SdkCard(15, Suit.Joker, level, 0),
-    new SdkCard(15, Suit.Joker, level, 1),
-    new SdkCard(16, Suit.Joker, level, 0),
-    new SdkCard(16, Suit.Joker, level, 1),
-  ];
+  const handCards = createStandardHandCards(level);
 
   it('场景1: prev = 对3', () => {
     const prev = fromCardList([
@@ -613,9 +451,7 @@ describe('findMinSameType - Pair (27 cards)', () => {
       new SdkCard(3, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Pair);
-    expect(result!.getCards()[0].rank).toBe(4);
+    expectCardsEqual(result, groundTruth['Pair 27cards: 场景1 prev = 对3']);
   });
 
   it('场景2: prev = 对8', () => {
@@ -624,9 +460,7 @@ describe('findMinSameType - Pair (27 cards)', () => {
       new SdkCard(8, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Pair);
-    expect(result!.getCards()[0].rank).toBe(9);
+    expectCardsEqual(result, groundTruth['Pair 27cards: 场景2 prev = 对8']);
   });
 
   it('场景3: prev = 对K', () => {
@@ -635,9 +469,7 @@ describe('findMinSameType - Pair (27 cards)', () => {
       new SdkCard(13, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Pair);
-    expect(result!.getCards().every(c => c.isWildcard())).toBe(true);
+    expectCardsEqual(result, groundTruth['Pair 27cards: 场景3 prev = 对K']);
   });
 
   it('场景4: prev = 对小王', () => {
@@ -646,9 +478,7 @@ describe('findMinSameType - Pair (27 cards)', () => {
       new SdkCard(15, Suit.Joker, level, 1),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Pair);
-    expect(result!.getCards().every(c => c.isBigJoker())).toBe(true);
+    expectCardsEqual(result, groundTruth['Pair 27cards: 场景4 prev = 对小王']);
   });
 
   it('场景5: prev = 对大王', () => {
@@ -657,8 +487,7 @@ describe('findMinSameType - Pair (27 cards)', () => {
       new SdkCard(16, Suit.Joker, level, 1),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
+    expectCardsEqual(result, groundTruth['Pair 27cards: 场景5 prev = 对大王']);
   });
 
   it('场景6: prev = 对5 (级牌)', () => {
@@ -667,44 +496,13 @@ describe('findMinSameType - Pair (27 cards)', () => {
       new SdkCard(5, Suit.Club, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Pair);
-    expect(result!.getCards().every(c => c.isSmallJoker())).toBe(true);
+    expectCardsEqual(result, groundTruth['Pair 27cards: 场景6 prev = 对5 (级牌)']);
   });
 });
 
 describe('findMinSameType - Triple (27 cards)', () => {
   const level = 5;
-
-  const handCards = [
-    new SdkCard(5, Suit.Heart, level, 0),
-    new SdkCard(5, Suit.Heart, level, 1),
-    new SdkCard(7, 0, level, 0),
-    new SdkCard(7, 0, level, 1),
-    new SdkCard(7, Suit.Heart, level, 0),
-    new SdkCard(7, Suit.Club, level, 0),
-    new SdkCard(13, 0, level, 0),
-    new SdkCard(13, Suit.Heart, level, 0),
-    new SdkCard(13, Suit.Club, level, 0),
-    new SdkCard(13, Suit.Club, level, 1),
-    new SdkCard(8, 0, level, 0),
-    new SdkCard(8, Suit.Heart, level, 0),
-    new SdkCard(8, Suit.Club, level, 0),
-    new SdkCard(3, 0, level, 0),
-    new SdkCard(3, 0, level, 1),
-    new SdkCard(4, 0, level, 0),
-    new SdkCard(4, 0, level, 1),
-    new SdkCard(6, 0, level, 0),
-    new SdkCard(6, 0, level, 1),
-    new SdkCard(9, Suit.Heart, level, 0),
-    new SdkCard(9, Suit.Club, level, 0),
-    new SdkCard(10, Suit.Heart, level, 0),
-    new SdkCard(10, Suit.Club, level, 0),
-    new SdkCard(15, Suit.Joker, level, 0),
-    new SdkCard(15, Suit.Joker, level, 1),
-    new SdkCard(16, Suit.Joker, level, 0),
-    new SdkCard(16, Suit.Joker, level, 1),
-  ];
+  const handCards = createStandardHandCards(level);
 
   it('场景1: prev = 三张3', () => {
     const prev = fromCardList([
@@ -713,9 +511,7 @@ describe('findMinSameType - Triple (27 cards)', () => {
       new SdkCard(3, 2, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Triple);
-    expect(result!.getCards().some(c => c.rank === 4)).toBe(true);
+    expectCardsEqual(result, groundTruth['Triple 27cards: 场景1 prev = 三张3']);
   });
 
   it('场景2: prev = 三张6', () => {
@@ -725,9 +521,7 @@ describe('findMinSameType - Triple (27 cards)', () => {
       new SdkCard(6, 2, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Triple);
-    expect(result!.getCards().filter(c => c.rank === 7).length).toBeGreaterThanOrEqual(2);
+    expectCardsEqual(result, groundTruth['Triple 27cards: 场景2 prev = 三张6']);
   });
 
   it('场景3: prev = 三张K', () => {
@@ -737,8 +531,7 @@ describe('findMinSameType - Triple (27 cards)', () => {
       new SdkCard(13, 2, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
+    expectCardsEqual(result, groundTruth['Triple 27cards: 场景3 prev = 三张K']);
   });
 
   it('场景4: prev = 三张8 (测试wildcard凑三张)', () => {
@@ -748,9 +541,7 @@ describe('findMinSameType - Triple (27 cards)', () => {
       new SdkCard(8, 2, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Triple);
-    expect(result!.getCards().some(c => c.rank === 9)).toBe(true);
+    expectCardsEqual(result, groundTruth['Triple 27cards: 场景4 prev = 三张8']);
   });
 });
 
@@ -769,7 +560,6 @@ describe('findMinStraight', () => {
       new SdkCard(10, 0, level, 7),
       new SdkCard(11, 0, level, 8),
     ];
-
     const prev = fromCardList([
       new SdkCard(2, 0, level, 10),
       new SdkCard(3, 1, level, 11),
@@ -777,10 +567,8 @@ describe('findMinStraight', () => {
       new SdkCard(5, 3, level, 13),
       new SdkCard(6, 0, level, 14),
     ]);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Straight);
+    expectCardsEqual(result, groundTruth['Straight: should find smallest straight to beat prev straight']);
   });
 
   it('should find straight with wildcard', () => {
@@ -791,7 +579,6 @@ describe('findMinStraight', () => {
       new SdkCard(7, 0, level, 4),
       new SdkCard(level, Suit.Heart, level, 5),
     ];
-
     const prev = fromCardList([
       new SdkCard(2, 0, level, 10),
       new SdkCard(3, 1, level, 11),
@@ -799,10 +586,8 @@ describe('findMinStraight', () => {
       new SdkCard(5, 3, level, 13),
       new SdkCard(6, 0, level, 14),
     ]);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Straight);
+    expectCardsEqual(result, groundTruth['Straight: should find straight with wildcard']);
   });
 
   it('should return null when no straight can beat prev', () => {
@@ -813,7 +598,6 @@ describe('findMinStraight', () => {
       new SdkCard(6, 3, level, 3),
       new SdkCard(7, 0, level, 4),
     ];
-
     const prev = fromCardList([
       new SdkCard(6, 0, level, 10),
       new SdkCard(7, 1, level, 11),
@@ -821,9 +605,8 @@ describe('findMinStraight', () => {
       new SdkCard(9, 3, level, 13),
       new SdkCard(10, 0, level, 14),
     ]);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).toBeNull();
+    expectCardsEqual(result, groundTruth['Straight: should return null when no straight can beat prev']);
   });
 
   it('should find straight 10-A', () => {
@@ -834,7 +617,6 @@ describe('findMinStraight', () => {
       new SdkCard(13, 0, level, 3),
       new SdkCard(14, 0, level, 4),
     ];
-
     const prev = fromCardList([
       new SdkCard(8, 0, level, 10),
       new SdkCard(9, 1, level, 11),
@@ -842,45 +624,14 @@ describe('findMinStraight', () => {
       new SdkCard(11, 3, level, 13),
       new SdkCard(12, 0, level, 14),
     ]);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Straight);
+    expectCardsEqual(result, groundTruth['Straight: should find straight 10-A']);
   });
 });
 
 describe('findMinSameType - Straight (27 cards)', () => {
   const level = 5;
-
-  const handCards = [
-    new SdkCard(5, Suit.Heart, level, 0),
-    new SdkCard(5, Suit.Heart, level, 1),
-    new SdkCard(7, 0, level, 0),
-    new SdkCard(7, 0, level, 1),
-    new SdkCard(7, Suit.Heart, level, 0),
-    new SdkCard(7, Suit.Club, level, 0),
-    new SdkCard(13, 0, level, 0),
-    new SdkCard(13, Suit.Heart, level, 0),
-    new SdkCard(13, Suit.Club, level, 0),
-    new SdkCard(13, Suit.Club, level, 1),
-    new SdkCard(8, 0, level, 0),
-    new SdkCard(8, Suit.Heart, level, 0),
-    new SdkCard(8, Suit.Club, level, 0),
-    new SdkCard(3, 0, level, 0),
-    new SdkCard(3, 0, level, 1),
-    new SdkCard(4, 0, level, 0),
-    new SdkCard(4, 0, level, 1),
-    new SdkCard(6, 0, level, 0),
-    new SdkCard(6, 0, level, 1),
-    new SdkCard(9, Suit.Heart, level, 0),
-    new SdkCard(9, Suit.Club, level, 0),
-    new SdkCard(10, Suit.Heart, level, 0),
-    new SdkCard(10, Suit.Club, level, 0),
-    new SdkCard(15, Suit.Joker, level, 0),
-    new SdkCard(15, Suit.Joker, level, 1),
-    new SdkCard(16, Suit.Joker, level, 0),
-    new SdkCard(16, Suit.Joker, level, 1),
-  ];
+  const handCards = createStandardHandCards(level);
 
   it('场景1: prev = 顺子 A-2-3-4-5', () => {
     const prev = fromCardList([
@@ -891,11 +642,7 @@ describe('findMinSameType - Straight (27 cards)', () => {
       new SdkCard(5, 0, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Straight);
-    const rawRanks = result!.getCards().map(c => c.rawRank).sort((a, b) => a - b);
-    expect(rawRanks).toEqual([3, 4, 5, 6, 7]);
-    expect(result!.getCards().some(c => c.isWildcard())).toBe(true);
+    expectCardsEqual(result, groundTruth['Straight 27cards: 场景1 prev = 顺子 A-2-3-4-5']);
   });
 
   it('场景2: prev = 顺子 3-4-5-6-7', () => {
@@ -907,11 +654,7 @@ describe('findMinSameType - Straight (27 cards)', () => {
       new SdkCard(7, 0, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Straight);
-    const rawRanks = result!.getCards().map(c => c.rawRank).sort((a, b) => a - b);
-    expect(rawRanks).toEqual([4, 5, 6, 7, 8]);
-    expect(result!.getCards().some(c => c.isWildcard())).toBe(true);
+    expectCardsEqual(result, groundTruth['Straight 27cards: 场景2 prev = 顺子 3-4-5-6-7']);
   });
 
   it('场景3: prev = 顺子 5-6-7-8-9', () => {
@@ -923,11 +666,7 @@ describe('findMinSameType - Straight (27 cards)', () => {
       new SdkCard(9, 0, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Straight);
-    const rawRanks = result!.getCards().map(c => c.rawRank).sort((a, b) => a - b);
-    expect(rawRanks).toEqual([6, 7, 8, 9, 10]);
-    expect(result!.getCards().some(c => c.isWildcard())).toBe(false);
+    expectCardsEqual(result, groundTruth['Straight 27cards: 场景3 prev = 顺子 5-6-7-8-9']);
   });
 
   it('场景4: prev = 顺子 6-7-8-9-10', () => {
@@ -939,11 +678,7 @@ describe('findMinSameType - Straight (27 cards)', () => {
       new SdkCard(10, 0, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Straight);
-    const rawRanks = result!.getCards().map(c => c.rawRank).sort((a, b) => a - b);
-    expect(rawRanks).toEqual([5, 7, 8, 9, 10]);
-    expect(result!.getCards().some(c => c.isWildcard())).toBe(true);
+    expectCardsEqual(result, groundTruth['Straight 27cards: 场景4 prev = 顺子 6-7-8-9-10']);
   });
 
   it('场景5: prev = 顺子 10-J-Q-K-A', () => {
@@ -955,8 +690,7 @@ describe('findMinSameType - Straight (27 cards)', () => {
       new SdkCard(14, 0, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
+    expectCardsEqual(result, groundTruth['Straight 27cards: 场景5 prev = 顺子 10-J-Q-K-A']);
   });
 });
 
@@ -976,7 +710,6 @@ describe('findMinTube', () => {
       new SdkCard(7, 0, level, 8),
       new SdkCard(7, 1, level, 9),
     ];
-
     const prev = fromCardList([
       new SdkCard(2, 0, level, 10),
       new SdkCard(2, 1, level, 11),
@@ -985,10 +718,8 @@ describe('findMinTube', () => {
       new SdkCard(4, 0, level, 14),
       new SdkCard(4, 1, level, 15),
     ]);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Tube);
+    expectCardsEqual(result, groundTruth['Tube: should find smallest tube to beat prev tube']);
   });
 
   it('should find tube with wildcard', () => {
@@ -1000,7 +731,6 @@ describe('findMinTube', () => {
       new SdkCard(level, Suit.Heart, level, 4),
       new SdkCard(level, Suit.Heart, level, 5),
     ];
-
     const prev = fromCardList([
       new SdkCard(2, 0, level, 10),
       new SdkCard(2, 1, level, 11),
@@ -1009,10 +739,8 @@ describe('findMinTube', () => {
       new SdkCard(4, 0, level, 14),
       new SdkCard(4, 1, level, 15),
     ]);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Tube);
+    expectCardsEqual(result, groundTruth['Tube: should find tube with wildcard']);
   });
 
   it('should return null when no tube can beat prev', () => {
@@ -1024,7 +752,6 @@ describe('findMinTube', () => {
       new SdkCard(5, 2, level, 4),
       new SdkCard(5, 3, level, 5),
     ];
-
     const prev = fromCardList([
       new SdkCard(5, 0, level, 10),
       new SdkCard(5, 1, level, 11),
@@ -1033,9 +760,8 @@ describe('findMinTube', () => {
       new SdkCard(7, 0, level, 14),
       new SdkCard(7, 1, level, 15),
     ]);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).toBeNull();
+    expectCardsEqual(result, groundTruth['Tube: should return null when no tube can beat prev']);
   });
 
   it('should find tube QKA', () => {
@@ -1047,7 +773,6 @@ describe('findMinTube', () => {
       new SdkCard(14, 0, level, 4),
       new SdkCard(14, 1, level, 5),
     ];
-
     const prev = fromCardList([
       new SdkCard(10, 0, level, 10),
       new SdkCard(10, 1, level, 11),
@@ -1056,45 +781,14 @@ describe('findMinTube', () => {
       new SdkCard(12, 0, level, 14),
       new SdkCard(12, 1, level, 15),
     ]);
-
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.Tube);
+    expectCardsEqual(result, groundTruth['Tube: should find tube QKA']);
   });
 });
 
 describe('findMinSameType - FullHouse (27 cards)', () => {
   const level = 5;
-
-  const handCards = [
-    new SdkCard(5, Suit.Heart, level, 0),
-    new SdkCard(5, Suit.Heart, level, 1),
-    new SdkCard(7, 0, level, 0),
-    new SdkCard(7, 0, level, 1),
-    new SdkCard(7, Suit.Heart, level, 0),
-    new SdkCard(7, Suit.Club, level, 0),
-    new SdkCard(13, 0, level, 0),
-    new SdkCard(13, Suit.Heart, level, 0),
-    new SdkCard(13, Suit.Club, level, 0),
-    new SdkCard(13, Suit.Club, level, 1),
-    new SdkCard(8, 0, level, 0),
-    new SdkCard(8, Suit.Heart, level, 0),
-    new SdkCard(8, Suit.Club, level, 0),
-    new SdkCard(3, 0, level, 0),
-    new SdkCard(3, 0, level, 1),
-    new SdkCard(4, 0, level, 0),
-    new SdkCard(4, 0, level, 1),
-    new SdkCard(6, 0, level, 0),
-    new SdkCard(6, 0, level, 1),
-    new SdkCard(9, Suit.Heart, level, 0),
-    new SdkCard(9, Suit.Club, level, 0),
-    new SdkCard(10, Suit.Heart, level, 0),
-    new SdkCard(10, Suit.Club, level, 0),
-    new SdkCard(15, Suit.Joker, level, 0),
-    new SdkCard(15, Suit.Joker, level, 1),
-    new SdkCard(16, Suit.Joker, level, 0),
-    new SdkCard(16, Suit.Joker, level, 1),
-  ];
+  const handCards = createStandardHandCards(level);
 
   it('场景1: prev = 333+44 (基础三带二)', () => {
     const prev = fromCardList([
@@ -1105,9 +799,7 @@ describe('findMinSameType - FullHouse (27 cards)', () => {
       new SdkCard(4, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.FullHouse);
-    expect(result!.greaterThan(prev)).toBe(true);
+    expectCardsEqual(result, groundTruth['FullHouse 27cards: 场景1 prev = 333+44']);
   });
 
   it('场景2: prev = 666+33 (测试选最小)', () => {
@@ -1119,9 +811,7 @@ describe('findMinSameType - FullHouse (27 cards)', () => {
       new SdkCard(3, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.FullHouse);
-    expect(result!.greaterThan(prev)).toBe(true);
+    expectCardsEqual(result, groundTruth['FullHouse 27cards: 场景2 prev = 666+33']);
   });
 
   it('场景3: prev = 777+33 (需要用888)', () => {
@@ -1133,9 +823,7 @@ describe('findMinSameType - FullHouse (27 cards)', () => {
       new SdkCard(3, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.FullHouse);
-    expect(result!.greaterThan(prev)).toBe(true);
+    expectCardsEqual(result, groundTruth['FullHouse 27cards: 场景3 prev = 777+33']);
   });
 
   it('场景4: prev = 888+44 (需要百搭凑三张)', () => {
@@ -1147,9 +835,7 @@ describe('findMinSameType - FullHouse (27 cards)', () => {
       new SdkCard(4, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.FullHouse);
-    expect(result!.greaterThan(prev)).toBe(true);
+    expectCardsEqual(result, groundTruth['FullHouse 27cards: 场景4 prev = 888+44']);
   });
 
   it('场景5: prev = 777+AA (测试用百搭或王对)', () => {
@@ -1161,9 +847,7 @@ describe('findMinSameType - FullHouse (27 cards)', () => {
       new SdkCard(14, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.FullHouse);
-    expect(result!.greaterThan(prev)).toBe(true);
+    expectCardsEqual(result, groundTruth['FullHouse 27cards: 场景5 prev = 777+AA']);
   });
 
   it('场景6: prev = 888+大王对 (测试更大三张)', () => {
@@ -1175,9 +859,7 @@ describe('findMinSameType - FullHouse (27 cards)', () => {
       new SdkCard(16, Suit.Joker, level, 1),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.FullHouse);
-    expect(result!.greaterThan(prev)).toBe(true);
+    expectCardsEqual(result, groundTruth['FullHouse 27cards: 场景6 prev = 888+大王对']);
   });
 
   it('场景7: prev = KKK+大王对 (无法压过用炸弹)', () => {
@@ -1189,8 +871,7 @@ describe('findMinSameType - FullHouse (27 cards)', () => {
       new SdkCard(16, Suit.Joker, level, 1),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.NaiveBomb);
+    expectCardsEqual(result, groundTruth['FullHouse 27cards: 场景7 prev = KKK+大王对']);
   });
 
   it('场景8: prev = 999+1010 (边界测试)', () => {
@@ -1202,7 +883,6 @@ describe('findMinSameType - FullHouse (27 cards)', () => {
       new SdkCard(10, 1, level, 0),
     ]);
     const result = findMinPlay(handCards, prev);
-    expect(result).not.toBeNull();
-    expect(result!.getType()).toBe(CompType.FullHouse);
+    expectCardsEqual(result, groundTruth['FullHouse 27cards: 场景8 prev = 999+1010']);
   });
 });

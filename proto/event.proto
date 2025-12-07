@@ -252,6 +252,8 @@ message TrickEndedPayload {
 message PlayerPlayedPayload {
   // 玩家出的牌列表
   repeated guandan.common.Card cards = 1;
+  // 牌型
+  guandan.common.CompType comp_type = 2;
 }
 
 // PlayerPassedPayload 玩家过牌事件数据

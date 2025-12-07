@@ -15,6 +15,8 @@ import { FullHouse } from './comps/fullhouse';
 interface HandAnalysis {
   byRank: Map<number, SdkCard[]>;
   bySuitRaw: Map<number, Map<number, SdkCard[]>>;
+  byRawRank: Map<number, SdkCard[]>;
+  rawRankCounts: Map<number, number>;
   wildcards: SdkCard[];
   smallJokers: SdkCard[];
   bigJokers: SdkCard[];
@@ -23,6 +25,8 @@ interface HandAnalysis {
 function analyzeHand(cards: SdkCard[]): HandAnalysis {
   const byRank = new Map<number, SdkCard[]>();
   const bySuitRaw = new Map<number, Map<number, SdkCard[]>>();
+  const byRawRank = new Map<number, SdkCard[]>();
+  const rawRankCounts = new Map<number, number>();
   const wildcards: SdkCard[] = [];
   const smallJokers: SdkCard[] = [];
   const bigJokers: SdkCard[] = [];
@@ -45,6 +49,11 @@ function analyzeHand(cards: SdkCard[]): HandAnalysis {
     rankList.push(card);
     byRank.set(card.rank, rankList);
 
+    const rawRankList = byRawRank.get(card.rawRank) ?? [];
+    rawRankList.push(card);
+    byRawRank.set(card.rawRank, rawRankList);
+    rawRankCounts.set(card.rawRank, (rawRankCounts.get(card.rawRank) ?? 0) + 1);
+
     if (!bySuitRaw.has(card.suit)) {
       bySuitRaw.set(card.suit, new Map());
     }
@@ -54,7 +63,7 @@ function analyzeHand(cards: SdkCard[]): HandAnalysis {
     suitMap.set(card.rawRank, rawList);
   }
 
-  return { byRank, bySuitRaw, wildcards, smallJokers, bigJokers };
+  return { byRank, bySuitRaw, byRawRank, rawRankCounts, wildcards, smallJokers, bigJokers };
 }
 
 const straightStartPositions = [
@@ -161,7 +170,7 @@ function findAllBombs(cards: SdkCard[]): CardComp[] {
   return bombs;
 }
 
-function compareBombs(a: CardComp, b: CardComp): number {
+function compareComps(a: CardComp, b: CardComp): number {
   if (a.greaterThan(b)) return 1;
   if (b.greaterThan(a)) return -1;
   const aWildcards = a.getCards().filter(c => c.isWildcard()).length;
@@ -169,12 +178,21 @@ function compareBombs(a: CardComp, b: CardComp): number {
   return aWildcards - bWildcards;
 }
 
-function compareComps(a: CardComp, b: CardComp): number {
-  if (a.greaterThan(b)) return 1;
-  if (b.greaterThan(a)) return -1;
-  const aWildcards = a.getCards().filter(c => c.isWildcard()).length;
-  const bWildcards = b.getCards().filter(c => c.isWildcard()).length;
-  return aWildcards - bWildcards;
+function findFirstGreater(candidates: CardComp[], prev: CardComp): CardComp | null {
+  candidates.sort(compareComps);
+  return candidates.find(comp => comp.greaterThan(prev)) ?? null;
+}
+
+function fillWithWildcards(
+  normalCards: SdkCard[],
+  wildcards: SdkCard[],
+  targetCount: number,
+  wildcardOffset: number = 0
+): { cards: SdkCard[]; wildcardUsed: number } {
+  const result = normalCards.slice(0, targetCount);
+  const needed = targetCount - result.length;
+  result.push(...wildcards.slice(wildcardOffset, wildcardOffset + needed));
+  return { cards: result, wildcardUsed: needed };
 }
 
 function createCompByCount(cards: SdkCard[], count: 1 | 2 | 3): CardComp {
@@ -220,28 +238,11 @@ function findMinSameNumber(
   const comps = candidates
     .map((c) => createCompByCount(c, count))
     .filter((c) => c.isValid());
-  comps.sort(compareComps);
-
-  for (const comp of comps) {
-    if (comp.greaterThan(prev)) {
-      return comp;
-    }
-  }
-  return null;
+  return findFirstGreater(comps, prev);
 }
 
 function findMinStraight(cards: SdkCard[], prev: CardComp): CardComp | null {
   const analysis = analyzeHand(cards);
-
-  const byRawRank = new Map<number, SdkCard[]>();
-  for (const [_rank, rankCards] of analysis.byRank) {
-    for (const card of rankCards) {
-      const list = byRawRank.get(card.rawRank) ?? [];
-      list.push(card);
-      byRawRank.set(card.rawRank, list);
-    }
-  }
-
   const candidates: CardComp[] = [];
 
   for (const positions of straightStartPositions) {
@@ -249,7 +250,7 @@ function findMinStraight(cards: SdkCard[], prev: CardComp): CardComp | null {
     let missing = 0;
 
     for (const rawRank of positions) {
-      const cardsAtRank = byRawRank.get(rawRank) ?? [];
+      const cardsAtRank = analysis.byRawRank.get(rawRank) ?? [];
       if (cardsAtRank.length > 0) {
         selectedCards.push(cardsAtRank[0]);
       } else {
@@ -266,51 +267,28 @@ function findMinStraight(cards: SdkCard[], prev: CardComp): CardComp | null {
     }
   }
 
-  candidates.sort(compareComps);
-
-  for (const comp of candidates) {
-    if (comp.greaterThan(prev)) {
-      return comp;
-    }
-  }
-  return null;
+  return findFirstGreater(candidates, prev);
 }
 
 function findMinTube(cards: SdkCard[], prev: CardComp): CardComp | null {
   const analysis = analyzeHand(cards);
-
-  const cardsByRawRank = new Map<number, SdkCard[]>();
-  const cardCounts = new Map<number, number>();
-  for (const [_rank, rankCards] of analysis.byRank) {
-    for (const card of rankCards) {
-      const list = cardsByRawRank.get(card.rawRank) ?? [];
-      list.push(card);
-      cardsByRawRank.set(card.rawRank, list);
-      cardCounts.set(card.rawRank, (cardCounts.get(card.rawRank) ?? 0) + 1);
-    }
-  }
-
   const candidates: CardComp[] = [];
 
   for (const triple of tubeStartPositions) {
     let needed = 0;
     for (const rawRank of triple) {
-      const have = cardCounts.get(rawRank) ?? 0;
+      const have = analysis.rawRankCounts.get(rawRank) ?? 0;
       if (have < 2) needed += 2 - have;
     }
 
     if (needed <= analysis.wildcards.length) {
       const selectedCards: SdkCard[] = [];
-      let wildcardIdx = 0;
+      let wildcardOffset = 0;
       for (const rawRank of triple) {
-        const cardsAtRank = cardsByRawRank.get(rawRank) ?? [];
-        for (let i = 0; i < 2; i++) {
-          if (i < cardsAtRank.length) {
-            selectedCards.push(cardsAtRank[i]);
-          } else {
-            selectedCards.push(analysis.wildcards[wildcardIdx++]);
-          }
-        }
+        const cardsAtRank = analysis.byRawRank.get(rawRank) ?? [];
+        const filled = fillWithWildcards(cardsAtRank, analysis.wildcards, 2, wildcardOffset);
+        selectedCards.push(...filled.cards);
+        wildcardOffset += filled.wildcardUsed;
       }
       const tube = new Tube(selectedCards);
       if (tube.isValid()) {
@@ -319,51 +297,28 @@ function findMinTube(cards: SdkCard[], prev: CardComp): CardComp | null {
     }
   }
 
-  candidates.sort(compareComps);
-
-  for (const comp of candidates) {
-    if (comp.greaterThan(prev)) {
-      return comp;
-    }
-  }
-  return null;
+  return findFirstGreater(candidates, prev);
 }
 
 function findMinPlate(cards: SdkCard[], prev: CardComp): CardComp | null {
   const analysis = analyzeHand(cards);
-
-  const cardsByRawRank = new Map<number, SdkCard[]>();
-  const cardCounts = new Map<number, number>();
-  for (const [_rank, rankCards] of analysis.byRank) {
-    for (const card of rankCards) {
-      const list = cardsByRawRank.get(card.rawRank) ?? [];
-      list.push(card);
-      cardsByRawRank.set(card.rawRank, list);
-      cardCounts.set(card.rawRank, (cardCounts.get(card.rawRank) ?? 0) + 1);
-    }
-  }
-
   const candidates: CardComp[] = [];
 
   for (const pair of plateStartPositions) {
     let needed = 0;
     for (const rawRank of pair) {
-      const have = cardCounts.get(rawRank) ?? 0;
+      const have = analysis.rawRankCounts.get(rawRank) ?? 0;
       if (have < 3) needed += 3 - have;
     }
 
     if (needed <= analysis.wildcards.length) {
       const selectedCards: SdkCard[] = [];
-      let wildcardIdx = 0;
+      let wildcardOffset = 0;
       for (const rawRank of pair) {
-        const cardsAtRank = cardsByRawRank.get(rawRank) ?? [];
-        for (let i = 0; i < 3; i++) {
-          if (i < cardsAtRank.length) {
-            selectedCards.push(cardsAtRank[i]);
-          } else {
-            selectedCards.push(analysis.wildcards[wildcardIdx++]);
-          }
-        }
+        const cardsAtRank = analysis.byRawRank.get(rawRank) ?? [];
+        const filled = fillWithWildcards(cardsAtRank, analysis.wildcards, 3, wildcardOffset);
+        selectedCards.push(...filled.cards);
+        wildcardOffset += filled.wildcardUsed;
       }
       const plate = new Plate(selectedCards);
       if (plate.isValid()) {
@@ -372,14 +327,7 @@ function findMinPlate(cards: SdkCard[], prev: CardComp): CardComp | null {
     }
   }
 
-  candidates.sort(compareComps);
-
-  for (const comp of candidates) {
-    if (comp.greaterThan(prev)) {
-      return comp;
-    }
-  }
-  return null;
+  return findFirstGreater(candidates, prev);
 }
 
 function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
@@ -411,21 +359,13 @@ function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
 
       if (pairNeed > remainingWildcards) continue;
 
-      const selectedCards: SdkCard[] = [];
-
       const tripleCards = cardsByRank.get(tripleRank) ?? [];
-      selectedCards.push(...tripleCards.slice(0, 3));
-      let wildcardIdx = 0;
-      for (let i = tripleCards.length; i < 3; i++) {
-        selectedCards.push(analysis.wildcards[wildcardIdx++]);
-      }
+      const tripleFilled = fillWithWildcards(tripleCards, analysis.wildcards, 3, 0);
 
       const pairCards = cardsByRank.get(pairRank) ?? [];
-      selectedCards.push(...pairCards.slice(0, 2));
-      for (let i = pairCards.length; i < 2; i++) {
-        selectedCards.push(analysis.wildcards[wildcardIdx++]);
-      }
+      const pairFilled = fillWithWildcards(pairCards, analysis.wildcards, 2, tripleFilled.wildcardUsed);
 
+      const selectedCards = [...tripleFilled.cards, ...pairFilled.cards];
       const fullHouse = new FullHouse(selectedCards);
       if (fullHouse.isValid()) {
         candidates.push(fullHouse);
@@ -433,14 +373,9 @@ function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
     }
 
     if (analysis.smallJokers.length >= 2) {
-      const selectedCards: SdkCard[] = [];
       const tripleCards = cardsByRank.get(tripleRank) ?? [];
-      selectedCards.push(...tripleCards.slice(0, 3));
-      let wildcardIdx = 0;
-      for (let i = tripleCards.length; i < 3; i++) {
-        selectedCards.push(analysis.wildcards[wildcardIdx++]);
-      }
-      selectedCards.push(analysis.smallJokers[0], analysis.smallJokers[1]);
+      const tripleFilled = fillWithWildcards(tripleCards, analysis.wildcards, 3, 0);
+      const selectedCards = [...tripleFilled.cards, analysis.smallJokers[0], analysis.smallJokers[1]];
 
       const fullHouse = new FullHouse(selectedCards);
       if (fullHouse.isValid()) {
@@ -449,14 +384,9 @@ function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
     }
 
     if (analysis.bigJokers.length >= 2) {
-      const selectedCards: SdkCard[] = [];
       const tripleCards = cardsByRank.get(tripleRank) ?? [];
-      selectedCards.push(...tripleCards.slice(0, 3));
-      let wildcardIdx = 0;
-      for (let i = tripleCards.length; i < 3; i++) {
-        selectedCards.push(analysis.wildcards[wildcardIdx++]);
-      }
-      selectedCards.push(analysis.bigJokers[0], analysis.bigJokers[1]);
+      const tripleFilled = fillWithWildcards(tripleCards, analysis.wildcards, 3, 0);
+      const selectedCards = [...tripleFilled.cards, analysis.bigJokers[0], analysis.bigJokers[1]];
 
       const fullHouse = new FullHouse(selectedCards);
       if (fullHouse.isValid()) {
@@ -465,14 +395,7 @@ function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
     }
   }
 
-  candidates.sort(compareComps);
-
-  for (const comp of candidates) {
-    if (comp.greaterThan(prev)) {
-      return comp;
-    }
-  }
-  return null;
+  return findFirstGreater(candidates, prev);
 }
 
 export function findMinPlay(cards: SdkCard[], prev: CardComp): CardComp | null {
@@ -515,12 +438,5 @@ function findMinSameType(
 
 function findMinBomb(cards: SdkCard[], prev: CardComp): CardComp | null {
   const allBombs = findAllBombs(cards);
-  allBombs.sort(compareBombs);
-
-  for (const bomb of allBombs) {
-    if (bomb.greaterThan(prev)) {
-      return bomb;
-    }
-  }
-  return null;
+  return findFirstGreater(allBombs, prev);
 }
