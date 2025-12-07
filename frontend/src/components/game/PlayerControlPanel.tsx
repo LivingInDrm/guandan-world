@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Card } from '../../types';
+import type { Card, PlayAction } from '../../types';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
 
@@ -13,6 +13,11 @@ interface PlayerControlPanelProps {
   turnDeadlineAtMs: number;
   onPlayCards: (cards: Card[]) => void;
   onPass: () => void;
+  onHint: (cards: Card[]) => void;
+  plays: PlayAction[];
+  leader?: number;
+  playerSeat: number;
+  dealLevel: number;
   disabled?: boolean;
 }
 
@@ -26,6 +31,11 @@ const PlayerControlPanel: React.FC<PlayerControlPanelProps> = ({
   turnDeadlineAtMs,
   onPlayCards,
   onPass,
+  onHint,
+  plays,
+  leader,
+  playerSeat,
+  dealLevel,
   disabled = false,
 }) => {
   return (
@@ -38,6 +48,12 @@ const PlayerControlPanel: React.FC<PlayerControlPanelProps> = ({
           turnDeadlineAtMs={turnDeadlineAtMs}
           onPlayCards={onPlayCards}
           onPass={onPass}
+          onHint={onHint}
+          handCards={cards}
+          plays={plays}
+          leader={leader}
+          playerSeat={playerSeat}
+          dealLevel={dealLevel}
           disabled={disabled}
         />
       </div>

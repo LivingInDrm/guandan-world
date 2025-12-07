@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { Story } from '@ladle/react';
 import PlayerControlPanel from './PlayerControlPanel';
-import type { Card } from '../../types/proto';
+import type { Card, PlayAction } from '../../types/proto';
+import { CompType } from '../../types/generated/common';
 
 function createCard(rank: number, suit: number, deckIndex: number): Card {
   return { rank, suit, deckIndex } as Card;
@@ -49,6 +50,16 @@ function createJokerHand(): Card[] {
   ];
 }
 
+function createPlayAction(cards: Card[], compType: CompType, playerSeat = 1): PlayAction {
+  return {
+    playerSeat,
+    cards,
+    compType,
+    timestampMs: Date.now(),
+    isPass: false,
+  };
+}
+
 interface WrapperProps {
   initialCards: Card[];
   initialSelected?: Card[];
@@ -56,6 +67,10 @@ interface WrapperProps {
   canPlay?: boolean;
   isMyTurn?: boolean;
   disabled?: boolean;
+  plays?: PlayAction[];
+  leader?: number;
+  playerSeat?: number;
+  dealLevel?: number;
 }
 
 const InteractiveWrapper: React.FC<WrapperProps> = ({
@@ -65,6 +80,10 @@ const InteractiveWrapper: React.FC<WrapperProps> = ({
   canPlay = true,
   isMyTurn = true,
   disabled = false,
+  plays = [],
+  leader = 0,
+  playerSeat = 0,
+  dealLevel = 2,
 }) => {
   const [selectedCards, setSelectedCards] = useState<Card[]>(initialSelected);
   const turnDeadlineAtMs = Date.now() + 30000;
@@ -79,6 +98,11 @@ const InteractiveWrapper: React.FC<WrapperProps> = ({
     setSelectedCards([]);
   };
 
+  const handleHint = (cards: Card[]) => {
+    console.log('Hint:', cards);
+    setSelectedCards(cards);
+  };
+
   return (
     <div className="inline-block border border-dashed border-gray-400">
       <PlayerControlPanel
@@ -91,6 +115,11 @@ const InteractiveWrapper: React.FC<WrapperProps> = ({
         turnDeadlineAtMs={turnDeadlineAtMs}
         onPlayCards={handlePlayCards}
         onPass={handlePass}
+        onHint={handleHint}
+        plays={plays}
+        leader={leader}
+        playerSeat={playerSeat}
+        dealLevel={dealLevel}
         disabled={disabled}
       />
     </div>
@@ -151,4 +180,68 @@ export const FewCards: Story = () => {
 };
 FewCards.meta = {
   description: '少量手牌 - 6张',
+};
+
+export const WithSingle: Story = () => {
+  const cards = createMockHand();
+  const plays = [createPlayAction([createCard(10, 3, 100)], CompType.COMP_TYPE_SINGLE)];
+  return <InteractiveWrapper initialCards={cards} plays={plays} leader={1} />;
+};
+WithSingle.meta = {
+  description: '对手出单张 - 方片10',
+};
+
+export const WithPair: Story = () => {
+  const cards = createMockHand();
+  const plays = [createPlayAction([createCard(11, 0, 100), createCard(11, 0, 101)], CompType.COMP_TYPE_PAIR)];
+  return <InteractiveWrapper initialCards={cards} plays={plays} leader={1} />;
+};
+WithPair.meta = {
+  description: '对手出对子 - 黑桃JJ',
+};
+
+export const WithTriple: Story = () => {
+  const cards = createMockHand();
+  const plays = [createPlayAction([createCard(14, 0, 100), createCard(14, 1, 101), createCard(14, 2, 102)], CompType.COMP_TYPE_TRIPLE)];
+  return <InteractiveWrapper initialCards={cards} plays={plays} leader={1} />;
+};
+WithTriple.meta = {
+  description: '对手出三张 - AAA',
+};
+
+export const WithPlate: Story = () => {
+  const cards = createMockHand();
+  const plays = [createPlayAction([
+    createCard(11, 0, 100), createCard(11, 1, 101),
+    createCard(12, 0, 102), createCard(12, 1, 103),
+    createCard(13, 0, 104), createCard(13, 1, 105),
+  ], CompType.COMP_TYPE_PLATE)];
+  return <InteractiveWrapper initialCards={cards} plays={plays} leader={1} />;
+};
+WithPlate.meta = {
+  description: '对手出钢板 - JJQQKK',
+};
+
+export const WithTube: Story = () => {
+  const cards = createMockHand();
+  const plays = [createPlayAction([
+    createCard(12, 0, 100), createCard(12, 1, 101), createCard(12, 2, 102),
+    createCard(13, 0, 103), createCard(13, 1, 104), createCard(13, 2, 105),
+  ], CompType.COMP_TYPE_TUBE)];
+  return <InteractiveWrapper initialCards={cards} plays={plays} leader={1} />;
+};
+WithTube.meta = {
+  description: '对手出钢管 - QQQKKK',
+};
+
+export const WithFullHouse: Story = () => {
+  const cards = createMockHand();
+  const plays = [createPlayAction([
+    createCard(9, 0, 100), createCard(9, 1, 101), createCard(9, 2, 102),
+    createCard(3, 0, 103), createCard(3, 1, 104),
+  ], CompType.COMP_TYPE_FULL_HOUSE)];
+  return <InteractiveWrapper initialCards={cards} plays={plays} leader={1} />;
+};
+WithFullHouse.meta = {
+  description: '对手出葫芦 - 99933',
 };

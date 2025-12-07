@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@guandan/sdk-ts': path.resolve(__dirname, '../packages/sdk-ts/src'),
+    },
+  },
   server: {
     host: true, // 监听所有网络接口，Docker 中需要
     port: 5173,

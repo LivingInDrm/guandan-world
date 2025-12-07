@@ -568,8 +568,12 @@ const GamePage: React.FC = () => {
   const renderPlaying = () => {
     if (!playerViewData || !currentRoom || playerSeat === null) return null;
 
-    const { teamLevels, dealLevel, plays, currentTurn, playStates } = playerViewData;
+    const { teamLevels, dealLevel, plays, currentTurn, playStates, leader } = playerViewData;
     const players = currentRoom.players;
+
+    const handleHint = (cards: Card[]) => {
+      setSelectedCards(cards);
+    };
 
     return (
       <div className="max-w-6xl mx-auto p-6">
@@ -595,6 +599,11 @@ const GamePage: React.FC = () => {
             turnDeadlineAtMs={turnDeadline?.deadlineAtMs || 0}
             onPlayCards={handlePlayCards}
             onPass={handlePass}
+            onHint={handleHint}
+            plays={plays || []}
+            leader={leader}
+            playerSeat={playerSeat}
+            dealLevel={dealLevel || 2}
             disabled={false}
           />
         </div>

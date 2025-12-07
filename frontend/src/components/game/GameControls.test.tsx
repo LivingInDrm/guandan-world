@@ -12,13 +12,22 @@ const mockCards: Card[] = [
 describe('GameControls', () => {
   let mockOnPlayCards: ReturnType<typeof vi.fn>;
   let mockOnPass: ReturnType<typeof vi.fn>;
+  let mockOnHint: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockOnPlayCards = vi.fn();
     mockOnPass = vi.fn();
+    mockOnHint = vi.fn();
   });
 
   const futureDeadline = () => Date.now() + 20000;
+
+  const defaultProps = {
+    handCards: mockCards,
+    plays: [],
+    playerSeat: 0,
+    dealLevel: 2,
+  };
 
   it('renders all four control buttons', () => {
     render(
@@ -29,6 +38,8 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 
@@ -46,6 +57,8 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 
@@ -62,6 +75,8 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 
@@ -78,6 +93,8 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 
@@ -96,6 +113,8 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 
@@ -105,7 +124,7 @@ describe('GameControls', () => {
     expect(mockOnPass).toHaveBeenCalled();
   });
 
-  it('calls onPass when hint button is clicked (placeholder behavior)', () => {
+  it('calls onHint when hint button is clicked', () => {
     render(
       <GameControls
         selectedCards={[]}
@@ -114,13 +133,15 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 
     const hintButton = screen.getByText('提示').closest('button');
     fireEvent.click(hintButton!);
 
-    expect(mockOnPass).toHaveBeenCalled();
+    expect(mockOnHint).toHaveBeenCalled();
   });
 
   it('disables all buttons when disabled prop is true', () => {
@@ -132,7 +153,9 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
         disabled={true}
+        {...defaultProps}
       />
     );
 
@@ -154,6 +177,8 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 
@@ -173,6 +198,8 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 
@@ -192,6 +219,8 @@ describe('GameControls', () => {
         turnDeadlineAtMs={futureDeadline()}
         onPlayCards={mockOnPlayCards}
         onPass={mockOnPass}
+        onHint={mockOnHint}
+        {...defaultProps}
       />
     );
 

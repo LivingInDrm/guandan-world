@@ -11,6 +11,7 @@ export { BaseComp } from './compBase';
 
 export { fromCardList } from './fromCardList';
 export { findMinPlay } from './findMinPlay';
+export { FirstPlayRecommender, NextPlayRecommender } from './playRecommender';
 
 export { Fold } from './comps/fold';
 export { Illegal } from './comps/illegal';
