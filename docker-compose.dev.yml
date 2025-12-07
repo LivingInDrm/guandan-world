@@ -41,7 +41,8 @@ services:
       - DB_PASSWORD=guandan_dev
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - JWT_SECRET=dev-secret-key-change-in-production
+      - JWT_ACCESS_SECRET=dev-access-secret-32-chars-minimum
+      - JWT_REFRESH_SECRET=dev-refresh-secret-32-chars-minimum
       - LOG_LEVEL=debug
     depends_on:
       postgres:

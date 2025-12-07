@@ -20,7 +20,7 @@ func main() {
 	verbose := flag.Bool("verbose", false, "Enable verbose logging")
 	numPlayers := flag.Int("num-players", 3, "Number of AI players to create (default: 3)")
 	usernamePrefix := flag.String("username-prefix", "ai_player", "Username prefix for AI players")
-	password := flag.String("password", "ai123456", "Password for AI players")
+	password := flag.String("password", "Ai@123456", "Password for AI players")
 	playDelay := flag.Int("play-delay", 2, "AI play delay in seconds (default: 2)")
 
 	flag.Parse()

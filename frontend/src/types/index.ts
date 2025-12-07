@@ -63,7 +63,8 @@ export interface User {
 }
 
 export interface AuthToken {
-  token: string;
+  access_token: string;
+  refresh_token: string;
   expires_at: string;
   user_id: string;
 }

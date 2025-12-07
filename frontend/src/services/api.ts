@@ -8,9 +8,6 @@ import type {
   Room
 } from '../types';
 
-// API configuration
-// 开发环境使用空字符串（相对路径，通过 Vite 代理）
-// 生产环境通过 VITE_API_BASE_URL 环境变量配置完整 URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 class ApiError extends Error {
@@ -32,6 +29,8 @@ class ApiError extends Error {
 class ApiClient {
   private baseURL: string;
   private token: string | null = null;
+  private refreshPromise: Promise<AuthResponse> | null = null;
+  private onUnauthorized: (() => void) | null = null;
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
@@ -41,9 +40,14 @@ class ApiClient {
     this.token = token;
   }
 
+  setOnUnauthorized(callback: () => void) {
+    this.onUnauthorized = callback;
+  }
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    skipAuth: boolean = false
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     
@@ -52,7 +56,7 @@ class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
-    if (this.token) {
+    if (this.token && !skipAuth) {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
@@ -79,6 +83,11 @@ class ApiClient {
       };
     } catch (error) {
       if (error instanceof ApiError) {
+        if (error.status === 401 && error.response?.error === 'token_expired') {
+          if (this.onUnauthorized) {
+            this.onUnauthorized();
+          }
+        }
         throw error;
       }
       
@@ -89,30 +98,51 @@ class ApiClient {
     }
   }
 
-  // Authentication APIs
-  async login(credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> {
-    return this.request<AuthResponse>('/api/auth/login', {
+  async login(credentials: LoginRequest): Promise<AuthResponse> {
+    const response = await this.request<AuthResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
-    });
+    }, true);
+    return response.data!;
   }
 
-  async register(userData: RegisterRequest): Promise<ApiResponse<AuthResponse>> {
-    return this.request<AuthResponse>('/api/auth/register', {
+  async register(userData: RegisterRequest): Promise<AuthResponse> {
+    const response = await this.request<AuthResponse>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
-    });
+    }, true);
+    return response.data!;
   }
 
-  async logout(): Promise<ApiResponse<void>> {
+  async refreshToken(refreshToken: string): Promise<AuthResponse> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = (async () => {
+      try {
+        const response = await this.request<AuthResponse>('/api/auth/refresh', {
+          method: 'POST',
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        }, true);
+        return response.data!;
+      } finally {
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
+  }
+
+  async logout(refreshToken?: string): Promise<ApiResponse<void>> {
     const response = await this.request<void>('/api/auth/logout', {
       method: 'POST',
+      body: JSON.stringify({ refresh_token: refreshToken || '' }),
     });
     this.token = null;
     return response;
   }
 
-  // Room APIs
   async getRoomList(page: number = 1, limit: number = 12): Promise<ApiResponse<RoomListResponse>> {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -127,7 +157,6 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(roomData),
     });
-    // Extract room from response
     return {
       ...response,
       data: response.data?.room as Room
@@ -138,7 +167,6 @@ class ApiClient {
     const response = await this.request<{ room: Room }>(`/api/rooms/${roomId}/join`, {
       method: 'POST',
     });
-    // Extract room from response
     return {
       ...response,
       data: response.data?.room as Room
@@ -153,7 +181,6 @@ class ApiClient {
 
   async getRoomDetails(roomId: string): Promise<ApiResponse<Room>> {
     const response = await this.request<{ room: Room }>(`/api/rooms/${roomId}`);
-    // Extract room from response
     return {
       ...response,
       data: response.data?.room as Room
@@ -162,7 +189,6 @@ class ApiClient {
 
   async getMyRoom(): Promise<ApiResponse<Room>> {
     const response = await this.request<{ room: Room }>('/api/rooms/my');
-    // Extract room from response
     return {
       ...response,
       data: response.data?.room as Room
@@ -175,7 +201,6 @@ class ApiClient {
     });
   }
 
-  // Game APIs
   async playCards(roomId: string, playerSeat: number, deckIndexes: number[]): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/game/driver/play-decision`, {
       method: 'POST',
@@ -222,14 +247,11 @@ class ApiClient {
     });
   }
 
-  // Health check
   async healthCheck(): Promise<ApiResponse<{ status: string }>> {
     return this.request<{ status: string }>('/healthz');
   }
 }
 
-// Create singleton instance
 export const apiClient = new ApiClient();
 
-// Export the class for testing
 export { ApiClient, ApiError };

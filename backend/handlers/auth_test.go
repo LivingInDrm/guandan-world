@@ -18,7 +18,7 @@ import (
 func setupTestRouter() (*gin.Engine, *AuthHandler, auth.AuthService) {
 	gin.SetMode(gin.TestMode)
 	
-	authService := auth.NewAuthService("test-secret", time.Hour)
+	authService := auth.NewTestAuthService("test-secret", time.Hour)
 	authHandler := NewAuthHandler(authService)
 	
 	router := gin.New()
@@ -52,7 +52,7 @@ func TestAuthHandler_Register(t *testing.T) {
 		assert.Equal(t, "testuser", response.User.Username)
 		assert.NotEmpty(t, response.User.ID)
 		assert.True(t, response.User.Online)
-		assert.NotEmpty(t, response.Token.Token)
+		assert.NotEmpty(t, response.Token.AccessToken)
 		assert.Equal(t, response.User.ID, response.Token.UserID)
 	})
 
@@ -166,7 +166,7 @@ func TestAuthHandler_Login(t *testing.T) {
 
 		assert.Equal(t, "logintest", response.User.Username)
 		assert.True(t, response.User.Online)
-		assert.NotEmpty(t, response.Token.Token)
+		assert.NotEmpty(t, response.Token.AccessToken)
 	})
 
 	t.Run("invalid credentials", func(t *testing.T) {
@@ -228,8 +228,10 @@ func TestAuthHandler_Logout(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("successful logout", func(t *testing.T) {
-		req, _ := http.NewRequest("POST", "/api/auth/logout", nil)
-		req.Header.Set("Authorization", "Bearer "+token.Token)
+		body := map[string]string{"refresh_token": token.RefreshToken}
+		bodyBytes, _ := json.Marshal(body)
+		req, _ := http.NewRequest("POST", "/api/auth/logout", bytes.NewBuffer(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
 		
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
@@ -240,49 +242,30 @@ func TestAuthHandler_Logout(t *testing.T) {
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		require.NoError(t, err)
 		assert.Equal(t, "Successfully logged out", response["message"])
-
-		// Verify token is no longer valid
-		_, err = authService.ValidateToken(token.Token)
-		assert.Error(t, err)
 	})
 
-	t.Run("missing authorization header", func(t *testing.T) {
-		req, _ := http.NewRequest("POST", "/api/auth/logout", nil)
+	t.Run("logout without refresh token", func(t *testing.T) {
+		body := map[string]string{}
+		bodyBytes, _ := json.Marshal(body)
+		req, _ := http.NewRequest("POST", "/api/auth/logout", bytes.NewBuffer(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
 		
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-
-		var response ErrorResponse
-		err := json.Unmarshal(w.Body.Bytes(), &response)
-		require.NoError(t, err)
-		assert.Equal(t, "missing_token", response.Error)
+		assert.Equal(t, http.StatusOK, w.Code)
 	})
 
-	t.Run("invalid token format", func(t *testing.T) {
-		req, _ := http.NewRequest("POST", "/api/auth/logout", nil)
-		req.Header.Set("Authorization", "InvalidFormat")
+	t.Run("logout with invalid refresh token", func(t *testing.T) {
+		body := map[string]string{"refresh_token": "invalid-token"}
+		bodyBytes, _ := json.Marshal(body)
+		req, _ := http.NewRequest("POST", "/api/auth/logout", bytes.NewBuffer(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
 		
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-
-		var response ErrorResponse
-		err := json.Unmarshal(w.Body.Bytes(), &response)
-		require.NoError(t, err)
-		assert.Equal(t, "invalid_token_format", response.Error)
-	})
-
-	t.Run("invalid token", func(t *testing.T) {
-		req, _ := http.NewRequest("POST", "/api/auth/logout", nil)
-		req.Header.Set("Authorization", "Bearer invalid-token")
-		
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Equal(t, http.StatusOK, w.Code)
 	})
 }
 
@@ -298,7 +281,7 @@ func TestAuthHandler_Me(t *testing.T) {
 
 	t.Run("successful me request", func(t *testing.T) {
 		req, _ := http.NewRequest("GET", "/api/auth/me", nil)
-		req.Header.Set("Authorization", "Bearer "+token.Token)
+		req.Header.Set("Authorization", "Bearer "+token.AccessToken)
 		
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
@@ -358,7 +341,7 @@ func TestAuthHandler_JWTMiddleware(t *testing.T) {
 
 	t.Run("valid token", func(t *testing.T) {
 		req, _ := http.NewRequest("GET", "/api/protected/test", nil)
-		req.Header.Set("Authorization", "Bearer "+token.Token)
+		req.Header.Set("Authorization", "Bearer "+token.AccessToken)
 		
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
@@ -395,7 +378,7 @@ func TestAuthHandler_JWTMiddleware(t *testing.T) {
 	t.Run("expired token", func(t *testing.T) {
 		// Create a new router with short expiry service
 		gin.SetMode(gin.TestMode)
-		shortExpiryService := auth.NewAuthService("test-secret", time.Millisecond*100)
+		shortExpiryService := auth.NewTestAuthService("test-secret", time.Millisecond*100)
 		shortExpiryHandler := NewAuthHandler(shortExpiryService)
 		
 		shortExpiryRouter := gin.New()
@@ -418,7 +401,7 @@ func TestAuthHandler_JWTMiddleware(t *testing.T) {
 		time.Sleep(time.Millisecond * 200)
 
 		req, _ := http.NewRequest("GET", "/api/protected/test", nil)
-		req.Header.Set("Authorization", "Bearer "+expiredToken.Token)
+		req.Header.Set("Authorization", "Bearer "+expiredToken.AccessToken)
 		
 		w := httptest.NewRecorder()
 		shortExpiryRouter.ServeHTTP(w, req)
@@ -435,7 +418,7 @@ func TestAuthHandler_JWTMiddleware(t *testing.T) {
 func TestAuthHandler_RegisterRoutes(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	
-	authService := auth.NewAuthService("test-secret", time.Hour)
+	authService := auth.NewTestAuthService("test-secret", time.Hour)
 	authHandler := NewAuthHandler(authService)
 	
 	router := gin.New()

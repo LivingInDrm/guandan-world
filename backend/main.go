@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"guandan-world/backend/auth"
+	"guandan-world/backend/config"
+	"guandan-world/backend/database"
 	"guandan-world/backend/game"
 	"guandan-world/backend/handlers"
 	"guandan-world/backend/room"
@@ -23,14 +28,55 @@ func main() {
 	}
 	defer log.Close()
 
+	cfg := config.Load()
+
+	if cfg.Server.GinMode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	db, err := database.NewPostgresDB(cfg.Database)
+	if err != nil {
+		log.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+
+	log.Info("database connected successfully")
+
+	if err := db.RunMigrations(); err != nil {
+		log.Error("failed to run migrations", "error", err)
+		os.Exit(1)
+	}
+	log.Info("database migrations completed")
+
+	userRepo := auth.NewPostgresUserRepository(db.DB)
+	tokenRepo := auth.NewPostgresTokenRepository(db.DB)
+
+	authService := auth.NewAuthService(userRepo, tokenRepo, auth.AuthServiceConfig{
+		AccessSecret:       cfg.JWT.AccessSecret,
+		RefreshSecret:      cfg.JWT.RefreshSecret,
+		AccessTokenExpiry:  cfg.JWT.AccessTokenExpiry,
+		RefreshTokenExpiry: cfg.JWT.RefreshTokenExpiry,
+	})
+	authHandler := handlers.NewAuthHandler(authService)
+
+	roomService := room.NewRoomService(authService)
+	wsManager := websocket.NewWSManager(authService, roomService)
+	driverService := game.NewDriverService(wsManager)
+	gameDriverHandler := handlers.NewGameDriverHandler(driverService)
+
+	wsManager.SetReconnectHandler(driverService)
+	roomHandler := handlers.NewRoomHandler(roomService, authService, driverService, wsManager)
+
+	go wsManager.Run()
+
 	r := gin.Default()
 
-	// 添加 CORS 中间件
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -39,56 +85,22 @@ func main() {
 		c.Next()
 	})
 
-	// 初始化认证服务
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "your-secret-key-change-in-production"
-	}
-	authService := auth.NewAuthService(jwtSecret, 24*time.Hour)
-	authHandler := handlers.NewAuthHandler(authService)
-
-	// 初始化房间服务
-	roomService := room.NewRoomService(authService)
-
-	// 初始化 WebSocket 管理器
-	wsManager := websocket.NewWSManager(authService, roomService)
-
-	// 初始化游戏驱动服务
-	driverService := game.NewDriverService(wsManager)
-	gameDriverHandler := handlers.NewGameDriverHandler(driverService)
-
-	// 设置重连处理器
-	wsManager.SetReconnectHandler(driverService)
-
-	// 初始化房间处理器 - 注入 driverService 和 wsManager
-	roomHandler := handlers.NewRoomHandler(roomService, authService, driverService, wsManager)
-
-	// 启动 WebSocket 管理器
-	go wsManager.Run()
-
-	// 注册认证路由（不需要JWT认证）
 	authHandler.RegisterRoutes(r)
 
-	// API 路由组 - 需要认证的路由
 	api := r.Group("/api")
 	{
-		// 房间管理路由（需要认证）
 		rooms := api.Group("/rooms")
 		rooms.Use(authHandler.JWTMiddleware())
 		{
-			// 注意：特定路径必须在参数路径之前定义，避免被 /:id 匹配
-			rooms.GET("", roomHandler.GetRooms)                // GET /api/rooms - list rooms
-			rooms.POST("/create", roomHandler.CreateRoom)      // POST /api/rooms/create - create room  
-			rooms.GET("/my", roomHandler.GetMyRoom)            // GET /api/rooms/my - get current user's room
-			
-			// 参数路径放在后面
-			rooms.GET("/:id", roomHandler.GetRoom)             // GET /api/rooms/:id - get room details
-			rooms.POST("/:id/join", roomHandler.JoinRoom)      // POST /api/rooms/:id/join - join room
-			rooms.POST("/:id/leave", roomHandler.LeaveRoom)    // POST /api/rooms/:id/leave - leave room
-			rooms.POST("/:id/start", roomHandler.StartGame)    // POST /api/rooms/:id/start - start game
+			rooms.GET("", roomHandler.GetRooms)
+			rooms.POST("/create", roomHandler.CreateRoom)
+			rooms.GET("/my", roomHandler.GetMyRoom)
+			rooms.GET("/:id", roomHandler.GetRoom)
+			rooms.POST("/:id/join", roomHandler.JoinRoom)
+			rooms.POST("/:id/leave", roomHandler.LeaveRoom)
+			rooms.POST("/:id/start", roomHandler.StartGame)
 		}
 
-		// 游戏驱动路由（需要认证）
 		driver := api.Group("/game/driver")
 		driver.Use(authHandler.JWTMiddleware())
 		{
@@ -101,39 +113,72 @@ func main() {
 		}
 	}
 
-	// WebSocket 路由
 	r.GET("/ws", func(c *gin.Context) {
-		// Get token from query parameter
 		token := c.Query("token")
 		if token == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "token required"})
 			return
 		}
 
-		// Validate token and get user
 		user, err := authService.ValidateToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return
 		}
 
-		// Pass user ID to WebSocket handler
 		if err := wsManager.HandleWebSocket(c.Writer, c.Request, user.ID); err != nil {
 			log.Error("WebSocket error", "error", err)
 		}
 	})
 
-	// 健康检查接口
 	r.GET("/healthz", func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		if err := db.HealthCheck(ctx); err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"status": "unhealthy",
+				"error":  "database connection failed",
+			})
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"status": "pong",
+			"status": "healthy",
 		})
 	})
 
-	// 启动服务器
-	log.Info("server starting", "port", 8080)
-	if err := r.Run(":8080"); err != nil {
-		log.Error("failed to start server", "error", err)
-		os.Exit(1)
+	srv := &http.Server{
+		Addr:    ":" + cfg.Server.Port,
+		Handler: r,
 	}
+
+	go func() {
+		log.Info("server starting", "port", cfg.Server.Port, "tls", cfg.Server.TLSEnabled)
+		var err error
+		if cfg.Server.TLSEnabled && cfg.Server.TLSCert != "" && cfg.Server.TLSKey != "" {
+			err = srv.ListenAndServeTLS(cfg.Server.TLSCert, cfg.Server.TLSKey)
+		} else {
+			err = srv.ListenAndServe()
+		}
+		if err != nil && err != http.ErrServerClosed {
+			log.Error("server error", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Info("shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("server forced to shutdown", "error", err)
+	}
+
+	log.Info("server exited")
 }

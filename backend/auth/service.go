@@ -1,195 +1,236 @@
 package auth
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
-	"sync"
+	"regexp"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User represents a user in the system
+// Password validation rules
+// NOTE: 密码规则需前后端保持一致
+// 后端: backend/auth/service.go
+// 前端: RegisterForm.tsx, LoginForm.tsx
+const (
+	MinPasswordLength = 8
+	MaxPasswordLength = 50
+	SpecialChars      = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+)
+
+func validatePassword(password string) error {
+	if len(password) < MinPasswordLength {
+		return fmt.Errorf("password must be at least %d characters", MinPasswordLength)
+	}
+	if len(password) > MaxPasswordLength {
+		return fmt.Errorf("password must not exceed %d characters", MaxPasswordLength)
+	}
+
+	var hasUpper, hasLower, hasDigit, hasSpecial bool
+	for _, c := range password {
+		switch {
+		case unicode.IsUpper(c):
+			hasUpper = true
+		case unicode.IsLower(c):
+			hasLower = true
+		case unicode.IsDigit(c):
+			hasDigit = true
+		case strings.ContainsRune(SpecialChars, c):
+			hasSpecial = true
+		}
+	}
+
+	if !hasUpper {
+		return errors.New("password must contain at least one uppercase letter")
+	}
+	if !hasLower {
+		return errors.New("password must contain at least one lowercase letter")
+	}
+	if !hasDigit {
+		return errors.New("password must contain at least one digit")
+	}
+	if !hasSpecial {
+		return errors.New("password must contain at least one special character")
+	}
+
+	return nil
+}
+
+// Username validation rules
+// NOTE: 用户名规则需前后端保持一致
+// 后端: backend/auth/service.go
+// 前端: RegisterForm.tsx, LoginForm.tsx
+const (
+	MinUsernameLength = 4
+	MaxUsernameLength = 20
+	UsernamePattern   = `^[a-zA-Z0-9_]+$`
+)
+
+var usernameRegex = regexp.MustCompile(UsernamePattern)
+
+func validateUsername(username string) error {
+	if len(username) < MinUsernameLength {
+		return fmt.Errorf("username must be at least %d characters", MinUsernameLength)
+	}
+	if len(username) > MaxUsernameLength {
+		return fmt.Errorf("username must not exceed %d characters", MaxUsernameLength)
+	}
+	if !usernameRegex.MatchString(username) {
+		return errors.New("username can only contain letters, numbers, and underscores")
+	}
+	return nil
+}
+
 type User struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
-	Password string `json:"-"` // Never expose password in JSON
+	Password string `json:"-"`
 	Online   bool   `json:"online"`
 }
 
-// AuthToken represents an authentication token
 type AuthToken struct {
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
 	UserID    string    `json:"user_id"`
 }
 
-// Claims represents JWT claims
+type TokenPair struct {
+	AccessToken  string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	UserID       string    `json:"user_id"`
+}
+
 type Claims struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
-// AuthService interface defines authentication operations
 type AuthService interface {
 	Register(username, password string) (*User, error)
-	Login(username, password string) (*AuthToken, error)
+	Login(username, password string) (*TokenPair, error)
 	ValidateToken(token string) (*User, error)
-	Logout(token string) error
+	RefreshToken(refreshToken string) (*TokenPair, error)
+	Logout(refreshToken string) error
 	GetUserByID(userID string) (*User, error)
 }
 
-// authService implements AuthService interface
 type authService struct {
-	users        map[string]*User // userID -> User
-	usersByName  map[string]*User // username -> User
-	tokens       map[string]*AuthToken // token -> AuthToken
-	jwtSecret    []byte
-	tokenExpiry  time.Duration
-	mu           sync.RWMutex
+	userRepo           UserRepository
+	tokenRepo          TokenRepository
+	accessSecret       []byte
+	refreshSecret      []byte
+	accessTokenExpiry  time.Duration
+	refreshTokenExpiry time.Duration
 }
 
-// NewAuthService creates a new authentication service
-func NewAuthService(jwtSecret string, tokenExpiry time.Duration) AuthService {
+type AuthServiceConfig struct {
+	AccessSecret       string
+	RefreshSecret      string
+	AccessTokenExpiry  time.Duration
+	RefreshTokenExpiry time.Duration
+}
+
+func NewAuthService(userRepo UserRepository, tokenRepo TokenRepository, cfg AuthServiceConfig) AuthService {
 	return &authService{
-		users:       make(map[string]*User),
-		usersByName: make(map[string]*User),
-		tokens:      make(map[string]*AuthToken),
-		jwtSecret:   []byte(jwtSecret),
-		tokenExpiry: tokenExpiry,
+		userRepo:           userRepo,
+		tokenRepo:          tokenRepo,
+		accessSecret:       []byte(cfg.AccessSecret),
+		refreshSecret:      []byte(cfg.RefreshSecret),
+		accessTokenExpiry:  cfg.AccessTokenExpiry,
+		refreshTokenExpiry: cfg.RefreshTokenExpiry,
 	}
 }
 
-// Register creates a new user account
 func (s *authService) Register(username, password string) (*User, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	ctx := context.Background()
 
-	// Validate input
-	if username == "" {
-		return nil, errors.New("username cannot be empty")
+	if err := validateUsername(username); err != nil {
+		return nil, err
 	}
 	if password == "" {
 		return nil, errors.New("password cannot be empty")
 	}
-	if len(password) < 6 {
-		return nil, errors.New("password must be at least 6 characters")
+	if err := validatePassword(password); err != nil {
+		return nil, err
 	}
 
-	// Check if username already exists
-	if _, exists := s.usersByName[username]; exists {
+	exists, err := s.userRepo.ExistsByUsername(ctx, username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check username: %w", err)
+	}
+	if exists {
 		return nil, errors.New("username already exists")
 	}
 
-	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// Generate user ID
-	userID := fmt.Sprintf("user_%d", time.Now().UnixNano())
-
-	// Create user
-	user := &User{
-		ID:       userID,
-		Username: username,
-		Password: string(hashedPassword),
-		Online:   false,
+	userEntity, err := s.userRepo.Create(ctx, username, string(hashedPassword))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	// Store user
-	s.users[userID] = user
-	s.usersByName[username] = user
-
-	// Return user without password
 	return &User{
-		ID:       user.ID,
-		Username: user.Username,
-		Online:   user.Online,
+		ID:       userEntity.ID,
+		Username: userEntity.Username,
+		Online:   userEntity.Online,
 	}, nil
 }
 
-// Login authenticates a user and returns a token
-func (s *authService) Login(username, password string) (*AuthToken, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *authService) Login(username, password string) (*TokenPair, error) {
+	ctx := context.Background()
 
-	// Find user by username
-	user, exists := s.usersByName[username]
-	if !exists {
+	userEntity, err := s.userRepo.FindByUsername(ctx, username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+	if userEntity == nil {
 		return nil, errors.New("invalid username or password")
 	}
 
-	// Verify password
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(userEntity.PasswordHash), []byte(password))
 	if err != nil {
 		return nil, errors.New("invalid username or password")
 	}
 
-	// Generate JWT token
-	expiresAt := time.Now().Add(s.tokenExpiry)
-	claims := &Claims{
-		UserID:   user.ID,
-		Username: user.Username,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(s.jwtSecret)
+	tokenPair, err := s.generateTokenPair(userEntity.ID, userEntity.Username)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate token: %w", err)
+		return nil, err
 	}
 
-	// Create auth token
-	authToken := &AuthToken{
-		Token:     tokenString,
-		ExpiresAt: expiresAt,
-		UserID:    user.ID,
+	refreshExpiresAt := time.Now().Add(s.refreshTokenExpiry)
+	if err := s.tokenRepo.SaveRefreshToken(ctx, userEntity.ID, tokenPair.RefreshToken, refreshExpiresAt); err != nil {
+		return nil, fmt.Errorf("failed to save refresh token: %w", err)
 	}
 
-	// Store token
-	s.tokens[tokenString] = authToken
+	if err := s.userRepo.UpdateOnlineStatus(ctx, userEntity.ID, true); err != nil {
+		return nil, fmt.Errorf("failed to update online status: %w", err)
+	}
 
-	// Mark user as online
-	user.Online = true
-
-	return authToken, nil
+	return tokenPair, nil
 }
 
-// ValidateToken validates a JWT token and returns the user
 func (s *authService) ValidateToken(tokenString string) (*User, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	// Check if token exists in our store
-	authToken, exists := s.tokens[tokenString]
-	if !exists {
-		return nil, errors.New("invalid token")
-	}
-
-	// Check if token is expired
-	if time.Now().After(authToken.ExpiresAt) {
-		// Clean up expired token
-		delete(s.tokens, tokenString)
-		return nil, errors.New("token expired")
-	}
-
-	// Parse and validate JWT token
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return s.jwtSecret, nil
+		return s.accessSecret, nil
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse token: %w", err)
+		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
 	claims, ok := token.Claims.(*Claims)
@@ -197,46 +238,109 @@ func (s *authService) ValidateToken(tokenString string) (*User, error) {
 		return nil, errors.New("invalid token claims")
 	}
 
-	// Get user
-	user, exists := s.users[claims.UserID]
-	if !exists {
+	ctx := context.Background()
+	userEntity, err := s.userRepo.FindByID(ctx, claims.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+	if userEntity == nil {
 		return nil, errors.New("user not found")
 	}
 
-	return user, nil
+	return userEntity.ToUser(), nil
 }
 
-// Logout invalidates a token
-func (s *authService) Logout(tokenString string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *authService) RefreshToken(refreshToken string) (*TokenPair, error) {
+	ctx := context.Background()
 
-	// Find and remove token
-	authToken, exists := s.tokens[tokenString]
-	if !exists {
-		return errors.New("token not found")
+	tokenEntity, err := s.tokenRepo.RevokeToken(ctx, refreshToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to revoke refresh token: %w", err)
+	}
+	if tokenEntity == nil {
+		return nil, errors.New("invalid or already used refresh token")
 	}
 
-	// Mark user as offline
-	if user, exists := s.users[authToken.UserID]; exists {
-		user.Online = false
+	userEntity, err := s.userRepo.FindByID(ctx, tokenEntity.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+	if userEntity == nil {
+		return nil, errors.New("user not found")
 	}
 
-	// Remove token
-	delete(s.tokens, tokenString)
+	newTokenPair, err := s.generateTokenPair(userEntity.ID, userEntity.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshExpiresAt := time.Now().Add(s.refreshTokenExpiry)
+	if err := s.tokenRepo.SaveRefreshToken(ctx, userEntity.ID, newTokenPair.RefreshToken, refreshExpiresAt); err != nil {
+		return nil, fmt.Errorf("failed to save new refresh token: %w", err)
+	}
+
+	return newTokenPair, nil
+}
+
+func (s *authService) Logout(refreshToken string) error {
+	ctx := context.Background()
+
+	tokenEntity, err := s.tokenRepo.RevokeToken(ctx, refreshToken)
+	if err != nil {
+		return fmt.Errorf("failed to revoke token: %w", err)
+	}
+	if tokenEntity == nil {
+		return nil
+	}
+
+	if err := s.userRepo.UpdateOnlineStatus(ctx, tokenEntity.UserID, false); err != nil {
+		return fmt.Errorf("failed to update online status: %w", err)
+	}
 
 	return nil
 }
 
-// GetUserByID retrieves a user by ID
 func (s *authService) GetUserByID(userID string) (*User, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	ctx := context.Background()
 
-	user, exists := s.users[userID]
-	if !exists {
+	userEntity, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+	if userEntity == nil {
 		return nil, errors.New("user not found")
 	}
 
-	return user, nil
+	return userEntity.ToUser(), nil
+}
+
+func (s *authService) generateTokenPair(userID, username string) (*TokenPair, error) {
+	accessExpiresAt := time.Now().Add(s.accessTokenExpiry)
+	accessClaims := &Claims{
+		UserID:   userID,
+		Username: username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(accessExpiresAt),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessTokenString, err := accessToken.SignedString(s.accessSecret)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate access token: %w", err)
+	}
+
+	refreshTokenBytes := make([]byte, 32)
+	if _, err := rand.Read(refreshTokenBytes); err != nil {
+		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+	refreshTokenString := base64.URLEncoding.EncodeToString(refreshTokenBytes)
+
+	return &TokenPair{
+		AccessToken:  accessTokenString,
+		RefreshToken: refreshTokenString,
+		ExpiresAt:    accessExpiresAt,
+		UserID:       userID,
+	}, nil
 }

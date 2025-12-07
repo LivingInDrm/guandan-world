@@ -5,6 +5,18 @@ import { apiClient } from '../../services/api';
 import type { RegisterRequest } from '../../types';
 import { Input, Button } from '../ui';
 
+// NOTE: 密码规则需前后端保持一致
+// 后端: backend/auth/service.go
+// 前端: RegisterForm.tsx, LoginForm.tsx
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 50;
+
+// NOTE: 用户名规则需前后端保持一致
+// 后端: backend/auth/service.go
+// 前端: RegisterForm.tsx, LoginForm.tsx
+const USERNAME_MIN_LENGTH = 4;
+const USERNAME_MAX_LENGTH = 20;
+
 interface RegisterFormData extends RegisterRequest {
   confirmPassword: string;
 }
@@ -24,20 +36,28 @@ const RegisterForm: React.FC = () => {
 
     if (!formData.username.trim()) {
       newErrors.username = '用户名不能为空';
-    } else if (formData.username.length < 3) {
-      newErrors.username = '用户名至少3个字符';
-    } else if (formData.username.length > 20) {
-      newErrors.username = '用户名不能超过20个字符';
-    } else if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(formData.username)) {
-      newErrors.username = '用户名只能包含字母、数字、下划线和中文';
+    } else if (formData.username.length < USERNAME_MIN_LENGTH) {
+      newErrors.username = `用户名至少${USERNAME_MIN_LENGTH}个字符`;
+    } else if (formData.username.length > USERNAME_MAX_LENGTH) {
+      newErrors.username = `用户名不能超过${USERNAME_MAX_LENGTH}个字符`;
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      newErrors.username = '用户名只能包含字母、数字和下划线';
     }
 
     if (!formData.password) {
       newErrors.password = '密码不能为空';
-    } else if (formData.password.length < 6) {
-      newErrors.password = '密码至少6个字符';
-    } else if (formData.password.length > 50) {
-      newErrors.password = '密码不能超过50个字符';
+    } else if (formData.password.length < PASSWORD_MIN_LENGTH) {
+      newErrors.password = `密码至少${PASSWORD_MIN_LENGTH}个字符`;
+    } else if (formData.password.length > PASSWORD_MAX_LENGTH) {
+      newErrors.password = `密码不能超过${PASSWORD_MAX_LENGTH}个字符`;
+    } else if (!/[A-Z]/.test(formData.password)) {
+      newErrors.password = '密码必须包含至少一个大写字母';
+    } else if (!/[a-z]/.test(formData.password)) {
+      newErrors.password = '密码必须包含至少一个小写字母';
+    } else if (!/[0-9]/.test(formData.password)) {
+      newErrors.password = '密码必须包含至少一个数字';
+    } else if (!/[!@#$%^&*()_+=[\]{}|;:,.<>?-]/.test(formData.password)) {
+      newErrors.password = '密码必须包含至少一个特殊字符';
     }
 
     if (!formData.confirmPassword) {
@@ -83,12 +103,12 @@ const RegisterForm: React.FC = () => {
 
       const response = await apiClient.register(registerData);
       
-      if (response.success && response.data) {
-        apiClient.setToken(response.data.token.token);
-        login(response.data.user, response.data.token);
+      if (response.user && response.token) {
+        apiClient.setToken(response.token.access_token);
+        login(response.user, response.token);
         navigate('/lobby');
       } else {
-        setError(response.error || '注册失败');
+        setError('注册失败');
       }
     } catch (err: any) {
       console.error('Register error:', err);
@@ -112,7 +132,7 @@ const RegisterForm: React.FC = () => {
         value={formData.username}
         onChange={handleInputChange}
         error={errors.username}
-        helperText="3-20个字符，支持字母、数字、下划线和中文"
+        helperText={`${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH}个字符，支持字母、数字和下划线`}
         placeholder="请输入用户名"
         disabled={isLoading}
       />
@@ -125,7 +145,7 @@ const RegisterForm: React.FC = () => {
         value={formData.password}
         onChange={handleInputChange}
         error={errors.password}
-        helperText="至少6个字符"
+        helperText={`至少${PASSWORD_MIN_LENGTH}个字符，包含大小写字母、数字和特殊字符`}
         placeholder="请输入密码"
         disabled={isLoading}
       />

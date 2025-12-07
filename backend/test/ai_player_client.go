@@ -152,7 +152,7 @@ func (c *AIPlayerClient) registerOrLogin() error {
 		}
 	}
 
-	c.authToken = authResp.Token.Token
+	c.authToken = authResp.Token.AccessToken
 	c.userID = authResp.User.ID
 	c.httpClient.SetAuthToken(c.authToken)
 

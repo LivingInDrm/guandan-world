@@ -5,6 +5,16 @@ import { apiClient } from '../../services/api';
 import type { LoginRequest } from '../../types';
 import { Input, Button } from '../ui';
 
+// NOTE: 密码规则需前后端保持一致
+// 后端: backend/auth/service.go
+// 前端: RegisterForm.tsx, LoginForm.tsx
+const PASSWORD_MIN_LENGTH = 8;
+
+// NOTE: 用户名规则需前后端保持一致
+// 后端: backend/auth/service.go
+// 前端: RegisterForm.tsx, LoginForm.tsx
+const USERNAME_MIN_LENGTH = 4;
+
 const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState<LoginRequest>({
     username: '',
@@ -19,14 +29,14 @@ const LoginForm: React.FC = () => {
 
     if (!formData.username.trim()) {
       newErrors.username = '用户名不能为空';
-    } else if (formData.username.length < 3) {
-      newErrors.username = '用户名至少3个字符';
+    } else if (formData.username.length < USERNAME_MIN_LENGTH) {
+      newErrors.username = `用户名至少${USERNAME_MIN_LENGTH}个字符`;
     }
 
     if (!formData.password) {
       newErrors.password = '密码不能为空';
-    } else if (formData.password.length < 6) {
-      newErrors.password = '密码至少6个字符';
+    } else if (formData.password.length < PASSWORD_MIN_LENGTH) {
+      newErrors.password = `密码至少${PASSWORD_MIN_LENGTH}个字符`;
     }
 
     setErrors(newErrors);
@@ -62,17 +72,12 @@ const LoginForm: React.FC = () => {
     try {
       const response = await apiClient.login(formData);
       
-      if (response.success && response.data) {
-        // Set token in API client
-        apiClient.setToken(response.data.token.token);
-        
-        // Update auth store
-        login(response.data.user, response.data.token);
-        
-        // Navigate to lobby
+      if (response.user && response.token) {
+        apiClient.setToken(response.token.access_token);
+        login(response.user, response.token);
         navigate('/lobby');
       } else {
-        setError(response.error || '登录失败');
+        setError('登录失败');
       }
     } catch (err: any) {
       console.error('Login error:', err);

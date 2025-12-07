@@ -43,7 +43,7 @@ func (suite *WebSocketIntegrationTestSuite) SetupSuite() {
 	fmt.Println("🔌 初始化WebSocket集成测试环境")
 
 	// 初始化所有服务
-	suite.authService = auth.NewAuthService("ws-test-secret", 24*time.Hour)
+	suite.authService = auth.NewTestAuthService("ws-test-secret", 24*time.Hour)
 	suite.roomService = room.NewRoomService(suite.authService)
 	suite.wsManager = wsmanager.NewWSManager(suite.authService, suite.roomService)
 
@@ -128,7 +128,7 @@ func (suite *WebSocketIntegrationTestSuite) createTestUsers() {
 		// 创建测试用户
 		testUser := &TestWSUser{
 			Username: username,
-			Token:    token.Token,
+			Token:    token.AccessToken,
 			UserID:   user.ID,
 			Messages: make(chan wsmanager.WSMessage, 10),
 			Done:     make(chan bool),
@@ -341,7 +341,7 @@ func (suite *WebSocketIntegrationTestSuite) TestConcurrentConnections() {
 		wsURL := "ws" + strings.TrimPrefix(suite.server.URL, "http") + "/ws"
 		u, _ := url.Parse(wsURL)
 		q := u.Query()
-		q.Set("token", token.Token)
+		q.Set("token", token.AccessToken)
 		u.RawQuery = q.Encode()
 
 		conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)

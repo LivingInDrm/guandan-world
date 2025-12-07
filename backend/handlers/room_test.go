@@ -39,7 +39,7 @@ func setupRoomTestRouter() (*gin.Engine, *AuthHandler, *RoomHandler, auth.AuthSe
 	gin.SetMode(gin.TestMode)
 
 	// Create services
-	authService := auth.NewAuthService("test-secret", 24*time.Hour)
+	authService := auth.NewTestAuthService("test-secret", 24*time.Hour)
 	roomService := room.NewRoomService(authService)
 	mockDriverService := &MockDriverService{}
 	mockWSManager := &MockWSManager{}
@@ -89,7 +89,7 @@ func createTestUserAndLogin(t *testing.T, router *gin.Engine, username string) (
 	err := json.Unmarshal(w.Body.Bytes(), &authResp)
 	assert.NoError(t, err)
 
-	return authResp.Token.Token, authResp.User
+	return authResp.Token.AccessToken, authResp.User
 }
 
 // createRoom creates a room and returns the room ID

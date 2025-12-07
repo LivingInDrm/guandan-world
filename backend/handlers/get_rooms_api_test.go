@@ -248,7 +248,7 @@ func TestGetRoomsAPI_ExpiredToken(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	// 创建一个很短过期时间的auth service
-	authService := auth.NewAuthService("test-secret", 1*time.Millisecond)
+	authService := auth.NewTestAuthService("test-secret", 1*time.Millisecond)
 	roomService := room.NewRoomService(authService)
 	mockDriverService := &MockDriverService{}
 	mockWSManager := &MockWSManager{}
@@ -269,7 +269,7 @@ func TestGetRoomsAPI_ExpiredToken(t *testing.T) {
 	// 注册并登录用户获取token
 	_, _ = authService.Register("expireduser", "password123")
 	authToken, _ := authService.Login("expireduser", "password123")
-	token := authToken.Token
+	token := authToken.AccessToken
 
 	// 等待token过期
 	time.Sleep(10 * time.Millisecond)
