@@ -1,5 +1,6 @@
 import type { Story } from "@ladle/react";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { Button } from "./Button";
 
 export const Default: Story = () => (
@@ -15,6 +16,8 @@ export const AllVariants: Story = () => (
     <Button variant="warning">Warning</Button>
     <Button variant="danger">Danger</Button>
     <Button variant="ghost">Ghost</Button>
+    <Button variant="outline">Outline</Button>
+    <Button variant="link">Link</Button>
   </div>
 );
 
@@ -32,16 +35,18 @@ export const AllSizes: Story = () => (
       <Button size="lg">Large</Button>
       <p className="mt-2 text-sm">lg</p>
     </div>
+    <div className="text-center text-white">
+      <Button size="icon"><Loader2 /></Button>
+      <p className="mt-2 text-sm">icon</p>
+    </div>
   </div>
 );
 
-export const LoadingState: Story = () => (
+export const WithIcon: Story = () => (
   <div className="p-8 bg-gray-800 flex flex-wrap gap-4">
-    <Button loading>加载中...</Button>
-    <Button variant="secondary" loading>加载中...</Button>
-    <Button variant="warning" loading>加载中...</Button>
-    <Button variant="danger" loading>加载中...</Button>
-    <Button variant="ghost" loading>加载中...</Button>
+    <Button><Loader2 className="animate-spin" />加载中...</Button>
+    <Button variant="secondary"><Loader2 className="animate-spin" />处理中...</Button>
+    <Button variant="danger"><Loader2 className="animate-spin" />删除中...</Button>
   </div>
 );
 
@@ -58,8 +63,8 @@ export const DisabledState: Story = () => (
 export const FullWidth: Story = () => (
   <div className="p-8 bg-gray-800 w-80">
     <div className="space-y-4">
-      <Button fullWidth>全宽按钮</Button>
-      <Button variant="secondary" fullWidth>全宽按钮</Button>
+      <Button className="w-full">全宽按钮</Button>
+      <Button variant="secondary" className="w-full">全宽按钮</Button>
     </div>
   </div>
 );

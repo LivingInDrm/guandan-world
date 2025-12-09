@@ -18,8 +18,8 @@ class GameService {
     // Connect WebSocket if user is authenticated
     const { token } = useAuthStore.getState();
     if (token) {
-      apiClient.setToken(token.token);
-      wsClient.connect(token.token);
+      apiClient.setToken(token.access_token);
+      wsClient.connect(token.access_token);
     }
 
     this.initialized = true;
@@ -60,20 +60,14 @@ class GameService {
   // Authentication methods
   async login(username: string, password: string): Promise<boolean> {
     try {
-      const response = await apiClient.login({ username, password });
-      if (response.success && response.data) {
-        const { user, token } = response.data;
-        
-        // Update auth store
-        useAuthStore.getState().login(user, token);
-        
-        // Set API token and connect WebSocket
-        apiClient.setToken(token.token);
-        wsClient.connect(token.token);
-        
-        return true;
-      }
-      return false;
+      const { user, token } = await apiClient.login({ username, password });
+      
+      useAuthStore.getState().login(user, token);
+      
+      apiClient.setToken(token.access_token);
+      wsClient.connect(token.access_token);
+      
+      return true;
     } catch (error) {
       console.error('Login failed:', error);
       useAuthStore.getState().setError(
@@ -85,20 +79,14 @@ class GameService {
 
   async register(username: string, password: string): Promise<boolean> {
     try {
-      const response = await apiClient.register({ username, password });
-      if (response.success && response.data) {
-        const { user, token } = response.data;
-        
-        // Update auth store
-        useAuthStore.getState().login(user, token);
-        
-        // Set API token and connect WebSocket
-        apiClient.setToken(token.token);
-        wsClient.connect(token.token);
-        
-        return true;
-      }
-      return false;
+      const { user, token } = await apiClient.register({ username, password });
+      
+      useAuthStore.getState().login(user, token);
+      
+      apiClient.setToken(token.access_token);
+      wsClient.connect(token.access_token);
+      
+      return true;
     } catch (error) {
       console.error('Registration failed:', error);
       useAuthStore.getState().setError(

@@ -27,7 +27,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom, currentUserId }) 
   const getStatusColor = (status: RoomStatus) => {
     switch (status) {
       case RoomStatus.WAITING:
-        return 'bg-btn-primary-from/20 text-btn-primary-to';
+        return 'bg-primary/20 text-primary';
       case RoomStatus.READY:
         return 'bg-accent-light text-amber-700';
       case RoomStatus.PLAYING:
@@ -54,13 +54,13 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom, currentUserId }) 
   };
 
   return (
-    <Card variant="default" padding="md" className="hover:shadow-card-hover transition-shadow">
+    <Card variant="default" className="p-5 hover:shadow-card-hover transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-2">
-            <h3 className="font-medium text-gray-900">房间 #{room.id.slice(-6)}</h3>
+            <h3 className="font-medium text-foreground">房间 #{room.id.slice(-6)}</h3>
             {isOwner && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-card text-xs font-medium bg-accent-light text-amber-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-accent-light text-amber-700">
                 房主
               </span>
             )}
@@ -84,10 +84,10 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom, currentUserId }) 
             return (
               <div
                 key={index}
-                className={`p-2 rounded-card text-sm text-center ${
+                className={`p-2 rounded-sm text-sm text-center ${
                   player
                     ? player.id === currentUserId
-                      ? 'bg-btn-primary-from/10 text-btn-primary-to border border-btn-primary-from/30'
+                      ? 'bg-primary/10 text-primary border border-primary/30'
                       : 'bg-table-50 text-table-400'
                     : 'bg-table-100 text-table-300 border-2 border-dashed border-table-200'
                 }`}

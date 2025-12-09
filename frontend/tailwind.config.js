@@ -1,3 +1,5 @@
+import tailwindcssAnimate from 'tailwindcss-animate';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -8,39 +10,61 @@ export default {
   theme: {
     extend: {
       colors: {
-        table: {
-          50: '#EAF4EF',
-          100: '#DDEEE5',
-          200: '#D2E8DD',
-          300: '#8CAA96',
-          400: '#506E5A',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
         },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
         accent: {
-          DEFAULT: '#FFC107',
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
           light: 'rgba(255, 193, 7, 0.15)',
           glow: 'rgba(255, 193, 7, 0.6)',
         },
-        'team-us': '#525E6B',
-        'team-us-dark': '#3E4854',
-        'team-them': '#9E3737',
-        'team-them-dark': '#7B2A2A',
+        table: {
+          50: 'hsl(var(--table-50))',
+          100: 'hsl(var(--table-100))',
+          200: 'hsl(var(--table-200))',
+          300: 'hsl(var(--table-300))',
+          400: 'hsl(var(--table-400))',
+          800: 'hsl(var(--table-800))',
+          900: 'hsl(var(--table-900))',
+        },
+        'team-us': 'hsl(var(--team-us))',
+        'team-us-dark': 'hsl(var(--team-us-dark))',
+        'team-them': 'hsl(var(--team-them))',
+        'team-them-dark': 'hsl(var(--team-them-dark))',
         suit: {
-          red: '#dc2626',
-          black: '#374151',
+          red: 'hsl(var(--suit-red))',
+          black: 'hsl(var(--suit-black))',
         },
         badge: {
-          level: '#22c55e',
-          wild: '#ef4444',
-        },
-        btn: {
-          primary: { from: '#10b981', to: '#059669' },
-          secondary: { from: '#64748b', to: '#475569' },
-          warning: { from: '#fbbf24', to: '#f59e0b' },
-          danger: { from: '#ef4444', to: '#dc2626' },
-        },
-        focus: {
-          ring: '#10b981',
-          border: '#059669',
+          level: 'hsl(var(--badge-level))',
+          wild: 'hsl(var(--badge-wild))',
         },
         disabled: {
           bg: 'rgba(148, 163, 184, 0.5)',
@@ -48,11 +72,18 @@ export default {
           border: 'rgba(148, 163, 184, 0.3)',
         },
       },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-secondary': 'var(--gradient-secondary)',
+        'gradient-warning': 'var(--gradient-warning)',
+        'gradient-danger': 'var(--gradient-danger)',
+      },
       borderRadius: {
-        card: '8px',
-        panel: '12px',
-        modal: '16px',
-        board: '20px',
+        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 2px)',
+        lg: 'var(--radius)',
+        xl: 'calc(var(--radius) + 4px)',
+        '2xl': 'calc(var(--radius) + 8px)',
       },
       boxShadow: {
         card: '0 2px 4px rgba(0,0,0,0.1)',
@@ -90,11 +121,7 @@ export default {
           '50%': { boxShadow: '0 0 20px rgba(255, 193, 7, 0.8)' },
         },
       },
-      fontSize: {
-        'card-sm': ['12px', '1'],
-        'card-md': ['16px', '1'],
-      },
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 }

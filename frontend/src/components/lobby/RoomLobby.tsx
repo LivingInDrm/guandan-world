@@ -170,7 +170,7 @@ const RoomLobby: React.FC = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-600">请先登录</p>
+        <p className="text-muted-foreground">请先登录</p>
       </div>
     );
   }
@@ -179,8 +179,8 @@ const RoomLobby: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">检查房间状态...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">检查房间状态...</p>
         </div>
       </div>
     );
@@ -191,14 +191,14 @@ const RoomLobby: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">房间大厅</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">房间大厅</h1>
+          <p className="text-muted-foreground mt-1">
             欢迎，{user.username}！选择一个房间开始游戏
           </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
         >
           创建房间
         </button>
@@ -220,30 +220,30 @@ const RoomLobby: React.FC = () => {
       )}
 
       {/* Room statistics */}
-      <div className="bg-gray-50 rounded-lg p-4 mb-6">
+      <div className="bg-muted rounded-lg p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{totalCount}</div>
-              <div className="text-sm text-gray-600">总房间数</div>
+              <div className="text-2xl font-bold text-primary">{totalCount}</div>
+              <div className="text-sm text-muted-foreground">总房间数</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
                 {roomList.filter(room => room.status === 0).length}
               </div>
-              <div className="text-sm text-gray-600">等待中</div>
+              <div className="text-sm text-muted-foreground">等待中</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="text-2xl font-bold text-accent">
                 {roomList.filter(room => room.status === 2).length}
               </div>
-              <div className="text-sm text-gray-600">游戏中</div>
+              <div className="text-sm text-muted-foreground">游戏中</div>
             </div>
           </div>
           <button
             onClick={() => loadRoomList()}
             disabled={isLoading}
-            className="text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+            className="text-primary hover:text-primary/80 disabled:text-muted-foreground"
           >
             {isLoading ? '刷新中...' : '手动刷新'}
           </button>

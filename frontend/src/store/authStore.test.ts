@@ -26,13 +26,15 @@ describe('AuthStore', () => {
   };
 
   const mockToken: AuthToken = {
-    token: 'mock-jwt-token',
+    access_token: 'mock-jwt-token',
+    refresh_token: 'mock-refresh-token',
     expires_at: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
     user_id: '1'
   };
 
   const mockExpiredToken: AuthToken = {
-    token: 'expired-jwt-token',
+    access_token: 'expired-jwt-token',
+    refresh_token: 'expired-refresh-token',
     expires_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
     user_id: '1'
   };
@@ -68,7 +70,7 @@ describe('AuthStore', () => {
       expect(state.isAuthenticated).toBe(true);
       expect(state.error).toBeNull();
       expect(state.isInitialized).toBe(true);
-      expect(mockApiClient.setToken).toHaveBeenCalledWith(mockToken.token);
+      expect(mockApiClient.setToken).toHaveBeenCalledWith(mockToken.access_token);
     });
   });
 
@@ -128,7 +130,7 @@ describe('AuthStore', () => {
       const state = useAuthStore.getState();
       expect(state.isAuthenticated).toBe(true);
       expect(state.isInitialized).toBe(true);
-      expect(mockApiClient.setToken).toHaveBeenCalledWith(mockToken.token);
+      expect(mockApiClient.setToken).toHaveBeenCalledWith(mockToken.access_token);
     });
 
     it('should clear expired token on initialize', () => {
@@ -197,7 +199,8 @@ describe('AuthStore', () => {
       
       // Token expires in 2 minutes (less than 5 minute buffer)
       const soonToExpireToken: AuthToken = {
-        token: 'soon-to-expire-token',
+        access_token: 'soon-to-expire-token',
+        refresh_token: 'soon-to-expire-refresh',
         expires_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
         user_id: '1'
       };

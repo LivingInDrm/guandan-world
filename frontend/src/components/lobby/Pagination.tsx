@@ -55,8 +55,8 @@ const Pagination: React.FC<PaginationProps> = ({
         disabled={currentPage === 1}
         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
           currentPage === 1
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+            : 'bg-card text-foreground border border-border hover:bg-muted'
         }`}
       >
         上一页
@@ -66,14 +66,14 @@ const Pagination: React.FC<PaginationProps> = ({
       {visiblePages.map((page, index) => (
         <React.Fragment key={index}>
           {page === '...' ? (
-            <span className="px-3 py-2 text-gray-500">...</span>
+            <span className="px-3 py-2 text-muted-foreground">...</span>
           ) : (
             <button
               onClick={() => onPageChange(page as number)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 currentPage === page
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-card text-foreground border border-border hover:bg-muted'
               }`}
             >
               {page}
@@ -88,8 +88,8 @@ const Pagination: React.FC<PaginationProps> = ({
         disabled={currentPage === totalPages}
         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
           currentPage === totalPages
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+            : 'bg-card text-foreground border border-border hover:bg-muted'
         }`}
       >
         下一页

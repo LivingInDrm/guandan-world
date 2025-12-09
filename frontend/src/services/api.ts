@@ -5,7 +5,8 @@ import type {
   AuthResponse,
   RoomListResponse,
   CreateRoomRequest,
-  Room
+  Room,
+  User
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -245,6 +246,63 @@ class ApiClient {
         deck_index: deckIndex
       }),
     });
+  }
+
+  async updateProfile(data: { nickname?: string; avatar?: File }): Promise<ApiResponse<User>> {
+    const url = `${this.baseURL}/api/user/profile`;
+    const formData = new FormData();
+    
+    if (data.nickname !== undefined) {
+      formData.append('nickname', data.nickname);
+    }
+    if (data.avatar) {
+      formData.append('avatar', data.avatar);
+    }
+
+    const headers: Record<string, string> = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers,
+        body: formData,
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new ApiError(
+          responseData.message || responseData.error || 'Update failed',
+          response.status,
+          responseData
+        );
+      }
+
+      return {
+        success: true,
+        data: responseData.user || responseData.data?.user,
+        message: responseData.message
+      };
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(
+        error instanceof Error ? error.message : 'Network error',
+        0
+      );
+    }
+  }
+
+  async getProfile(): Promise<ApiResponse<User>> {
+    const response = await this.request<{ user: User }>('/api/user/profile');
+    return {
+      ...response,
+      data: response.data?.user as User
+    };
   }
 
   async healthCheck(): Promise<ApiResponse<{ status: string }>> {

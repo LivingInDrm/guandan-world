@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import type { LoginRequest } from '../../types';
-import { Input, Button } from '../ui';
+import { Input, Label, Button } from '../ui';
 
-// NOTE: 密码规则需前后端保持一致
-// 后端: backend/auth/service.go
-// 前端: RegisterForm.tsx, LoginForm.tsx
 const PASSWORD_MIN_LENGTH = 8;
-
-// NOTE: 用户名规则需前后端保持一致
-// 后端: backend/auth/service.go
-// 前端: RegisterForm.tsx, LoginForm.tsx
 const USERNAME_MIN_LENGTH = 4;
 
 const LoginForm: React.FC = () => {
@@ -50,7 +44,6 @@ const LoginForm: React.FC = () => {
       [name]: value
     }));
     
-    // Clear field error when user starts typing
     if (errors[name as keyof LoginRequest]) {
       setErrors(prev => ({
         ...prev,
@@ -79,9 +72,10 @@ const LoginForm: React.FC = () => {
       } else {
         setError('登录失败');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
-      setError(err.message || '登录失败，请检查网络连接');
+      const message = err instanceof Error ? err.message : '登录失败，请检查网络连接';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -89,42 +83,44 @@ const LoginForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Input
-        id="username"
-        name="username"
-        type="text"
-        label="用户名"
-        value={formData.username}
-        onChange={handleInputChange}
-        error={errors.username}
-        placeholder="请输入用户名"
-        disabled={isLoading}
-      />
+      <div className="space-y-2">
+        <Label htmlFor="username">用户名</Label>
+        <Input
+          id="username"
+          name="username"
+          type="text"
+          value={formData.username}
+          onChange={handleInputChange}
+          placeholder="请输入用户名"
+          disabled={isLoading}
+          className={errors.username ? 'border-destructive' : ''}
+        />
+        {errors.username && <p className="text-sm text-destructive">{errors.username}</p>}
+      </div>
 
-      <Input
-        id="password"
-        name="password"
-        type="password"
-        label="密码"
-        value={formData.password}
-        onChange={handleInputChange}
-        error={errors.password}
-        placeholder="请输入密码"
-        disabled={isLoading}
-      />
+      <div className="space-y-2">
+        <Label htmlFor="password">密码</Label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleInputChange}
+          placeholder="请输入密码"
+          disabled={isLoading}
+          className={errors.password ? 'border-destructive' : ''}
+        />
+        {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+      </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-card p-3">
+        <div className="bg-red-50 border border-red-200 rounded-sm p-3">
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
-      <Button
-        type="submit"
-        variant="primary"
-        fullWidth
-        loading={isLoading}
-      >
+      <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
+        {isLoading && <Loader2 className="animate-spin" />}
         {isLoading ? '登录中...' : '登录'}
       </Button>
     </form>

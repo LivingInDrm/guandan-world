@@ -6,7 +6,6 @@ import {
   fromCardList,
   FirstPlayRecommender,
   NextPlayRecommender,
-  type CardComp,
 } from '@guandan/sdk-ts';
 
 interface GameControlsProps {

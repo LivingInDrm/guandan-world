@@ -90,6 +90,29 @@ func (r *InMemoryUserRepository) ExistsByUsername(ctx context.Context, username 
 	return exists, nil
 }
 
+func (r *InMemoryUserRepository) UpdateProfile(ctx context.Context, id string, nickname, avatarKey *string) error {
+	if nickname == nil && avatarKey == nil {
+		return nil
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	user, exists := r.users[id]
+	if !exists {
+		return errors.New("user not found")
+	}
+	if nickname != nil {
+		user.Nickname.Valid = true
+		user.Nickname.String = *nickname
+	}
+	if avatarKey != nil {
+		user.AvatarKey.Valid = true
+		user.AvatarKey.String = *avatarKey
+	}
+	user.UpdatedAt = time.Now()
+	return nil
+}
+
 type InMemoryTokenRepository struct {
 	tokens map[string]*RefreshTokenEntity
 	mu     sync.RWMutex

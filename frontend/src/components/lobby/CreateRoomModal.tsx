@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Button, Card } from '../ui';
+import { Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Card } from '../ui';
 
 interface CreateRoomModalProps {
   open: boolean;
@@ -26,37 +27,37 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ open, onClose, onConf
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      title="创建新房间"
-      size="sm"
-      closeOnOverlayClick={!isCreating}
-      closeOnEscape={!isCreating}
-    >
-      <p className="text-table-400 mb-4">
-        确认创建新房间？您将成为房主，负责管理房间和开始游戏。
-      </p>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>创建新房间</DialogTitle>
+        </DialogHeader>
 
-      <Card variant="glass" padding="sm" className="mb-6">
-        <h4 className="font-medium text-table-400 mb-2">房间规则</h4>
-        <ul className="text-sm text-table-300 space-y-1">
-          <li>• 房间最多容纳4名玩家</li>
-          <li>• 房主可以在人数满足时开始游戏</li>
-          <li>• 房主离开时会自动转移给其他玩家</li>
-          <li>• 所有玩家离开后房间自动关闭</li>
-        </ul>
-      </Card>
+        <p className="text-table-400 mb-4">
+          确认创建新房间？您将成为房主，负责管理房间和开始游戏。
+        </p>
 
-      <div className="flex justify-end gap-3">
-        <Button variant="ghost" onClick={handleClose} disabled={isCreating}>
-          取消
-        </Button>
-        <Button variant="primary" onClick={handleConfirm} loading={isCreating}>
-          {isCreating ? '创建中...' : '确认创建'}
-        </Button>
-      </div>
-    </Modal>
+        <Card variant="glass" className="p-3 mb-6">
+          <h4 className="font-medium text-table-400 mb-2">房间规则</h4>
+          <ul className="text-sm text-table-300 space-y-1">
+            <li>• 房间最多容纳4名玩家</li>
+            <li>• 房主可以在人数满足时开始游戏</li>
+            <li>• 房主离开时会自动转移给其他玩家</li>
+            <li>• 所有玩家离开后房间自动关闭</li>
+          </ul>
+        </Card>
+
+        <div className="flex justify-end gap-3">
+          <Button variant="ghost" onClick={handleClose} disabled={isCreating}>
+            取消
+          </Button>
+          <Button variant="primary" onClick={handleConfirm} disabled={isCreating}>
+            {isCreating && <Loader2 className="animate-spin" />}
+            {isCreating ? '创建中...' : '确认创建'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

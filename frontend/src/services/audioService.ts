@@ -12,6 +12,9 @@ import naivebombSound from '../assets/audio/naivebomb.m4a';
 import flushSound from '../assets/audio/flush.m4a';
 import passSound from '../assets/audio/pass.m4a';
 
+const STORAGE_KEY_VOLUME = 'guandan_audio_volume';
+const STORAGE_KEY_MUTED = 'guandan_audio_muted';
+
 const compTypeToSound: Record<number, string> = {
   [CompType.COMP_TYPE_SINGLE]: singleSound,
   [CompType.COMP_TYPE_PAIR]: pairSound,
@@ -31,7 +34,22 @@ class AudioService {
   private muted: boolean = false;
 
   constructor() {
+    this.loadFromStorage();
     this.preload();
+  }
+
+  private loadFromStorage(): void {
+    const savedVolume = localStorage.getItem(STORAGE_KEY_VOLUME);
+    if (savedVolume !== null) {
+      const parsed = parseFloat(savedVolume);
+      if (!isNaN(parsed)) {
+        this.volume = Math.max(0, Math.min(1, parsed));
+      }
+    }
+    const savedMuted = localStorage.getItem(STORAGE_KEY_MUTED);
+    if (savedMuted !== null) {
+      this.muted = savedMuted === 'true';
+    }
   }
 
   private preload(): void {
@@ -75,10 +93,20 @@ class AudioService {
 
   setVolume(volume: number): void {
     this.volume = Math.max(0, Math.min(1, volume));
+    localStorage.setItem(STORAGE_KEY_VOLUME, this.volume.toString());
   }
 
   setMuted(muted: boolean): void {
     this.muted = muted;
+    localStorage.setItem(STORAGE_KEY_MUTED, muted.toString());
+  }
+
+  getVolume(): number {
+    return this.volume;
+  }
+
+  getMuted(): boolean {
+    return this.muted;
   }
 }
 

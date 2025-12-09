@@ -20,7 +20,7 @@ interface CardGroupProps {
 }
 
 const CardGroup: React.FC<CardGroupProps> = ({ 
-  rank, 
+  rank: _rank, 
   cards, 
   selectedCards, 
   onCardSelect,
@@ -138,7 +138,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       <div className="flex justify-end mb-3">
         <button
           onClick={handleClearSelection}
-          className={`text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 ${selectedCards.length > 0 ? '' : 'invisible'}`}
+          className={`text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 ${selectedCards.length > 0 ? '' : 'invisible'}`}
         >
           清空选择
         </button>
@@ -159,7 +159,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       </div>
       
       {safeCards.length === 0 && (
-        <div className="text-center text-gray-500 py-8">
+        <div className="text-center text-muted-foreground py-8">
           暂无手牌
         </div>
       )}

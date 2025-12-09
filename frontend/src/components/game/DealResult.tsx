@@ -19,7 +19,7 @@ const DealResult: React.FC<DealResultProps> = ({
   teamLevels,
   onContinue,
   onExit,
-  isMatchFinished,
+  isMatchFinished: _isMatchFinished,
   currentPlayerSeat
 }) => {
   const [countdown, setCountdown] = useState<number | null>(null);

@@ -2,6 +2,7 @@ import type { Story } from '@ladle/react';
 import PlayedCardsDisplay from './PlayedCardsDisplay';
 import type { PlayAction } from '../../types/proto';
 import type { Card } from '../../types/proto';
+import { CompType } from '../../types/proto';
 
 const mockCards: Card[] = [
   { suit: 0, rank: 14, deckIndex: 0 },
@@ -46,6 +47,8 @@ export const Pass: Story = () => {
     playerSeat: 0,
     isPass: true,
     cards: [],
+    compType: CompType.COMP_TYPE_FOLD,
+    timestampMs: Date.now(),
   };
 
   return (
@@ -60,6 +63,8 @@ export const SingleCard: Story = () => {
     playerSeat: 0,
     isPass: false,
     cards: [mockCards[0]],
+    compType: CompType.COMP_TYPE_SINGLE,
+    timestampMs: Date.now(),
   };
 
   return (
@@ -74,6 +79,8 @@ export const MultipleCards: Story = () => {
     playerSeat: 0,
     isPass: false,
     cards: mockCards,
+    compType: CompType.COMP_TYPE_TRIPLE,
+    timestampMs: Date.now(),
   };
 
   return (
@@ -88,6 +95,8 @@ export const ManyCards: Story = () => {
     playerSeat: 0,
     isPass: false,
     cards: manyCards,
+    compType: CompType.COMP_TYPE_NAIVE_BOMB,
+    timestampMs: Date.now(),
   };
 
   return (
@@ -102,6 +111,8 @@ export const WithJokers: Story = () => {
     playerSeat: 0,
     isPass: false,
     cards: jokerCards,
+    compType: CompType.COMP_TYPE_JOKER_BOMB,
+    timestampMs: Date.now(),
   };
 
   return (
@@ -116,12 +127,16 @@ export const AllPositions: Story = () => {
     playerSeat: 0,
     isPass: false,
     cards: mockCards,
+    compType: CompType.COMP_TYPE_TRIPLE,
+    timestampMs: Date.now(),
   };
 
   const passPlay: PlayAction = {
     playerSeat: 1,
     isPass: true,
     cards: [],
+    compType: CompType.COMP_TYPE_FOLD,
+    timestampMs: Date.now(),
   };
 
   return (

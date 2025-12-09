@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    nickname VARCHAR(50),
+    avatar_key VARCHAR(255),
     email VARCHAR(255),
     phone VARCHAR(20),
     wechat_openid VARCHAR(100),

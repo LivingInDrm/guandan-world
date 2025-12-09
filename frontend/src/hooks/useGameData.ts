@@ -14,6 +14,7 @@ export function usePlayerViewData() {
     playStates: playerView.playStates.length === 4 
       ? playerView.playStates as [number, number, number, number] 
       : undefined,
+    leader: playerView.leader,
   };
 }
 

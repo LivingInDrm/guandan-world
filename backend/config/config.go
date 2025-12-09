@@ -10,6 +10,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
+	Storage  StorageConfig
 }
 
 type ServerConfig struct {
@@ -39,11 +40,18 @@ type JWTConfig struct {
 	RefreshTokenExpiry time.Duration
 }
 
+type StorageConfig struct {
+	Type       string
+	LocalPath  string
+	ImgBaseURL string
+}
+
 func Load() *Config {
 	return &Config{
 		Server:   loadServerConfig(),
 		Database: loadDatabaseConfig(),
 		JWT:      loadJWTConfig(),
+		Storage:  loadStorageConfig(),
 	}
 }
 
@@ -95,6 +103,14 @@ func loadJWTConfig() JWTConfig {
 		RefreshSecret:      refreshSecret,
 		AccessTokenExpiry:  time.Duration(getEnvInt("JWT_ACCESS_EXPIRY_MINUTES", 15)) * time.Minute,
 		RefreshTokenExpiry: time.Duration(getEnvInt("JWT_REFRESH_EXPIRY_DAYS", 7)) * 24 * time.Hour,
+	}
+}
+
+func loadStorageConfig() StorageConfig {
+	return StorageConfig{
+		Type:       getEnv("STORAGE_TYPE", "local"),
+		LocalPath:  getEnv("STORAGE_LOCAL_PATH", "/data/app-uploads"),
+		ImgBaseURL: getEnv("IMG_BASE_URL", ""),
 	}
 }
 

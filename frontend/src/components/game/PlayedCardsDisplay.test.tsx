@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import PlayedCardsDisplay from './PlayedCardsDisplay';
 import type { PlayAction } from '../../types/proto';
 import type { Card } from '../../types/proto';
+import { CompType } from '../../types/proto';
 
 const mockCards: Card[] = [
   { suit: 0, rank: 14, deckIndex: 0 },
@@ -25,6 +26,8 @@ describe('PlayedCardsDisplay', () => {
       playerSeat: 0,
       isPass: true,
       cards: [],
+      compType: CompType.COMP_TYPE_FOLD,
+      timestampMs: Date.now(),
     };
 
     render(<PlayedCardsDisplay play={passPlay} position="bottom" />);
@@ -37,6 +40,8 @@ describe('PlayedCardsDisplay', () => {
       playerSeat: 0,
       isPass: false,
       cards: mockCards,
+      compType: CompType.COMP_TYPE_TRIPLE,
+      timestampMs: Date.now(),
     };
 
     const { container } = render(
@@ -52,6 +57,8 @@ describe('PlayedCardsDisplay', () => {
       playerSeat: 0,
       isPass: false,
       cards: [],
+      compType: CompType.COMP_TYPE_UNSPECIFIED,
+      timestampMs: Date.now(),
     };
 
     const { container } = render(

@@ -13,6 +13,8 @@ type UserEntity struct {
 	ID           string         `db:"id"`
 	Username     string         `db:"username"`
 	PasswordHash string         `db:"password_hash"`
+	Nickname     sql.NullString `db:"nickname"`
+	AvatarKey    sql.NullString `db:"avatar_key"`
 	Email        sql.NullString `db:"email"`
 	Phone        sql.NullString `db:"phone"`
 	WechatOpenID sql.NullString `db:"wechat_openid"`
@@ -22,12 +24,19 @@ type UserEntity struct {
 }
 
 func (e *UserEntity) ToUser() *User {
-	return &User{
+	user := &User{
 		ID:       e.ID,
 		Username: e.Username,
 		Password: e.PasswordHash,
 		Online:   e.Online,
 	}
+	if e.Nickname.Valid {
+		user.Nickname = &e.Nickname.String
+	}
+	if e.AvatarKey.Valid {
+		user.AvatarKey = &e.AvatarKey.String
+	}
+	return user
 }
 
 type UserRepository interface {
@@ -36,6 +45,7 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id string) (*UserEntity, error)
 	UpdateOnlineStatus(ctx context.Context, id string, online bool) error
 	ExistsByUsername(ctx context.Context, username string) (bool, error)
+	UpdateProfile(ctx context.Context, id string, nickname, avatarKey *string) error
 }
 
 type PostgresUserRepository struct {
@@ -50,7 +60,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, username, passwordH
 	query := `
 		INSERT INTO users (username, password_hash) 
 		VALUES ($1, $2) 
-		RETURNING id, username, password_hash, email, phone, wechat_openid, online, created_at, updated_at
+		RETURNING id, username, password_hash, nickname, avatar_key, email, phone, wechat_openid, online, created_at, updated_at
 	`
 
 	var user UserEntity
@@ -64,7 +74,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, username, passwordH
 
 func (r *PostgresUserRepository) FindByUsername(ctx context.Context, username string) (*UserEntity, error) {
 	query := `
-		SELECT id, username, password_hash, email, phone, wechat_openid, online, created_at, updated_at 
+		SELECT id, username, password_hash, nickname, avatar_key, email, phone, wechat_openid, online, created_at, updated_at 
 		FROM users 
 		WHERE username = $1
 	`
@@ -83,7 +93,7 @@ func (r *PostgresUserRepository) FindByUsername(ctx context.Context, username st
 
 func (r *PostgresUserRepository) FindByID(ctx context.Context, id string) (*UserEntity, error) {
 	query := `
-		SELECT id, username, password_hash, email, phone, wechat_openid, online, created_at, updated_at 
+		SELECT id, username, password_hash, nickname, avatar_key, email, phone, wechat_openid, online, created_at, updated_at 
 		FROM users 
 		WHERE id = $1
 	`
@@ -111,4 +121,13 @@ func (r *PostgresUserRepository) ExistsByUsername(ctx context.Context, username 
 	var exists bool
 	err := r.db.QueryRowContext(ctx, query, username).Scan(&exists)
 	return exists, err
+}
+
+func (r *PostgresUserRepository) UpdateProfile(ctx context.Context, id string, nickname, avatarKey *string) error {
+	if nickname == nil && avatarKey == nil {
+		return nil
+	}
+	query := `UPDATE users SET nickname = COALESCE($1, nickname), avatar_key = COALESCE($2, avatar_key), updated_at = NOW() WHERE id = $3`
+	_, err := r.db.ExecContext(ctx, query, nickname, avatarKey, id)
+	return err
 }

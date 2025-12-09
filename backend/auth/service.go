@@ -89,10 +89,12 @@ func validateUsername(username string) error {
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"-"`
-	Online   bool   `json:"online"`
+	ID        string  `json:"id"`
+	Username  string  `json:"username"`
+	Nickname  *string `json:"nickname,omitempty"`
+	AvatarKey *string `json:"avatar_key,omitempty"`
+	Password  string  `json:"-"`
+	Online    bool    `json:"online"`
 }
 
 type AuthToken struct {

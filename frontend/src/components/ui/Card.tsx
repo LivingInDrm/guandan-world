@@ -1,49 +1,89 @@
-import React from 'react';
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glass' | 'gradient';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-}
-
-const variantStyles: Record<NonNullable<CardProps['variant']>, string> = {
-  default: 'bg-white rounded-panel shadow-panel',
-  glass: 'bg-white/70 backdrop-blur-sm rounded-panel shadow-panel border border-white/50',
-  gradient: 'bg-gradient-to-b from-table-50 via-table-100 to-table-200 rounded-panel shadow-panel border border-white/30',
-};
-
-const paddingStyles: Record<NonNullable<CardProps['padding']>, string> = {
-  none: '',
-  sm: 'p-3',
-  md: 'p-5',
-  lg: 'p-8',
-};
-
-export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  (
-    {
-      variant = 'default',
-      padding = 'md',
-      className = '',
-      children,
-      ...props
+const cardVariants = cva("rounded-lg shadow-panel", {
+  variants: {
+    variant: {
+      default: "bg-card text-card-foreground",
+      glass: "bg-white/70 backdrop-blur-sm border border-white/50",
+      gradient: "bg-gradient-to-b from-table-50 via-table-100 to-table-200 border border-white/30",
     },
-    ref
-  ) => {
-    const computedClassName = [
-      variantStyles[variant],
-      paddingStyles[padding],
-      className,
-    ]
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+})
 
-    return (
-      <div ref={ref} className={computedClassName} {...props}>
-        {children}
-      </div>
-    );
-  }
-);
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
 
-Card.displayName = 'Card';
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(cardVariants({ variant }), className)}
+      {...props}
+    />
+  )
+)
+Card.displayName = "Card"
+
+const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+))
+CardHeader.displayName = "CardHeader"
+
+const CardTitle = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("text-2xl font-semibold leading-none tracking-tight", className)}
+    {...props}
+  />
+))
+CardTitle.displayName = "CardTitle"
+
+const CardDescription = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+CardDescription.displayName = "CardDescription"
+
+const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+CardContent.displayName = "CardContent"
+
+const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center p-6 pt-0", className)}
+    {...props}
+  />
+))
+CardFooter.displayName = "CardFooter"
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants }

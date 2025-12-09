@@ -110,11 +110,8 @@ describe('LoginForm', () => {
   it('submits form with valid data', async () => {
     const user = userEvent.setup();
     const mockResponse = {
-      success: true,
-      data: {
-        user: { id: '1', username: 'testuser', online: true },
-        token: { token: 'mock-token', expires_at: '2024-01-01', user_id: '1' }
-      }
+      user: { id: '1', username: 'testuser', online: true },
+      token: { access_token: 'mock-token', refresh_token: 'mock-refresh', expires_at: '2024-01-01', user_id: '1' }
     };
     
     mockApiClient.login.mockResolvedValue(mockResponse);
@@ -139,8 +136,8 @@ describe('LoginForm', () => {
     
     expect(mockApiClient.setToken).toHaveBeenCalledWith('mock-token');
     expect(mockLogin).toHaveBeenCalledWith(
-      mockResponse.data.user,
-      mockResponse.data.token
+      mockResponse.user,
+      mockResponse.token
     );
     expect(mockNavigate).toHaveBeenCalledWith('/lobby');
   });

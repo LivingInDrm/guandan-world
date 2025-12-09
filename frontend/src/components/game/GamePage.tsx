@@ -203,7 +203,7 @@ const GamePage: React.FC = () => {
       const actionData = message.data as GameActionData;
 
       if (actionData.timeout !== undefined) {
-        setTurnTimeoutSeconds(actionData.timeout);
+        setCountdown(actionData.timeout);
       }
     };
 
@@ -422,14 +422,14 @@ const GamePage: React.FC = () => {
           className={`
             relative p-4 rounded-lg border-2 min-h-[120px] flex flex-col items-center justify-center
             ${isEmpty
-              ? 'border-dashed border-gray-300 bg-gray-50'
-              : 'border-solid border-blue-300 bg-blue-50'
+              ? 'border-dashed border-border bg-muted'
+              : 'border-solid border-primary/30 bg-primary/5'
             }
-            ${isCurrentUser ? 'ring-2 ring-blue-500' : ''}
+            ${isCurrentUser ? 'ring-2 ring-primary' : ''}
           `}
         >
           {/* Seat number */}
-          <div className="absolute top-2 left-2 text-xs text-gray-500 font-medium">
+          <div className="absolute top-2 left-2 text-xs text-muted-foreground font-medium">
             座位 {seatIndex + 1}
           </div>
 
@@ -442,24 +442,24 @@ const GamePage: React.FC = () => {
 
           {isEmpty ? (
             <div className="text-center">
-              <div className="w-12 h-12 bg-gray-200 rounded-full mb-2 flex items-center justify-center">
-                <span className="text-gray-400 text-xl">+</span>
+              <div className="w-12 h-12 bg-muted rounded-full mb-2 flex items-center justify-center">
+                <span className="text-muted-foreground text-xl">+</span>
               </div>
-              <span className="text-gray-500 text-sm">等待玩家</span>
+              <span className="text-muted-foreground text-sm">等待玩家</span>
             </div>
           ) : (
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-500 rounded-full mb-2 flex items-center justify-center">
+              <div className="w-12 h-12 bg-primary rounded-full mb-2 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">
                   {player.username.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="space-y-1">
-                <div className="font-medium text-gray-800">{player.username}</div>
+                <div className="font-medium text-foreground">{player.username}</div>
                 <div className="flex items-center justify-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${player.online ? 'bg-green-500' : 'bg-gray-400'
+                  <div className={`w-2 h-2 rounded-full ${player.online ? 'bg-green-500' : 'bg-muted-foreground'
                     }`} />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-xs text-muted-foreground">
                     {player.online ? '在线' : '离线'}
                   </span>
                 </div>
@@ -478,20 +478,20 @@ const GamePage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         {/* Room header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-card rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">房间等待</h1>
-              <p className="text-gray-600">房间ID: {currentRoom.id}</p>
+              <h1 className="text-2xl font-bold text-foreground">房间等待</h1>
+              <p className="text-muted-foreground">房间ID: {currentRoom.id}</p>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 玩家数量: {getPlayerCount()}/4
               </div>
               <div className="flex items-center justify-end space-x-2 mt-1">
                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
                   }`} />
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {isConnected ? '已连接' : '连接断开'}
                 </span>
               </div>
@@ -508,7 +508,7 @@ const GamePage: React.FC = () => {
             <button
               onClick={handleLeaveRoom}
               disabled={isLeaving}
-              className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLeaving ? '离开中...' : '离开房间'}
             </button>
@@ -518,8 +518,8 @@ const GamePage: React.FC = () => {
                 onClick={handleStartGame}
                 disabled={!canStartGame() || isStarting}
                 className={`px-8 py-2 rounded-lg font-medium transition-colors ${canStartGame()
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
               >
                 {isStarting ? '开始中...' : '开始游戏'}
@@ -552,18 +552,18 @@ const GamePage: React.FC = () => {
   const renderGamePrepare = () => {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-8 text-center max-w-md mx-4">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">游戏即将开始</h2>
-          <div className="text-6xl font-bold text-blue-500 mb-4">
+        <div className="bg-card rounded-lg p-8 text-center max-w-md mx-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">游戏即将开始</h2>
+          <div className="text-6xl font-bold text-primary mb-4">
             {countdown}
           </div>
-          <p className="text-gray-600">请准备好开始游戏...</p>
+          <p className="text-muted-foreground">请准备好开始游戏...</p>
 
           {/* Connection status indicator */}
           <div className="mt-4 flex items-center justify-center space-x-2">
             <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
               }`} />
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               {isConnected ? '连接正常' : '连接断开'}
             </span>
           </div>
@@ -677,7 +677,7 @@ const GamePage: React.FC = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-gray-600">请先登录</p>
+        <p className="text-muted-foreground">请先登录</p>
       </div>
     );
   }
@@ -686,15 +686,15 @@ const GamePage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">加载房间信息...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">加载房间信息...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background">
       {renderCurrentPhase()}
     </div>
   );

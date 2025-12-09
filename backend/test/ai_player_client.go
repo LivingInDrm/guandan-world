@@ -126,30 +126,17 @@ func (c *AIPlayerClient) Wait() {
 	<-c.doneChan
 }
 
-// registerOrLogin 注册或登录账号
+// registerOrLogin 登录账号
 func (c *AIPlayerClient) registerOrLogin() error {
-	// 先尝试注册
-	registerReq := handlers.RegisterRequest{
+	loginReq := handlers.LoginRequest{
 		Username: c.username,
 		Password: c.password,
 	}
 
 	var authResp handlers.AuthResponse
-	err := c.httpClient.CallAPI("POST", "/api/auth/register", registerReq, &authResp)
-
+	err := c.httpClient.CallAPI("POST", "/api/auth/login", loginReq, &authResp)
 	if err != nil {
-		// 如果注册失败（可能是用户已存在），尝试登录
-		c.log("Registration failed, trying login...")
-
-		loginReq := handlers.LoginRequest{
-			Username: c.username,
-			Password: c.password,
-		}
-
-		err = c.httpClient.CallAPI("POST", "/api/auth/login", loginReq, &authResp)
-		if err != nil {
-			return fmt.Errorf("login failed: %w", err)
-		}
+		return fmt.Errorf("login failed: %w", err)
 	}
 
 	c.authToken = authResp.Token.AccessToken

@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import type { RegisterRequest } from '../../types';
-import { Input, Button } from '../ui';
+import { Input, Label, Button } from '../ui';
 
-// NOTE: 密码规则需前后端保持一致
-// 后端: backend/auth/service.go
-// 前端: RegisterForm.tsx, LoginForm.tsx
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 50;
-
-// NOTE: 用户名规则需前后端保持一致
-// 后端: backend/auth/service.go
-// 前端: RegisterForm.tsx, LoginForm.tsx
 const USERNAME_MIN_LENGTH = 4;
 const USERNAME_MAX_LENGTH = 20;
 
@@ -110,12 +104,13 @@ const RegisterForm: React.FC = () => {
       } else {
         setError('注册失败');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Register error:', err);
-      if (err.status === 409) {
+      const apiErr = err as { status?: number; message?: string };
+      if (apiErr.status === 409) {
         setError('用户名已存在，请选择其他用户名');
       } else {
-        setError(err.message || '注册失败，请检查网络连接');
+        setError(apiErr.message || '注册失败，请检查网络连接');
       }
     } finally {
       setLoading(false);
@@ -124,56 +119,67 @@ const RegisterForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Input
-        id="username"
-        name="username"
-        type="text"
-        label="用户名"
-        value={formData.username}
-        onChange={handleInputChange}
-        error={errors.username}
-        helperText={`${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH}个字符，支持字母、数字和下划线`}
-        placeholder="请输入用户名"
-        disabled={isLoading}
-      />
+      <div className="space-y-2">
+        <Label htmlFor="username">用户名</Label>
+        <Input
+          id="username"
+          name="username"
+          type="text"
+          value={formData.username}
+          onChange={handleInputChange}
+          placeholder="请输入用户名"
+          disabled={isLoading}
+          className={errors.username ? 'border-destructive' : ''}
+        />
+        {errors.username ? (
+          <p className="text-sm text-destructive">{errors.username}</p>
+        ) : (
+          <p className="text-xs text-table-300">{USERNAME_MIN_LENGTH}-{USERNAME_MAX_LENGTH}个字符，支持字母、数字和下划线</p>
+        )}
+      </div>
 
-      <Input
-        id="password"
-        name="password"
-        type="password"
-        label="密码"
-        value={formData.password}
-        onChange={handleInputChange}
-        error={errors.password}
-        helperText={`至少${PASSWORD_MIN_LENGTH}个字符，包含大小写字母、数字和特殊字符`}
-        placeholder="请输入密码"
-        disabled={isLoading}
-      />
+      <div className="space-y-2">
+        <Label htmlFor="password">密码</Label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleInputChange}
+          placeholder="请输入密码"
+          disabled={isLoading}
+          className={errors.password ? 'border-destructive' : ''}
+        />
+        {errors.password ? (
+          <p className="text-sm text-destructive">{errors.password}</p>
+        ) : (
+          <p className="text-xs text-table-300">至少{PASSWORD_MIN_LENGTH}个字符，包含大小写字母、数字和特殊字符</p>
+        )}
+      </div>
 
-      <Input
-        id="confirmPassword"
-        name="confirmPassword"
-        type="password"
-        label="确认密码"
-        value={formData.confirmPassword}
-        onChange={handleInputChange}
-        error={errors.confirmPassword}
-        placeholder="请再次输入密码"
-        disabled={isLoading}
-      />
+      <div className="space-y-2">
+        <Label htmlFor="confirmPassword">确认密码</Label>
+        <Input
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={handleInputChange}
+          placeholder="请再次输入密码"
+          disabled={isLoading}
+          className={errors.confirmPassword ? 'border-destructive' : ''}
+        />
+        {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
+      </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-card p-3">
+        <div className="bg-red-50 border border-red-200 rounded-sm p-3">
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
-      <Button
-        type="submit"
-        variant="primary"
-        fullWidth
-        loading={isLoading}
-      >
+      <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
+        {isLoading && <Loader2 className="animate-spin" />}
         {isLoading ? '注册中...' : '注册'}
       </Button>
     </form>

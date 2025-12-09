@@ -23,6 +23,7 @@ interface AuthActions {
   initialize: () => void;
   checkTokenExpiry: () => boolean;
   refreshToken: () => Promise<boolean>;
+  updateUser: (user: User) => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -85,6 +86,8 @@ export const useAuthStore = create<AuthStore>()(
       },
       
       clearError: () => set({ error: null }),
+      
+      updateUser: (user: User) => set({ user }),
       
       initialize: () => {
         const state = get();

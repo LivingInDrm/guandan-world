@@ -14,23 +14,21 @@ import (
 )
 
 func main() {
-	// 解析命令行参数
+	usernames := []string{"pangzi", "pangzi1", "pangzi2"}
+	password := "Ai@123456"
+
 	serverURL := flag.String("server", "localhost:8080", "Backend server URL (host:port)")
 	roomID := flag.String("room-id", "", "Room ID to join (required)")
 	verbose := flag.Bool("verbose", false, "Enable verbose logging")
 	numPlayers := flag.Int("num-players", 3, "Number of AI players to create (default: 3)")
-	usernamePrefix := flag.String("username-prefix", "ai_player", "Username prefix for AI players")
-	password := flag.String("password", "Ai@123456", "Password for AI players")
 	playDelay := flag.Int("play-delay", 2, "AI play delay in seconds (default: 2)")
 
 	flag.Parse()
 
-	// 验证必需参数
 	if *roomID == "" {
 		log.Fatal("Error: -room-id is required")
 	}
 
-	// 验证玩家数量
 	if *numPlayers < 1 || *numPlayers > 3 {
 		log.Fatal("Error: -num-players must be between 1 and 3")
 	}
@@ -44,15 +42,12 @@ func main() {
 	log.Printf("==============================")
 	log.Println()
 
-	// 设置信号处理
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	// 创建AI玩家客户端
 	clients := make([]*test.AIPlayerClient, *numPlayers)
 	for i := 0; i < *numPlayers; i++ {
-		username := fmt.Sprintf("%s_%d", *usernamePrefix, i+1)
-		clients[i] = test.NewAIPlayerClientWithDelay(*serverURL, *roomID, username, *password, *verbose, time.Duration(*playDelay)*time.Second)
+		clients[i] = test.NewAIPlayerClientWithDelay(*serverURL, *roomID, usernames[i], password, *verbose, time.Duration(*playDelay)*time.Second)
 	}
 
 	// 使用WaitGroup等待所有客户端启动

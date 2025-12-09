@@ -32,7 +32,7 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position,
   if (play.isPass) {
     return (
       <div className={getPositionClasses(position)}>
-        <div className="bg-gray-200 px-3 py-1 rounded text-sm text-gray-600 font-medium">
+        <div className="bg-muted px-3 py-1 rounded text-sm text-muted-foreground font-medium">
           不出
         </div>
       </div>

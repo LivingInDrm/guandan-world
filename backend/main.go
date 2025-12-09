@@ -15,6 +15,7 @@ import (
 	"guandan-world/backend/game"
 	"guandan-world/backend/handlers"
 	"guandan-world/backend/room"
+	"guandan-world/backend/storage"
 	"guandan-world/backend/websocket"
 	"guandan-world/pkg/log"
 
@@ -60,6 +61,13 @@ func main() {
 	})
 	authHandler := handlers.NewAuthHandler(authService)
 
+	fileStorage, err := storage.NewLocalStorage(cfg.Storage.LocalPath)
+	if err != nil {
+		log.Error("failed to initialize storage", "error", err)
+		os.Exit(1)
+	}
+	userHandler := handlers.NewUserHandler(userRepo, fileStorage)
+
 	roomService := room.NewRoomService(authService)
 	wsManager := websocket.NewWSManager(authService, roomService)
 	driverService := game.NewDriverService(wsManager)
@@ -76,7 +84,7 @@ func main() {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -86,6 +94,8 @@ func main() {
 	})
 
 	authHandler.RegisterRoutes(r)
+
+	r.Static("/uploads", cfg.Storage.LocalPath)
 
 	api := r.Group("/api")
 	{
@@ -110,6 +120,13 @@ func main() {
 			driver.POST("/tribute-return", gameDriverHandler.SubmitReturnTribute)
 			driver.GET("/status/:room_id", gameDriverHandler.GetGameStatus)
 			driver.POST("/stop/:room_id", gameDriverHandler.StopGame)
+		}
+
+		user := api.Group("/user")
+		user.Use(authHandler.JWTMiddleware())
+		{
+			user.PATCH("/profile", userHandler.UpdateProfile)
+			user.GET("/profile", userHandler.GetProfile)
 		}
 	}
 

@@ -59,6 +59,8 @@ export type PlayAction = ProtoPlayActionType;
 export interface User {
   id: string;
   username: string;
+  nickname?: string;
+  avatar_key?: string;
   online: boolean;
 }
 

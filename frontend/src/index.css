@@ -1,10 +1,139 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
-:root {
+:root,
+[data-theme="light"] {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
+  --primary: 160 84% 39%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 45 100% 51%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 160 84% 39%;
+  --radius: 0.75rem;
+
+  --gradient-primary: linear-gradient(to bottom, #10b981, #059669);
+  --gradient-secondary: linear-gradient(to bottom, #64748b, #475569);
+  --gradient-warning: linear-gradient(to bottom, #fbbf24, #f59e0b);
+  --gradient-danger: linear-gradient(to bottom, #ef4444, #dc2626);
+
+  --table-50: 145 30% 94%;
+  --table-100: 145 28% 90%;
+  --table-200: 145 25% 87%;
+  --table-300: 145 20% 61%;
+  --table-400: 145 18% 37%;
+  --table-800: 145 15% 20%;
+  --table-900: 145 15% 14%;
+  --team-us: 210 13% 37%;
+  --team-us-dark: 210 16% 29%;
+  --team-them: 0 48% 42%;
+  --team-them-dark: 0 48% 33%;
+  --suit-red: 0 84% 50%;
+  --suit-black: 215 14% 27%;
+  --badge-level: 142 71% 45%;
+  --badge-wild: 0 84% 60%;
+}
+
+[data-theme="dark"] {
+  --background: 0 0% 7%;
+  --foreground: 0 0% 95%;
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 95%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 160 70% 45%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 18%;
+  --secondary-foreground: 0 0% 95%;
+  --muted: 0 0% 18%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 45 90% 50%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 160 70% 45%;
+
+  --gradient-primary: linear-gradient(to bottom, #059669, #047857);
+  --gradient-secondary: linear-gradient(to bottom, #475569, #334155);
+  --gradient-warning: linear-gradient(to bottom, #f59e0b, #d97706);
+  --gradient-danger: linear-gradient(to bottom, #dc2626, #b91c1c);
+
+  --table-50: 145 15% 18%;
+  --table-100: 145 15% 16%;
+  --table-200: 145 15% 14%;
+  --table-300: 145 18% 30%;
+  --table-400: 145 18% 40%;
+  --table-800: 145 20% 70%;
+  --table-900: 145 20% 80%;
+  --team-us: 210 15% 55%;
+  --team-us-dark: 210 15% 45%;
+  --team-them: 0 55% 55%;
+  --team-them-dark: 0 55% 45%;
+  --suit-red: 0 80% 55%;
+  --suit-black: 215 10% 60%;
+  --badge-level: 142 65% 50%;
+  --badge-wild: 0 75% 55%;
+}
+
+[data-theme="chinese"] {
+  --background: 30 30% 96%;
+  --foreground: 0 20% 15%;
+  --card: 30 25% 98%;
+  --card-foreground: 0 20% 15%;
+  --popover: 30 25% 98%;
+  --popover-foreground: 0 20% 15%;
+  --primary: 0 70% 45%;
+  --primary-foreground: 45 80% 95%;
+  --secondary: 30 20% 90%;
+  --secondary-foreground: 0 20% 20%;
+  --muted: 30 15% 92%;
+  --muted-foreground: 0 10% 40%;
+  --accent: 45 85% 50%;
+  --accent-foreground: 0 20% 15%;
+  --destructive: 0 75% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 30 20% 85%;
+  --input: 30 20% 88%;
+  --ring: 0 70% 45%;
+
+  --gradient-primary: linear-gradient(to bottom, #c53030, #9b2c2c);
+  --gradient-secondary: linear-gradient(to bottom, #b7791f, #975a16);
+  --gradient-warning: linear-gradient(to bottom, #d69e2e, #b7791f);
+  --gradient-danger: linear-gradient(to bottom, #c53030, #9b2c2c);
+
+  --table-50: 30 25% 94%;
+  --table-100: 30 22% 90%;
+  --table-200: 30 20% 86%;
+  --table-300: 30 18% 60%;
+  --table-400: 30 15% 40%;
+  --table-800: 30 12% 22%;
+  --table-900: 30 10% 15%;
+  --team-us: 0 65% 40%;
+  --team-us-dark: 0 65% 32%;
+  --team-them: 210 50% 35%;
+  --team-them-dark: 210 50% 28%;
+  --suit-red: 0 80% 45%;
+  --suit-black: 0 10% 20%;
+  --badge-level: 45 80% 45%;
+  --badge-wild: 0 75% 50%;
 }
 
 body {
