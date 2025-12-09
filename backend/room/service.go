@@ -38,10 +38,12 @@ func (rs RoomStatus) String() string {
 
 // Player represents a player in a room
 type Player struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Seat     int    `json:"seat"`
-	Online   bool   `json:"online"`
+	ID        string  `json:"id"`
+	Username  string  `json:"username"`
+	Nickname  *string `json:"nickname,omitempty"`
+	AvatarKey *string `json:"avatar_key,omitempty"`
+	Seat      int     `json:"seat"`
+	Online    bool    `json:"online"`
 }
 
 // Room represents a game room
@@ -136,10 +138,12 @@ func (s *roomService) CreateRoom(ownerID string) (*Room, error) {
 
 	// Add owner as first player (seat 0)
 	room.Players[0] = &Player{
-		ID:       owner.ID,
-		Username: owner.Username,
-		Seat:     0,
-		Online:   owner.Online,
+		ID:        owner.ID,
+		Username:  owner.Username,
+		Nickname:  owner.Nickname,
+		AvatarKey: owner.AvatarKey,
+		Seat:      0,
+		Online:    owner.Online,
 	}
 
 	// Store room and player mapping
@@ -200,10 +204,12 @@ func (s *roomService) JoinRoom(roomID, playerID string) (*Room, error) {
 
 	// Add player to room
 	room.Players[availableSeat] = &Player{
-		ID:       player.ID,
-		Username: player.Username,
-		Seat:     availableSeat,
-		Online:   player.Online,
+		ID:        player.ID,
+		Username:  player.Username,
+		Nickname:  player.Nickname,
+		AvatarKey: player.AvatarKey,
+		Seat:      availableSeat,
+		Online:    player.Online,
 	}
 
 	room.PlayerCount++

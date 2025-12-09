@@ -15,6 +15,10 @@ import { NaiveBomb } from './comps/naiveBomb';
 import { StraightFlush } from './comps/straightFlush';
 
 export function fromCardList(cards: SdkCard[], prev?: CardComp): CardComp {
+  return fromCardListWithType(cards, prev?.getType());
+}
+
+export function fromCardListWithType(cards: SdkCard[], prevType?: CompType): CardComp {
   if (cards.length === 0) {
     return new Fold(cards);
   }
@@ -55,7 +59,7 @@ export function fromCardList(cards: SdkCard[], prev?: CardComp): CardComp {
       const naiveBomb = new NaiveBomb(cards);
       if (naiveBomb.isValid()) return naiveBomb;
 
-      if (!prev || prev.getType() !== CompType.Straight) {
+      if (prevType === undefined || prevType !== CompType.Straight) {
         const fullHouse = new FullHouse(cards);
         if (fullHouse.isValid()) return fullHouse;
       }
@@ -73,7 +77,7 @@ export function fromCardList(cards: SdkCard[], prev?: CardComp): CardComp {
       const naiveBomb = new NaiveBomb(cards);
       if (naiveBomb.isValid()) return naiveBomb;
 
-      if (!prev || prev.getType() !== CompType.Plate) {
+      if (prevType === undefined || prevType !== CompType.Plate) {
         const tube = new Tube(cards);
         if (tube.isValid()) return tube;
       }

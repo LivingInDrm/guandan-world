@@ -27,8 +27,11 @@ type AIPlayerClient struct {
 	playDelay   time.Duration
 
 	// 认证信息
-	authToken string
-	userID    string
+	authToken      string
+	refreshToken   string
+	tokenExpiresAt time.Time
+	userID         string
+	tokenMu        sync.Mutex
 
 	// HTTP客户端
 	httpClient *HTTPClient
@@ -140,6 +143,8 @@ func (c *AIPlayerClient) registerOrLogin() error {
 	}
 
 	c.authToken = authResp.Token.AccessToken
+	c.refreshToken = authResp.Token.RefreshToken
+	c.tokenExpiresAt = authResp.Token.ExpiresAt
 	c.userID = authResp.User.ID
 	c.httpClient.SetAuthToken(c.authToken)
 
@@ -351,6 +356,39 @@ func (c *AIPlayerClient) removeCardsFromHand(eventData map[string]interface{}) {
 	}
 }
 
+// refreshAccessToken 刷新 Access Token
+func (c *AIPlayerClient) refreshAccessToken() error {
+	req := handlers.RefreshRequest{
+		RefreshToken: c.refreshToken,
+	}
+
+	var authResp handlers.AuthResponse
+	if err := c.httpClient.CallAPI("POST", "/api/auth/refresh", req, &authResp); err != nil {
+		return fmt.Errorf("refresh token failed: %w", err)
+	}
+
+	c.authToken = authResp.Token.AccessToken
+	c.refreshToken = authResp.Token.RefreshToken
+	c.tokenExpiresAt = authResp.Token.ExpiresAt
+	c.httpClient.SetAuthToken(c.authToken)
+
+	c.log("Token refreshed successfully")
+	return nil
+}
+
+// ensureValidToken 确保 Token 有效，必要时刷新
+func (c *AIPlayerClient) ensureValidToken() error {
+	c.tokenMu.Lock()
+	defer c.tokenMu.Unlock()
+
+	if time.Until(c.tokenExpiresAt) > 2*time.Minute {
+		return nil
+	}
+
+	c.log("Token expiring soon, refreshing...")
+	return c.refreshAccessToken()
+}
+
 // Helper methods
 
 func (c *AIPlayerClient) log(message string) {
@@ -377,6 +415,11 @@ func (c *AIPlayerClient) isGameActive() bool {
 
 // handlePlayDecisionRequest 处理出牌决策请求
 func (c *AIPlayerClient) handlePlayDecisionRequest(data map[string]interface{}) {
+	if err := c.ensureValidToken(); err != nil {
+		c.log(fmt.Sprintf("Failed to ensure valid token: %v", err))
+		return
+	}
+
 	// 解析手牌
 	handData, ok := data["hand"].([]interface{})
 	if !ok {
@@ -502,6 +545,11 @@ func (c *AIPlayerClient) handlePlayDecisionRequest(data map[string]interface{}) 
 
 // handleTributeSelectionRequest 处理贡牌选择请求
 func (c *AIPlayerClient) handleTributeSelectionRequest(data map[string]interface{}) {
+	if err := c.ensureValidToken(); err != nil {
+		c.log(fmt.Sprintf("Failed to ensure valid token: %v", err))
+		return
+	}
+
 	// 解析选项
 	optionsData, ok := data["options"].([]interface{})
 	if !ok {
@@ -537,6 +585,11 @@ func (c *AIPlayerClient) handleTributeSelectionRequest(data map[string]interface
 
 // handleReturnTributeRequest 处理还贡请求
 func (c *AIPlayerClient) handleReturnTributeRequest(data map[string]interface{}) {
+	if err := c.ensureValidToken(); err != nil {
+		c.log(fmt.Sprintf("Failed to ensure valid token: %v", err))
+		return
+	}
+
 	// 解析手牌
 	handData, ok := data["hand"].([]interface{})
 	if !ok {

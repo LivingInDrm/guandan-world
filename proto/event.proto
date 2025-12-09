@@ -57,6 +57,7 @@ enum EventType {
   EVENT_TYPE_PLAYER_TIMEOUT = 42;
   EVENT_TYPE_PLAYER_DISCONNECT = 43;
   EVENT_TYPE_PLAYER_RECONNECT = 44;
+  EVENT_TYPE_PLAYER_FINISHED = 45;
 }
 
 // ========================================
@@ -286,6 +287,12 @@ message PlayerReconnectPayload {
   bool auto_play = 1;
 }
 
+// PlayerFinishedPayload 玩家出完牌事件数据
+message PlayerFinishedPayload {
+  // 完成排名 (1-4, 1表示最先打完)
+  int32 finish_rank = 1;
+}
+
 // ========================================
 // 顶层事件结构
 // ========================================
@@ -350,6 +357,7 @@ message GameEvent {
     PlayerTimeoutPayload player_timeout = 52;
     PlayerDisconnectPayload player_disconnect = 53;
     PlayerReconnectPayload player_reconnect = 54;
+    PlayerFinishedPayload player_finished = 55;
     
     // 预留更多事件类型（field number 60+）
   }

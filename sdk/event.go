@@ -40,6 +40,7 @@ const (
 	EventPlayerTimeout         = eventpb.EventType_EVENT_TYPE_PLAYER_TIMEOUT
 	EventPlayerDisconnect      = eventpb.EventType_EVENT_TYPE_PLAYER_DISCONNECT
 	EventPlayerReconnect       = eventpb.EventType_EVENT_TYPE_PLAYER_RECONNECT
+	EventPlayerFinished        = eventpb.EventType_EVENT_TYPE_PLAYER_FINISHED
 	
 	// Legacy constants that don't have proto equivalents (kept for compatibility)
 	EventTributeRulesSet    GameEventType = 0  // Deprecated
@@ -476,6 +477,29 @@ func NewPlayerPassedEvent(
 
 	event.Payload = &eventpb.GameEvent_PlayerPassed{
 		PlayerPassed: &eventpb.PlayerPassedPayload{},
+	}
+
+	return event
+}
+
+// NewPlayerFinishedEvent 创建玩家出完牌事件
+func NewPlayerFinishedEvent(
+	emp *EventMetadataProvider,
+	match *Match,
+	deal *Deal,
+	trick *Trick,
+	playerSeat int,
+	finishRank int,
+) *GameEvent {
+	event := emp.CreateBaseEvent(
+		eventpb.EventType_EVENT_TYPE_PLAYER_FINISHED,
+		match, deal, trick, playerSeat,
+	)
+
+	event.Payload = &eventpb.GameEvent_PlayerFinished{
+		PlayerFinished: &eventpb.PlayerFinishedPayload{
+			FinishRank: int32(finishRank),
+		},
 	}
 
 	return event

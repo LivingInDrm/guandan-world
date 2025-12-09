@@ -342,12 +342,12 @@ describe('前端端到端测试', () => {
       })
 
       // 验证等待中房间的加入按钮可点击
-      const waitingRoomCards = screen.getAllByText(/等待中/).map(el => el.closest('.room-card'))
-      expect(waitingRoomCards.length).toBeGreaterThan(0)
+      const waitingRoomRows = screen.getAllByText(/等待中/).map(el => el.closest('tr'))
+      expect(waitingRoomRows.length).toBeGreaterThan(0)
 
       // 验证游戏中房间的加入按钮置灰
-      const playingRoomCards = screen.getAllByText(/游戏中/).map(el => el.closest('.room-card'))
-      expect(playingRoomCards.length).toBeGreaterThan(0)
+      const playingRoomRows = screen.getAllByText(/游戏中/).map(el => el.closest('tr'))
+      expect(playingRoomRows.length).toBeGreaterThan(0)
     })
   })
 

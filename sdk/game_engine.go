@@ -551,6 +551,13 @@ func (ge *GameEngine) PlayCards(playerSeat int, cards []*Card) (*GameEvent, erro
 	event := NewPlayerPlayedEvent(ge.eventMeta, ge.currentMatch, deal, deal.CurrentTrick, playerSeat, originalCards, compType)
 	ge.emitEventLocked(event)
 
+	// Check if player finished all cards
+	if len(deal.PlayerCards[playerSeat]) == 0 {
+		finishRank := len(deal.Rankings)
+		finishedEvent := NewPlayerFinishedEvent(ge.eventMeta, ge.currentMatch, deal, deal.CurrentTrick, playerSeat, finishRank)
+		ge.emitEventLocked(finishedEvent)
+	}
+
 	// Check for post-action state transitions (e.g., trick ending, deal ending)
 	postEvents := ge.checkPostActionStateTransitions()
 	for _, evt := range postEvents {

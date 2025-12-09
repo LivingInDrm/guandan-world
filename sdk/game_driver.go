@@ -333,6 +333,7 @@ func (gd *GameDriver) RunMatch(players []Player) (*GameDriverResult, error) {
 			EventTributeStarted, // 添加贡牌开始事件（未来可能使用）
 			EventPlayerPlayed,
 			EventPlayerPassed,
+			EventPlayerFinished,
 			EventTrickStarted,
 			EventTrickEnded,
 			EventDealEnded,

@@ -9,7 +9,7 @@ export type { CardComp } from './compInterface';
 
 export { BaseComp } from './compBase';
 
-export { fromCardList } from './fromCardList';
+export { fromCardList, fromCardListWithType } from './fromCardList';
 export { findMinPlay } from './findMinPlay';
 export { FirstPlayRecommender, NextPlayRecommender } from './playRecommender';
 

@@ -345,6 +345,7 @@ func TestGameEventTypes(t *testing.T) {
 		EventTrickStarted,
 		EventPlayerPlayed,
 		EventPlayerPassed,
+		EventPlayerFinished,
 		EventTrickEnded,
 		EventDealEnded,
 		EventMatchEnded,

@@ -1,3 +1,6 @@
+export { Avatar, avatarVariants } from './Avatar'
+export type { AvatarProps } from './Avatar'
+
 export { Button, buttonVariants } from './Button'
 export type { ButtonProps } from './Button'
 

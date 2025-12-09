@@ -519,6 +519,7 @@ type GameEvent struct {
 - `EventTrickStarted` - 轮次开始
 - `EventPlayerPlayed` - 玩家出牌
 - `EventPlayerPassed` - 玩家过牌
+- `EventPlayerFinished` - 玩家出完牌
 - `EventTrickEnded` - 轮次结束
 - `EventDealEnded` - 牌局结束
 - `EventMatchEnded` - 比赛结束

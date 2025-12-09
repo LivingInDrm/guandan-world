@@ -99,6 +99,8 @@ export type RoomStatus = typeof RoomStatus[keyof typeof RoomStatus];
 export interface Player {
   id: string;
   username: string;
+  nickname?: string;
+  avatar_key?: string;
   seat: number;
   online: boolean;
   auto_play: boolean;

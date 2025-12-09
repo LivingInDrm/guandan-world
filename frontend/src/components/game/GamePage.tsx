@@ -149,6 +149,18 @@ const GamePage: React.FC = () => {
         audioService.playCardSound(event.playerPlayed.compType);
       } else if (event.type === EventType.EVENT_TYPE_PLAYER_PASSED) {
         audioService.playPassSound();
+      } else if (event.type === EventType.EVENT_TYPE_PLAYER_FINISHED && event.playerFinished) {
+        audioService.playRankSound(event.playerFinished.finishRank);
+      } else if (event.type === EventType.EVENT_TYPE_DEAL_STARTED) {
+        audioService.playDealStartSound();
+      } else if (event.type === EventType.EVENT_TYPE_DEAL_ENDED && event.dealEnded) {
+        const myTeam = playerSeat !== null ? playerSeat % 2 : -1;
+        const isWinner = myTeam === event.dealEnded.winningTeam;
+        audioService.playDealEndSound(isWinner);
+      } else if (event.type === EventType.EVENT_TYPE_MATCH_ENDED && event.matchEnded) {
+        const myTeam = playerSeat !== null ? playerSeat % 2 : -1;
+        const isWinner = myTeam === event.matchEnded.winner;
+        audioService.playMatchEndSound(isWinner);
       }
     };
 

@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Card, PlayAction } from '../../types';
 import Countdown from './Countdown';
 import {
   fromProtoCard,
   fromCardList,
+  fromCardListWithType,
   FirstPlayRecommender,
   NextPlayRecommender,
+  CompType,
+  type CardComp,
 } from '@guandan/sdk-ts';
 
 interface GameControlsProps {
@@ -68,6 +71,26 @@ const GameControls: React.FC<GameControlsProps> = ({
     return null;
   }, [plays]);
 
+  const prevComp = useMemo((): CardComp | undefined => {
+    // 内联 isFirstPlay 逻辑
+    const isFirst = (leader === playerSeat && plays.length === 0) || 
+                    plays.filter(p => !p.isPass && p.cards.length > 0).length === 0;
+    if (isFirst) return undefined;
+    
+    // 内联 getLastValidPlay 逻辑
+    let lastPlay: PlayAction | null = null;
+    for (let i = plays.length - 1; i >= 0; i--) {
+      if (!plays[i].isPass && plays[i].cards.length > 0) {
+        lastPlay = plays[i];
+        break;
+      }
+    }
+    if (!lastPlay) return undefined;
+    
+    const lastPlaySdkCards = lastPlay.cards.map(c => fromProtoCard(c, dealLevel));
+    return fromCardListWithType(lastPlaySdkCards, lastPlay.compType);
+  }, [plays, dealLevel, leader, playerSeat]);
+
   const handleHint = useCallback(() => {
     if (!canPlay || !isMyTurn || handCards.length === 0) return;
 
@@ -95,14 +118,13 @@ const GameControls: React.FC<GameControlsProps> = ({
         const deckIndexes = new Set(recommended.map(c => c.deckIndex));
         const selectedCards = handCards.filter(c => deckIndexes.has(c.deckIndex));
         onHint(selectedCards);
+      } else {
+        onHint([]);
       }
     } else {
-      const lastPlay = getLastValidPlay();
-      if (!lastPlay) return;
+      if (!prevComp) return;
 
       if (!nextPlayRecommenderRef.current) {
-        const lastPlaySdkCards = lastPlay.cards.map(c => fromProtoCard(c, dealLevel));
-        const prevComp = fromCardList(lastPlaySdkCards);
         nextPlayRecommenderRef.current = new NextPlayRecommender(sdkHandCards, prevComp);
       }
       
@@ -116,63 +138,54 @@ const GameControls: React.FC<GameControlsProps> = ({
         onHint([]);
       }
     }
-  }, [canPlay, isMyTurn, handCards, plays, dealLevel, isFirstPlay, getLastValidPlay, onHint]);
+  }, [canPlay, isMyTurn, handCards, plays, dealLevel, isFirstPlay, prevComp, onHint]);
 
   const validateCards = useCallback((cards: Card[]): PlayValidationResult => {
     if (cards.length === 0) {
       return { isValid: false, error: '请选择要出的牌' };
     }
 
-    if (cards.length === 1) {
-      return { isValid: true, cardType: '单牌' };
+    const sdkCards = cards.map(c => fromProtoCard(c, dealLevel));
+    const comp = fromCardList(sdkCards, prevComp);
+    
+    if (comp.getType() === CompType.Illegal || !comp.isValid()) {
+      return { isValid: false, error: '无效的牌型组合' };
     }
 
-    if (cards.length === 2) {
-      if (cards[0].rank === cards[1].rank) {
-        return { isValid: true, cardType: '对子' };
-      }
-      return { isValid: false, error: '两张牌必须是对子' };
+    if (prevComp && !comp.greaterThan(prevComp)) {
+      return { isValid: false, error: '打不过上家' };
     }
 
-    if (cards.length === 3) {
-      if (cards.every(card => card.rank === cards[0].rank)) {
-        return { isValid: true, cardType: '三张' };
-      }
-      return { isValid: false, error: '三张牌必须是同点数' };
-    }
-
-    if (cards.length === 4) {
-      if (cards.every(card => card.rank === cards[0].rank)) {
-        return { isValid: true, cardType: '炸弹' };
-      }
-      return { isValid: true, cardType: '四张牌型' };
-    }
-
-    if (cards.length >= 5) {
-      return { isValid: true, cardType: `${cards.length}张牌型` };
-    }
-
-    return { isValid: false, error: '无效的牌型组合' };
-  }, []);
+    return { isValid: true, cardType: comp.toString() };
+  }, [dealLevel, prevComp]);
 
   useEffect(() => {
-    if (selectedCards.length > 0) {
+    if (selectedCards.length === 0) {
+      setValidationResult({ isValid: true });
+      return;
+    }
+
+    // 立即设置为验证中状态，防止按钮闪烁
+    setValidationResult({ isValid: false });
+
+    const timer = setTimeout(() => {
       const result = validateCards(selectedCards);
       setValidationResult(result);
-    } else {
-      setValidationResult({ isValid: true });
-    }
+    }, 200);
+
+    return () => clearTimeout(timer);
   }, [selectedCards, validateCards]);
 
   const handlePlayCards = () => {
     if (selectedCards.length === 0) return;
     
+    // 同步验证兜底，防止防抖期间点击
     const validation = validateCards(selectedCards);
     if (!validation.isValid) {
       setValidationResult(validation);
       return;
     }
-
+    
     onPlayCards(selectedCards);
   };
 

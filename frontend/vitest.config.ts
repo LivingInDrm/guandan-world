@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@guandan/sdk-ts': path.resolve(__dirname, '../packages/sdk-ts/src'),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   test: {

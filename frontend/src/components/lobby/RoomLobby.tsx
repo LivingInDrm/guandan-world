@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Zap, Plus, Users } from 'lucide-react';
 import { useRoomStore } from '../../store/roomStore';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import RoomList from './RoomList';
 import CreateRoomModal from './CreateRoomModal';
+import { Button, Card } from '../ui';
 
 const RoomLobby: React.FC = () => {
   const { user } = useAuthStore();
@@ -187,24 +189,7 @@ const RoomLobby: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">房间大厅</h1>
-          <p className="text-muted-foreground mt-1">
-            欢迎，{user.username}！选择一个房间开始游戏
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
-        >
-          创建房间
-        </button>
-      </div>
-
-      {/* Error display */}
+    <div className="max-w-6xl mx-auto p-6 bg-muted/30 rounded-xl">
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div className="flex justify-between items-center">
@@ -219,50 +204,40 @@ const RoomLobby: React.FC = () => {
         </div>
       )}
 
-      {/* Room statistics */}
-      <div className="bg-muted rounded-lg p-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{totalCount}</div>
-              <div className="text-sm text-muted-foreground">总房间数</div>
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+        <div className="w-full lg:w-64 shrink-0">
+          <Card variant="glass" className="p-4">
+            <div className="flex flex-col gap-3">
+              <Button variant="primary" size="lg" className="w-full rounded-xl gap-2" onClick={() => {}}>
+                <Zap className="w-5 h-5" />
+                快速开始
+              </Button>
+              <Button variant="warning" size="lg" className="w-full rounded-xl gap-2" onClick={() => setShowCreateModal(true)}>
+                <Plus className="w-5 h-5" />
+                创建房间
+              </Button>
+              <Button variant="outline" size="lg" className="w-full rounded-xl gap-2" onClick={() => {}}>
+                <Users className="w-5 h-5" />
+                加入游戏
+              </Button>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {roomList.filter(room => room.status === 0).length}
-              </div>
-              <div className="text-sm text-muted-foreground">等待中</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-accent">
-                {roomList.filter(room => room.status === 2).length}
-              </div>
-              <div className="text-sm text-muted-foreground">游戏中</div>
-            </div>
-          </div>
-          <button
-            onClick={() => loadRoomList()}
-            disabled={isLoading}
-            className="text-primary hover:text-primary/80 disabled:text-muted-foreground"
-          >
-            {isLoading ? '刷新中...' : '手动刷新'}
-          </button>
+          </Card>
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <RoomList
+            rooms={roomList}
+            isLoading={isLoading}
+            currentPage={currentPage}
+            totalCount={totalCount}
+            limit={limit}
+            onPageChange={handlePageChange}
+            onJoinRoom={handleJoinRoom}
+            currentUserId={user.id}
+          />
         </div>
       </div>
 
-      {/* Room List */}
-      <RoomList
-        rooms={roomList}
-        isLoading={isLoading}
-        currentPage={currentPage}
-        totalCount={totalCount}
-        limit={limit}
-        onPageChange={handlePageChange}
-        onJoinRoom={handleJoinRoom}
-        currentUserId={user.id}
-      />
-
-      {/* Create Room Modal */}
       <CreateRoomModal
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}

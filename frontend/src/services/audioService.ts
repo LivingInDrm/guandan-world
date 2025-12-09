@@ -11,6 +11,14 @@ import jokerbombSound from '../assets/audio/jokerbomb.m4a';
 import naivebombSound from '../assets/audio/naivebomb.m4a';
 import flushSound from '../assets/audio/flush.m4a';
 import passSound from '../assets/audio/pass.m4a';
+import rank1Sound from '../assets/audio/rank1.m4a';
+import rank2Sound from '../assets/audio/rank2.m4a';
+import rank3Sound from '../assets/audio/rank3.m4a';
+import dealStartSound from '../assets/audio/deal_start.m4a';
+import dealWinSound from '../assets/audio/deal_win.m4a';
+import dealLoseSound from '../assets/audio/deal_lose.m4a';
+import matchWinSound from '../assets/audio/match_win.m4a';
+import matchLoseSound from '../assets/audio/match_lose.m4a';
 
 const STORAGE_KEY_VOLUME = 'guandan_audio_volume';
 const STORAGE_KEY_MUTED = 'guandan_audio_muted';
@@ -26,6 +34,12 @@ const compTypeToSound: Record<number, string> = {
   [CompType.COMP_TYPE_JOKER_BOMB]: jokerbombSound,
   [CompType.COMP_TYPE_NAIVE_BOMB]: naivebombSound,
   [CompType.COMP_TYPE_STRAIGHT_FLUSH]: flushSound,
+};
+
+const rankToSound: Record<number, string> = {
+  1: rank1Sound,
+  2: rank2Sound,
+  3: rank3Sound,
 };
 
 class AudioService {
@@ -53,7 +67,16 @@ class AudioService {
   }
 
   private preload(): void {
-    const allSounds = [...Object.values(compTypeToSound), passSound];
+    const allSounds = [
+      ...Object.values(compTypeToSound),
+      ...Object.values(rankToSound),
+      passSound,
+      dealStartSound,
+      dealWinSound,
+      dealLoseSound,
+      matchWinSound,
+      matchLoseSound,
+    ];
     allSounds.forEach((src) => {
       const audio = new Audio(src);
       audio.preload = 'auto';
@@ -89,6 +112,25 @@ class AudioService {
 
   playPassSound(): void {
     this.play(passSound);
+  }
+
+  playRankSound(rank: number): void {
+    const src = rankToSound[rank];
+    if (src) {
+      this.play(src);
+    }
+  }
+
+  playDealStartSound(): void {
+    this.play(dealStartSound);
+  }
+
+  playDealEndSound(isWinner: boolean): void {
+    this.play(isWinner ? dealWinSound : dealLoseSound);
+  }
+
+  playMatchEndSound(isWinner: boolean): void {
+    this.play(isWinner ? matchWinSound : matchLoseSound);
   }
 
   setVolume(volume: number): void {

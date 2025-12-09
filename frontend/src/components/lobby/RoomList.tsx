@@ -1,6 +1,7 @@
 import React from 'react';
 import { RoomStatus, type RoomInfo } from '../../types';
-import RoomCard from './RoomCard';
+import { Button } from '../ui';
+import PlayerMiniCard from './PlayerMiniCard';
 import Pagination from './Pagination';
 
 interface RoomListProps {
@@ -14,6 +15,63 @@ interface RoomListProps {
   currentUserId: string;
 }
 
+const getStatusText = (status: RoomStatus) => {
+  switch (status) {
+    case RoomStatus.WAITING:
+      return '等待中';
+    case RoomStatus.READY:
+      return '准备中';
+    case RoomStatus.PLAYING:
+      return '游戏中';
+    case RoomStatus.CLOSED:
+      return '已关闭';
+    default:
+      return '未知';
+  }
+};
+
+const getStatusColor = (status: RoomStatus) => {
+  switch (status) {
+    case RoomStatus.WAITING:
+      return 'bg-primary/20 text-primary';
+    case RoomStatus.READY:
+      return 'bg-accent-light text-amber-700';
+    case RoomStatus.PLAYING:
+      return 'bg-team-us/20 text-team-us-dark';
+    case RoomStatus.CLOSED:
+      return 'bg-disabled-bg text-disabled-text';
+    default:
+      return 'bg-disabled-bg text-disabled-text';
+  }
+};
+
+const getStatusDot = (status: RoomStatus) => {
+  switch (status) {
+    case RoomStatus.WAITING:
+      return 'bg-primary animate-pulse';
+    case RoomStatus.READY:
+      return 'bg-amber-500';
+    case RoomStatus.PLAYING:
+      return 'bg-team-us-dark';
+    case RoomStatus.CLOSED:
+      return 'bg-disabled-text';
+    default:
+      return 'bg-disabled-text';
+  }
+};
+
+const TableHeader = () => (
+  <thead className="bg-muted/50">
+    <tr>
+      <th className="px-4 py-3 text-left text-sm font-medium text-table-400">房间</th>
+      <th className="px-4 py-3 text-left text-sm font-medium text-table-400">状态</th>
+      <th className="px-4 py-3 text-left text-sm font-medium text-table-400">玩家</th>
+      <th className="px-4 py-3 text-center text-sm font-medium text-table-400">人数</th>
+      <th className="px-4 py-3 text-right text-sm font-medium text-table-400">操作</th>
+    </tr>
+  </thead>
+);
+
 const RoomList: React.FC<RoomListProps> = ({
   rooms,
   isLoading,
@@ -24,9 +82,7 @@ const RoomList: React.FC<RoomListProps> = ({
   onJoinRoom,
   currentUserId
 }) => {
-  // Sort rooms: waiting rooms first, then by player count descending
   const sortedRooms = [...rooms].sort((a, b) => {
-    // Priority order: waiting > ready > playing > closed
     const statusPriority = {
       [RoomStatus.WAITING]: 0,
       [RoomStatus.READY]: 1,
@@ -39,29 +95,35 @@ const RoomList: React.FC<RoomListProps> = ({
       return statusDiff;
     }
     
-    // Same status, sort by player count descending
     return b.player_count - a.player_count;
   });
 
   if (isLoading && rooms.length === 0) {
     return (
-      <div className="space-y-4">
-        {/* Loading skeleton */}
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index} className="bg-card rounded-lg shadow-sm border border-border p-6 animate-pulse">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="h-4 bg-muted rounded w-24 mb-2"></div>
-                <div className="h-3 bg-muted rounded w-32 mb-4"></div>
-                <div className="flex space-x-4">
-                  <div className="h-3 bg-muted rounded w-16"></div>
-                  <div className="h-3 bg-muted rounded w-20"></div>
-                </div>
-              </div>
-              <div className="h-8 bg-muted rounded w-20"></div>
-            </div>
-          </div>
-        ))}
+      <div className="bg-card rounded-lg shadow-sm border border-border overflow-x-auto">
+        <table className="w-full min-w-[640px]">
+          <TableHeader />
+          <tbody>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <tr key={index} className="border-t border-border animate-pulse">
+                <td className="px-4 py-4"><div className="h-4 bg-muted rounded w-20"></div></td>
+                <td className="px-4 py-4"><div className="h-5 bg-muted rounded w-16"></div></td>
+                <td className="px-4 py-4">
+                  <div className="flex gap-3">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="flex flex-col items-center gap-1">
+                        <div className="h-8 w-8 bg-muted rounded-full"></div>
+                        <div className="h-3 bg-muted rounded w-10"></div>
+                      </div>
+                    ))}
+                  </div>
+                </td>
+                <td className="px-4 py-4 text-center"><div className="h-4 bg-muted rounded w-8 mx-auto"></div></td>
+                <td className="px-4 py-4 text-right"><div className="h-8 bg-muted rounded w-16 ml-auto"></div></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
@@ -69,7 +131,7 @@ const RoomList: React.FC<RoomListProps> = ({
   if (rooms.length === 0 && !isLoading) {
     return (
       <div className="text-center py-12">
-        <div className="text-muted-foreground text-6xl mb-4">🎮</div>
+        <div className="text-muted-foreground text-6xl mb-4">&#127918;</div>
         <h3 className="text-lg font-medium text-foreground mb-2">暂无房间</h3>
         <p className="text-muted-foreground mb-6">成为第一个创建房间的玩家吧！</p>
       </div>
@@ -78,21 +140,74 @@ const RoomList: React.FC<RoomListProps> = ({
 
   const totalPages = Math.ceil(totalCount / limit);
 
+  const getPlayersWithSlots = (room: RoomInfo) => {
+    const slots: (typeof room.players[0] | null)[] = [null, null, null, null];
+    room.players.forEach(player => {
+      if (player && player.seat >= 0 && player.seat < 4) {
+        slots[player.seat] = player;
+      }
+    });
+    return slots;
+  };
+
   return (
     <div className="space-y-6">
-      {/* Room grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedRooms.map((room) => (
-          <RoomCard
-            key={room.id}
-            room={room}
-            onJoinRoom={onJoinRoom}
-            currentUserId={currentUserId}
-          />
-        ))}
+      <div className="bg-card rounded-lg shadow-sm border border-border overflow-x-auto">
+        <table className="w-full min-w-[640px]">
+          <TableHeader />
+          <tbody>
+            {sortedRooms.map((room) => {
+              const isUserInRoom = room.players.some(player => player.id === currentUserId);
+              const canJoin = room.can_join && !isUserInRoom;
+              const playersWithSlots = getPlayersWithSlots(room);
+
+              return (
+                <tr key={room.id} className="border-t border-border hover:bg-muted/30 transition-colors">
+                  <td className="px-4 py-4">
+                    <span className="font-mono text-sm text-foreground">#{room.id.slice(-6)}</span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(room.status)}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(room.status)}`}></span>
+                      {getStatusText(room.status)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex gap-3">
+                      {playersWithSlots.map((player, index) => (
+                        <PlayerMiniCard
+                          key={index}
+                          player={player}
+                          isCurrentUser={player?.id === currentUserId}
+                        />
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <span className="text-sm text-table-400">{room.player_count}/4</span>
+                  </td>
+                  <td className="px-4 py-4 text-right">
+                    {isUserInRoom ? (
+                      <Button variant="secondary" size="sm" onClick={() => onJoinRoom(room.id)}>
+                        返回
+                      </Button>
+                    ) : canJoin ? (
+                      <Button variant="primary" size="sm" onClick={() => onJoinRoom(room.id)}>
+                        加入
+                      </Button>
+                    ) : (
+                      <Button variant="ghost" size="sm" disabled>
+                        加入
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
-      {/* Loading overlay for refresh */}
       {isLoading && rooms.length > 0 && (
         <div className="text-center py-4">
           <div className="inline-flex items-center text-muted-foreground">
@@ -102,7 +217,6 @@ const RoomList: React.FC<RoomListProps> = ({
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <Pagination
           currentPage={currentPage}

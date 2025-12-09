@@ -80,6 +80,7 @@ describe('RoomLobby', () => {
   beforeEach(() => {
     vi.mocked(useAuthStore).mockReturnValue(mockAuthStore as any);
     vi.mocked(useRoomStore).mockReturnValue(mockRoomStore as any);
+    vi.mocked(apiClient.getMyRoom).mockRejectedValue({ status: 404 });
     vi.mocked(apiClient.getRoomList).mockResolvedValue({
       success: true,
       data: mockRoomListResponse
@@ -98,12 +99,14 @@ describe('RoomLobby', () => {
     vi.clearAllMocks();
   });
 
-  it('renders room lobby header correctly', () => {
+  it('renders room lobby with action buttons', async () => {
     renderRoomLobby();
     
-    expect(screen.getByText('房间大厅')).toBeInTheDocument();
-    expect(screen.getByText('欢迎，testuser！选择一个房间开始游戏')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('快速开始')).toBeInTheDocument();
+    });
     expect(screen.getByText('创建房间')).toBeInTheDocument();
+    expect(screen.getByText('加入游戏')).toBeInTheDocument();
   });
 
   it('shows login prompt when user is not logged in', () => {
@@ -122,7 +125,7 @@ describe('RoomLobby', () => {
     });
   });
 
-  it('displays error message when present', () => {
+  it('displays error message when present', async () => {
     const errorMessage = '获取房间列表失败';
     vi.mocked(useRoomStore).mockReturnValue({
       ...mockRoomStore,
@@ -131,10 +134,12 @@ describe('RoomLobby', () => {
     
     renderRoomLobby();
     
-    expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    });
   });
 
-  it('clears error when close button is clicked', () => {
+  it('clears error when close button is clicked', async () => {
     const errorMessage = '获取房间列表失败';
     vi.mocked(useRoomStore).mockReturnValue({
       ...mockRoomStore,
@@ -142,6 +147,10 @@ describe('RoomLobby', () => {
     } as any);
     
     renderRoomLobby();
+    
+    await waitFor(() => {
+      expect(screen.getByText('✕')).toBeInTheDocument();
+    });
     
     const closeButton = screen.getByText('✕');
     fireEvent.click(closeButton);
@@ -149,8 +158,12 @@ describe('RoomLobby', () => {
     expect(mockRoomStore.clearError).toHaveBeenCalled();
   });
 
-  it('opens create room modal when create button is clicked', () => {
+  it('opens create room modal when create button is clicked', async () => {
     renderRoomLobby();
+    
+    await waitFor(() => {
+      expect(screen.getByText('创建房间')).toBeInTheDocument();
+    });
     
     const createButton = screen.getByText('创建房间');
     fireEvent.click(createButton);
@@ -160,6 +173,10 @@ describe('RoomLobby', () => {
 
   it('creates room when modal is confirmed', async () => {
     renderRoomLobby();
+    
+    await waitFor(() => {
+      expect(screen.getByText('创建房间')).toBeInTheDocument();
+    });
     
     // Open modal
     const createButton = screen.getByText('创建房间');
@@ -172,41 +189,6 @@ describe('RoomLobby', () => {
     await waitFor(() => {
       expect(apiClient.createRoom).toHaveBeenCalled();
     });
-  });
-
-  it('refreshes room list manually when refresh button is clicked', async () => {
-    renderRoomLobby();
-    
-    const refreshButton = screen.getByText('手动刷新');
-    fireEvent.click(refreshButton);
-    
-    await waitFor(() => {
-      expect(apiClient.getRoomList).toHaveBeenCalledTimes(2); // Once on mount, once on manual refresh
-    });
-  });
-
-  it('displays room statistics correctly', () => {
-    vi.mocked(useRoomStore).mockReturnValue({
-      ...mockRoomStore,
-      roomList: mockRoomListResponse.rooms,
-      totalCount: mockRoomListResponse.total_count
-    } as any);
-    
-    renderRoomLobby();
-    
-    expect(screen.getByText('2')).toBeInTheDocument(); // Total count
-    expect(screen.getByText('总房间数')).toBeInTheDocument();
-    
-    // Check statistics section exists
-    const statisticsSection = screen.getByText('总房间数').closest('.bg-gray-50');
-    expect(statisticsSection).toBeInTheDocument();
-    
-    // Check that statistics labels exist (using getAllByText since they appear in both stats and room cards)
-    const waitingTexts = screen.getAllByText('等待中');
-    const playingTexts = screen.getAllByText('游戏中');
-    
-    expect(waitingTexts.length).toBeGreaterThan(0);
-    expect(playingTexts.length).toBeGreaterThan(0);
   });
 
   it('handles API errors gracefully', async () => {

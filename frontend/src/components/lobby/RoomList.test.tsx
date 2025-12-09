@@ -52,33 +52,29 @@ const defaultProps = {
 };
 
 describe('RoomList', () => {
-  it('renders room cards correctly', () => {
+  it('renders room rows correctly', () => {
     render(<RoomList {...defaultProps} />);
     
-    expect(screen.getByText('房间 #room1')).toBeInTheDocument();
-    expect(screen.getByText('房间 #room2')).toBeInTheDocument();
-    expect(screen.getByText('房间 #room3')).toBeInTheDocument();
+    expect(screen.getByText('#room1')).toBeInTheDocument();
+    expect(screen.getByText('#room2')).toBeInTheDocument();
+    expect(screen.getByText('#room3')).toBeInTheDocument();
   });
 
   it('sorts rooms correctly - waiting rooms first, then by player count', () => {
     render(<RoomList {...defaultProps} />);
     
-    const roomCards = screen.getAllByText(/房间 #/);
+    const roomIds = screen.getAllByText(/^#room/);
     
-    // Should be sorted: room1 (waiting, 2 players), room3 (waiting, 1 player), room2 (playing, 4 players)
-    expect(roomCards[0]).toHaveTextContent('房间 #room1');
-    expect(roomCards[1]).toHaveTextContent('房间 #room3');
-    expect(roomCards[2]).toHaveTextContent('房间 #room2');
+    expect(roomIds[0]).toHaveTextContent('#room1');
+    expect(roomIds[1]).toHaveTextContent('#room3');
+    expect(roomIds[2]).toHaveTextContent('#room2');
   });
 
   it('shows loading skeleton when loading and no rooms', () => {
     render(<RoomList {...defaultProps} rooms={[]} isLoading={true} />);
     
-    // Should show loading skeletons
-    const skeletons = screen.getAllByRole('generic').filter(el => 
-      el.className.includes('animate-pulse')
-    );
-    expect(skeletons.length).toBeGreaterThan(0);
+    const skeletonRows = document.querySelectorAll('tr.animate-pulse');
+    expect(skeletonRows.length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no rooms and not loading', () => {
@@ -95,7 +91,7 @@ describe('RoomList', () => {
   });
 
   it('shows pagination when total pages > 1', () => {
-    render(<RoomList {...defaultProps} totalCount={25} />); // 25 rooms with limit 12 = 3 pages
+    render(<RoomList {...defaultProps} totalCount={25} />);
     
     expect(screen.getByText('上一页')).toBeInTheDocument();
     expect(screen.getByText('下一页')).toBeInTheDocument();
@@ -103,18 +99,31 @@ describe('RoomList', () => {
   });
 
   it('does not show pagination when total pages <= 1', () => {
-    render(<RoomList {...defaultProps} totalCount={5} />); // 5 rooms with limit 12 = 1 page
+    render(<RoomList {...defaultProps} totalCount={5} />);
     
     expect(screen.queryByText('上一页')).not.toBeInTheDocument();
     expect(screen.queryByText('下一页')).not.toBeInTheDocument();
   });
 
-  it('passes correct props to RoomCard components', () => {
+  it('displays player count correctly', () => {
     render(<RoomList {...defaultProps} />);
     
-    // Check that room cards are rendered with correct data
-    expect(screen.getByText('2/4 人')).toBeInTheDocument(); // room1
-    expect(screen.getByText('4/4 人')).toBeInTheDocument(); // room2
-    expect(screen.getByText('1/4 人')).toBeInTheDocument(); // room3
+    expect(screen.getByText('2/4')).toBeInTheDocument();
+    expect(screen.getByText('4/4')).toBeInTheDocument();
+    expect(screen.getByText('1/4')).toBeInTheDocument();
+  });
+
+  it('displays player names in mini cards', () => {
+    render(<RoomList {...defaultProps} />);
+    
+    expect(screen.getByText('player1')).toBeInTheDocument();
+    expect(screen.getByText('player2')).toBeInTheDocument();
+  });
+
+  it('shows empty slots for rooms not full', () => {
+    render(<RoomList {...defaultProps} />);
+    
+    const emptySlots = screen.getAllByText('空位');
+    expect(emptySlots.length).toBeGreaterThan(0);
   });
 });
