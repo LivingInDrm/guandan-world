@@ -215,6 +215,31 @@ class WebSocketClient {
     }
   }
 
+  /**
+   * Mock event emission for testing purposes only.
+   * Triggers registered handlers without real WebSocket connection.
+   * @internal
+   */
+  __mockEmit__(type: WSMessageType, data: unknown): void {
+    if (typeof window === 'undefined') return;
+    
+    const message: WSMessage = {
+      type,
+      data,
+      timestamp: new Date().toISOString(),
+    };
+    
+    const handlers = this.messageHandlers.get(type);
+    if (handlers) {
+      handlers.forEach(handler => handler(message));
+    }
+    
+    const genericHandlers = this.messageHandlers.get('*' as WSMessageType);
+    if (genericHandlers) {
+      genericHandlers.forEach(handler => handler(message));
+    }
+  }
+
   // Getters
   get connected(): boolean {
     return this.isConnected;

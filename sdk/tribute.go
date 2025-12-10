@@ -7,6 +7,25 @@ import (
 	"guandan-world/pkg/log"
 )
 
+func countNonNilCards(cards []*Card) int {
+	count := 0
+	for _, card := range cards {
+		if card != nil {
+			count++
+		}
+	}
+	return count
+}
+
+func getFirstNonNilCard(cards []*Card) *Card {
+	for _, card := range cards {
+		if card != nil {
+			return card
+		}
+	}
+	return nil
+}
+
 // TributeManager handles all tribute-related operations independently
 type TributeManager struct {
 	level int // Current level for the game (used for wildcard detection)
@@ -282,9 +301,10 @@ func processTributeWaiting(tm *TributeManager, phase *TributePhase, playerHands 
 		NextStatus: TributeStatusSelecting,
 	}
 
-	poolCards := make([]*Card, 0)
+	slotCount := len(phase.TributePairs)
+	poolCards := make([]*Card, slotCount)
 
-	for _, pair := range phase.TributePairs {
+	for i, pair := range phase.TributePairs {
 		tributeCard := tm.getHighestCardExcludingHeartTrump(playerHands[pair.Giver])
 		if tributeCard == nil {
 			log.Warn("no valid tribute card", "player_seat", pair.Giver)
@@ -292,30 +312,26 @@ func processTributeWaiting(tm *TributeManager, phase *TributePhase, playerHands 
 			return result
 		}
 
-		poolCards = append(poolCards, tributeCard)
+		poolCards[i] = tributeCard
 
-		// 事件意图
 		result.Events = append(result.Events, TributeEventIntent{
 			Type:       EventTributeCardSubmitted,
 			PlayerSeat: pair.Giver,
 			Card:       tributeCard,
 		})
 
-		// 手牌变更：从 giver 移除
 		result.HandChanges = append(result.HandChanges, HandChange{
 			PlayerSeat: pair.Giver,
 			Card:       tributeCard,
 			IsAdd:      false,
 		})
 
-		// Pair 变更：设置 TributeCard
 		result.PairUpdates = append(result.PairUpdates, PairUpdate{
 			GiverSeat:   pair.Giver,
 			TributeCard: tributeCard,
 		})
 	}
 
-	// 设置 PoolCards
 	result.PoolCardsToSet = poolCards
 
 	return result
@@ -325,29 +341,33 @@ func processTributeWaiting(tm *TributeManager, phase *TributePhase, playerHands 
 func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHands [4][]*Card, input *TributeInput) *TributeStepResult {
 	result := &TributeStepResult{}
 
-	// 双下场景：PoolCards == 2，需要第一名选择
-	if len(phase.PoolCards) == 2 && len(phase.Receivers) > 0 {
+	nonNilCount := countNonNilCards(phase.PoolCards)
+
+	if nonNilCount == 2 && len(phase.Receivers) > 0 {
 		if input == nil {
-			// 需要用户输入
+			availableCards := make([]*Card, 0, 2)
+			for _, card := range phase.PoolCards {
+				if card != nil {
+					availableCards = append(availableCards, card)
+				}
+			}
 			result.PendingAction = &TributeAction{
 				Type:     TributeActionSelect,
 				PlayerID: phase.Receivers[0],
-				Options:  phase.PoolCards,
+				Options:  availableCards,
 			}
 			return result
 		}
 
-		// 处理用户选择
 		if input.Card == nil {
 			log.Warn("tribute input card is nil")
 			result.Error = errors.New("input card is nil")
 			return result
 		}
 
-		// 在 PoolCards 中查找原始牌
 		var selectedCard *Card
 		for _, card := range phase.PoolCards {
-			if card.DeckIndex == input.Card.DeckIndex {
+			if card != nil && card.DeckIndex == input.Card.DeckIndex {
 				selectedCard = card
 				break
 			}
@@ -358,7 +378,6 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 			return result
 		}
 
-		// 验证是否轮到该玩家选择
 		if len(phase.Receivers) == 0 || phase.Receivers[0] != input.PlayerID {
 			log.Warn("not player's turn to select", "player_id", input.PlayerID)
 			result.Error = fmt.Errorf("not player %d's turn to select", input.PlayerID)
@@ -367,7 +386,6 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 
 		receiver := input.PlayerID
 
-		// 事件意图
 		result.Events = append(result.Events, TributeEventIntent{
 			Type:       EventTributeCardSelected,
 			PlayerSeat: receiver,
@@ -375,28 +393,28 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 			IsAuto:     false,
 		})
 
-		// 手牌变更：添加到 receiver
 		result.HandChanges = append(result.HandChanges, HandChange{
 			PlayerSeat: receiver,
 			Card:       selectedCard,
 			IsAdd:      true,
 		})
 
-		// Pair 变更：设置 Receiver
 		result.PairUpdates = append(result.PairUpdates, PairUpdate{
 			GiverSeat: findGiverByCard(phase, selectedCard),
 			Receiver:  &receiver,
 		})
 
-		// 从 PoolCards 移除
 		result.PoolCardToRemove = selectedCard
 
 		return result
 	}
 
-	// 单贡场景：PoolCards == 1，自动分配
-	if len(phase.PoolCards) == 1 {
-		card := phase.PoolCards[0]
+	if nonNilCount == 1 {
+		card := getFirstNonNilCard(phase.PoolCards)
+		if card == nil {
+			result.Error = errors.New("pool card is nil")
+			return result
+		}
 		receiver := tm.GetNextReceiver(phase)
 		if receiver == -1 {
 			log.Warn("no receiver found for pool card")
@@ -404,7 +422,6 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 			return result
 		}
 
-		// 事件意图
 		result.Events = append(result.Events, TributeEventIntent{
 			Type:       EventTributeCardSelected,
 			PlayerSeat: receiver,
@@ -412,26 +429,22 @@ func processTributeSelecting(tm *TributeManager, phase *TributePhase, playerHand
 			IsAuto:     true,
 		})
 
-		// 手牌变更：添加到 receiver
 		result.HandChanges = append(result.HandChanges, HandChange{
 			PlayerSeat: receiver,
 			Card:       card,
 			IsAdd:      true,
 		})
 
-		// Pair 变更：设置 Receiver
 		result.PairUpdates = append(result.PairUpdates, PairUpdate{
 			GiverSeat: findGiverByCard(phase, card),
 			Receiver:  &receiver,
 		})
 
-		// 从 PoolCards 移除
 		result.PoolCardToRemove = card
 
 		return result
 	}
 
-	// PoolCards 为空，进入还贡阶段
 	result.NextStatus = TributeStatusReturning
 	return result
 }

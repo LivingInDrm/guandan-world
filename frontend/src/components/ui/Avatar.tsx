@@ -12,6 +12,7 @@ const avatarVariants = cva(
         md: "h-8 w-8 text-sm",
         lg: "h-10 w-10 text-base",
         xl: "h-12 w-12 text-lg",
+        "2xl": "h-14 w-14 text-xl",
       },
     },
     defaultVariants: {

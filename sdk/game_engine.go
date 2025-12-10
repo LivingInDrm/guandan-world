@@ -1085,8 +1085,8 @@ func applyPoolChanges(phase *TributePhase, toSet []*Card, toRemove *Card) {
 	}
 	if toRemove != nil {
 		for i, card := range phase.PoolCards {
-			if card.DeckIndex == toRemove.DeckIndex {
-				phase.PoolCards = append(phase.PoolCards[:i], phase.PoolCards[i+1:]...)
+			if card != nil && card.DeckIndex == toRemove.DeckIndex {
+				phase.PoolCards[i] = nil
 				break
 			}
 		}

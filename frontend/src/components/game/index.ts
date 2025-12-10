@@ -1,4 +1,8 @@
 export { default as GameBoard } from './GameBoard';
+export { default as GameTable } from './GameTable';
+export type { GameTableProps, PlayerPosition } from './GameTable';
+export { default as PlayerCard } from './PlayerCard';
+export type { PlayerCardProps } from './PlayerCard';
 export { default as PlayerHand } from './PlayerHand';
 export { default as GameControls } from './GameControls';
 export { default as PlayerControlPanel } from './PlayerControlPanel';

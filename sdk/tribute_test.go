@@ -327,11 +327,10 @@ func TestTributeProcessComplete(t *testing.T) {
 			copy(tributePhase.PoolCards, result.PoolCardsToSet)
 		}
 
-		// 应用 PoolCard 移除
 		if result.PoolCardToRemove != nil {
 			for i, card := range tributePhase.PoolCards {
-				if card.DeckIndex == result.PoolCardToRemove.DeckIndex {
-					tributePhase.PoolCards = append(tributePhase.PoolCards[:i], tributePhase.PoolCards[i+1:]...)
+				if card != nil && card.DeckIndex == result.PoolCardToRemove.DeckIndex {
+					tributePhase.PoolCards[i] = nil
 					break
 				}
 			}

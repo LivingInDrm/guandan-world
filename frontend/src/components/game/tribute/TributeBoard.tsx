@@ -1,11 +1,16 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import type { Player, Card, TributePair } from '../../../types';
+import type { PlayerPosition } from '../GameTable';
 import { WS_MESSAGE_TYPES } from '../../../types';
 import { TributeType } from '../../../types/generated/event';
 import { TributeStatus } from '../../../types/generated/view';
 import { EventType } from '../../../types/generated/event';
 import { wsClient } from '../../../services/websocket';
+import GameTable from '../GameTable';
+import PlayerCard from '../PlayerCard';
+import TeamLevelDisplay from '../TeamLevelDisplay';
 import TributePool from './TributePool';
+import TributeRoleBadge from './TributeRoleBadge';
 import CardFlyAnimation from './CardFlyAnimation';
 import PlayerHand from '../PlayerHand';
 
@@ -32,6 +37,8 @@ interface TributeBoardProps {
   tributeData: TributeData;
   players: (Player | null)[];
   currentPlayerSeat: number;
+  teamLevels: [number, number];
+  currentLevel: number;
   playerHand: Card[];
   selectedCards: Card[];
   onCardSelect: (cards: Card[]) => void;
@@ -39,104 +46,12 @@ interface TributeBoardProps {
   onReturnTribute: (deckIndex: number) => void;
 }
 
-const getTributeTypeName = (type: TributeType): string => {
-  switch (type) {
-    case TributeType.TRIBUTE_TYPE_DOUBLE_DOWN:
-      return '双下';
-    case TributeType.TRIBUTE_TYPE_SINGLE_LAST:
-      return '单下';
-    case TributeType.TRIBUTE_TYPE_PARTNER_LAST:
-      return '末游';
-    case TributeType.TRIBUTE_TYPE_NONE:
-      return '无需进贡';
-    default:
-      return '未知';
-  }
-};
-
-interface TributePlayerAreaProps {
-  player: Player | null;
-  position: 'bottom' | 'left' | 'top' | 'right';
-  seat: number;
-  isGiver: boolean;
-  isReceiver: boolean;
-  hasSubmitted: boolean;
-  hasReceived: boolean;
-  isCurrentSelector: boolean;
-}
-
-const TributePlayerArea: React.FC<TributePlayerAreaProps> = ({
-  player,
-  position,
-  isGiver,
-  isReceiver,
-  hasSubmitted,
-  hasReceived,
-  isCurrentSelector,
-}) => {
-  const getPositionClasses = () => {
-    switch (position) {
-      case 'bottom':
-        return 'absolute bottom-4 left-1/2 transform -translate-x-1/2';
-      case 'left':
-        return 'absolute left-4 top-1/2 transform -translate-y-1/2';
-      case 'top':
-        return 'absolute top-4 left-1/2 transform -translate-x-1/2';
-      case 'right':
-        return 'absolute right-4 top-1/2 transform -translate-y-1/2';
-      default:
-        return '';
-    }
-  };
-
-  const getRoleBadge = () => {
-    if (isGiver) {
-      return (
-        <div className="text-xs px-2 py-1 rounded bg-red-200 text-red-800">
-          {hasSubmitted ? '已上贡' : '待上贡'}
-        </div>
-      );
-    }
-    if (isReceiver) {
-      return (
-        <div className={`text-xs px-2 py-1 rounded ${
-          isCurrentSelector 
-            ? 'bg-yellow-200 text-yellow-800 animate-pulse' 
-            : 'bg-green-200 text-green-800'
-        }`}>
-          {hasReceived ? '已收贡' : isCurrentSelector ? '选牌中' : '待收贡'}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  if (!player) {
-    return (
-      <div className={`${getPositionClasses()} w-24 h-16`}>
-        <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-2 text-center">
-          <div className="text-sm text-gray-400">空座位</div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`${getPositionClasses()} w-32`}>
-      <div className={`border-2 rounded-lg p-2 text-center bg-white ${
-        isCurrentSelector ? 'border-yellow-400 shadow-lg' : 'border-gray-300'
-      }`}>
-        <div className="text-sm font-medium truncate">{player.username}</div>
-        {getRoleBadge()}
-      </div>
-    </div>
-  );
-};
-
 const TributeBoard: React.FC<TributeBoardProps> = ({
   tributeData,
   players,
   currentPlayerSeat,
+  teamLevels,
+  currentLevel,
   playerHand,
   selectedCards,
   onCardSelect,
@@ -156,7 +71,6 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
     receivers,
     tributePairs,
     poolCards,
-    isImmune,
   } = tributeData;
 
   const isGiver = useCallback((seat: number) => givers.includes(seat), [givers]);
@@ -197,8 +111,9 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
     const boardRect = boardRef.current.getBoundingClientRect();
 
     if (seat === 'pool') {
-      if (poolSlot !== undefined && poolSlotRefs.current[poolSlot]) {
-        const slotRect = poolSlotRefs.current[poolSlot]!.getBoundingClientRect();
+      const slotElement = poolSlotRefs.current[poolSlot ?? -1];
+      if (slotElement) {
+        const slotRect = slotElement.getBoundingClientRect();
         return {
           x: slotRect.left + slotRect.width / 2,
           y: slotRect.top + slotRect.height / 2,
@@ -237,15 +152,21 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
   }, []);
 
   useEffect(() => {
-    const handleGameEvent = (message: { data: any }) => {
-      const event = message.data;
+    const handleGameEvent = (message: { data: unknown }) => {
+      const event = message.data as {
+        type?: EventType;
+        actorSeat?: number;
+        tributeCardSubmitted?: { submittedCard?: Card };
+        tributeCardSelected?: { selectedCard?: Card };
+        tributeCardReturned?: { returnedCard?: Card; targetPlayer?: number };
+      };
       if (!event || !event.type) return;
 
       switch (event.type) {
         case EventType.EVENT_TYPE_TRIBUTE_CARD_SUBMITTED: {
           if (event.tributeCardSubmitted?.submittedCard && event.actorSeat !== undefined) {
-            const card = event.tributeCardSubmitted.submittedCard as Card;
-            const actorSeat = event.actorSeat as number;
+            const card = event.tributeCardSubmitted.submittedCard;
+            const actorSeat = event.actorSeat;
             
             const occupiedSlots = new Set(
               flyingCards
@@ -275,8 +196,8 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
 
         case EventType.EVENT_TYPE_TRIBUTE_CARD_SELECTED: {
           if (event.tributeCardSelected?.selectedCard && event.actorSeat !== undefined) {
-            const card = event.tributeCardSelected.selectedCard as Card;
-            const actorSeat = event.actorSeat as number;
+            const card = event.tributeCardSelected.selectedCard;
+            const actorSeat = event.actorSeat;
             
             const fromPoolSlot = poolCards.findIndex(
               c => c && c.deckIndex === card.deckIndex
@@ -296,9 +217,11 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
 
         case EventType.EVENT_TYPE_TRIBUTE_CARD_RETURNED: {
           if (event.tributeCardReturned?.returnedCard && event.actorSeat !== undefined) {
-            const card = event.tributeCardReturned.returnedCard as Card;
-            const actorSeat = event.actorSeat as number;
-            const targetPlayer = event.tributeCardReturned.targetPlayer as number;
+            const card = event.tributeCardReturned.returnedCard;
+            const actorSeat = event.actorSeat;
+            const targetPlayer = event.tributeCardReturned.targetPlayer;
+            
+            if (targetPlayer === undefined) break;
 
             const flyingCard: FlyingCard = {
               id: `return-${actorSeat}-${Date.now()}`,
@@ -323,7 +246,8 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
     return () => {
       wsClient.off(WS_MESSAGE_TYPES.GAME_EVENT, handleGameEvent);
     };
-  }, [tributeType, poolCards, flyingCards]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tributeType, poolCards]);
 
   const handlePoolCardSelect = (card: Card) => {
     if (canSelectFromPool) {
@@ -337,67 +261,76 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
     }
   };
 
-  const getStepTitle = () => {
-    if (isImmune) return '抗贡成功';
-    switch (status) {
-      case TributeStatus.TRIBUTE_STATUS_WAITING:
-        return '等待进贡';
-      case TributeStatus.TRIBUTE_STATUS_SELECTING:
-        return currentSelectingSeat === currentPlayerSeat ? '请选择贡牌' : '等待选牌';
-      case TributeStatus.TRIBUTE_STATUS_RETURNING:
-        return '还贡阶段';
-      case TributeStatus.TRIBUTE_STATUS_FINISHED:
-        return '上贡完成';
-      default:
-        return '进贡阶段';
-    }
-  };
-
   const handleSlotRefReady = useCallback((slotIndex: number, element: HTMLDivElement | null) => {
     poolSlotRefs.current[slotIndex] = element;
   }, []);
 
-  const renderPlayerArea = (relativeSeat: number) => {
-    const seat = (currentPlayerSeat + relativeSeat) % 4;
-    const positions: Array<'bottom' | 'left' | 'top' | 'right'> = ['bottom', 'left', 'top', 'right'];
+  const renderPlayer = (player: Player | null, position: PlayerPosition, seat: number) => {
+    if (position === 'bottom') {
+      return null;
+    }
+
+    const isGiverRole = isGiver(seat);
+    const isReceiverRole = isReceiver(seat);
+    const role = isGiverRole ? 'giver' : isReceiverRole ? 'receiver' : null;
+    const isCurrentSelector = currentSelectingSeat === seat;
+
     return (
-      <TributePlayerArea
-        key={seat}
-        player={players[seat]}
-        position={positions[relativeSeat]}
-        seat={seat}
-        isGiver={isGiver(seat)}
-        isReceiver={isReceiver(seat)}
-        hasSubmitted={hasSubmitted(seat)}
-        hasReceived={hasReceived(seat)}
-        isCurrentSelector={currentSelectingSeat === seat}
+      <PlayerCard
+        player={player}
+        position={position}
+        isHighlighted={isCurrentSelector}
+        statusSlot={
+          role ? (
+            <TributeRoleBadge
+              role={role}
+              isSubmitted={hasSubmitted(seat)}
+              isReceived={hasReceived(seat)}
+              isCurrentSelector={isCurrentSelector}
+            />
+          ) : undefined
+        }
       />
+    );
+  };
+
+  const renderCenter = () => {
+    const flyingToPoolDeckIndexes = flyingCards
+      .filter(fc => fc.toSeat === 'pool')
+      .map(fc => fc.card.deckIndex);
+
+    return (
+      <div ref={poolRef} className="absolute inset-0 flex items-center justify-center">
+        <TributePool
+          poolCards={poolCards}
+          canSelect={canSelectFromPool}
+          onSelectCard={handlePoolCardSelect}
+          tributeType={tributeType}
+          messages={[]}
+          onSlotRefReady={handleSlotRefReady}
+          flyingToPoolDeckIndexes={flyingToPoolDeckIndexes}
+        />
+      </div>
     );
   };
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div ref={boardRef} className="relative w-full h-96 bg-green-100 border border-gray-300 rounded-lg">
-        <div className="absolute top-4 left-4 bg-white border border-gray-300 rounded-lg p-3 shadow-sm z-10">
-          <div className="text-sm font-medium mb-2">{getStepTitle()}</div>
-          <div className="text-xs text-gray-600">
-            类型: {getTributeTypeName(tributeType)}
-          </div>
-        </div>
-
-        <div ref={poolRef} className="absolute inset-0 flex items-center justify-center">
-          <TributePool
-            poolCards={poolCards}
-            canSelect={canSelectFromPool}
-            onSelectCard={handlePoolCardSelect}
-            tributeType={tributeType}
-            messages={[]}
-            onSlotRefReady={handleSlotRefReady}
-          />
-        </div>
-
-        {[0, 1, 2, 3].map(renderPlayerArea)}
-
+      <div ref={boardRef} className="relative">
+        <GameTable
+          players={players}
+          currentPlayerSeat={currentPlayerSeat}
+          renderPlayer={renderPlayer}
+          renderCenter={renderCenter}
+          topLeftSlot={
+            <TeamLevelDisplay 
+              teamLevels={teamLevels} 
+              currentLevel={currentLevel}
+              currentPlayerSeat={currentPlayerSeat}
+            />
+          }
+        />
+        
         {flyingCards.map((fc) => (
           <CardFlyAnimation
             key={fc.id}
@@ -422,8 +355,8 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
               disabled={selectedCards.length !== 1}
               className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                 selectedCards.length === 1
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}
             >
               确认还贡

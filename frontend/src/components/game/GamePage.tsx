@@ -650,6 +650,8 @@ const GamePage: React.FC = () => {
             tributeData={tributeData}
             players={currentRoom.players}
             currentPlayerSeat={playerSeat}
+            teamLevels={playerViewData?.teamLevels || [2, 2]}
+            currentLevel={playerViewData?.dealLevel || 2}
             playerHand={hand}
             selectedCards={selectedCards}
             onCardSelect={setSelectedCards}
