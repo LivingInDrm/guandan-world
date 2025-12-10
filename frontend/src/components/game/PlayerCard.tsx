@@ -12,6 +12,7 @@ export interface PlayerCardProps {
   position: PlayerPosition;
   statusSlot?: ReactNode;
   isHighlighted?: boolean;
+  isOwner?: boolean;
   className?: string;
 }
 
@@ -35,6 +36,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   position,
   statusSlot,
   isHighlighted = false,
+  isOwner = false,
   className,
 }) => {
   const avatarSrc = useMemo(() => {
@@ -55,6 +57,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   return (
     <div className={cn(getPositionClasses(position), className)}>
       <div className="relative">
+        {isOwner && (
+          <div className="absolute -top-2 -right-2 z-10 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded font-medium shadow-sm">
+            房主
+          </div>
+        )}
         <div className={cn(
           'flex flex-col items-center p-1 rounded-xl bg-card/70 backdrop-blur-sm shadow-card w-fit',
           isHighlighted && 'ring-2 ring-accent'
