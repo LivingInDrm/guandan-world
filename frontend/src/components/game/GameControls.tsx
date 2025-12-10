@@ -198,23 +198,23 @@ const GameControls: React.FC<GameControlsProps> = ({
   const isPassDisabled = disabled || !canPlay || !isMyTurn || isFirstPlay();
 
   return (
-    <div className="py-2 px-4">
-      <div className="flex items-center justify-between gap-3">
+    <div className="py-3 px-4">
+      <div className="flex items-center justify-center gap-4">
         <button
           onClick={handlePass}
           disabled={isPassDisabled}
           className={`
-            flex-1 py-2 px-8 rounded-xl font-semibold transition-all duration-200 border min-w-[100px]
+            flex-1 py-3 px-8 rounded-full text-lg font-bold transition-all duration-200 min-w-[100px] max-w-[140px]
             ${isPassDisabled 
-              ? 'bg-slate-300/50 text-slate-400 border-slate-200/30' 
-              : 'bg-slate-500 text-white border-slate-400/30 shadow-md hover:bg-slate-400 active:bg-slate-600'
+              ? 'bg-gray-300/60 text-gray-400 cursor-not-allowed' 
+              : 'bg-gradient-to-b from-slate-400 to-slate-500 text-white shadow-inner-light hover:from-slate-300 hover:to-slate-400 active:from-slate-600 active:to-slate-700 active:scale-95'
             }
           `}
         >
           不出
         </button>
 
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center mx-2">
           <Countdown
             deadlineAtMs={turnDeadlineAtMs}
             isActive={isMyTurn && canPlay && !disabled}
@@ -226,10 +226,10 @@ const GameControls: React.FC<GameControlsProps> = ({
           onClick={handleHint}
           disabled={isHintDisabled}
           className={`
-            flex-1 py-2 px-8 rounded-xl font-semibold transition-all duration-200 border min-w-[100px]
+            flex-1 py-3 px-8 rounded-full text-lg font-bold transition-all duration-200 min-w-[100px] max-w-[140px]
             ${isHintDisabled 
-              ? 'bg-slate-300/50 text-slate-400 border-slate-200/30' 
-              : 'bg-gradient-to-b from-amber-400 to-amber-500 text-white border-amber-300/30 shadow-md hover:from-amber-300 hover:to-amber-400 active:from-amber-500 active:to-amber-600'
+              ? 'bg-gray-300/60 text-gray-400 cursor-not-allowed' 
+              : 'bg-gradient-to-b from-orange-400 to-orange-500 text-white shadow-inner-light hover:from-orange-300 hover:to-orange-400 active:from-orange-600 active:to-orange-700 active:scale-95'
             }
           `}
         >
@@ -240,10 +240,10 @@ const GameControls: React.FC<GameControlsProps> = ({
           onClick={handlePlayCards}
           disabled={isPlayDisabled}
           className={`
-            flex-1 py-2 px-8 rounded-xl font-semibold transition-all duration-200 border min-w-[100px]
+            flex-1 py-3 px-8 rounded-full text-lg font-bold transition-all duration-200 min-w-[100px] max-w-[140px]
             ${isPlayDisabled 
-              ? 'bg-slate-300/50 text-slate-400 border-slate-200/30' 
-              : 'bg-gradient-to-b from-emerald-500 to-emerald-600 text-white border-emerald-400/30 shadow-md hover:from-emerald-400 hover:to-emerald-500 hover:shadow-lg active:from-emerald-600 active:to-emerald-700'
+              ? 'bg-gray-300/60 text-gray-400 cursor-not-allowed' 
+              : 'bg-gradient-to-b from-green-400 to-green-500 text-white shadow-inner-light hover:from-green-300 hover:to-green-400 hover:shadow-xl active:from-green-600 active:to-green-700 active:scale-95'
             }
           `}
         >

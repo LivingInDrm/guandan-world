@@ -188,3 +188,35 @@ body {
 .animate-card-enter {
   animation: card-enter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+/* 桌布纹理背景 */
+.bg-table-texture {
+  background: 
+    linear-gradient(to bottom, hsl(var(--table-50)), hsl(var(--table-200))),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255,255,255,0.03) 10px,
+      rgba(255,255,255,0.03) 20px
+    );
+}
+
+/* 卡槽背景 */
+.bg-card-slot {
+  background: linear-gradient(to top, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.8));
+}
+
+/* 回合高亮外圈动画 */
+.ring-glow-active {
+  animation: ring-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes ring-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7), 0 0 8px rgba(250, 204, 21, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(250, 204, 21, 0), 0 0 16px rgba(250, 204, 21, 0.8);
+  }
+}

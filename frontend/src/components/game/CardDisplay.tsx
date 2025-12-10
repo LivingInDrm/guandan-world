@@ -212,7 +212,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         relative select-none
         card-3d-shadow
         ${bgClass}
-        ${ANIMATIONS.transition}
         cursor-pointer
         ${!isSelected && onClick ? ANIMATIONS.hover : ''}
         ${className}
@@ -221,13 +220,15 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         width: sizeConfig.width,
         height: sizeConfig.height,
         borderRadius: sizeConfig.borderRadius,
-        zIndex,
+        zIndex: isSelected ? zIndex + 10 : zIndex,
         marginLeft: stackDirection === 'horizontal' && stackIndex > 0 ? `${-parseFloat(sizeConfig.width) * STACK_OVERLAP.horizontal}px` : '0',
         marginTop: stackDirection === 'vertical' && stackIndex > 0 ? `${-parseFloat(sizeConfig.height) * STACK_OVERLAP.vertical}px` : '0',
         willChange: 'transform',
         border: '1px solid rgb(229, 231, 235)',
-        outline: isSelected ? `2px solid ${SELECTED_COLORS.border}` : 'none',
-        boxShadow: isSelected ? `0 0 10px ${SELECTED_COLORS.glow}` : undefined,
+        outline: isSelected ? `3px solid ${SELECTED_COLORS.border}` : 'none',
+        boxShadow: isSelected ? `0 0 12px ${SELECTED_COLORS.glow}, 0 8px 16px rgba(0,0,0,0.2)` : undefined,
+        transform: isSelected ? 'translateY(-14px) scale(1.03)' : 'translateY(0) scale(1)',
+        transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, outline 0.15s ease',
       }}
       onClick={onClick}
     >
@@ -240,9 +241,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           }}
         />
       )}
-      {/* 卡片内边框装饰 (可选) */}
       {!isJoker(card) && (
-        <div className="absolute inset-px border border-gray-100 rounded opacity-50 pointer-events-none" />
+        <div className="absolute inset-px border border-gray-100 rounded-lg opacity-50 pointer-events-none" />
       )}
 
       {isJoker(card) ? (

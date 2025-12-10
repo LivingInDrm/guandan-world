@@ -131,20 +131,22 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
 
   return (
     <div 
-      className="bg-transparent pt-4 px-4 pb-2 select-none"
+      className="relative bg-card-slot backdrop-blur-md rounded-t-3xl shadow-2xl border-t border-white/20 pt-6 px-6 pb-4 select-none"
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-1.5 bg-black/20 rounded-b-full blur-[2px]" />
+      
       <div className="flex justify-end mb-3">
         <button
           onClick={handleClearSelection}
-          className={`text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 ${selectedCards.length > 0 ? '' : 'invisible'}`}
+          className={`text-xs px-3 py-1.5 bg-white/20 text-white/90 rounded-full hover:bg-white/30 transition-colors font-medium ${selectedCards.length > 0 ? '' : 'invisible'}`}
         >
           清空选择
         </button>
       </div>
       
-      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 justify-center h-64 overflow-y-auto">
+      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 justify-center min-h-[240px] max-h-[280px] overflow-y-auto">
         {sortedRanks.map(rank => (
           <CardGroup
             key={rank}
@@ -159,7 +161,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       </div>
       
       {safeCards.length === 0 && (
-        <div className="text-center text-muted-foreground py-8">
+        <div className="text-center text-white/60 py-8 font-medium">
           暂无手牌
         </div>
       )}
