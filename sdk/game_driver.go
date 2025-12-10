@@ -753,7 +753,24 @@ func (gd *GameDriver) runTrick() error {
 		} else if decision.Action == ActionPass {
 			_, err = gd.engine.PassTurn(currentPlayer)
 			if err != nil {
-				return fmt.Errorf("failed to pass turn for player %d: %w", currentPlayer, err)
+				log.Warn("invalid pass detected", "player_seat", currentPlayer, "error", err)
+				gd.handleTimeout(currentPlayer, "invalid_pass")
+
+				autoDecision := gd.config.TimeoutStrategy.GetDefaultPlayDecision(hand, trickInfo)
+				if autoDecision == nil {
+					autoDecision = &PlayDecision{Action: ActionPass}
+				}
+
+				if autoDecision.Action == ActionPlay {
+					_, autoErr := gd.engine.PlayCards(currentPlayer, autoDecision.Cards)
+					if autoErr != nil {
+						return fmt.Errorf("auto-play failed for player %d after invalid pass: %w", currentPlayer, autoErr)
+					}
+				} else {
+					return fmt.Errorf("auto-decision is pass but pass already failed for player %d: %w", currentPlayer, err)
+				}
+
+				continue
 			}
 		} else {
 			return fmt.Errorf("invalid action type from player %d: %v", currentPlayer, decision.Action)

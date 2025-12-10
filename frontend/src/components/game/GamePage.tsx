@@ -341,6 +341,8 @@ const GamePage: React.FC = () => {
   const handlePass = async () => {
     if (!currentRoom || !user || !canPlay || playerSeat === null) return;
 
+    setSelectedCards([]);
+
     try {
       const response = await apiClient.pass(currentRoom.id, playerSeat);
       if (!response.success) {

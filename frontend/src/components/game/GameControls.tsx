@@ -194,7 +194,8 @@ const GameControls: React.FC<GameControlsProps> = ({
   };
 
   const isPlayDisabled = disabled || !canPlay || !isMyTurn || selectedCards.length === 0 || !validationResult.isValid;
-  const isPassDisabled = disabled || !canPlay || !isMyTurn;
+  const isHintDisabled = disabled || !canPlay || !isMyTurn;
+  const isPassDisabled = disabled || !canPlay || !isMyTurn || isFirstPlay();
 
   return (
     <div className="py-2 px-4">
@@ -223,10 +224,10 @@ const GameControls: React.FC<GameControlsProps> = ({
 
         <button
           onClick={handleHint}
-          disabled={isPassDisabled}
+          disabled={isHintDisabled}
           className={`
             flex-1 py-2 px-8 rounded-xl font-semibold transition-all duration-200 border min-w-[100px]
-            ${isPassDisabled 
+            ${isHintDisabled 
               ? 'bg-slate-300/50 text-slate-400 border-slate-200/30' 
               : 'bg-gradient-to-b from-amber-400 to-amber-500 text-white border-amber-300/30 shadow-md hover:from-amber-300 hover:to-amber-400 active:from-amber-500 active:to-amber-600'
             }

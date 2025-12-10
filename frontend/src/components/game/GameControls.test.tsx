@@ -105,6 +105,9 @@ describe('GameControls', () => {
   });
 
   it('calls onPass when pass button is clicked', () => {
+    const nonEmptyPlays = [
+      { playerSeat: 1, cards: mockCards, isPass: false, compType: 1 }
+    ];
     render(
       <GameControls
         selectedCards={[]}
@@ -115,6 +118,7 @@ describe('GameControls', () => {
         onPass={mockOnPass}
         onHint={mockOnHint}
         {...defaultProps}
+        plays={nonEmptyPlays}
       />
     );
 
