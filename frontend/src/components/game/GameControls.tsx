@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Card, PlayAction } from '../../types';
 import Countdown from './Countdown';
+import { Button } from '@/components/ui-next';
 import {
   fromProtoCard,
   fromCardList,
@@ -60,16 +61,6 @@ const GameControls: React.FC<GameControlsProps> = ({
     const nonPassPlays = plays.filter(p => !p.isPass && p.cards.length > 0);
     return nonPassPlays.length === 0;
   }, [leader, playerSeat, plays]);
-
-  const getLastValidPlay = useCallback((): PlayAction | null => {
-    for (let i = plays.length - 1; i >= 0; i--) {
-      const play = plays[i];
-      if (!play.isPass && play.cards.length > 0) {
-        return play;
-      }
-    }
-    return null;
-  }, [plays]);
 
   const prevComp = useMemo((): CardComp | undefined => {
     // 内联 isFirstPlay 逻辑
@@ -198,23 +189,19 @@ const GameControls: React.FC<GameControlsProps> = ({
   const isPassDisabled = disabled || !canPlay || !isMyTurn || isFirstPlay();
 
   return (
-    <div className="py-3 px-4">
-      <div className="flex items-center justify-center gap-4">
-        <button
+    <div className="py-2 px-4">
+      <div className="flex items-center justify-between gap-3">
+        <Button
+          intent="neutral"
+          size="sm"
           onClick={handlePass}
           disabled={isPassDisabled}
-          className={`
-            flex-1 py-3 px-8 rounded-full text-lg font-bold transition-all duration-200 min-w-[100px] max-w-[140px]
-            ${isPassDisabled 
-              ? 'bg-gray-300/60 text-gray-400 cursor-not-allowed' 
-              : 'bg-gradient-to-b from-slate-400 to-slate-500 text-white shadow-inner-light hover:from-slate-300 hover:to-slate-400 active:from-slate-600 active:to-slate-700 active:scale-95'
-            }
-          `}
+          className="flex-1"
         >
           不出
-        </button>
+        </Button>
 
-        <div className="flex items-center justify-center mx-2">
+        <div className="flex items-center justify-center">
           <Countdown
             deadlineAtMs={turnDeadlineAtMs}
             isActive={isMyTurn && canPlay && !disabled}
@@ -222,33 +209,25 @@ const GameControls: React.FC<GameControlsProps> = ({
           />
         </div>
 
-        <button
+        <Button
+          intent="secondary"
+          size="sm"
           onClick={handleHint}
           disabled={isHintDisabled}
-          className={`
-            flex-1 py-3 px-8 rounded-full text-lg font-bold transition-all duration-200 min-w-[100px] max-w-[140px]
-            ${isHintDisabled 
-              ? 'bg-gray-300/60 text-gray-400 cursor-not-allowed' 
-              : 'bg-gradient-to-b from-orange-400 to-orange-500 text-white shadow-inner-light hover:from-orange-300 hover:to-orange-400 active:from-orange-600 active:to-orange-700 active:scale-95'
-            }
-          `}
+          className="flex-1"
         >
           提示
-        </button>
+        </Button>
 
-        <button
+        <Button
+          intent="primary"
+          size="sm"
           onClick={handlePlayCards}
           disabled={isPlayDisabled}
-          className={`
-            flex-1 py-3 px-8 rounded-full text-lg font-bold transition-all duration-200 min-w-[100px] max-w-[140px]
-            ${isPlayDisabled 
-              ? 'bg-gray-300/60 text-gray-400 cursor-not-allowed' 
-              : 'bg-gradient-to-b from-green-400 to-green-500 text-white shadow-inner-light hover:from-green-300 hover:to-green-400 hover:shadow-xl active:from-green-600 active:to-green-700 active:scale-95'
-            }
-          `}
+          className="flex-1"
         >
           出牌
-        </button>
+        </Button>
       </div>
     </div>
   );

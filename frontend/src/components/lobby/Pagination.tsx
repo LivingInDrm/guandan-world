@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../ui-next';
 
 interface PaginationProps {
   currentPage: number;
@@ -48,52 +49,43 @@ const Pagination: React.FC<PaginationProps> = ({
   const visiblePages = getVisiblePages();
 
   return (
-    <div className="flex items-center justify-center space-x-2">
-      {/* Previous button */}
-      <button
+    <div className="flex items-center justify-center gap-2">
+      <Button
+        intent="neutral"
+        size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-          currentPage === 1
-            ? 'bg-muted text-muted-foreground cursor-not-allowed'
-            : 'bg-card text-foreground border border-border hover:bg-muted'
-        }`}
+        className="min-w-0 px-4"
       >
         上一页
-      </button>
+      </Button>
 
-      {/* Page numbers */}
       {visiblePages.map((page, index) => (
         <React.Fragment key={index}>
           {page === '...' ? (
-            <span className="px-3 py-2 text-muted-foreground">...</span>
+            <span className="px-2 py-2 text-ds-text-secondary">...</span>
           ) : (
-            <button
+            <Button
+              intent={currentPage === page ? 'primary' : 'neutral'}
+              size="sm"
               onClick={() => onPageChange(page as number)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentPage === page
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-card text-foreground border border-border hover:bg-muted'
-              }`}
+              className="min-w-0 px-3"
             >
               {page}
-            </button>
+            </Button>
           )}
         </React.Fragment>
       ))}
 
-      {/* Next button */}
-      <button
+      <Button
+        intent="neutral"
+        size="sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-          currentPage === totalPages
-            ? 'bg-muted text-muted-foreground cursor-not-allowed'
-            : 'bg-card text-foreground border border-border hover:bg-muted'
-        }`}
+        className="min-w-0 px-4"
       >
         下一页
-      </button>
+      </Button>
     </div>
   );
 };

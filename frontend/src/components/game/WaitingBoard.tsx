@@ -3,7 +3,7 @@ import type { Player } from '../../types';
 import type { PlayerPosition } from './GameTable';
 import GameTable from './GameTable';
 import PlayerCard from './PlayerCard';
-import { Button } from '../ui';
+import { Button, Card } from '../ui-next';
 
 interface WaitingBoardProps {
   players: (Player | null)[];
@@ -48,8 +48,8 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
         statusSlot={
           player && (
             <div className="flex items-center gap-1">
-              <div className={`w-2 h-2 rounded-full ${player.online ? 'bg-green-500' : 'bg-muted-foreground'}`} />
-              <span className="text-xs text-muted-foreground">
+              <div className={`w-2 h-2 rounded-full ${player.online ? 'bg-[hsl(var(--ds-primitive-success-500))]' : 'bg-[hsl(var(--ds-primitive-neutral-500))]'}`} />
+              <span className="text-xs text-[hsl(var(--ds-color-text-secondary))]">
                 {player.online ? '在线' : '离线'}
               </span>
             </div>
@@ -61,36 +61,22 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
 
   const renderCenter = () => (
     <div className="flex flex-col items-center justify-center h-full gap-4">
-      {isRoomOwner ? (
-        canStartGame ? (
-          <Button
-            onClick={onStartGame}
-            disabled={isStarting}
-            size="lg"
-            className="px-8"
-          >
-            {isStarting ? '开始中...' : '开始游戏'}
-          </Button>
-        ) : (
-          <div className="text-center">
-            <p className="text-lg font-medium text-foreground mb-1">
-              等待玩家加入
-            </p>
-            <p className="text-sm text-muted-foreground">
-              ({playerCount}/4)
-            </p>
-          </div>
-        )
-      ) : (
-        <p className="text-lg text-muted-foreground">
-          等待房主开始游戏...
-        </p>
-      )}
+      <Button
+        onClick={onStartGame}
+        disabled={!canStartGame || isStarting}
+        size="lg"
+        className="px-8"
+      >
+        {isStarting 
+          ? (isRoomOwner ? '开始中...' : '等待中...') 
+          : (isRoomOwner ? '开始游戏' : '等待开始')
+        }
+      </Button>
 
       <Button
         onClick={onLeaveRoom}
         disabled={isLeaving}
-        variant="secondary"
+        intent="secondary"
         size="sm"
       >
         {isLeaving ? '离开中...' : '离开房间'}
@@ -99,22 +85,11 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
   );
 
   const renderTopLeft = () => (
-    <div className="absolute top-4 left-4 bg-card/80 backdrop-blur-sm rounded-lg p-3 shadow-sm z-10">
-      <div className="space-y-1.5 text-sm">
-        <div className="text-muted-foreground">
-          房间ID: <span className="font-mono text-foreground">{roomId}</span>
-        </div>
-        <div className="text-muted-foreground">
-          玩家数量: <span className="text-foreground">{playerCount}/4</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className="text-xs text-muted-foreground">
-            {isConnected ? '已连接' : '连接断开'}
-          </span>
-        </div>
+    <Card variant="elevated" interactive={false} className="absolute top-4 left-4 z-10 p-3">
+      <div className="text-sm text-[hsl(var(--ds-color-text-secondary))]">
+        房间ID: <span className="font-mono text-[hsl(var(--ds-color-text-primary))]">{roomId}</span>
       </div>
-    </div>
+    </Card>
   );
 
   return (

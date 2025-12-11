@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Card } from '../../types/proto';
 import { isJoker } from '../../utils/cardUtils';
+import { cn } from '@/lib/utils';
 import { 
   SUIT_SYMBOLS, 
   JOKER_CONFIG, 
@@ -48,7 +49,11 @@ const CardCorner: React.FC<{
   
   return (
     <div 
-      className={`absolute flex ${isNormal ? 'flex-row items-center' : 'flex-col items-center'} leading-none top-0.5 ${colorClass}`}
+      className={cn(
+        'absolute flex leading-none top-0.5',
+        isNormal ? 'flex-row items-center' : 'flex-col items-center',
+        colorClass
+      )}
       style={{ 
         padding: sizeConfig.padding,
         width: isNormal ? 'auto' : '1.2em',
@@ -83,8 +88,8 @@ const CardSuitLarge: React.FC<{
         width: `calc(${sizeConfig.centerIconSize} * ${scale})`,
         height: `calc(${sizeConfig.centerIconSize} * ${scale})`,
         objectFit: 'contain',
-        bottom: isNormal ? 'calc(var(--spacing) * 5)' : 'calc(var(--spacing) * 2)',
-        right: isNormal ? 'calc(var(--spacing) * 3.5)' : 'calc(var(--spacing) * 2)',
+        bottom: isNormal ? 'calc(var(--ds-base-unit) * 5)' : 'calc(var(--ds-base-unit) * 2)',
+        right: isNormal ? 'calc(var(--ds-base-unit) * 3.5)' : 'calc(var(--ds-base-unit) * 2)',
       }}
     />
   );
@@ -114,7 +119,7 @@ const LevelBadge: React.FC<{
   
   return (
     <div 
-      className={`${positionClass} pointer-events-none`}
+      className={cn(positionClass, 'pointer-events-none')}
       style={{
         width: badgeSize,
         height: badgeSize,
@@ -153,7 +158,10 @@ const JokerContent: React.FC<{
   return (
     <div className="absolute inset-0">
       <div 
-        className={`absolute top-1 flex flex-col items-center leading-tight font-bold ${config.color}`}
+        className={cn(
+          'absolute top-1 flex flex-col items-center leading-tight font-bold',
+          config.color
+        )}
         style={{ 
           fontSize: sizeConfig.jokerFontSize,
           left: sizeConfig.jokerTextLeft,
@@ -197,7 +205,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     if (isJoker(card)) {
       return card.rank === 16 ? JOKER_CONFIG.big.bgGradient : JOKER_CONFIG.small.bgGradient;
     }
-    return 'bg-white';
+    return 'bg-ds-surface-base';
   }, [card]);
   
   const zIndex = stackIndex;
@@ -208,27 +216,27 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       aria-pressed={isSelected}
       data-deck-index={deckIndex}
       onPointerEnter={onPointerEnter}
-      className={`
-        relative select-none
-        card-3d-shadow
-        ${bgClass}
-        cursor-pointer
-        ${!isSelected && onClick ? ANIMATIONS.hover : ''}
-        ${className}
-      `}
+      className={cn(
+        'relative select-none cursor-pointer',
+        'shadow-ds-elevation-2',
+        bgClass,
+        ANIMATIONS.transition,
+        !isSelected && onClick && ANIMATIONS.hover,
+        className
+      )}
       style={{
         width: sizeConfig.width,
         height: sizeConfig.height,
         borderRadius: sizeConfig.borderRadius,
-        zIndex: isSelected ? zIndex + 10 : zIndex,
+        zIndex,
         marginLeft: stackDirection === 'horizontal' && stackIndex > 0 ? `${-parseFloat(sizeConfig.width) * STACK_OVERLAP.horizontal}px` : '0',
         marginTop: stackDirection === 'vertical' && stackIndex > 0 ? `${-parseFloat(sizeConfig.height) * STACK_OVERLAP.vertical}px` : '0',
         willChange: 'transform',
-        border: '1px solid rgb(229, 231, 235)',
-        outline: isSelected ? `3px solid ${SELECTED_COLORS.border}` : 'none',
-        boxShadow: isSelected ? `0 0 12px ${SELECTED_COLORS.glow}, 0 8px 16px rgba(0,0,0,0.2)` : undefined,
-        transform: isSelected ? 'translateY(-14px) scale(1.03)' : 'translateY(0) scale(1)',
-        transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, outline 0.15s ease',
+        border: '1px solid hsl(var(--ds-color-border-base))',
+        outline: isSelected ? `2px solid ${SELECTED_COLORS.border}` : 'none',
+        boxShadow: isSelected 
+          ? 'var(--ds-shadow-glow-md), var(--ds-elevation-2)' 
+          : undefined,
       }}
       onClick={onClick}
     >
@@ -242,7 +250,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         />
       )}
       {!isJoker(card) && (
-        <div className="absolute inset-px border border-gray-100 rounded-lg opacity-50 pointer-events-none" />
+        <div className="absolute inset-px border border-ds-border/30 rounded opacity-50 pointer-events-none" />
       )}
 
       {isJoker(card) ? (

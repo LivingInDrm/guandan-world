@@ -13,6 +13,7 @@ import TributePool from './TributePool';
 import TributeRoleBadge from './TributeRoleBadge';
 import CardFlyAnimation from './CardFlyAnimation';
 import PlayerHand from '../PlayerHand';
+import { Button } from '@/components/ui-next';
 
 interface FlyingCard {
   id: string;
@@ -343,26 +344,24 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
       </div>
 
       {status === TributeStatus.TRIBUTE_STATUS_RETURNING && canReturnTribute && (
-        <>
+        <div className="flex flex-col">
+          <div className="flex justify-center">
+            <Button
+              onClick={handleReturnCard}
+              disabled={selectedCards.length !== 1}
+              intent="primary"
+              size="sm"
+            >
+              确认还贡
+            </Button>
+          </div>
           <PlayerHand
             cards={playerHand}
             selectedCards={selectedCards}
             onCardSelect={onCardSelect}
+            currentLevel={currentLevel}
           />
-          <div className="flex justify-center">
-            <button
-              onClick={handleReturnCard}
-              disabled={selectedCards.length !== 1}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                selectedCards.length === 1
-                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                  : 'bg-muted text-muted-foreground cursor-not-allowed'
-              }`}
-            >
-              确认还贡
-            </button>
-          </div>
-        </>
+        </div>
       )}
     </div>
   );

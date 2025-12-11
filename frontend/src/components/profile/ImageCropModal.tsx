@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
 import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Slider, Label } from '../ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Slider, Label } from '../ui-next';
 import { getCroppedImage } from './cropImage';
 
 export interface ImageCropModalProps {
@@ -79,11 +79,11 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
           )}
 
           <div className="flex gap-3 justify-end">
-            <Button variant="ghost" onClick={onCancel} disabled={isProcessing}>
+            <Button intent="neutral" onClick={onCancel} disabled={isProcessing}>
               取消
             </Button>
             <Button
-              variant="primary"
+              intent="primary"
               onClick={handleConfirm}
               disabled={isProcessing || !croppedAreaPixels}
             >

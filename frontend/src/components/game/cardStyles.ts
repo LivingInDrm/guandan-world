@@ -22,7 +22,7 @@ export const CARD_SIZES: Record<CardSize, SizeConfig> = {
     fontSize: '12px',
     iconSize: '12px',
     centerIconSize: '20px',
-    borderRadius: '10px',
+    borderRadius: '6px',
     padding: '4px',
     jokerFontSize: '10px',
     jokerImgBottom: '10px',
@@ -35,7 +35,7 @@ export const CARD_SIZES: Record<CardSize, SizeConfig> = {
     fontSize: '16px',
     iconSize: '14px',
     centerIconSize: '32px',
-    borderRadius: '12px',
+    borderRadius: '8px',
     padding: '6px',
     jokerFontSize: '14px',
     jokerImgBottom: '16px',
@@ -49,12 +49,12 @@ export const SUIT_SYMBOLS = ['♠', '♥', '♣', '♦'];
 
 export const SUIT_COLORS = {
   black: {
-    text: 'text-gray-900',
+    text: 'text-suit-black',
     shadow: 'text-shadow-sm',
   },
   red: {
-    text: 'text-transparent bg-clip-text bg-gradient-to-br from-red-600 to-red-500',
-    shadow: 'drop-shadow-sm', // 使用 drop-shadow 因为 text-shadow 对透明文字无效
+    text: 'text-suit-red',
+    shadow: 'drop-shadow-sm',
   }
 };
 
@@ -63,41 +63,41 @@ export const JOKER_CONFIG = {
   small: {
     rank: 15,
     text: 'JOKER',
-    color: 'text-gray-500',
-    bgGradient: 'bg-gradient-to-br from-gray-50 to-gray-200',
+    color: 'text-ds-text-secondary',
+    bgGradient: 'bg-ds-surface-elevated',
   },
   big: {
     rank: 16,
     text: 'JOKER',
-    color: 'text-red-600',
+    color: 'text-suit-red',
     bgGradient: 'bg-gradient-to-br from-yellow-50 via-yellow-100 to-red-100',
   }
 };
 
-// 选中状态颜色配置
+// 选中状态颜色配置（使用设计 token）
 export const SELECTED_COLORS = {
-  border: 'rgba(255, 193, 7, 1)',
-  overlay: 'rgba(255, 193, 7, 0.15)',
-  glow: 'rgba(255, 193, 7, 0.6)',
+  border: 'hsl(var(--ds-color-state-active))',
+  overlay: 'hsl(var(--ds-color-state-active) / 0.15)',
+  glow: 'var(--ds-shadow-glow-md)',
 };
 
-// 级牌角标配置
+// 级牌角标配置（使用设计 token）
 export const LEVEL_BADGE_CONFIG = {
   normal: {
-    bgColor: '#22c55e',
+    bgColor: 'hsl(var(--badge-level))',
     text: '级',
   },
   wild: {
-    bgColor: '#ef4444',
+    bgColor: 'hsl(var(--badge-wild))',
     text: '万',
   }
 };
 
-// 动画配置
+// 动画配置（使用设计 token）
 export const ANIMATIONS = {
-  hover: 'hover:scale-105 hover:shadow-lg',
+  hover: 'hover:scale-105 hover:shadow-ds-elevation-3',
   selected: '',
-  transition: 'transition-[transform,box-shadow,border-color] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+  transition: 'transition-[transform,box-shadow,border-color] duration-ds-fast ease-ds-bounce',
 };
 
 // 工具函数

@@ -3,14 +3,16 @@ import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import { getAvatarUrl } from '../../utils/avatar';
-import { Input, Label, Button } from '../ui';
 import {
+  Input,
+  Label,
+  Button,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '../ui/Dialog';
+} from '../ui-next';
 import { AvatarUploader } from './AvatarUploader';
 import { ImageCropModal } from './ImageCropModal';
 
@@ -148,7 +150,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({ open, onOpenChange }) => 
 
             <div className="flex gap-4 w-full">
               <Button
-                variant="ghost"
+                intent="neutral"
                 onClick={handleCancel}
                 disabled={isLoading}
                 className="flex-1"
@@ -156,7 +158,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({ open, onOpenChange }) => 
                 取消
               </Button>
               <Button
-                variant="primary"
+                intent="primary"
                 onClick={handleSave}
                 disabled={isLoading}
                 className="flex-1"

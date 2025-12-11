@@ -1,0 +1,112 @@
+:root {
+  /* ==================== 基础单位 ==================== */
+  --ds-base-unit: 4px;
+  
+  /* ==================== 游戏色板（5色×3档 = 15个）==================== */
+  
+  /* Primary（翠绿 - 游戏主色调）*/
+  --ds-primitive-primary-300: 145 60% 75%;
+  --ds-primitive-primary-500: 145 60% 50%;
+  --ds-primitive-primary-700: 145 60% 35%;
+  
+  /* Danger（红色 - 警告/对方队伍）*/
+  --ds-primitive-danger-300: 0 60% 75%;
+  --ds-primitive-danger-500: 0 60% 50%;
+  --ds-primitive-danger-700: 0 60% 35%;
+  
+  /* Warning（琥珀色 - 提示操作）*/
+  --ds-primitive-warning-300: 30 90% 70%;
+  --ds-primitive-warning-500: 30 90% 55%;
+  --ds-primitive-warning-700: 30 90% 40%;
+  
+  /* Success（绿色 - 成功/出牌）*/
+  --ds-primitive-success-300: 142 70% 70%;
+  --ds-primitive-success-500: 142 70% 50%;
+  --ds-primitive-success-700: 142 70% 35%;
+  
+  /* Neutral（中性灰阶）*/
+  --ds-primitive-neutral-100: 0 0% 96%;
+  --ds-primitive-neutral-300: 0 0% 85%;
+  --ds-primitive-neutral-500: 0 0% 60%;
+  --ds-primitive-neutral-700: 0 0% 40%;
+  --ds-primitive-neutral-900: 0 0% 15%;
+  
+  /* Accent（金黄 - 高亮/激活）*/
+  --ds-primitive-accent-300: 45 100% 70%;
+  --ds-primitive-accent-500: 45 100% 51%;
+  --ds-primitive-accent-700: 45 100% 40%;
+
+  /* ==================== Spacing（仅扩展特殊值）==================== */
+  --ds-spacing-18: calc(var(--ds-base-unit) * 18);
+  --ds-spacing-22: calc(var(--ds-base-unit) * 22);
+  --ds-spacing-30: calc(var(--ds-base-unit) * 30);
+  
+  /* ==================== Radius（4档）==================== */
+  --ds-radius-sm: 12px;
+  --ds-radius-md: 16px;
+  --ds-radius-lg: 24px;
+  --ds-radius-full: 9999px;
+  
+  /* ==================== Duration（3档）==================== */
+  --ds-duration-fast: 200ms;
+  --ds-duration-normal: 300ms;
+  --ds-duration-slow: 400ms;
+  
+  /* ==================== Easing（3种）==================== */
+  --ds-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ds-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ds-ease-snap: cubic-bezier(0.4, 0, 0.6, 1);
+  
+  /* ==================== Elevation（4级）==================== */
+  --ds-elevation-0: none;
+  --ds-elevation-1: 0 1px 2px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.1);
+  --ds-elevation-2: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --ds-elevation-3: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  
+  /* ==================== Special Shadows ==================== */
+  --ds-shadow-relief: inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -2px 4px rgba(0,0,0,0.1);
+  --ds-shadow-glow-sm: 0 0 8px hsla(45, 100%, 51%, 0.3);
+  --ds-shadow-glow-md: 0 0 12px hsla(45, 100%, 51%, 0.4);
+  --ds-shadow-glow-lg: 0 0 20px hsla(45, 100%, 51%, 0.5);
+
+  /* ==================== Action Colors（操作意图）==================== */
+  --ds-color-action-primary: var(--ds-primitive-success-500);
+  --ds-color-action-secondary: var(--ds-primitive-warning-500);
+  --ds-color-action-neutral: var(--ds-primitive-neutral-500);
+  --ds-color-action-danger: var(--ds-primitive-danger-500);
+  
+  /* ==================== Form Validation ==================== */
+  --ds-color-error: var(--ds-primitive-danger-500);
+  
+  /* ==================== Surface Colors（表面层级）==================== */
+  --ds-color-surface-base: 0 0% 100%;
+  --ds-color-surface-elevated: var(--ds-primitive-neutral-100);
+  --ds-color-surface-emphasis: var(--ds-primitive-primary-300) / 0.2;
+  
+  /* ==================== Team Colors（队伍识别）==================== */
+  --ds-color-team-us: var(--ds-primitive-primary-500);
+  --ds-color-team-them: var(--ds-primitive-danger-500);
+  
+  /* ==================== Text Colors（文字）==================== */
+  --ds-color-text-primary: var(--ds-primitive-neutral-900);
+  --ds-color-text-secondary: var(--ds-primitive-neutral-500);
+  --ds-color-text-inverse: 0 0% 100%;
+  
+  /* ==================== State Colors（交互状态）==================== */
+  --ds-color-state-active: var(--ds-primitive-accent-500);
+  --ds-color-state-disabled: var(--ds-primitive-neutral-300);
+  
+  /* ==================== Border Colors ==================== */
+  --ds-color-border-base: var(--ds-primitive-neutral-300);
+  --ds-color-border-emphasis: var(--ds-primitive-primary-500) / 0.3;
+}
+
+/* ==================== Dark Theme（待扩展）==================== */
+[data-theme="dark"] {
+  /* TODO: 根据需要覆盖颜色 token */
+}
+
+/* ==================== Chinese Theme（待扩展）==================== */
+[data-theme="chinese"] {
+  /* TODO: 根据需要覆盖颜色 token */
+}

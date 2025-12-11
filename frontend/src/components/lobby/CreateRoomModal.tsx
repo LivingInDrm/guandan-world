@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Card } from '../ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Card } from '../ui-next';
 
 interface CreateRoomModalProps {
   open: boolean;
@@ -33,13 +33,13 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ open, onClose, onConf
           <DialogTitle>创建新房间</DialogTitle>
         </DialogHeader>
 
-        <p className="text-table-400 mb-4">
+        <p className="text-ds-text-primary mb-4">
           确认创建新房间？您将成为房主，负责管理房间和开始游戏。
         </p>
 
-        <Card variant="glass" className="p-3 mb-6">
-          <h4 className="font-medium text-table-400 mb-2">房间规则</h4>
-          <ul className="text-sm text-table-300 space-y-1">
+        <Card variant="base" className="p-3 mb-6" interactive={false}>
+          <h4 className="font-medium text-ds-text-primary mb-2">房间规则</h4>
+          <ul className="text-sm text-ds-text-secondary space-y-1">
             <li>• 房间最多容纳4名玩家</li>
             <li>• 房主可以在人数满足时开始游戏</li>
             <li>• 房主离开时会自动转移给其他玩家</li>
@@ -48,10 +48,10 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ open, onClose, onConf
         </Card>
 
         <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={handleClose} disabled={isCreating}>
+          <Button intent="neutral" onClick={handleClose} disabled={isCreating}>
             取消
           </Button>
-          <Button variant="primary" onClick={handleConfirm} disabled={isCreating}>
+          <Button intent="primary" onClick={handleConfirm} disabled={isCreating}>
             {isCreating && <Loader2 className="animate-spin" />}
             {isCreating ? '创建中...' : '确认创建'}
           </Button>

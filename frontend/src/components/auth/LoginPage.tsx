@@ -18,28 +18,21 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
-            掼蛋在线对战
-          </h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            {isLogin ? '登录您的账号' : '创建新账号'}
-          </p>
-        </div>
+      <div className="max-w-md w-full space-y-6">
+        <h1 className="text-center text-3xl font-bold text-ds-text-primary">
+          掼蛋在线对战
+        </h1>
         
-        <div className="bg-card p-8 rounded-lg shadow-md">
-          {isLogin ? <LoginForm /> : <RegisterForm />}
-          
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:text-primary/80 text-sm font-medium"
-            >
-              {isLogin ? '没有账号？立即注册' : '已有账号？立即登录'}
-            </button>
-          </div>
+        {isLogin ? <LoginForm /> : <RegisterForm />}
+        
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+          >
+            {isLogin ? '没有账号？立即注册' : '已有账号？立即登录'}
+          </button>
         </div>
       </div>
     </div>

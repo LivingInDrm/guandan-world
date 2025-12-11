@@ -1,6 +1,6 @@
 import React from 'react';
 import { RoomStatus, type RoomInfo } from '../../types';
-import { Button } from '../ui';
+import { Button } from '../ui-next';
 import PlayerMiniCard from './PlayerMiniCard';
 import Pagination from './Pagination';
 
@@ -33,41 +33,41 @@ const getStatusText = (status: RoomStatus) => {
 const getStatusColor = (status: RoomStatus) => {
   switch (status) {
     case RoomStatus.WAITING:
-      return 'bg-primary/20 text-primary';
+      return 'bg-ds-action-primary/20 text-ds-action-primary';
     case RoomStatus.READY:
-      return 'bg-accent-light text-amber-700';
+      return 'bg-ds-action-secondary/20 text-ds-action-secondary';
     case RoomStatus.PLAYING:
-      return 'bg-team-us/20 text-team-us-dark';
+      return 'bg-ds-team-us/20 text-ds-team-us';
     case RoomStatus.CLOSED:
-      return 'bg-disabled-bg text-disabled-text';
+      return 'bg-ds-state-disabled/20 text-ds-text-secondary';
     default:
-      return 'bg-disabled-bg text-disabled-text';
+      return 'bg-ds-state-disabled/20 text-ds-text-secondary';
   }
 };
 
 const getStatusDot = (status: RoomStatus) => {
   switch (status) {
     case RoomStatus.WAITING:
-      return 'bg-primary animate-pulse';
+      return 'bg-ds-action-primary animate-pulse';
     case RoomStatus.READY:
-      return 'bg-amber-500';
+      return 'bg-ds-action-secondary';
     case RoomStatus.PLAYING:
-      return 'bg-team-us-dark';
+      return 'bg-ds-team-us';
     case RoomStatus.CLOSED:
-      return 'bg-disabled-text';
+      return 'bg-ds-state-disabled';
     default:
-      return 'bg-disabled-text';
+      return 'bg-ds-state-disabled';
   }
 };
 
 const TableHeader = () => (
-  <thead className="bg-muted/50">
+  <thead className="bg-ds-surface-elevated/50">
     <tr>
-      <th className="px-4 py-3 text-left text-sm font-medium text-table-400">房间</th>
-      <th className="px-4 py-3 text-left text-sm font-medium text-table-400">状态</th>
-      <th className="px-4 py-3 text-left text-sm font-medium text-table-400">玩家</th>
-      <th className="px-4 py-3 text-center text-sm font-medium text-table-400">人数</th>
-      <th className="px-4 py-3 text-right text-sm font-medium text-table-400">操作</th>
+      <th className="px-4 py-3 text-center text-sm font-medium text-ds-text-secondary">房间</th>
+      <th className="px-4 py-3 text-center text-sm font-medium text-ds-text-secondary">状态</th>
+      <th className="px-4 py-3 text-center text-sm font-medium text-ds-text-secondary">玩家</th>
+      <th className="px-4 py-3 text-center text-sm font-medium text-ds-text-secondary">人数</th>
+      <th className="px-4 py-3 text-center text-sm font-medium text-ds-text-secondary">操作</th>
     </tr>
   </thead>
 );
@@ -100,26 +100,26 @@ const RoomList: React.FC<RoomListProps> = ({
 
   if (isLoading && rooms.length === 0) {
     return (
-      <div className="bg-card rounded-lg shadow-sm border border-border overflow-x-auto">
+      <div className="bg-ds-surface-base rounded-ds-lg shadow-ds-elevation-1 border border-ds-border overflow-x-auto">
         <table className="w-full min-w-[640px]">
           <TableHeader />
           <tbody>
             {Array.from({ length: 6 }).map((_, index) => (
-              <tr key={index} className="border-t border-border animate-pulse">
-                <td className="px-4 py-4"><div className="h-4 bg-muted rounded w-20"></div></td>
-                <td className="px-4 py-4"><div className="h-5 bg-muted rounded w-16"></div></td>
+              <tr key={index} className="border-t border-ds-border animate-pulse">
+                <td className="px-4 py-4 text-center"><div className="h-4 bg-ds-surface-elevated rounded w-20 mx-auto"></div></td>
+                <td className="px-4 py-4 text-center"><div className="h-5 bg-ds-surface-elevated rounded w-16 mx-auto"></div></td>
                 <td className="px-4 py-4">
-                  <div className="flex gap-3">
+                  <div className="flex justify-center gap-3">
                     {Array.from({ length: 4 }).map((_, i) => (
                       <div key={i} className="flex flex-col items-center gap-1">
-                        <div className="h-8 w-8 bg-muted rounded-full"></div>
-                        <div className="h-3 bg-muted rounded w-10"></div>
+                        <div className="h-10 w-10 bg-ds-surface-elevated rounded-full"></div>
+                        <div className="h-3 bg-ds-surface-elevated rounded w-10"></div>
                       </div>
                     ))}
                   </div>
                 </td>
-                <td className="px-4 py-4 text-center"><div className="h-4 bg-muted rounded w-8 mx-auto"></div></td>
-                <td className="px-4 py-4 text-right"><div className="h-8 bg-muted rounded w-16 ml-auto"></div></td>
+                <td className="px-4 py-4 text-center"><div className="h-4 bg-ds-surface-elevated rounded w-8 mx-auto"></div></td>
+                <td className="px-4 py-4 text-center"><div className="h-8 bg-ds-surface-elevated rounded w-16 mx-auto"></div></td>
               </tr>
             ))}
           </tbody>
@@ -131,9 +131,9 @@ const RoomList: React.FC<RoomListProps> = ({
   if (rooms.length === 0 && !isLoading) {
     return (
       <div className="text-center py-12">
-        <div className="text-muted-foreground text-6xl mb-4">&#127918;</div>
-        <h3 className="text-lg font-medium text-foreground mb-2">暂无房间</h3>
-        <p className="text-muted-foreground mb-6">成为第一个创建房间的玩家吧！</p>
+        <div className="text-ds-text-secondary text-6xl mb-4">&#127918;</div>
+        <h3 className="text-lg font-medium text-ds-text-primary mb-2">暂无房间</h3>
+        <p className="text-ds-text-secondary mb-6">成为第一个创建房间的玩家吧！</p>
       </div>
     );
   }
@@ -152,7 +152,7 @@ const RoomList: React.FC<RoomListProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-card rounded-lg shadow-sm border border-border overflow-x-auto">
+      <div className="bg-ds-surface-base rounded-ds-lg shadow-ds-elevation-1 border border-ds-border overflow-x-auto">
         <table className="w-full min-w-[640px]">
           <TableHeader />
           <tbody>
@@ -162,18 +162,18 @@ const RoomList: React.FC<RoomListProps> = ({
               const playersWithSlots = getPlayersWithSlots(room);
 
               return (
-                <tr key={room.id} className="border-t border-border hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-4">
-                    <span className="font-mono text-sm text-foreground">#{room.id.slice(-6)}</span>
+                <tr key={room.id} className="border-t border-ds-border hover:bg-ds-surface-elevated/30 transition-colors">
+                  <td className="px-4 py-4 text-center">
+                    <span className="font-mono text-sm text-ds-text-primary">#{room.id.slice(-6)}</span>
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-4 py-4 text-center">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(room.status)}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(room.status)}`}></span>
                       {getStatusText(room.status)}
                     </span>
                   </td>
                   <td className="px-4 py-4">
-                    <div className="flex gap-3">
+                    <div className="flex justify-center gap-3">
                       {playersWithSlots.map((player, index) => (
                         <PlayerMiniCard
                           key={index}
@@ -184,19 +184,19 @@ const RoomList: React.FC<RoomListProps> = ({
                     </div>
                   </td>
                   <td className="px-4 py-4 text-center">
-                    <span className="text-sm text-table-400">{room.player_count}/4</span>
+                    <span className="text-sm text-ds-text-secondary">{room.player_count}/4</span>
                   </td>
-                  <td className="px-4 py-4 text-right">
+                  <td className="px-4 py-4 text-center">
                     {isUserInRoom ? (
-                      <Button variant="secondary" size="sm" onClick={() => onJoinRoom(room.id)}>
+                      <Button intent="neutral" size="sm" onClick={() => onJoinRoom(room.id)}>
                         返回
                       </Button>
                     ) : canJoin ? (
-                      <Button variant="primary" size="sm" onClick={() => onJoinRoom(room.id)}>
+                      <Button intent="primary" size="sm" onClick={() => onJoinRoom(room.id)}>
                         加入
                       </Button>
                     ) : (
-                      <Button variant="ghost" size="sm" disabled>
+                      <Button intent="neutral" size="sm" disabled>
                         加入
                       </Button>
                     )}
@@ -210,8 +210,8 @@ const RoomList: React.FC<RoomListProps> = ({
 
       {isLoading && rooms.length > 0 && (
         <div className="text-center py-4">
-          <div className="inline-flex items-center text-muted-foreground">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+          <div className="inline-flex items-center text-ds-text-secondary">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-ds-action-primary mr-2"></div>
             更新中...
           </div>
         </div>

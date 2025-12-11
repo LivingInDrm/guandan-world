@@ -45,14 +45,12 @@ const GameBoard: React.FC<GameBoardProps> = ({
                          turnDeadline?.playerSeat === seat 
                          ? turnDeadline.deadlineAtMs 
                          : undefined;
-    const isTeammate = seat % 2 === currentPlayerSeat % 2;
 
     return (
       <PlayerCard
         player={player}
         position={position}
         isHighlighted={isCurrentTurn}
-        isTeammate={isTeammate}
         statusSlot={
           deadlineAtMs ? (
             <Countdown deadlineAtMs={deadlineAtMs} size="small" />

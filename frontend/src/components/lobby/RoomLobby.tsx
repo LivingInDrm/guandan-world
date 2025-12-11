@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import RoomList from './RoomList';
 import CreateRoomModal from './CreateRoomModal';
-import { Button, Card } from '../ui';
+import { Button, Card } from '../ui-next';
 
 const RoomLobby: React.FC = () => {
   const { user } = useAuthStore();
@@ -172,7 +172,7 @@ const RoomLobby: React.FC = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">请先登录</p>
+        <p className="text-ds-text-secondary">请先登录</p>
       </div>
     );
   }
@@ -181,22 +181,22 @@ const RoomLobby: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">检查房间状态...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ds-action-primary mx-auto mb-4"></div>
+          <p className="text-ds-text-secondary">检查房间状态...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-muted/30 rounded-xl">
+    <div className="max-w-6xl mx-auto p-6 bg-ds-surface-elevated/20 rounded-ds-lg">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="bg-ds-error/10 border border-ds-error/30 rounded-ds-sm p-4 mb-6">
           <div className="flex justify-between items-center">
-            <p className="text-red-600">{error}</p>
+            <p className="text-ds-error">{error}</p>
             <button
               onClick={clearError}
-              className="text-red-400 hover:text-red-600"
+              className="text-ds-error/70 hover:text-ds-error"
             >
               ✕
             </button>
@@ -206,17 +206,17 @@ const RoomLobby: React.FC = () => {
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
         <div className="w-full lg:w-64 shrink-0">
-          <Card variant="glass" className="p-4">
+          <Card variant="emphasis" className="p-4" interactive={false}>
             <div className="flex flex-col gap-3">
-              <Button variant="primary" size="lg" className="w-full rounded-xl gap-2" onClick={() => {}}>
+              <Button intent="primary" size="lg" className="w-full" onClick={() => {}}>
                 <Zap className="w-5 h-5" />
                 快速开始
               </Button>
-              <Button variant="warning" size="lg" className="w-full rounded-xl gap-2" onClick={() => setShowCreateModal(true)}>
+              <Button intent="secondary" size="lg" className="w-full" onClick={() => setShowCreateModal(true)}>
                 <Plus className="w-5 h-5" />
                 创建房间
               </Button>
-              <Button variant="outline" size="lg" className="w-full rounded-xl gap-2" onClick={() => {}}>
+              <Button intent="neutral" size="lg" className="w-full" onClick={() => {}}>
                 <Users className="w-5 h-5" />
                 加入游戏
               </Button>

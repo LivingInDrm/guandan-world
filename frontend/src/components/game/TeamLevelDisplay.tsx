@@ -1,4 +1,6 @@
 import React from 'react';
+import { Card } from '@/components/ui-next';
+import { cn } from '@/lib/utils';
 
 export interface TeamLevelDisplayProps {
   teamLevels: [number, number];
@@ -34,9 +36,17 @@ const TeamLevelDisplay: React.FC<TeamLevelDisplayProps> = ({
     isMyTeam: boolean;
     isCurrentLevel: boolean;
   }> = ({ label, level, isMyTeam, isCurrentLevel }) => (
-    <div className={`w-16 flex flex-col items-center rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.15)] bg-gradient-to-b text-white ${
-      isMyTeam ? 'from-[#525E6B] to-[#3E4854]' : 'from-[#9E3737] to-[#7B2A2A]'
-    }`}>
+    <Card
+      variant="base"
+      interactive={false}
+      className={cn(
+        'w-16 flex flex-col items-center rounded-ds-md overflow-hidden',
+        'shadow-ds-elevation-2 bg-gradient-to-b text-ds-text-inverse',
+        isMyTeam
+          ? 'from-[hsl(var(--ds-primitive-primary-500))] to-[hsl(var(--ds-primitive-primary-700))]'
+          : 'from-[hsl(var(--ds-primitive-danger-500))] to-[hsl(var(--ds-primitive-danger-700))]'
+      )}
+    >
       <div className="w-full text-center py-1 text-sm font-semibold backdrop-brightness-95 bg-black/10">
         {label}
       </div>
@@ -45,10 +55,10 @@ const TeamLevelDisplay: React.FC<TeamLevelDisplayProps> = ({
       </div>
       <div className="h-4 flex items-center justify-center">
         {isCurrentLevel && (
-          <div className="w-0 h-0 border-l-[7px] border-r-[7px] border-b-[9px] border-l-transparent border-r-transparent border-b-white drop-shadow" />
+          <div className="w-0 h-0 border-l-[7px] border-r-[7px] border-b-[9px] border-l-transparent border-r-transparent border-b-ds-text-inverse drop-shadow" />
         )}
       </div>
-    </div>
+    </Card>
   );
 
   return (

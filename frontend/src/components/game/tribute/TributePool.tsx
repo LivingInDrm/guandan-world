@@ -2,6 +2,7 @@ import React from 'react';
 import type { Card } from '../../../types';
 import { TributeType } from '../../../types/generated/event';
 import CardDisplay from '../CardDisplay';
+import { Badge } from '@/components/ui-next';
 
 interface TributePoolProps {
   poolCards: (Card | null)[];
@@ -42,9 +43,9 @@ const TributePool: React.FC<TributePoolProps> = ({
   return (
     <div className="relative w-72 p-4">
       <div className="text-center mb-3">
-        <div className="text-sm font-semibold text-foreground">
+        <Badge variant="neutral" size="md">
           {getTributeTypeName(tributeType)}
-        </div>
+        </Badge>
       </div>
 
       <div className="flex justify-center gap-4 mb-4">
@@ -56,24 +57,24 @@ const TributePool: React.FC<TributePoolProps> = ({
             <div
               key={index}
               ref={(el) => onSlotRefReady?.(index, el)}
-              className={`w-16 h-24 border border-dashed rounded-lg flex items-center justify-center shadow-sm
-                ${shouldShowCard ? 'border-table-400 bg-card/50' : 'border-table-400/50 bg-table-300/10'}
-                ${canSelect && shouldShowCard ? 'cursor-pointer hover:border-accent hover:shadow-lg transition-all' : ''}
+              className={`w-16 h-24 border border-dashed rounded-ds-sm flex items-center justify-center shadow-ds-elevation-1
+                ${shouldShowCard ? 'border-ds-border-emphasis bg-ds-surface-elevated/50' : 'border-ds-border/50 bg-ds-surface-base/10'}
+                ${canSelect && shouldShowCard ? 'cursor-pointer hover:border-ds-state-active hover:shadow-ds-elevation-3 transition-all' : ''}
               `}
               onClick={() => canSelect && shouldShowCard && onSelectCard(card)}
             >
               {shouldShowCard ? (
                 <CardDisplay card={card} size="small" />
               ) : (
-                <span className="text-muted-foreground text-xs">空</span>
+                <span className="text-ds-text-secondary text-xs">空</span>
               )}
             </div>
           );
         })}
       </div>
 
-      <div className="border-t border-table-400/30 pt-2 mt-1 max-h-24 overflow-y-auto">
-        <div className="text-xs text-foreground space-y-1">
+      <div className="border-t border-ds-border/30 pt-2 mt-1 max-h-24 overflow-y-auto">
+        <div className="text-xs text-ds-text-primary space-y-1">
           {messages.slice(-3).map((msg, i) => (
             <div key={i} className="truncate">{msg}</div>
           ))}

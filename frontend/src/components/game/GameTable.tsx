@@ -26,15 +26,15 @@ const GameTable: React.FC<GameTableProps> = ({
   return (
     <div
       className={cn(
-        'relative w-full h-[30rem] rounded-2xl overflow-hidden',
-        'bg-table-texture',
+        'relative w-full h-[35rem] rounded-ds-lg overflow-hidden',
+        'bg-gradient-to-b from-ds-surface-base to-ds-surface-elevated',
         className
       )}
     >
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.12) 100%)',
+          background: 'radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.04) 100%)',
         }}
       />
 
@@ -43,10 +43,10 @@ const GameTable: React.FC<GameTableProps> = ({
       <div className="absolute inset-0 flex items-center justify-center">
         <div
           className={cn(
-            'relative w-[420px] h-[240px] rounded-3xl p-6',
-            'bg-white/30 backdrop-blur-md',
-            'border border-white/50',
-            'shadow-soft-glow'
+            'relative w-[420px] h-[240px] rounded-ds-lg p-6',
+            'bg-ds-surface-emphasis backdrop-blur-sm',
+            'border border-ds-border-emphasis',
+            'shadow-ds-relief'
           )}
         >
           {renderCenter()}

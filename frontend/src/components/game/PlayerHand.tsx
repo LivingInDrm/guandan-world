@@ -2,6 +2,8 @@ import React, { useCallback, useRef } from 'react';
 import type { Card } from '../../types/proto';
 import { isJoker } from '../../utils/cardUtils';
 import CardDisplay from './CardDisplay';
+import { RotateCcw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PlayerHandProps {
   cards: Card[];
@@ -131,22 +133,28 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
 
   return (
     <div 
-      className="relative bg-card-slot backdrop-blur-md rounded-t-3xl shadow-2xl border-t border-white/20 pt-6 px-6 pb-4 select-none"
+      className="bg-transparent pt-4 px-4 pb-2 select-none"
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-1.5 bg-black/20 rounded-b-full blur-[2px]" />
-      
       <div className="flex justify-end mb-3">
         <button
           onClick={handleClearSelection}
-          className={`text-xs px-3 py-1.5 bg-white/20 text-white/90 rounded-full hover:bg-white/30 transition-colors font-medium ${selectedCards.length > 0 ? '' : 'invisible'}`}
+          className={cn(
+            "p-1.5 rounded-md",
+            "text-ds-text-secondary hover:text-ds-text-primary",
+            "hover:bg-ds-surface-elevated",
+            "transition-colors duration-ds-fast",
+            "opacity-60 hover:opacity-100",
+            selectedCards.length > 0 ? '' : 'invisible'
+          )}
+          aria-label="清空选择"
         >
-          清空选择
+          <RotateCcw className="w-4 h-4" />
         </button>
       </div>
       
-      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 justify-center min-h-[240px] max-h-[280px] overflow-y-auto">
+      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 justify-center h-64 overflow-y-auto">
         {sortedRanks.map(rank => (
           <CardGroup
             key={rank}
@@ -161,7 +169,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       </div>
       
       {safeCards.length === 0 && (
-        <div className="text-center text-white/60 py-8 font-medium">
+        <div className="text-center text-ds-text-secondary py-8">
           暂无手牌
         </div>
       )}

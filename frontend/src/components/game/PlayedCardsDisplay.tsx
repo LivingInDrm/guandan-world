@@ -1,6 +1,7 @@
 import React from 'react';
 import type { PlayAction } from '../../types/proto';
 import CardDisplay from './CardDisplay';
+import { Badge } from '@/components/ui-next';
 
 export interface PlayedCardsDisplayProps {
   play: PlayAction | null;
@@ -32,9 +33,7 @@ const PlayedCardsDisplay: React.FC<PlayedCardsDisplayProps> = ({ play, position,
   if (play.isPass) {
     return (
       <div className={getPositionClasses(position)}>
-        <div className="bg-muted px-3 py-1 rounded text-sm text-muted-foreground font-medium">
-          不出
-        </div>
+        <Badge variant="neutral" size="md">不出</Badge>
       </div>
     );
   }

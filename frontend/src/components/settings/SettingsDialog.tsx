@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX, Sun, Moon, Palette } from 'lucide-react';
-import { Label } from '../ui';
-import { Slider } from '../ui/Slider';
 import {
+  Label,
+  Slider,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '../ui/Dialog';
+} from '../ui-next';
 import { audioService } from '../../services/audioService';
 import { useThemeStore, type Theme } from '../../store/themeStore';
 

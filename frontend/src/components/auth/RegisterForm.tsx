@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import type { RegisterRequest } from '../../types';
-import { Input, Label, Button } from '../ui';
+import { Input, Label, Button, Card } from '../ui-next';
 
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 50;
@@ -15,7 +15,15 @@ interface RegisterFormData extends RegisterRequest {
   confirmPassword: string;
 }
 
-const RegisterForm: React.FC = () => {
+interface RegisterFormProps {
+  showCard?: boolean;
+  title?: string;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ 
+  showCard = true, 
+  title = '注册账号' 
+}) => {
   const [formData, setFormData] = useState<RegisterFormData>({
     username: '',
     password: '',
@@ -117,7 +125,7 @@ const RegisterForm: React.FC = () => {
     }
   };
 
-  return (
+  const formContent = (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="username">用户名</Label>
@@ -129,12 +137,12 @@ const RegisterForm: React.FC = () => {
           onChange={handleInputChange}
           placeholder="请输入用户名"
           disabled={isLoading}
-          className={errors.username ? 'border-destructive' : ''}
+          className={errors.username ? 'border-ds-error' : ''}
         />
         {errors.username ? (
-          <p className="text-sm text-destructive">{errors.username}</p>
+          <p className="text-sm text-ds-error">{errors.username}</p>
         ) : (
-          <p className="text-xs text-table-300">{USERNAME_MIN_LENGTH}-{USERNAME_MAX_LENGTH}个字符，支持字母、数字和下划线</p>
+          <p className="text-xs text-ds-text-secondary">{USERNAME_MIN_LENGTH}-{USERNAME_MAX_LENGTH}个字符，支持字母、数字和下划线</p>
         )}
       </div>
 
@@ -148,12 +156,12 @@ const RegisterForm: React.FC = () => {
           onChange={handleInputChange}
           placeholder="请输入密码"
           disabled={isLoading}
-          className={errors.password ? 'border-destructive' : ''}
+          className={errors.password ? 'border-ds-error' : ''}
         />
         {errors.password ? (
-          <p className="text-sm text-destructive">{errors.password}</p>
+          <p className="text-sm text-ds-error">{errors.password}</p>
         ) : (
-          <p className="text-xs text-table-300">至少{PASSWORD_MIN_LENGTH}个字符，包含大小写字母、数字和特殊字符</p>
+          <p className="text-xs text-ds-text-secondary">至少{PASSWORD_MIN_LENGTH}个字符，包含大小写字母、数字和特殊字符</p>
         )}
       </div>
 
@@ -167,22 +175,35 @@ const RegisterForm: React.FC = () => {
           onChange={handleInputChange}
           placeholder="请再次输入密码"
           disabled={isLoading}
-          className={errors.confirmPassword ? 'border-destructive' : ''}
+          className={errors.confirmPassword ? 'border-ds-error' : ''}
         />
-        {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
+        {errors.confirmPassword && <p className="text-sm text-ds-error">{errors.confirmPassword}</p>}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-sm p-3">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="bg-ds-error/15 border border-ds-error rounded-ds-sm p-3">
+          <p className="text-sm text-ds-error">{error}</p>
         </div>
       )}
 
-      <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
+      <Button type="submit" intent="primary" disabled={isLoading} className="w-full">
         {isLoading && <Loader2 className="animate-spin" />}
         {isLoading ? '注册中...' : '注册'}
       </Button>
     </form>
+  );
+
+  if (!showCard) {
+    return formContent;
+  }
+
+  return (
+    <Card variant="elevated" interactive={false} className="p-8">
+      <h2 className="text-2xl font-bold text-ds-text-primary mb-6 text-center">
+        {title}
+      </h2>
+      {formContent}
+    </Card>
   );
 };
 

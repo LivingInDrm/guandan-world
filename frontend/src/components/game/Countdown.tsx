@@ -75,7 +75,7 @@ const Countdown: React.FC<CountdownProps> = ({
   }
 
   const displaySeconds = isActive ? secondsLeft : DEFAULT_SECONDS;
-  const displayProgress = isActive 
+  const displayProgress = isActive
     ? Math.max(0, Math.min(secondsLeft / (totalSecondsRef.current || 1), 1))
     : 1;
 
@@ -84,103 +84,95 @@ const Countdown: React.FC<CountdownProps> = ({
   const offset = circumference * (1 - displayProgress);
 
   const getRingColor = (): string => {
-    if (!isActive) return '#94a3b8';
-    if (secondsLeft <= 5) return '#ef4444';
-    if (secondsLeft <= 10) return '#f97316';
-    return '#fbbf24';
+    if (!isActive) return 'hsl(var(--ds-primitive-neutral-500))';
+    if (secondsLeft <= 5) return 'hsl(var(--ds-primitive-danger-500))';
+    if (secondsLeft <= 10) return 'hsl(var(--ds-primitive-warning-500))';
+    return 'hsl(var(--ds-primitive-accent-500))';
   };
 
   const getTextColor = (): string => {
-    if (!isActive) return '#94a3b8';
-    if (secondsLeft <= 5) return '#ef4444';
-    if (secondsLeft <= 10) return '#f97316';
-    return '#4b5563';
+    if (!isActive) return 'hsl(var(--ds-primitive-neutral-500))';
+    if (secondsLeft <= 5) return 'hsl(var(--ds-primitive-danger-500))';
+    if (secondsLeft <= 10) return 'hsl(var(--ds-primitive-warning-500))';
+    return 'hsl(var(--ds-primitive-neutral-700))';
   };
 
   const getRingFilter = (): string => {
     if (!isActive) return 'none';
-    if (secondsLeft <= 5) return 'drop-shadow(0 0 6px rgba(239,68,68,0.7))';
-    return 'drop-shadow(0 0 4px rgba(251,191,36,0.6))';
+    if (secondsLeft <= 5) return 'drop-shadow(0 0 6px hsl(var(--ds-primitive-danger-500) / 0.7))';
+    return 'drop-shadow(0 0 4px hsl(var(--ds-primitive-accent-500) / 0.6))';
   };
 
   const viewBoxSize = config.radius * 2 + config.strokeWidth * 2;
   const center = viewBoxSize / 2;
 
-return (
-  <div
-    className="relative inline-flex items-center justify-center"
-    style={{ width: config.width, height: config.width }}
-  >
-    {/* 背景玻璃圆盘 */}
+  return (
     <div
-      className="
-        absolute inset-0 rounded-full
-        bg-gradient-to-b from-white/90 to-slate-100/85
-        backdrop-blur-sm
-        border border-white/70
-        shadow-[0_4px_12px_rgba(0,0,0,0.2)]
-      "
-    />
-
-    {/* 外环进度（SVG） */}
-    <svg
-      width={config.width}
-      height={config.width}
-      viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
-      className="absolute"
+      className="relative inline-flex items-center justify-center"
+      style={{ width: config.width, height: config.width }}
     >
-      {/* 底环 */}
-      <circle
-        cx={center}
-        cy={center}
-        r={config.radius}
-        stroke="rgba(148,163,184,0.45)"   // slate-400 的透明版
-        strokeWidth={config.strokeWidth}
-        fill="none"
+      <div
+        className="
+          absolute inset-0 rounded-ds-full
+          bg-gradient-to-b from-white/90 to-ds-surface-elevated/85
+          backdrop-blur-sm
+          border border-white/70
+          shadow-ds-elevation-2
+        "
       />
 
-      {/* 外环阴影 */}
-      <circle
-        cx={center}
-        cy={center}
-        r={config.radius}
-        stroke="rgba(0,0,0,0.15)"
-        strokeWidth={config.strokeWidth + 2}
-        fill="none"
-        className="blur-[3px]"
-      />
+      <svg
+        width={config.width}
+        height={config.width}
+        viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+        className="absolute"
+      >
+        <circle
+          cx={center}
+          cy={center}
+          r={config.radius}
+          stroke="hsl(var(--ds-primitive-neutral-500) / 0.45)"
+          strokeWidth={config.strokeWidth}
+          fill="none"
+        />
 
-      {/* 倒计时环（主色渐变 + 抖动发光） */}
-      <circle
-        cx={center}
-        cy={center}
-        r={config.radius}
-        stroke={getRingColor()}
-        strokeWidth={config.strokeWidth}
-        fill="none"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${center} ${center})`}
+        <circle
+          cx={center}
+          cy={center}
+          r={config.radius}
+          stroke="hsl(var(--ds-primitive-neutral-900) / 0.15)"
+          strokeWidth={config.strokeWidth + 2}
+          fill="none"
+          className="blur-[3px]"
+        />
+
+        <circle
+          cx={center}
+          cy={center}
+          r={config.radius}
+          stroke={getRingColor()}
+          strokeWidth={config.strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${center} ${center})`}
+          className="transition-all duration-ds-fast ease-ds-smooth"
+          style={{ filter: getRingFilter() }}
+        />
+      </svg>
+
+      <div
+        className="relative font-bold leading-none"
         style={{
-          filter: getRingFilter(),
-          transition: 'stroke 0.2s ease-out, filter 0.2s ease-out',
+          fontSize: config.fontSize,
+          color: getTextColor(),
+          textShadow: '0 1px 2px hsl(var(--ds-primitive-neutral-900) / 0.4)',
         }}
-      />
-    </svg>
-
-    {/* 中心数字 */}
-    <div
-      className="relative font-bold leading-none"
-      style={{
-        fontSize: config.fontSize,
-        color: getTextColor(),
-        textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-      }}
-    >
-      {displaySeconds}
+      >
+        {displaySeconds}
+      </div>
     </div>
-  </div>
   );
 };
 
