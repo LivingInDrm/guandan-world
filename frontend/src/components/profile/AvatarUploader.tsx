@@ -50,8 +50,8 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     <div
       className={`
         relative overflow-hidden
-        rounded-lg border border-table-300 shadow-card
-        bg-table-100
+        rounded-lg border border-stroke shadow-card
+        bg-surface-elevated
         transition-all duration-200
         ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:shadow-card-hover'}
         group
@@ -66,9 +66,9 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           className="w-full h-full object-cover"
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-table-200">
+        <div className="w-full h-full flex items-center justify-center bg-surface-elevated">
           <svg
-            className="w-1/2 h-1/2 text-table-300"
+            className="w-1/2 h-1/2 text-fg-secondary"
             fill="currentColor"
             viewBox="0 0 24 24"
           >

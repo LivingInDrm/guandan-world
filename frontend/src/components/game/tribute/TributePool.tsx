@@ -2,7 +2,7 @@ import React from 'react';
 import type { Card } from '../../../types';
 import { TributeType } from '../../../types/generated/event';
 import CardDisplay from '../CardDisplay';
-import { Badge } from '@/components/ui-next';
+import { Badge } from '@/components/ui';
 
 interface TributePoolProps {
   poolCards: (Card | null)[];

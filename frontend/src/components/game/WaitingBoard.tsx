@@ -3,7 +3,7 @@ import type { Player } from '../../types';
 import type { PlayerPosition } from './GameTable';
 import GameTable from './GameTable';
 import PlayerCard from './PlayerCard';
-import { Button, Card } from '../ui-next';
+import { Button, Card } from '../ui';
 
 interface WaitingBoardProps {
   players: (Player | null)[];
@@ -24,6 +24,7 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
   roomId,
   ownerId,
   currentUserId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isConnected: _isConnected,
   onStartGame,
   onLeaveRoom,

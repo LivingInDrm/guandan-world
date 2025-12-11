@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import RoomList from './RoomList';
 import CreateRoomModal from './CreateRoomModal';
-import { Button, Card } from '../ui-next';
+import { Button, Card } from '../ui';
 
 const RoomLobby: React.FC = () => {
   const { user } = useAuthStore();

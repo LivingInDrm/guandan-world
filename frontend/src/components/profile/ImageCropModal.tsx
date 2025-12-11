@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
 import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Slider, Label } from '../ui-next';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Slider, Label } from '../ui';
 import { getCroppedImage } from './cropImage';
 
 export interface ImageCropModalProps {
@@ -50,7 +50,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <div className="relative w-full h-64 bg-table-400 rounded-lg overflow-hidden">
+          <div className="relative w-full h-64 bg-primitive-neutral-900/50 rounded-lg overflow-hidden">
             <Cropper
               image={imageSrc}
               crop={crop}

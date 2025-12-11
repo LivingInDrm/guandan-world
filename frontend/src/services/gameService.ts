@@ -203,10 +203,12 @@ class GameService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private handleJoinRoom(_message: WSMessage): void {
     // Room update will be handled by room_update message
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private handleLeaveRoom(_message: WSMessage): void {
     // Room update will be handled by room_update message
   }

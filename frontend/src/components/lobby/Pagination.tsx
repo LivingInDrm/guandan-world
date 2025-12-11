@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../ui-next';
+import { Button } from '../ui';
 
 interface PaginationProps {
   currentPage: number;

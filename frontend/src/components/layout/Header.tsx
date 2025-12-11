@@ -9,8 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui-next/DropdownMenu';
-import { Avatar } from '../ui-next/Avatar';
+} from '../ui/DropdownMenu';
+import { Avatar } from '../ui/Avatar';
 import ProfileDialog from '../profile/ProfileDialog';
 import SettingsDialog from '../settings/SettingsDialog';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '@/components/ui-next';
+import { Card } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 export interface TeamLevelDisplayProps {

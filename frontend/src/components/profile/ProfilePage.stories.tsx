@@ -5,7 +5,7 @@ import ProfileDialog from "./ProfileDialog";
 
 const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <MemoryRouter>
-    <div className="min-h-screen bg-table-900 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-primitive-neutral-900 flex items-center justify-center p-8">
       {children}
     </div>
   </MemoryRouter>

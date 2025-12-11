@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Card } from '../ui-next';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Card } from '../ui';
 
 interface CreateRoomModalProps {
   open: boolean;

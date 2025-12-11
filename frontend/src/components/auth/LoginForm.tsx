@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import type { LoginRequest } from '../../types';
-import { Input, Label, Button, Card } from '../ui-next';
+import { Input, Label, Button, Card } from '../ui';
 
 const PASSWORD_MIN_LENGTH = 8;
 const USERNAME_MIN_LENGTH = 4;

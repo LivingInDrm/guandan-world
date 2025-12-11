@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '../ui-next';
+} from '../ui';
 import { AvatarUploader } from './AvatarUploader';
 import { ImageCropModal } from './ImageCropModal';
 

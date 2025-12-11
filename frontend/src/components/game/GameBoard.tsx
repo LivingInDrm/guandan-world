@@ -15,6 +15,7 @@ interface GameBoardProps {
   currentTurn: number;
   players: (Player | null)[];
   currentPlayerSeat: number;
+  playStates?: [number, number, number, number];
   turnDeadline?: { playerSeat: number; deadlineAtMs: number } | null;
 }
 
@@ -25,6 +26,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   currentTurn,
   players, 
   currentPlayerSeat,
+  playStates: _playStates,
   turnDeadline
 }) => {
   const getPlayForSeat = (seat: number): PlayAction | null => {

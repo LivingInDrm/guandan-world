@@ -43,6 +43,6 @@ export type GameEventTypeName = typeof GameEventType[keyof typeof GameEventType]
 
 // Helper function to get event name as string for logging
 export function getEventTypeName(type: EventType): string {
-  const entry = Object.entries(GameEventType).find(([_, value]) => value === type);
+  const entry = Object.entries(GameEventType).find(([, value]) => value === type);
   return entry ? entry[0].toLowerCase() : `unknown(${type})`;
 }

@@ -159,6 +159,7 @@ class WebSocketClient {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private handleClose(_event: CloseEvent): void {
     this.isConnected = false;
     this.clearTimers();

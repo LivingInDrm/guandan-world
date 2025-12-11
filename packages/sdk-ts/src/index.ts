@@ -4,6 +4,7 @@ export { Suit } from './types';
 export { SdkCard, fromProtoCard, fromProtoCards } from './card';
 
 export { CompType, compTypeToString } from './compType';
+export { ProtoCompType, protoToSdkCompType } from './protoCompType';
 
 export type { CardComp } from './compInterface';
 

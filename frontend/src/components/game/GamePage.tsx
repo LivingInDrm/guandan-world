@@ -436,7 +436,7 @@ const GamePage: React.FC = () => {
   const renderPlaying = () => {
     if (!playerViewData || !currentRoom || playerSeat === null) return null;
 
-    const { teamLevels, dealLevel, plays, currentTurn, playStates, leader } = playerViewData;
+    const { teamLevels, dealLevel, plays, currentTurn, leader } = playerViewData;
     const players = currentRoom.players;
 
     const handleHint = (cards: Card[]) => {
@@ -452,7 +452,6 @@ const GamePage: React.FC = () => {
           currentTurn={currentTurn ?? -1}
           players={players}
           currentPlayerSeat={playerSeat}
-          playStates={playStates}
           turnDeadline={turnDeadline}
         />
 

@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '../ui-next';
+} from '../ui';
 import { audioService } from '../../services/audioService';
 import { useThemeStore, type Theme } from '../../store/themeStore';
 
@@ -90,17 +90,17 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChange }) =
           <div className="flex justify-between items-center">
             <Label htmlFor="volume-slider">音量</Label>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-table-400">{volume}%</span>
+              <span className="text-sm text-fg-secondary">{volume}%</span>
               <button
                 type="button"
                 onClick={handleMutedToggle}
-                className="p-1 rounded hover:bg-table-200 transition-colors"
+                className="p-1 rounded hover:bg-surface-elevated transition-colors"
                 title={muted ? '取消静音' : '静音'}
               >
                 {muted ? (
-                  <VolumeX className="w-5 h-5 text-table-400" />
+                  <VolumeX className="w-5 h-5 text-fg-secondary" />
                 ) : (
-                  <Volume2 className="w-5 h-5 text-table-400" />
+                  <Volume2 className="w-5 h-5 text-fg-secondary" />
                 )}
               </button>
             </div>

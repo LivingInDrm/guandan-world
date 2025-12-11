@@ -109,7 +109,6 @@ export const CurrentPlayerTurn: Story = () => (
       currentTurn={0}
       players={mockPlayers}
       currentPlayerSeat={0}
-      playStates={[0, 0, 0, 0]}
     />
   </div>
 );
@@ -123,7 +122,6 @@ export const WithPlayedCards: Story = () => (
       currentTurn={2}
       players={mockPlayers}
       currentPlayerSeat={0}
-      playStates={[0, 1, 0, 0]}
     />
   </div>
 );
@@ -137,7 +135,6 @@ export const WithPassedPlayers: Story = () => (
       currentTurn={3}
       players={mockPlayers}
       currentPlayerSeat={0}
-      playStates={[0, 1, 2, 0]}
     />
   </div>
 );
@@ -151,7 +148,6 @@ export const MixedStates: Story = () => (
       currentTurn={0}
       players={mockPlayers}
       currentPlayerSeat={0}
-      playStates={[0, 1, 2, 1]}
     />
   </div>
 );

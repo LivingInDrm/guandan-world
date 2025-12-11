@@ -106,7 +106,7 @@ describe('GameControls', () => {
 
   it('calls onPass when pass button is clicked', () => {
     const nonEmptyPlays = [
-      { playerSeat: 1, cards: mockCards, isPass: false, compType: 1 }
+      { playerSeat: 1, cards: mockCards, isPass: false, compType: 1, timestampMs: Date.now() }
     ];
     render(
       <GameControls

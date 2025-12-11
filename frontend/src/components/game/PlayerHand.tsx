@@ -21,8 +21,9 @@ interface CardGroupProps {
   currentLevel?: number;
 }
 
-const CardGroup: React.FC<CardGroupProps> = ({ 
-  rank: _rank, 
+const CardGroup: React.FC<CardGroupProps> = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  rank: _rank,
   cards, 
   selectedCards, 
   onCardSelect,

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { PlayAction } from '../../types/proto';
 import CardDisplay from './CardDisplay';
-import { Badge } from '@/components/ui-next';
+import { Badge } from '@/components/ui';
 
 export interface PlayedCardsDisplayProps {
   play: PlayAction | null;

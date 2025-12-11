@@ -1,6 +1,6 @@
 import React from 'react';
 import { RoomStatus, type RoomInfo } from '../../types';
-import { Button } from '../ui-next';
+import { Button } from '../ui';
 import PlayerMiniCard from './PlayerMiniCard';
 import Pagination from './Pagination';
 

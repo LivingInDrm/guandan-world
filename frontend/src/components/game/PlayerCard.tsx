@@ -1,7 +1,7 @@
 import React, { useMemo, type ReactNode } from 'react';
 import type { Player } from '../../types';
 import type { PlayerPosition } from './GameTable';
-import { Avatar, Card, Badge } from '../ui-next';
+import { Avatar, Card, Badge } from '../ui';
 import { getAvatarByUsername } from '../../utils/avatar';
 import { cn } from '@/lib/utils';
 

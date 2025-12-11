@@ -38,14 +38,11 @@ export default {
           us: 'hsl(var(--color-team-us))',
           them: 'hsl(var(--color-team-them))',
         },
-        table: {
-          50: 'hsl(var(--table-50))',
-          100: 'hsl(var(--table-100))',
-          200: 'hsl(var(--table-200))',
-          300: 'hsl(var(--table-300))',
-          400: 'hsl(var(--table-400))',
-          800: 'hsl(var(--table-800))',
-          900: 'hsl(var(--table-900))',
+        primitive: {
+          neutral: {
+            100: 'hsl(var(--primitive-neutral-100))',
+            900: 'hsl(var(--primitive-neutral-900))',
+          },
         },
         suit: {
           red: 'hsl(var(--suit-red))',

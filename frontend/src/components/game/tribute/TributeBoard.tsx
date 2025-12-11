@@ -13,7 +13,7 @@ import TributePool from './TributePool';
 import TributeRoleBadge from './TributeRoleBadge';
 import CardFlyAnimation from './CardFlyAnimation';
 import PlayerHand from '../PlayerHand';
-import { Button } from '@/components/ui-next';
+import { Button } from '@/components/ui';
 
 interface FlyingCard {
   id: string;

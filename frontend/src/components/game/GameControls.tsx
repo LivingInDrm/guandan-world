@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Card, PlayAction } from '../../types';
 import Countdown from './Countdown';
-import { Button } from '@/components/ui-next';
+import { Button } from '@/components/ui';
 import {
   fromProtoCard,
   fromCardList,
@@ -9,6 +9,7 @@ import {
   FirstPlayRecommender,
   NextPlayRecommender,
   CompType,
+  protoToSdkCompType,
   type CardComp,
 } from '@guandan/sdk-ts';
 
@@ -79,7 +80,7 @@ const GameControls: React.FC<GameControlsProps> = ({
     if (!lastPlay) return undefined;
     
     const lastPlaySdkCards = lastPlay.cards.map(c => fromProtoCard(c, dealLevel));
-    return fromCardListWithType(lastPlaySdkCards, lastPlay.compType);
+    return fromCardListWithType(lastPlaySdkCards, protoToSdkCompType(lastPlay.compType));
   }, [plays, dealLevel, leader, playerSeat]);
 
   const handleHint = useCallback(() => {

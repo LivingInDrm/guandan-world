@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar } from '../ui-next';
+import { Avatar } from '../ui';
 import type { Player } from '../../types';
 import { cn } from '@/lib/utils';
 import { getAvatarUrl } from '../../utils/avatar';

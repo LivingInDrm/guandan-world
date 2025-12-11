@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { Player } from '../../types';
 import type { DealEndedPayload } from '../../types/generated/event';
 import { VictoryType } from '../../types/proto';
-import { Card, Badge, Button } from '@/components/ui-next';
+import { Card, Badge, Button } from '@/components/ui';
 
 interface DealResultProps {
   dealResult: DealEndedPayload;
@@ -20,6 +20,7 @@ const DealResult: React.FC<DealResultProps> = ({
   teamLevels,
   onContinue,
   onExit,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isMatchFinished: _isMatchFinished,
   currentPlayerSeat
 }) => {

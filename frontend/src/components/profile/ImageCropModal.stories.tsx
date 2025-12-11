@@ -14,12 +14,12 @@ export const Default: Story = () => {
 
   if (result) {
     return (
-      <div className="min-h-screen bg-table-900 flex flex-col items-center justify-center gap-4 p-8">
-        <p className="text-table-400">裁切结果：</p>
+      <div className="min-h-screen bg-primitive-neutral-900 flex flex-col items-center justify-center gap-4 p-8">
+        <p className="text-fg-secondary">裁切结果：</p>
         <img
           src={result}
           alt="Cropped"
-          className="w-32 h-32 rounded-lg border border-table-300"
+          className="w-32 h-32 rounded-lg border border-stroke"
         />
         <button
           onClick={() => setResult(null)}
@@ -32,7 +32,7 @@ export const Default: Story = () => {
   }
 
   return (
-    <div className="min-h-screen bg-table-900">
+    <div className="min-h-screen bg-primitive-neutral-900">
       <ImageCropModal
         imageSrc={SAMPLE_IMAGE}
         onConfirm={handleConfirm}
