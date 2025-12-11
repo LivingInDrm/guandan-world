@@ -101,9 +101,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
           onChange={handleInputChange}
           placeholder="请输入用户名"
           disabled={isLoading}
-          className={errors.username ? 'border-ds-error' : ''}
+          className={errors.username ? 'border-error' : ''}
         />
-        {errors.username && <p className="text-sm text-ds-error">{errors.username}</p>}
+        {errors.username && <p className="text-sm text-error">{errors.username}</p>}
       </div>
 
       <div className="space-y-2">
@@ -116,14 +116,14 @@ const LoginForm: React.FC<LoginFormProps> = ({
           onChange={handleInputChange}
           placeholder="请输入密码"
           disabled={isLoading}
-          className={errors.password ? 'border-ds-error' : ''}
+          className={errors.password ? 'border-error' : ''}
         />
-        {errors.password && <p className="text-sm text-ds-error">{errors.password}</p>}
+        {errors.password && <p className="text-sm text-error">{errors.password}</p>}
       </div>
 
       {error && (
-        <div className="bg-ds-error/15 border border-ds-error rounded-ds-sm p-3">
-          <p className="text-sm text-ds-error">{error}</p>
+        <div className="bg-error/15 border border-error rounded-sm p-3">
+          <p className="text-sm text-error">{error}</p>
         </div>
       )}
 
@@ -140,7 +140,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   return (
     <Card variant="elevated" interactive={false} className="p-8">
-      <h2 className="text-2xl font-bold text-ds-text-primary mb-6 text-center">
+      <h2 className="text-2xl font-bold text-fg-primary mb-6 text-center">
         {title}
       </h2>
       {formContent}

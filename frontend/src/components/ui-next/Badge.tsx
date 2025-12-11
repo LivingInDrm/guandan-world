@@ -6,18 +6,18 @@ const badgeVariants = cva(
   [
     "inline-flex items-center justify-center",
     "font-bold backdrop-blur-sm",
-    "rounded-ds-sm",
-    "shadow-ds-elevation-1",
-    "transition-all duration-ds-fast",
+    "rounded-sm",
+    "shadow-elevation-1",
+    "transition-all duration-fast",
   ],
   {
     variants: {
       variant: {
-        landlord: "bg-ds-state-active text-ds-text-inverse",
-        farmer: "bg-ds-team-us text-ds-text-inverse",
-        teammate: "bg-ds-team-us/80 text-ds-text-inverse border border-ds-team-us",
-        owner: "bg-ds-state-active text-ds-text-inverse",
-        neutral: "bg-ds-surface-elevated text-ds-text-secondary",
+        landlord: "bg-state-active text-fg-inverse",
+        farmer: "bg-team-us text-fg-inverse",
+        teammate: "bg-team-us/80 text-fg-inverse border border-team-us",
+        owner: "bg-state-active text-fg-inverse",
+        neutral: "bg-surface-elevated text-fg-secondary",
       },
       size: {
         sm: "px-1.5 py-0.5 text-xs",

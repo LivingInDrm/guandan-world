@@ -29,14 +29,14 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="relative py-4 px-6 bg-gradient-to-b from-[hsl(var(--ds-primitive-primary-700))] to-[hsl(var(--ds-primitive-primary-500))] text-[hsl(var(--ds-color-text-inverse))] shadow-[var(--ds-elevation-2),var(--ds-shadow-relief)] rounded-ds-lg">
-        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-[hsl(var(--ds-state-active))] shadow-[var(--ds-shadow-glow-md)] rounded-b-ds-lg" />
+      <header className="relative py-4 px-6 bg-gradient-to-b from-[hsl(var(--primitive-primary-700))] to-[hsl(var(--primitive-primary-500))] text-[hsl(var(--color-text-inverse))] shadow-[var(--elevation-2),var(--shadow-relief)] rounded-lg">
+        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-[hsl(var(--color-state-active))] shadow-[var(--shadow-glow-md)] rounded-b-lg" />
 
         <div className="container mx-auto flex items-center">
           <div className="flex-1" />
           
           <h1 className="text-2xl font-bold tracking-wide text-center">
-            <span className="bg-gradient-to-r from-[hsl(var(--ds-primitive-accent-300))] via-[hsl(var(--ds-primitive-accent-500))] to-[hsl(var(--ds-primitive-accent-300))] bg-clip-text text-transparent drop-shadow-sm">
+            <span className="bg-gradient-to-r from-[hsl(var(--primitive-accent-300))] via-[hsl(var(--primitive-accent-500))] to-[hsl(var(--primitive-accent-300))] bg-clip-text text-transparent drop-shadow-sm">
               一起掼蛋 | GuanDan Together
             </span>
           </h1>
@@ -45,12 +45,12 @@ const Header: React.FC = () => {
             {isAuthenticated && user && (
               <div className="flex items-center gap-4">
                 <span className="text-sm">
-                  欢迎，<span className="font-bold text-[hsl(var(--ds-primitive-accent-300))]">{user.nickname || user.username}</span>
+                  欢迎，<span className="font-bold text-[hsl(var(--primitive-accent-300))]">{user.nickname || user.username}</span>
                 </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="rounded-ds-full hover:ring-4 hover:ring-[hsl(var(--ds-state-active)/.5)] hover:shadow-[var(--ds-shadow-glow-md)] transition-all duration-ds-normal cursor-pointer group"
+                      className="rounded-full hover:ring-4 hover:ring-[hsl(var(--color-state-active)/.5)] hover:shadow-[var(--shadow-glow-md)] transition-all duration-normal cursor-pointer group"
                       title="菜单"
                     >
                       <Avatar
@@ -59,7 +59,7 @@ const Header: React.FC = () => {
                         fallback={user.nickname || user.username}
                         size="sm"
                         ringState="normal"
-                        className="group-hover:scale-110 transition-transform duration-ds-fast"
+                        className="group-hover:scale-110 transition-transform duration-fast"
                       />
                     </button>
                   </DropdownMenuTrigger>

@@ -142,9 +142,9 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
           onClick={handleClearSelection}
           className={cn(
             "p-1.5 rounded-md",
-            "text-ds-text-secondary hover:text-ds-text-primary",
-            "hover:bg-ds-surface-elevated",
-            "transition-colors duration-ds-fast",
+            "text-fg-secondary hover:text-fg-primary",
+            "hover:bg-surface-elevated",
+            "transition-colors duration-fast",
             "opacity-60 hover:opacity-100",
             selectedCards.length > 0 ? '' : 'invisible'
           )}
@@ -169,7 +169,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       </div>
       
       {safeCards.length === 0 && (
-        <div className="text-center text-ds-text-secondary py-8">
+        <div className="text-center text-fg-secondary py-8">
           暂无手牌
         </div>
       )}

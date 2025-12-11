@@ -57,24 +57,24 @@ const TributePool: React.FC<TributePoolProps> = ({
             <div
               key={index}
               ref={(el) => onSlotRefReady?.(index, el)}
-              className={`w-16 h-24 border border-dashed rounded-ds-sm flex items-center justify-center shadow-ds-elevation-1
-                ${shouldShowCard ? 'border-ds-border-emphasis bg-ds-surface-elevated/50' : 'border-ds-border/50 bg-ds-surface-base/10'}
-                ${canSelect && shouldShowCard ? 'cursor-pointer hover:border-ds-state-active hover:shadow-ds-elevation-3 transition-all' : ''}
+              className={`w-16 h-24 border border-dashed rounded-sm flex items-center justify-center shadow-elevation-1
+                ${shouldShowCard ? 'border-stroke-emphasis bg-surface-elevated/50' : 'border-stroke/50 bg-surface-base/10'}
+                ${canSelect && shouldShowCard ? 'cursor-pointer hover:border-state-active hover:shadow-elevation-3 transition-all' : ''}
               `}
               onClick={() => canSelect && shouldShowCard && onSelectCard(card)}
             >
               {shouldShowCard ? (
                 <CardDisplay card={card} size="small" />
               ) : (
-                <span className="text-ds-text-secondary text-xs">空</span>
+                <span className="text-fg-secondary text-xs">空</span>
               )}
             </div>
           );
         })}
       </div>
 
-      <div className="border-t border-ds-border/30 pt-2 mt-1 max-h-24 overflow-y-auto">
-        <div className="text-xs text-ds-text-primary space-y-1">
+      <div className="border-t border-stroke/30 pt-2 mt-1 max-h-24 overflow-y-auto">
+        <div className="text-xs text-fg-primary space-y-1">
           {messages.slice(-3).map((msg, i) => (
             <div key={i} className="truncate">{msg}</div>
           ))}

@@ -137,12 +137,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           onChange={handleInputChange}
           placeholder="请输入用户名"
           disabled={isLoading}
-          className={errors.username ? 'border-ds-error' : ''}
+          className={errors.username ? 'border-error' : ''}
         />
         {errors.username ? (
-          <p className="text-sm text-ds-error">{errors.username}</p>
+          <p className="text-sm text-error">{errors.username}</p>
         ) : (
-          <p className="text-xs text-ds-text-secondary">{USERNAME_MIN_LENGTH}-{USERNAME_MAX_LENGTH}个字符，支持字母、数字和下划线</p>
+          <p className="text-xs text-fg-secondary">{USERNAME_MIN_LENGTH}-{USERNAME_MAX_LENGTH}个字符，支持字母、数字和下划线</p>
         )}
       </div>
 
@@ -156,12 +156,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           onChange={handleInputChange}
           placeholder="请输入密码"
           disabled={isLoading}
-          className={errors.password ? 'border-ds-error' : ''}
+          className={errors.password ? 'border-error' : ''}
         />
         {errors.password ? (
-          <p className="text-sm text-ds-error">{errors.password}</p>
+          <p className="text-sm text-error">{errors.password}</p>
         ) : (
-          <p className="text-xs text-ds-text-secondary">至少{PASSWORD_MIN_LENGTH}个字符，包含大小写字母、数字和特殊字符</p>
+          <p className="text-xs text-fg-secondary">至少{PASSWORD_MIN_LENGTH}个字符，包含大小写字母、数字和特殊字符</p>
         )}
       </div>
 
@@ -175,14 +175,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           onChange={handleInputChange}
           placeholder="请再次输入密码"
           disabled={isLoading}
-          className={errors.confirmPassword ? 'border-ds-error' : ''}
+          className={errors.confirmPassword ? 'border-error' : ''}
         />
-        {errors.confirmPassword && <p className="text-sm text-ds-error">{errors.confirmPassword}</p>}
+        {errors.confirmPassword && <p className="text-sm text-error">{errors.confirmPassword}</p>}
       </div>
 
       {error && (
-        <div className="bg-ds-error/15 border border-ds-error rounded-ds-sm p-3">
-          <p className="text-sm text-ds-error">{error}</p>
+        <div className="bg-error/15 border border-error rounded-sm p-3">
+          <p className="text-sm text-error">{error}</p>
         </div>
       )}
 
@@ -199,7 +199,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
   return (
     <Card variant="elevated" interactive={false} className="p-8">
-      <h2 className="text-2xl font-bold text-ds-text-primary mb-6 text-center">
+      <h2 className="text-2xl font-bold text-fg-primary mb-6 text-center">
         {title}
       </h2>
       {formContent}

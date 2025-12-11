@@ -413,18 +413,18 @@ const GamePage: React.FC = () => {
   const renderGamePrepare = () => {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-card rounded-lg p-8 text-center max-w-md mx-4">
-          <h2 className="text-2xl font-bold text-foreground mb-4">游戏即将开始</h2>
-          <div className="text-6xl font-bold text-primary mb-4">
+        <div className="bg-surface-elevated rounded-lg p-8 text-center max-w-md mx-4">
+          <h2 className="text-2xl font-bold text-fg-primary mb-4">游戏即将开始</h2>
+          <div className="text-6xl font-bold text-action-primary mb-4">
             {countdown}
           </div>
-          <p className="text-muted-foreground">请准备好开始游戏...</p>
+          <p className="text-fg-secondary">请准备好开始游戏...</p>
 
           {/* Connection status indicator */}
           <div className="mt-4 flex items-center justify-center space-x-2">
             <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
               }`} />
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-fg-secondary">
               {isConnected ? '连接正常' : '连接断开'}
             </span>
           </div>
@@ -558,7 +558,7 @@ const GamePage: React.FC = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">请先登录</p>
+        <p className="text-fg-secondary">请先登录</p>
       </div>
     );
   }
@@ -567,15 +567,15 @@ const GamePage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">加载房间信息...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action-primary mx-auto mb-4"></div>
+          <p className="text-fg-secondary">加载房间信息...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-surface-base">
       {renderCurrentPhase()}
     </div>
   );

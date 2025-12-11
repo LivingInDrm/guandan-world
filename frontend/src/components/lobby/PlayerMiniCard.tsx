@@ -13,10 +13,10 @@ const PlayerMiniCard: React.FC<PlayerMiniCardProps> = ({ player, isCurrentUser =
   if (!player) {
     return (
       <div className="flex flex-col items-center w-14">
-        <div className="h-10 w-10 rounded-full border-2 border-dashed border-ds-border flex items-center justify-center">
-          <span className="text-ds-text-secondary text-xs">?</span>
+        <div className="h-10 w-10 rounded-full border-2 border-dashed border-stroke flex items-center justify-center">
+          <span className="text-fg-secondary text-xs">?</span>
         </div>
-        <span className="text-xs text-ds-text-secondary mt-1 truncate w-full text-center">
+        <span className="text-xs text-fg-secondary mt-1 truncate w-full text-center">
           空位
         </span>
       </div>
@@ -29,19 +29,19 @@ const PlayerMiniCard: React.FC<PlayerMiniCardProps> = ({ player, isCurrentUser =
     <div
       className={cn(
         "flex flex-col items-center w-14",
-        isCurrentUser && "ring-2 ring-ds-state-active ring-offset-1 rounded-lg"
+        isCurrentUser && "ring-2 ring-state-active ring-offset-1 rounded-lg"
       )}
       title={displayName}
     >
       <Avatar
         size="sm"
-        src={getAvatarUrl(player.avatar_key)}
+        src={getAvatarUrl(player.avatar_key) ?? undefined}
         alt={displayName}
         fallback={displayName}
       />
       <span className={cn(
         "text-xs mt-1 truncate w-full text-center",
-        player.online ? "text-ds-text-primary" : "text-ds-text-secondary"
+        player.online ? "text-fg-primary" : "text-fg-secondary"
       )}>
         {displayName}
       </span>

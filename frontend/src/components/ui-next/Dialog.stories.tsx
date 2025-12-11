@@ -26,7 +26,7 @@ export const Default: Story = () => (
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-ds-text-primary">这是弹窗的内容区域。</p>
+          <p className="text-fg-primary">这是弹窗的内容区域。</p>
         </div>
       </DialogContent>
     </Dialog>
@@ -87,29 +87,29 @@ export const LongContent: Story = () => (
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
-          <h3 className="text-ds-text-primary font-semibold">一、基本规则</h3>
-          <p className="text-ds-text-secondary text-sm">
+          <h3 className="text-fg-primary font-semibold">一、基本规则</h3>
+          <p className="text-fg-secondary text-sm">
             掼蛋是一种四人扑克牌游戏，使用两副牌共108张。四名玩家分为两组对抗，
             目标是尽快出完手中的牌。游戏以升级形式进行，从2开始，谁先打到A为胜。
           </p>
-          <h3 className="text-ds-text-primary font-semibold">二、牌型介绍</h3>
-          <p className="text-ds-text-secondary text-sm">
+          <h3 className="text-fg-primary font-semibold">二、牌型介绍</h3>
+          <p className="text-fg-secondary text-sm">
             单张：一张牌。对子：两张相同点数的牌。三张：三张相同点数的牌。
             炸弹：四张或更多相同点数的牌。顺子：五张或更多连续点数的牌。
           </p>
-          <h3 className="text-ds-text-primary font-semibold">三、特殊规则</h3>
-          <p className="text-ds-text-secondary text-sm">
+          <h3 className="text-fg-primary font-semibold">三、特殊规则</h3>
+          <p className="text-fg-secondary text-sm">
             同花顺：五张或更多同花色的连续牌，可以打败普通炸弹。
             天王炸：四张王牌，是最大的牌型。级牌：当前等级的牌可以当作万能牌使用。
           </p>
-          <h3 className="text-ds-text-primary font-semibold">四、得分规则</h3>
-          <p className="text-ds-text-secondary text-sm">
+          <h3 className="text-fg-primary font-semibold">四、得分规则</h3>
+          <p className="text-fg-secondary text-sm">
             头游得3分，二游得2分，三游得1分，末游不得分。
             双上：同组两名玩家获得头游和二游，升3级。
             单下：对方一名玩家末游，升2级。
           </p>
-          <h3 className="text-ds-text-primary font-semibold">五、游戏流程</h3>
-          <p className="text-ds-text-secondary text-sm">
+          <h3 className="text-fg-primary font-semibold">五、游戏流程</h3>
+          <p className="text-fg-secondary text-sm">
             1. 发牌：每人27张牌。2. 出牌：从有红桃2的玩家开始。
             3. 接牌：必须出比上家更大的牌型。4. 结束：第一个出完牌的玩家为头游。
           </p>

@@ -47,8 +47,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     return (
       <div className={cn(getPositionClasses(position), className)}>
         <Card variant="base" interactive={false} className="flex flex-col items-center p-1 w-fit">
-          <div className="w-24 h-24 rounded-ds-lg bg-ds-surface-elevated shadow-ds-elevation-1 ring-1 ring-ds-border" />
-          <span className="mt-1 text-xs font-medium text-ds-text-secondary">空座位</span>
+          <div className="w-24 h-24 rounded-lg bg-surface-elevated shadow-elevation-1 ring-1 ring-stroke" />
+          <span className="mt-1 text-xs font-medium text-fg-secondary">空座位</span>
         </Card>
       </div>
     );
@@ -70,7 +70,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             size="2xl"
             ringState={isHighlighted ? 'active' : 'none'}
           />
-          <span className="mt-1 max-w-[80px] text-xs font-medium text-ds-text-primary truncate text-center">
+          <span className="mt-1 max-w-[80px] text-xs font-medium text-fg-primary truncate text-center">
             {player.username}
           </span>
         </Card>

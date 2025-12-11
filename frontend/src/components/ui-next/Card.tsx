@@ -4,25 +4,25 @@ import { cn } from "@/lib/utils"
 
 const cardVariants = cva(
   [
-    "relative rounded-ds-lg",
-    "transition-all duration-ds-normal ease-ds-bounce",
+    "relative rounded-lg",
+    "transition-all duration-normal ease-bounce",
     "hover:scale-[1.02]",
   ],
   {
     variants: {
       variant: {
         base: [
-          "bg-ds-surface-base",
-          "shadow-ds-relief",
+          "bg-surface-base",
+          "shadow-relief",
         ],
         elevated: [
-          "bg-ds-surface-elevated",
-          "shadow-[var(--ds-elevation-3),var(--ds-shadow-relief)]",
+          "bg-surface-elevated",
+          "shadow-[var(--elevation-3),var(--shadow-relief)]",
         ],
         emphasis: [
-          "bg-ds-surface-emphasis backdrop-blur-xl",
-          "border border-ds-state-active",
-          "shadow-[var(--ds-shadow-relief),var(--ds-shadow-glow-lg)]",
+          "bg-surface-emphasis backdrop-blur-xl",
+          "border border-state-active",
+          "shadow-[var(--shadow-relief),var(--shadow-glow-lg)]",
         ],
       },
     },

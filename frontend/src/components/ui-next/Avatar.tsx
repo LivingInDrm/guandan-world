@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils"
 
 const avatarVariants = cva(
   [
-    "relative flex shrink-0 rounded-ds-lg overflow-hidden",
-    "transition-all duration-ds-normal",
+    "relative flex shrink-0 rounded-lg overflow-hidden",
+    "transition-all duration-normal",
   ],
   {
     variants: {
@@ -19,13 +19,13 @@ const avatarVariants = cva(
       },
       ringState: {
         none: "",
-        normal: "ring-4 ring-ds-border ring-offset-2",
+        normal: "ring-4 ring-stroke ring-offset-2",
         active: [
-          "ring-4 ring-ds-state-active ring-offset-2",
-          "animate-ds-pulse-ring",
+          "ring-4 ring-state-active ring-offset-2",
+          "animate-pulse-ring",
         ],
-        teamUs: "ring-4 ring-ds-team-us ring-offset-2",
-        teamThem: "ring-4 ring-ds-team-them ring-offset-2",
+        teamUs: "ring-4 ring-team-us ring-offset-2",
+        teamThem: "ring-4 ring-team-them ring-offset-2",
       }
     },
     defaultVariants: {
@@ -57,7 +57,7 @@ const Avatar = React.forwardRef<
       alt={alt}
       className="aspect-square h-full w-full object-cover"
     />
-    <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center bg-ds-surface-elevated text-ds-text-secondary">
+    <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center bg-surface-elevated text-fg-secondary">
       {fallback?.slice(0, 2).toUpperCase()}
     </AvatarPrimitive.Fallback>
   </AvatarPrimitive.Root>

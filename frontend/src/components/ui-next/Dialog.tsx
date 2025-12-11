@@ -38,10 +38,10 @@ const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 p-6",
-        "bg-ds-surface-elevated backdrop-blur-xl",
-        "shadow-[var(--ds-elevation-3),var(--ds-shadow-relief),0_0_24px_hsla(145,60%,50%,0.2)]",
-        "border-2 border-ds-border-emphasis rounded-ds-lg",
-        "transition-all duration-ds-normal ease-ds-bounce",
+        "bg-surface-elevated backdrop-blur-xl",
+        "shadow-[var(--elevation-3),var(--shadow-relief),0_0_24px_hsla(145,60%,50%,0.2)]",
+        "border-2 border-stroke-emphasis rounded-lg",
+        "transition-all duration-normal ease-bounce",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -52,7 +52,7 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 flex items-center justify-center w-8 h-8 rounded-full bg-ds-state-active text-white transition-all duration-ds-normal ease-ds-bounce hover:scale-110 hover:rotate-90 hover:shadow-[0_0_16px_hsla(45,100%,51%,0.6)] focus:outline-none focus:ring-2 focus:ring-ds-state-active focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+      <DialogPrimitive.Close className="absolute right-4 top-4 flex items-center justify-center w-8 h-8 rounded-full bg-state-active text-white transition-all duration-normal ease-bounce hover:scale-110 hover:rotate-90 hover:shadow-[0_0_16px_hsla(45,100%,51%,0.6)] focus:outline-none focus:ring-2 focus:ring-state-active focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -91,7 +91,7 @@ const DialogTitle = React.forwardRef<
     ref={ref}
     className={cn(
       "text-xl font-bold leading-none tracking-tight",
-      "bg-gradient-to-r from-ds-state-active to-ds-action-primary bg-clip-text text-transparent",
+      "bg-gradient-to-r from-state-active to-action-primary bg-clip-text text-transparent",
       className
     )}
     {...props}
@@ -105,7 +105,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-ds-text-secondary", className)}
+    className={cn("text-sm text-fg-secondary", className)}
     {...props}
   />
 ))

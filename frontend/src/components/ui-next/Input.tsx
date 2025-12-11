@@ -12,14 +12,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type={type}
         className={cn(
           "flex h-10 w-full px-3 py-2",
-          "border border-ds-border bg-ds-surface-elevated text-ds-text-primary",
-          "rounded-ds-md shadow-[var(--ds-elevation-2),var(--ds-shadow-relief)]",
-          "placeholder:text-ds-text-secondary",
-          "focus-visible:outline-none focus-visible:border-ds-state-active",
-          "focus-visible:shadow-[var(--ds-elevation-3),var(--ds-shadow-relief),0_0_12px_hsla(45,100%,51%,0.3)]",
+          "border border-stroke bg-surface-elevated text-fg-primary",
+          "rounded-md shadow-[var(--elevation-2),var(--shadow-relief)]",
+          "placeholder:text-fg-secondary",
+          "focus-visible:outline-none focus-visible:border-state-active",
+          "focus-visible:shadow-[var(--elevation-3),var(--shadow-relief),0_0_12px_hsla(45,100%,51%,0.3)]",
           "focus-visible:scale-[1.01]",
-          "disabled:cursor-not-allowed disabled:bg-ds-state-disabled disabled:text-ds-text-secondary disabled:scale-100",
-          "transition-all duration-ds-normal ease-ds-bounce",
+          "disabled:cursor-not-allowed disabled:bg-state-disabled disabled:text-fg-secondary disabled:scale-100",
+          "transition-all duration-normal ease-bounce",
           className
         )}
         ref={ref}
@@ -37,7 +37,7 @@ const Label = React.forwardRef<
   <LabelPrimitive.Root
     ref={ref}
     className={cn(
-      "text-sm font-medium leading-none text-ds-text-primary",
+      "text-sm font-medium leading-none text-fg-primary",
       "peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
       className
     )}

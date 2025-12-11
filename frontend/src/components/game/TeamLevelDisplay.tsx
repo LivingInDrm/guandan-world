@@ -40,11 +40,11 @@ const TeamLevelDisplay: React.FC<TeamLevelDisplayProps> = ({
       variant="base"
       interactive={false}
       className={cn(
-        'w-16 flex flex-col items-center rounded-ds-md overflow-hidden',
-        'shadow-ds-elevation-2 bg-gradient-to-b text-ds-text-inverse',
+        'w-16 flex flex-col items-center rounded-md overflow-hidden',
+        'shadow-elevation-2 bg-gradient-to-b text-fg-inverse',
         isMyTeam
-          ? 'from-[hsl(var(--ds-primitive-primary-500))] to-[hsl(var(--ds-primitive-primary-700))]'
-          : 'from-[hsl(var(--ds-primitive-danger-500))] to-[hsl(var(--ds-primitive-danger-700))]'
+          ? 'from-[hsl(var(--primitive-primary-500))] to-[hsl(var(--primitive-primary-700))]'
+          : 'from-[hsl(var(--primitive-danger-500))] to-[hsl(var(--primitive-danger-700))]'
       )}
     >
       <div className="w-full text-center py-1 text-sm font-semibold backdrop-brightness-95 bg-black/10">
@@ -55,7 +55,7 @@ const TeamLevelDisplay: React.FC<TeamLevelDisplayProps> = ({
       </div>
       <div className="h-4 flex items-center justify-center">
         {isCurrentLevel && (
-          <div className="w-0 h-0 border-l-[7px] border-r-[7px] border-b-[9px] border-l-transparent border-r-transparent border-b-ds-text-inverse drop-shadow" />
+          <div className="w-0 h-0 border-l-[7px] border-r-[7px] border-b-[9px] border-l-transparent border-r-transparent border-b-fg-inverse drop-shadow" />
         )}
       </div>
     </Card>

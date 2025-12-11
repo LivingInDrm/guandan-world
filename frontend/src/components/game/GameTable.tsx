@@ -26,8 +26,8 @@ const GameTable: React.FC<GameTableProps> = ({
   return (
     <div
       className={cn(
-        'relative w-full h-[35rem] rounded-ds-lg overflow-hidden',
-        'bg-gradient-to-b from-ds-surface-base to-ds-surface-elevated',
+        'relative w-full h-[35rem] rounded-lg overflow-hidden',
+        'bg-gradient-to-b from-surface-base to-surface-elevated',
         className
       )}
     >
@@ -43,10 +43,10 @@ const GameTable: React.FC<GameTableProps> = ({
       <div className="absolute inset-0 flex items-center justify-center">
         <div
           className={cn(
-            'relative w-[420px] h-[240px] rounded-ds-lg p-6',
-            'bg-ds-surface-emphasis backdrop-blur-sm',
-            'border border-ds-border-emphasis',
-            'shadow-ds-relief'
+            'relative w-[420px] h-[240px] rounded-lg p-6',
+            'bg-surface-emphasis backdrop-blur-sm',
+            'border border-stroke-emphasis',
+            'shadow-relief'
           )}
         >
           {renderCenter()}

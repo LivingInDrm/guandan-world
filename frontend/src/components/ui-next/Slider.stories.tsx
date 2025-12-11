@@ -16,7 +16,7 @@ export const WithValue: Story = () => {
   return (
     <div className="p-8 bg-gray-800 flex items-center justify-center">
       <div className="w-64 space-y-4">
-        <div className="flex justify-between text-ds-text-primary text-sm">
+        <div className="flex justify-between text-fg-primary text-sm">
           <span>音量</span>
           <span>{value[0]}%</span>
         </div>
@@ -37,7 +37,7 @@ export const Range: Story = () => {
   return (
     <div className="p-8 bg-gray-800 flex items-center justify-center">
       <div className="w-64 space-y-4">
-        <div className="flex justify-between text-ds-text-primary text-sm">
+        <div className="flex justify-between text-fg-primary text-sm">
           <span>范围</span>
           <span>{range[0]} - {range[1]}</span>
         </div>
@@ -59,25 +59,25 @@ export const AllSettings: Story = () => {
 
   return (
     <div className="p-8 bg-gray-800 flex items-center justify-center">
-      <div className="w-72 p-6 bg-ds-surface-elevated rounded-ds-lg space-y-6">
-        <h3 className="text-ds-text-primary font-bold text-lg">游戏设置</h3>
+      <div className="w-72 p-6 bg-surface-elevated rounded-lg space-y-6">
+        <h3 className="text-fg-primary font-bold text-lg">游戏设置</h3>
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between text-ds-text-primary text-sm">
+            <div className="flex justify-between text-fg-primary text-sm">
               <span>音效音量</span>
               <span>{volume[0]}%</span>
             </div>
             <Slider value={volume} onValueChange={setVolume} max={100} step={1} />
           </div>
           <div className="space-y-2">
-            <div className="flex justify-between text-ds-text-primary text-sm">
+            <div className="flex justify-between text-fg-primary text-sm">
               <span>背景音乐</span>
               <span>{music[0]}%</span>
             </div>
             <Slider value={music} onValueChange={setMusic} max={100} step={1} />
           </div>
           <div className="space-y-2">
-            <div className="flex justify-between text-ds-text-primary text-sm">
+            <div className="flex justify-between text-fg-primary text-sm">
               <span>出牌速度</span>
               <span>{speed[0]}x</span>
             </div>

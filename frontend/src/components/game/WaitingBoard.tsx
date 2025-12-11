@@ -24,7 +24,7 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
   roomId,
   ownerId,
   currentUserId,
-  isConnected,
+  isConnected: _isConnected,
   onStartGame,
   onLeaveRoom,
   isStarting,
@@ -48,8 +48,8 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
         statusSlot={
           player && (
             <div className="flex items-center gap-1">
-              <div className={`w-2 h-2 rounded-full ${player.online ? 'bg-[hsl(var(--ds-primitive-success-500))]' : 'bg-[hsl(var(--ds-primitive-neutral-500))]'}`} />
-              <span className="text-xs text-[hsl(var(--ds-color-text-secondary))]">
+              <div className={`w-2 h-2 rounded-full ${player.online ? 'bg-[hsl(var(--primitive-success-500))]' : 'bg-[hsl(var(--primitive-neutral-500))]'}`} />
+              <span className="text-xs text-[hsl(var(--color-text-secondary))]">
                 {player.online ? '在线' : '离线'}
               </span>
             </div>
@@ -86,8 +86,8 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
 
   const renderTopLeft = () => (
     <Card variant="elevated" interactive={false} className="absolute top-4 left-4 z-10 p-3">
-      <div className="text-sm text-[hsl(var(--ds-color-text-secondary))]">
-        房间ID: <span className="font-mono text-[hsl(var(--ds-color-text-primary))]">{roomId}</span>
+      <div className="text-sm text-[hsl(var(--color-text-secondary))]">
+        房间ID: <span className="font-mono text-[hsl(var(--color-text-primary))]">{roomId}</span>
       </div>
     </Card>
   );

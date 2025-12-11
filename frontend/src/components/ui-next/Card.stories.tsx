@@ -5,7 +5,7 @@ import { Button } from "./Button";
 export const Default: Story = () => (
   <div className="p-8 bg-gray-800 flex items-center justify-center">
     <Card className="p-6">
-      <p className="text-ds-text-primary">基础面板</p>
+      <p className="text-fg-primary">基础面板</p>
     </Card>
   </div>
 );
@@ -14,19 +14,19 @@ export const AllVariants: Story = () => (
   <div className="p-8 bg-gray-800 flex flex-wrap gap-6">
     <div className="text-center">
       <Card variant="base" className="p-6 w-40">
-        <p className="text-ds-text-primary">Base</p>
+        <p className="text-fg-primary">Base</p>
       </Card>
       <p className="mt-2 text-white text-sm">base</p>
     </div>
     <div className="text-center">
       <Card variant="elevated" className="p-6 w-40">
-        <p className="text-ds-text-primary">Elevated</p>
+        <p className="text-fg-primary">Elevated</p>
       </Card>
       <p className="mt-2 text-white text-sm">elevated</p>
     </div>
     <div className="text-center">
       <Card variant="emphasis" className="p-6 w-40">
-        <p className="text-ds-text-primary">Emphasis</p>
+        <p className="text-fg-primary">Emphasis</p>
       </Card>
       <p className="mt-2 text-white text-sm">emphasis</p>
     </div>
@@ -36,11 +36,11 @@ export const AllVariants: Story = () => (
 export const Nested: Story = () => (
   <div className="p-8 bg-gray-800 flex items-center justify-center">
     <Card variant="emphasis" className="p-6">
-      <p className="text-ds-text-primary mb-4">强调层</p>
+      <p className="text-fg-primary mb-4">强调层</p>
       <Card variant="elevated" className="p-4">
-        <p className="text-ds-text-primary mb-4">抬升层</p>
+        <p className="text-fg-primary mb-4">抬升层</p>
         <Card variant="base" className="p-4">
-          <p className="text-ds-text-primary">基础层</p>
+          <p className="text-fg-primary">基础层</p>
         </Card>
       </Card>
     </Card>
@@ -50,8 +50,8 @@ export const Nested: Story = () => (
 export const WithContent: Story = () => (
   <div className="p-8 bg-gray-800 flex items-center justify-center">
     <Card variant="elevated" className="p-6 w-80">
-      <h3 className="text-ds-text-primary text-lg font-bold mb-2">游戏设置</h3>
-      <p className="text-ds-text-secondary text-sm mb-4">
+      <h3 className="text-fg-primary text-lg font-bold mb-2">游戏设置</h3>
+      <p className="text-fg-secondary text-sm mb-4">
         调整游戏规则和玩法
       </p>
       <div className="flex gap-2">
@@ -70,8 +70,8 @@ export const GlassEffect: Story = () => (
     }}
   >
     <Card variant="emphasis" className="p-8 w-72">
-      <h3 className="text-ds-text-primary text-lg font-bold mb-2">毛玻璃效果</h3>
-      <p className="text-ds-text-secondary text-sm">
+      <h3 className="text-fg-primary text-lg font-bold mb-2">毛玻璃效果</h3>
+      <p className="text-fg-secondary text-sm">
         emphasis 变体带有 backdrop-blur 效果，在彩色背景上可以看到毛玻璃效果。
       </p>
     </Card>
@@ -82,15 +82,15 @@ export const Interactive: Story = () => (
   <div className="p-8 bg-gray-800 flex gap-6">
     <div className="text-center">
       <Card variant="elevated" className="p-6 w-48">
-        <p className="text-ds-text-primary">Interactive</p>
-        <p className="text-ds-text-secondary text-xs mt-1">hover 会放大</p>
+        <p className="text-fg-primary">Interactive</p>
+        <p className="text-fg-secondary text-xs mt-1">hover 会放大</p>
       </Card>
       <p className="mt-2 text-white text-sm">interactive=true (默认)</p>
     </div>
     <div className="text-center">
       <Card variant="elevated" className="p-6 w-48" interactive={false}>
-        <p className="text-ds-text-primary">Non-Interactive</p>
-        <p className="text-ds-text-secondary text-xs mt-1">hover 无效果</p>
+        <p className="text-fg-primary">Non-Interactive</p>
+        <p className="text-fg-secondary text-xs mt-1">hover 无效果</p>
       </Card>
       <p className="mt-2 text-white text-sm">interactive=false</p>
     </div>

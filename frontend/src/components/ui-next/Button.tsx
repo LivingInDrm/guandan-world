@@ -8,19 +8,19 @@ const buttonVariants = cva(
     "inline-flex items-center justify-center gap-2",
     "font-bold whitespace-nowrap",
     "rounded-full",
-    "shadow-[var(--ds-elevation-2),var(--ds-shadow-relief)]",
-    "transition-all duration-ds-fast ease-ds-bounce",
-    "hover:shadow-ds-elevation-3 hover:scale-105 hover:brightness-110",
+    "shadow-[var(--elevation-2),var(--shadow-relief)]",
+    "transition-all duration-fast ease-bounce",
+    "hover:shadow-elevation-3 hover:scale-105 hover:brightness-110",
     "active:scale-95 active:brightness-90",
     "disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100",
   ],
   {
     variants: {
       intent: {
-        primary: "bg-ds-action-primary text-ds-text-inverse",
-        secondary: "bg-ds-action-secondary text-ds-text-inverse",
-        neutral: "bg-ds-action-neutral text-ds-text-inverse",
-        danger: "bg-ds-action-danger text-ds-text-inverse",
+        primary: "bg-action-primary text-fg-inverse",
+        secondary: "bg-action-secondary text-fg-inverse",
+        neutral: "bg-action-neutral text-fg-inverse",
+        danger: "bg-action-danger text-fg-inverse",
       },
       size: {
         sm: "px-6 py-2 text-base min-w-[90px]",

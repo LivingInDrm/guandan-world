@@ -24,24 +24,24 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-ds-md px-3 py-2 text-sm outline-none",
-      "text-ds-text-primary border-l-2 border-transparent",
-      "hover:bg-gradient-to-r hover:from-ds-surface-emphasis hover:to-transparent",
-      "hover:border-ds-state-active",
+      "flex cursor-default select-none items-center rounded-md px-3 py-2 text-sm outline-none",
+      "text-fg-primary border-l-2 border-transparent",
+      "hover:bg-gradient-to-r hover:from-surface-emphasis hover:to-transparent",
+      "hover:border-state-active",
       "hover:shadow-[0_0_8px_hsla(45,100%,51%,0.3)]",
       "hover:scale-[1.02]",
-      "focus:bg-gradient-to-r focus:from-ds-surface-emphasis focus:to-transparent",
-      "focus:border-ds-state-active",
-      "data-[state=open]:bg-gradient-to-r data-[state=open]:from-ds-surface-emphasis data-[state=open]:to-transparent",
-      "data-[state=open]:border-ds-state-active",
-      "transition-all duration-ds-normal ease-ds-bounce",
+      "focus:bg-gradient-to-r focus:from-surface-emphasis focus:to-transparent",
+      "focus:border-state-active",
+      "data-[state=open]:bg-gradient-to-r data-[state=open]:from-surface-emphasis data-[state=open]:to-transparent",
+      "data-[state=open]:border-state-active",
+      "transition-all duration-normal ease-bounce",
       inset && "pl-8",
       className
     )}
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4 text-ds-state-active" />
+    <ChevronRight className="ml-auto h-4 w-4 text-state-active" />
   </DropdownMenuPrimitive.SubTrigger>
 ))
 DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName
@@ -54,9 +54,9 @@ const DropdownMenuSubContent = React.forwardRef<
     ref={ref}
     className={cn(
       "z-50 min-w-[8rem] overflow-hidden p-1.5",
-      "bg-ds-surface-elevated backdrop-blur-sm",
-      "shadow-[var(--ds-elevation-3),var(--ds-shadow-relief),0_0_12px_hsla(145,60%,50%,0.15)]",
-      "border border-ds-border-emphasis rounded-ds-lg",
+      "bg-surface-elevated backdrop-blur-sm",
+      "shadow-[var(--elevation-3),var(--shadow-relief),0_0_12px_hsla(145,60%,50%,0.15)]",
+      "border border-stroke-emphasis rounded-lg",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -79,9 +79,9 @@ const DropdownMenuContent = React.forwardRef<
       sideOffset={sideOffset}
       className={cn(
         "z-50 min-w-[8rem] overflow-hidden p-1.5",
-        "bg-ds-surface-elevated backdrop-blur-sm",
-        "shadow-[var(--ds-elevation-3),var(--ds-shadow-relief),0_0_12px_hsla(145,60%,50%,0.15)]",
-        "border border-ds-border-emphasis rounded-ds-lg",
+        "bg-surface-elevated backdrop-blur-sm",
+        "shadow-[var(--elevation-3),var(--shadow-relief),0_0_12px_hsla(145,60%,50%,0.15)]",
+        "border border-stroke-emphasis rounded-lg",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -104,16 +104,16 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-ds-md px-3 py-2 text-sm outline-none",
-      "text-ds-text-primary border-l-2 border-transparent",
-      "hover:bg-gradient-to-r hover:from-ds-surface-emphasis hover:to-transparent",
-      "hover:border-ds-state-active",
+      "relative flex cursor-default select-none items-center rounded-md px-3 py-2 text-sm outline-none",
+      "text-fg-primary border-l-2 border-transparent",
+      "hover:bg-gradient-to-r hover:from-surface-emphasis hover:to-transparent",
+      "hover:border-state-active",
       "hover:shadow-[0_0_8px_hsla(45,100%,51%,0.3)]",
       "hover:scale-[1.02]",
-      "focus:bg-gradient-to-r focus:from-ds-surface-emphasis focus:to-transparent",
-      "focus:border-ds-state-active",
+      "focus:bg-gradient-to-r focus:from-surface-emphasis focus:to-transparent",
+      "focus:border-state-active",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "transition-all duration-ds-normal ease-ds-bounce",
+      "transition-all duration-normal ease-bounce",
       inset && "pl-8",
       className
     )}
@@ -129,16 +129,16 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-ds-md py-2 pl-9 pr-3 text-sm outline-none",
-      "text-ds-text-primary border-l-2 border-transparent",
-      "hover:bg-gradient-to-r hover:from-ds-surface-emphasis hover:to-transparent",
-      "hover:border-ds-state-active",
+      "relative flex cursor-default select-none items-center rounded-md py-2 pl-9 pr-3 text-sm outline-none",
+      "text-fg-primary border-l-2 border-transparent",
+      "hover:bg-gradient-to-r hover:from-surface-emphasis hover:to-transparent",
+      "hover:border-state-active",
       "hover:shadow-[0_0_8px_hsla(45,100%,51%,0.3)]",
       "hover:scale-[1.02]",
-      "focus:bg-gradient-to-r focus:from-ds-surface-emphasis focus:to-transparent",
-      "focus:border-ds-state-active",
+      "focus:bg-gradient-to-r focus:from-surface-emphasis focus:to-transparent",
+      "focus:border-state-active",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "transition-all duration-ds-normal ease-ds-bounce",
+      "transition-all duration-normal ease-bounce",
       className
     )}
     checked={checked}
@@ -146,7 +146,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-ds-state-active" />
+        <Check className="h-4 w-4 text-state-active" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -161,23 +161,23 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-ds-md py-2 pl-9 pr-3 text-sm outline-none",
-      "text-ds-text-primary border-l-2 border-transparent",
-      "hover:bg-gradient-to-r hover:from-ds-surface-emphasis hover:to-transparent",
-      "hover:border-ds-state-active",
+      "relative flex cursor-default select-none items-center rounded-md py-2 pl-9 pr-3 text-sm outline-none",
+      "text-fg-primary border-l-2 border-transparent",
+      "hover:bg-gradient-to-r hover:from-surface-emphasis hover:to-transparent",
+      "hover:border-state-active",
       "hover:shadow-[0_0_8px_hsla(45,100%,51%,0.3)]",
       "hover:scale-[1.02]",
-      "focus:bg-gradient-to-r focus:from-ds-surface-emphasis focus:to-transparent",
-      "focus:border-ds-state-active",
+      "focus:bg-gradient-to-r focus:from-surface-emphasis focus:to-transparent",
+      "focus:border-state-active",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "transition-all duration-ds-normal ease-ds-bounce",
+      "transition-all duration-normal ease-bounce",
       className
     )}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current text-ds-state-active" />
+        <Circle className="h-2 w-2 fill-current text-state-active" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -195,7 +195,7 @@ const DropdownMenuLabel = React.forwardRef<
     ref={ref}
     className={cn(
       "px-3 py-2 text-sm font-semibold",
-      "bg-gradient-to-r from-ds-state-active to-ds-action-primary bg-clip-text text-transparent",
+      "bg-gradient-to-r from-state-active to-action-primary bg-clip-text text-transparent",
       inset && "pl-8",
       className
     )}
@@ -210,7 +210,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1.5 h-[1.5px] bg-gradient-to-r from-transparent via-ds-border to-transparent", className)}
+    className={cn("-mx-1 my-1.5 h-[1.5px] bg-gradient-to-r from-transparent via-stroke to-transparent", className)}
     {...props}
   />
 ))
@@ -222,7 +222,7 @@ const DropdownMenuShortcut = ({
 }: React.HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
-      className={cn("ml-auto text-xs tracking-widest text-ds-state-active opacity-70", className)}
+      className={cn("ml-auto text-xs tracking-widest text-state-active opacity-70", className)}
       {...props}
     />
   )

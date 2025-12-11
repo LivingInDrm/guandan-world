@@ -20,7 +20,7 @@ const TributeRoleBadge: React.FC<TributeRoleBadgeProps> = ({
 
   if (role === 'giver') {
     return (
-      <div className="text-xs px-2 py-1 rounded bg-destructive/20 text-destructive whitespace-nowrap">
+      <div className="text-xs px-2 py-1 rounded bg-action-danger/20 text-action-danger whitespace-nowrap">
         {isSubmitted ? '已上贡' : '待上贡'}
       </div>
     );
@@ -37,8 +37,8 @@ const TributeRoleBadge: React.FC<TributeRoleBadgeProps> = ({
       <div className={cn(
         'text-xs px-2 py-1 rounded whitespace-nowrap',
         isCurrentSelector 
-          ? 'bg-accent/20 text-accent-foreground animate-pulse' 
-          : 'bg-primary/20 text-primary'
+          ? 'bg-state-active/20 text-fg-primary animate-pulse' 
+          : 'bg-action-primary/20 text-action-primary'
       )}>
         {getText()}
       </div>

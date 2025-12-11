@@ -57,8 +57,8 @@ export const AllTypes: Story = () => (
 
 export const FormExample: Story = () => (
   <div className="p-8 bg-gray-800 flex items-center justify-center">
-    <form className="space-y-4 w-72 p-6 bg-ds-surface-elevated rounded-ds-lg">
-      <h3 className="text-ds-text-primary text-lg font-bold">登录</h3>
+    <form className="space-y-4 w-72 p-6 bg-surface-elevated rounded-lg">
+      <h3 className="text-fg-primary text-lg font-bold">登录</h3>
       <div className="space-y-2">
         <Label htmlFor="username">用户名</Label>
         <Input id="username" placeholder="请输入用户名" />

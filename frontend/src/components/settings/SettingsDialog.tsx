@@ -73,8 +73,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChange }) =
                 onClick={() => setTheme(option.value)}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all ${
                   theme === option.value
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                    ? 'border-action-primary bg-action-primary/10 text-action-primary'
+                    : 'border-stroke bg-surface-elevated text-fg-secondary hover:bg-surface-elevated'
                 }`}
               >
                 {option.icon}
@@ -84,7 +84,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChange }) =
           </div>
         </div>
 
-        <div className="border-t border-border" />
+        <div className="border-t border-stroke" />
 
         <div className="space-y-4">
           <div className="flex justify-between items-center">

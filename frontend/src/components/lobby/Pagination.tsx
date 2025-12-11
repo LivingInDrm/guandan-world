@@ -63,7 +63,7 @@ const Pagination: React.FC<PaginationProps> = ({
       {visiblePages.map((page, index) => (
         <React.Fragment key={index}>
           {page === '...' ? (
-            <span className="px-2 py-2 text-ds-text-secondary">...</span>
+            <span className="px-2 py-2 text-fg-secondary">...</span>
           ) : (
             <Button
               intent={currentPage === page ? 'primary' : 'neutral'}

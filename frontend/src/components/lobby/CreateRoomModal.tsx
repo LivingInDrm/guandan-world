@@ -33,13 +33,13 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ open, onClose, onConf
           <DialogTitle>创建新房间</DialogTitle>
         </DialogHeader>
 
-        <p className="text-ds-text-primary mb-4">
+        <p className="text-fg-primary mb-4">
           确认创建新房间？您将成为房主，负责管理房间和开始游戏。
         </p>
 
         <Card variant="base" className="p-3 mb-6" interactive={false}>
-          <h4 className="font-medium text-ds-text-primary mb-2">房间规则</h4>
-          <ul className="text-sm text-ds-text-secondary space-y-1">
+          <h4 className="font-medium text-fg-primary mb-2">房间规则</h4>
+          <ul className="text-sm text-fg-secondary space-y-1">
             <li>• 房间最多容纳4名玩家</li>
             <li>• 房主可以在人数满足时开始游戏</li>
             <li>• 房主离开时会自动转移给其他玩家</li>

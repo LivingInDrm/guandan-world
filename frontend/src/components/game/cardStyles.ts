@@ -1,4 +1,3 @@
-// 卡片尺寸定义
 export type CardSize = 'small' | 'normal';
 
 export interface SizeConfig {
@@ -44,7 +43,6 @@ export const CARD_SIZES: Record<CardSize, SizeConfig> = {
   },
 };
 
-// 花色配置
 export const SUIT_SYMBOLS = ['♠', '♥', '♣', '♦'];
 
 export const SUIT_COLORS = {
@@ -58,13 +56,12 @@ export const SUIT_COLORS = {
   }
 };
 
-// 特殊牌型配置
 export const JOKER_CONFIG = {
   small: {
     rank: 15,
     text: 'JOKER',
-    color: 'text-ds-text-secondary',
-    bgGradient: 'bg-ds-surface-elevated',
+    color: 'text-fg-secondary',
+    bgGradient: 'bg-surface-elevated',
   },
   big: {
     rank: 16,
@@ -74,14 +71,12 @@ export const JOKER_CONFIG = {
   }
 };
 
-// 选中状态颜色配置（使用设计 token）
 export const SELECTED_COLORS = {
-  border: 'hsl(var(--ds-color-state-active))',
-  overlay: 'hsl(var(--ds-color-state-active) / 0.15)',
-  glow: 'var(--ds-shadow-glow-md)',
+  border: 'hsl(var(--color-state-active))',
+  overlay: 'hsl(var(--color-state-active) / 0.15)',
+  glow: 'var(--shadow-glow-md)',
 };
 
-// 级牌角标配置（使用设计 token）
 export const LEVEL_BADGE_CONFIG = {
   normal: {
     bgColor: 'hsl(var(--badge-level))',
@@ -93,14 +88,12 @@ export const LEVEL_BADGE_CONFIG = {
   }
 };
 
-// 动画配置（使用设计 token）
 export const ANIMATIONS = {
-  hover: 'hover:scale-105 hover:shadow-ds-elevation-3',
+  hover: 'hover:scale-105 hover:shadow-elevation-3',
   selected: '',
-  transition: 'transition-[transform,box-shadow,border-color] duration-ds-fast ease-ds-bounce',
+  transition: 'transition-[transform,box-shadow,border-color] duration-fast ease-bounce',
 };
 
-// 工具函数
 export const getCardSizeStyle = (size: CardSize) => CARD_SIZES[size];
 
 export const getSuitColorClass = (suit: number) => {
@@ -112,8 +105,8 @@ export const getSuitShadowClass = (suit: number) => {
 };
 
 export const getRankText = (rank: number): string => {
-  if (rank === 15) return 'S'; // Small Joker 简写，完整显示在中央
-  if (rank === 16) return 'B'; // Big Joker 简写
+  if (rank === 15) return 'S';
+  if (rank === 16) return 'B';
   if (rank <= 10) return rank.toString();
   switch (rank) {
     case 11: return 'J';

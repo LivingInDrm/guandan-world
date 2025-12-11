@@ -145,7 +145,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({ open, onOpenChange }) => 
             </div>
 
             {error && (
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-action-danger">{error}</p>
             )}
 
             <div className="flex gap-4 w-full">

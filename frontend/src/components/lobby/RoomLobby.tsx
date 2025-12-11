@@ -172,7 +172,7 @@ const RoomLobby: React.FC = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-ds-text-secondary">请先登录</p>
+        <p className="text-fg-secondary">请先登录</p>
       </div>
     );
   }
@@ -181,22 +181,22 @@ const RoomLobby: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ds-action-primary mx-auto mb-4"></div>
-          <p className="text-ds-text-secondary">检查房间状态...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action-primary mx-auto mb-4"></div>
+          <p className="text-fg-secondary">检查房间状态...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-ds-surface-elevated/20 rounded-ds-lg">
+    <div className="max-w-6xl mx-auto p-6 bg-surface-elevated/20 rounded-lg">
       {error && (
-        <div className="bg-ds-error/10 border border-ds-error/30 rounded-ds-sm p-4 mb-6">
+        <div className="bg-error/10 border border-error/30 rounded-sm p-4 mb-6">
           <div className="flex justify-between items-center">
-            <p className="text-ds-error">{error}</p>
+            <p className="text-error">{error}</p>
             <button
               onClick={clearError}
-              className="text-ds-error/70 hover:text-ds-error"
+              className="text-error/70 hover:text-error"
             >
               ✕
             </button>

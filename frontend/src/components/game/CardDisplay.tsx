@@ -88,8 +88,8 @@ const CardSuitLarge: React.FC<{
         width: `calc(${sizeConfig.centerIconSize} * ${scale})`,
         height: `calc(${sizeConfig.centerIconSize} * ${scale})`,
         objectFit: 'contain',
-        bottom: isNormal ? 'calc(var(--ds-base-unit) * 5)' : 'calc(var(--ds-base-unit) * 2)',
-        right: isNormal ? 'calc(var(--ds-base-unit) * 3.5)' : 'calc(var(--ds-base-unit) * 2)',
+        bottom: isNormal ? 'calc(var(--base-unit) * 5)' : 'calc(var(--base-unit) * 2)',
+        right: isNormal ? 'calc(var(--base-unit) * 3.5)' : 'calc(var(--base-unit) * 2)',
       }}
     />
   );
@@ -205,7 +205,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     if (isJoker(card)) {
       return card.rank === 16 ? JOKER_CONFIG.big.bgGradient : JOKER_CONFIG.small.bgGradient;
     }
-    return 'bg-ds-surface-base';
+    return 'bg-surface-base';
   }, [card]);
   
   const zIndex = stackIndex;
@@ -218,7 +218,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       onPointerEnter={onPointerEnter}
       className={cn(
         'relative select-none cursor-pointer',
-        'shadow-ds-elevation-2',
+        'shadow-elevation-2',
         bgClass,
         ANIMATIONS.transition,
         !isSelected && onClick && ANIMATIONS.hover,
@@ -232,10 +232,10 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         marginLeft: stackDirection === 'horizontal' && stackIndex > 0 ? `${-parseFloat(sizeConfig.width) * STACK_OVERLAP.horizontal}px` : '0',
         marginTop: stackDirection === 'vertical' && stackIndex > 0 ? `${-parseFloat(sizeConfig.height) * STACK_OVERLAP.vertical}px` : '0',
         willChange: 'transform',
-        border: '1px solid hsl(var(--ds-color-border-base))',
+        border: '1px solid hsl(var(--color-border-base))',
         outline: isSelected ? `2px solid ${SELECTED_COLORS.border}` : 'none',
         boxShadow: isSelected 
-          ? 'var(--ds-shadow-glow-md), var(--ds-elevation-2)' 
+          ? 'var(--shadow-glow-md), var(--elevation-2)' 
           : undefined,
       }}
       onClick={onClick}
@@ -250,7 +250,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         />
       )}
       {!isJoker(card) && (
-        <div className="absolute inset-px border border-ds-border/30 rounded opacity-50 pointer-events-none" />
+        <div className="absolute inset-px border border-stroke/30 rounded opacity-50 pointer-events-none" />
       )}
 
       {isJoker(card) ? (

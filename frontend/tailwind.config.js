@@ -10,40 +10,33 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+        action: {
+          primary: 'hsl(var(--color-action-primary))',
+          secondary: 'hsl(var(--color-action-secondary))',
+          neutral: 'hsl(var(--color-action-neutral))',
+          danger: 'hsl(var(--color-action-danger))',
         },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
+        surface: {
+          base: 'hsl(var(--color-surface-base))',
+          elevated: 'hsl(var(--color-surface-elevated))',
+          emphasis: 'hsl(var(--color-surface-emphasis))',
         },
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+        fg: {
+          primary: 'hsl(var(--color-text-primary))',
+          secondary: 'hsl(var(--color-text-secondary))',
+          inverse: 'hsl(var(--color-text-inverse))',
         },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
+        state: {
+          active: 'hsl(var(--color-state-active))',
+          disabled: 'hsl(var(--color-state-disabled))',
         },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+        stroke: {
+          DEFAULT: 'hsl(var(--color-border-base))',
+          emphasis: 'hsl(var(--color-border-emphasis))',
         },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-          light: 'rgba(255, 193, 7, 0.15)',
-          glow: 'rgba(255, 193, 7, 0.6)',
+        team: {
+          us: 'hsl(var(--color-team-us))',
+          them: 'hsl(var(--color-team-them))',
         },
         table: {
           50: 'hsl(var(--table-50))',
@@ -54,10 +47,6 @@ export default {
           800: 'hsl(var(--table-800))',
           900: 'hsl(var(--table-900))',
         },
-        'team-us': 'hsl(var(--team-us))',
-        'team-us-dark': 'hsl(var(--team-us-dark))',
-        'team-them': 'hsl(var(--team-them))',
-        'team-them-dark': 'hsl(var(--team-them-dark))',
         suit: {
           red: 'hsl(var(--suit-red))',
           black: 'hsl(var(--suit-black))',
@@ -66,102 +55,55 @@ export default {
           level: 'hsl(var(--badge-level))',
           wild: 'hsl(var(--badge-wild))',
         },
-        disabled: {
-          bg: 'rgba(148, 163, 184, 0.5)',
-          text: '#94a3b8',
-          border: 'rgba(148, 163, 184, 0.3)',
-        },
-        'ds-action': {
-          primary: 'hsl(var(--ds-color-action-primary))',
-          secondary: 'hsl(var(--ds-color-action-secondary))',
-          neutral: 'hsl(var(--ds-color-action-neutral))',
-          danger: 'hsl(var(--ds-color-action-danger))',
-        },
-        'ds-surface': {
-          base: 'hsl(var(--ds-color-surface-base))',
-          elevated: 'hsl(var(--ds-color-surface-elevated))',
-          emphasis: 'hsl(var(--ds-color-surface-emphasis))',
-        },
-        'ds-team': {
-          us: 'hsl(var(--ds-color-team-us))',
-          them: 'hsl(var(--ds-color-team-them))',
-        },
-        'ds-state': {
-          active: 'hsl(var(--ds-color-state-active))',
-          disabled: 'hsl(var(--ds-color-state-disabled))',
-        },
-        'ds-text': {
-          primary: 'hsl(var(--ds-color-text-primary))',
-          secondary: 'hsl(var(--ds-color-text-secondary))',
-          inverse: 'hsl(var(--ds-color-text-inverse))',
-        },
-        'ds-border': {
-          DEFAULT: 'hsl(var(--ds-color-border-base))',
-          emphasis: 'hsl(var(--ds-color-border-emphasis))',
-        },
-        'ds-error': 'hsl(var(--ds-color-error))',
-      },
-      backgroundImage: {
-        'gradient-primary': 'var(--gradient-primary)',
-        'gradient-secondary': 'var(--gradient-secondary)',
-        'gradient-warning': 'var(--gradient-warning)',
-        'gradient-danger': 'var(--gradient-danger)',
+        error: 'hsl(var(--color-error))',
       },
       borderRadius: {
-        sm: 'calc(var(--radius) - 4px)',
-        md: 'calc(var(--radius) - 2px)',
-        lg: 'var(--radius)',
-        xl: 'calc(var(--radius) + 4px)',
-        '2xl': 'calc(var(--radius) + 8px)',
-        'ds-sm': 'var(--ds-radius-sm)',
-        'ds-md': 'var(--ds-radius-md)',
-        'ds-lg': 'var(--ds-radius-lg)',
-        'ds-full': 'var(--ds-radius-full)',
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        full: 'var(--radius-full)',
       },
       boxShadow: {
         card: '0 2px 4px rgba(0,0,0,0.1)',
         'card-hover': '0 4px 12px rgba(0,0,0,0.15)',
-        'card-3d':
-          '0 2px 3px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+        'card-3d': '0 2px 3px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
         panel: '0 2px 8px rgba(0,0,0,0.15)',
         modal: '0 8px 32px rgba(0,0,0,0.25)',
         'glow-accent': '0 0 10px rgba(255, 193, 7, 0.6)',
         'inset-soft': 'inset 0 0 12px rgba(0,0,0,0.08)',
         input: '0 1px 2px rgba(0,0,0,0.05)',
         'input-focus': '0 0 0 3px rgba(16, 185, 129, 0.2)',
-        'ds-elevation-0': 'var(--ds-elevation-0)',
-        'ds-elevation-1': 'var(--ds-elevation-1)',
-        'ds-elevation-2': 'var(--ds-elevation-2)',
-        'ds-elevation-3': 'var(--ds-elevation-3)',
-        'ds-relief': 'var(--ds-shadow-relief)',
-        'ds-glow-sm': 'var(--ds-shadow-glow-sm)',
-        'ds-glow-md': 'var(--ds-shadow-glow-md)',
-        'ds-glow-lg': 'var(--ds-shadow-glow-lg)',
+        'elevation-0': 'var(--elevation-0)',
+        'elevation-1': 'var(--elevation-1)',
+        'elevation-2': 'var(--elevation-2)',
+        'elevation-3': 'var(--elevation-3)',
+        relief: 'var(--shadow-relief)',
+        'glow-sm': 'var(--shadow-glow-sm)',
+        'glow-md': 'var(--shadow-glow-md)',
+        'glow-lg': 'var(--shadow-glow-lg)',
       },
       spacing: {
         4.5: '1.125rem',
-        18: '4.5rem',
-        30: '7.5rem',
-        'ds-18': 'var(--ds-spacing-18)',
-        'ds-22': 'var(--ds-spacing-22)',
-        'ds-30': 'var(--ds-spacing-30)',
+        18: 'var(--spacing-18)',
+        22: 'var(--spacing-22)',
+        30: 'var(--spacing-30)',
       },
       transitionDuration: {
-        'ds-fast': 'var(--ds-duration-fast)',
-        'ds-normal': 'var(--ds-duration-normal)',
-        'ds-slow': 'var(--ds-duration-slow)',
+        fast: 'var(--duration-fast)',
+        normal: 'var(--duration-normal)',
+        slow: 'var(--duration-slow)',
       },
       transitionTimingFunction: {
-        'ds-smooth': 'var(--ds-ease-smooth)',
-        'ds-bounce': 'var(--ds-ease-bounce)',
-        'ds-snap': 'var(--ds-ease-snap)',
+        smooth: 'var(--ease-smooth)',
+        bounce: 'var(--ease-bounce)',
+        snap: 'var(--ease-snap)',
       },
       animation: {
         'card-enter': 'card-enter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
         'card-fly': 'card-fly 0.5s ease-out',
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
-        'ds-pulse-ring': 'ds-pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'ds-bounce-select': 'ds-bounce-select 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'pulse-ring': 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce-select': 'bounce-select 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
       keyframes: {
         'card-enter': {
@@ -176,12 +118,12 @@ export default {
           '0%, 100%': { boxShadow: '0 0 10px rgba(255, 193, 7, 0.4)' },
           '50%': { boxShadow: '0 0 20px rgba(255, 193, 7, 0.8)' },
         },
-        'ds-pulse-ring': {
+        'pulse-ring': {
           '0%': { boxShadow: '0 0 0 0 rgba(250, 204, 21, 0.7)' },
           '70%': { boxShadow: '0 0 0 12px rgba(250, 204, 21, 0)' },
           '100%': { boxShadow: '0 0 0 0 rgba(250, 204, 21, 0)' },
         },
-        'ds-bounce-select': {
+        'bounce-select': {
           '0%': { transform: 'translateY(0) scale(1)' },
           '50%': { transform: 'translateY(-20px) scale(1.05)' },
           '100%': { transform: 'translateY(-12px) scale(1.05)' },
