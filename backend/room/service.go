@@ -91,6 +91,7 @@ type RoomService interface {
 	CloseRoom(roomID string) error
 	GetPlayerRoom(playerID string) (*Room, error)
 	RevertGameStart(roomID string) error
+	QuickJoin(playerID string) (*Room, error)
 }
 
 // roomService implements RoomService interface
@@ -562,4 +563,45 @@ func (s *roomService) JoinRoomByCode(roomCode, playerID string) (*Room, error) {
 	}
 
 	return s.JoinRoom(roomID, playerID)
+}
+
+// QuickJoin finds the best available room (most players, not full) and joins it
+// If no suitable room exists, creates a new room
+func (s *roomService) QuickJoin(playerID string) (*Room, error) {
+	s.mu.RLock()
+	if existingRoomID, exists := s.playerRooms[playerID]; exists {
+		s.mu.RUnlock()
+		return nil, fmt.Errorf("player is already in room %s", existingRoomID)
+	}
+
+	var candidates []*Room
+	for _, room := range s.rooms {
+		if room.Status == RoomStatusWaiting && room.PlayerCount < 4 {
+			candidates = append(candidates, room)
+		}
+	}
+	s.mu.RUnlock()
+
+	if len(candidates) == 0 {
+		return s.CreateRoom(playerID)
+	}
+
+	sort.Slice(candidates, func(i, j int) bool {
+		return candidates[i].PlayerCount > candidates[j].PlayerCount
+	})
+
+	rand.Shuffle(len(candidates), func(i, j int) {
+		if candidates[i].PlayerCount == candidates[j].PlayerCount {
+			candidates[i], candidates[j] = candidates[j], candidates[i]
+		}
+	})
+
+	for _, room := range candidates {
+		result, err := s.JoinRoom(room.ID, playerID)
+		if err == nil {
+			return result, nil
+		}
+	}
+
+	return s.CreateRoom(playerID)
 }

@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import React from 'react';
 import type { Player } from '../../types';
 import type { PlayerPosition } from './GameTable';
 import GameTable from './GameTable';
 import PlayerCard from './PlayerCard';
-import InviteModal from './InviteModal';
-import { Button, Card } from '../ui';
+import RoomInfoPanel from './RoomInfoPanel';
+import { Button } from '../ui';
 
 interface WaitingBoardProps {
   players: (Player | null)[];
@@ -36,7 +35,6 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
   isStarting,
   isLeaving,
 }) => {
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const playerCount = players.filter(p => p !== null).length;
   const isRoomOwner = currentUserId === ownerId;
   const canStartGame = isRoomOwner && playerCount === 4;
@@ -83,30 +81,12 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
       <Button
         onClick={onLeaveRoom}
         disabled={isLeaving}
-        intent="secondary"
+        intent="neutral"
         size="sm"
       >
         {isLeaving ? '离开中...' : '离开房间'}
       </Button>
     </div>
-  );
-
-  const renderTopLeft = () => (
-    <Card variant="elevated" interactive={false} className="absolute top-4 left-4 z-10 p-3">
-      <div className="flex items-center gap-3">
-        <div className="text-sm text-[hsl(var(--color-text-secondary))]">
-          房间码: <span className="font-mono text-[hsl(var(--color-text-primary))] font-bold">{roomCode}</span>
-        </div>
-        <Button
-          intent="secondary"
-          size="sm"
-          onClick={() => setShowInviteModal(true)}
-        >
-          <UserPlus className="w-4 h-4" />
-          邀请
-        </Button>
-      </div>
-    </Card>
   );
 
   return (
@@ -116,12 +96,7 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
         currentPlayerSeat={effectiveSeat}
         renderPlayer={renderPlayer}
         renderCenter={renderCenter}
-        topLeftSlot={renderTopLeft()}
-      />
-      <InviteModal
-        open={showInviteModal}
-        onClose={() => setShowInviteModal(false)}
-        roomCode={roomCode}
+        topLeftSlot={<RoomInfoPanel roomCode={roomCode} />}
       />
     </div>
   );

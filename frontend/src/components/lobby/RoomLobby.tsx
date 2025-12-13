@@ -32,6 +32,7 @@ const RoomLobby: React.FC = () => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
   const [isCheckingRoom, setIsCheckingRoom] = useState(true);
+  const [isQuickStarting, setIsQuickStarting] = useState(false);
 
   // Check if user is already in a room
   const checkUserRoom = async () => {
@@ -141,6 +142,27 @@ const RoomLobby: React.FC = () => {
     }
   };
 
+  // Handle quick start
+  const handleQuickStart = async () => {
+    if (!user || isQuickStarting) return;
+
+    setIsQuickStarting(true);
+    try {
+      const response = await apiClient.quickJoin();
+      if (response.success && response.data) {
+        setCurrentRoom(response.data);
+        navigate(`/game/${response.data.id}`);
+      } else {
+        setError(response.error || '快速开始失败');
+      }
+    } catch (err: any) {
+      console.error('Quick start error:', err);
+      setError(err.message || '快速开始失败');
+    } finally {
+      setIsQuickStarting(false);
+    }
+  };
+
   // Check user's room status on mount
   useEffect(() => {
     checkUserRoom();
@@ -223,7 +245,7 @@ const RoomLobby: React.FC = () => {
         <div className="w-full lg:w-64 shrink-0">
           <Card variant="emphasis" className="p-4" interactive={false}>
             <div className="flex flex-col gap-3">
-              <Button intent="primary" size="lg" className="w-full" onClick={() => {}}>
+              <Button intent="primary" size="lg" className="w-full" onClick={handleQuickStart} disabled={isQuickStarting}>
                 <Zap className="w-5 h-5" />
                 快速开始
               </Button>

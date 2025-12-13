@@ -360,6 +360,58 @@ func (h *RoomHandler) JoinRoomByCode(c *gin.Context) {
 	})
 }
 
+// QuickJoin handles quick join - finds best available room or creates new one
+func (h *RoomHandler) QuickJoin(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{
+			Error:   "unauthorized",
+			Message: "User not authenticated",
+		})
+		return
+	}
+
+	userIDStr, ok := userID.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error:   "internal_error",
+			Message: "Invalid user ID in context",
+		})
+		return
+	}
+
+	room, err := h.roomService.QuickJoin(userIDStr)
+	if err != nil {
+		statusCode := http.StatusBadRequest
+		errorCode := "quick_join_failed"
+
+		if strings.Contains(err.Error(), "player is already in room") {
+			statusCode = http.StatusConflict
+			errorCode = "already_in_room"
+		}
+
+		c.JSON(statusCode, ErrorResponse{
+			Error:   errorCode,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	h.wsManager.BroadcastToRoom(room.ID, &websocket.WSMessage{
+		Type: "room_update",
+		Data: map[string]interface{}{
+			"action":    "player_joined",
+			"room":      room,
+			"player_id": userIDStr,
+		},
+		Timestamp: time.Now(),
+	})
+
+	c.JSON(http.StatusOK, RoomResponse{
+		Room: room,
+	})
+}
+
 // LeaveRoom handles room leaving
 func (h *RoomHandler) LeaveRoom(c *gin.Context) {
 	roomID := c.Param("id")
