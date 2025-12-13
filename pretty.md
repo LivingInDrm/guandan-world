@@ -1,243 +1,137 @@
-## 目标
 
-完善 `ui-next/` 基础组件库，统一使用新设计 token（`--ds-*`），为业务组件迁移做准备。
 
----
+## 一、基本规则
 
-## 核心变更
-
-### Phase 1: 重命名现有组件
-
-| 操作 | 旧 | 新 | 变更内容 |
-|------|----|----|----------|
-| **重命名** | ActionButton.tsx | Button.tsx | 增加 `danger` variant |
-| **重命名** | ActionButton.stories.tsx | Button.stories.tsx | 更新导入和组件名 |
-| **重命名** | Surface.tsx | Card.tsx | 仅重命名，逻辑不变 |
-| **重命名** | Surface.stories.tsx | Card.stories.tsx | 更新导入和组件名 |
-| **更新** | index.ts | - | 导出 Button, Card（移除 ActionButton, Surface） |
-
-### Phase 2: 新建组件
-
-| 组件 | 文件 | 复杂度 |
-|------|------|--------|
-| Dialog | Dialog.tsx + Dialog.stories.tsx | 中 |
-| Input | Input.tsx + Input.stories.tsx | 低 |
-| DropdownMenu | DropdownMenu.tsx + DropdownMenu.stories.tsx | 中 |
-| Slider | Slider.tsx + Slider.stories.tsx | 低 |
+* 使用 **两副扑克牌**
+* **4 名玩家**分成两队，对家（面对面）为一队
+* 每人初始分到 **27 张牌**
+* 轮流出牌，**先出完牌的一方获胜**
 
 ---
 
-## 详细实现
+## 二、牌的大小
 
-### 1. Button（扩展 ActionButton）
+一手牌分成两类，普通牌和炸弹牌
+### 1. 普通牌
 
-**位置**: `ui-next/Button.tsx`
+普通牌 **只能压制同类型的普通牌**，牌型必须一致。
 
-**修改内容**:
-```tsx
-// 在 buttonVariants 的 intent 中增加 danger
-intent: {
-  primary: "bg-ds-action-primary text-ds-text-inverse",
-  secondary: "bg-ds-action-secondary text-ds-text-inverse",
-  neutral: "bg-ds-action-neutral text-ds-text-inverse",
-  danger: "bg-ds-primitive-danger-500 text-ds-text-inverse", // 新增
-}
-```
+普通牌类型包括：
+* 单张
+* 对子
+* 三张
+* 三带二
+* 顺子
+* 三连对
+* 钢板（连三）
 
-**导出名**:
-```tsx
-// 修改前
-export { ActionButton, actionButtonVariants }
+普通牌比较规则：
 
-// 修改后
-export { Button, buttonVariants }
-```
-
-**Stories 更新**:
-- 重命名文件：`ActionButton.stories.tsx` → `Button.stories.tsx`
-- 更新导入：`import { ActionButton }` → `import { Button }`
-- 新增 story：`export const DangerVariant`（展示 danger variant）
+* 牌型相同才能比较
+* 按点数大小决定胜负（含级牌规则）
 
 ---
 
-### 2. Card（重命名 Surface）
+### 2. 炸弹牌
 
-**位置**: `ui-next/Card.tsx`
+炸弹牌具有最高压制权。
 
-**修改内容**:
-```tsx
-// 仅重命名，逻辑不变
-const cardVariants = cva(/* 原 surfaceVariants 内容 */)
+炸弹规则：
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof cardVariants> {}
+* 炸弹牌可以压制 **所有普通牌**
+* 炸弹之间可相互比较，**只能压制比自己牌力小的炸弹**
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(/* ... */)
+炸弹类型及大小规则：
 
-export { Card, cardVariants }
-```
+1. **张数多的炸弹 > 张数少的炸弹**
+2. 张数相同，按点数大小比较
+3. **四王炸为最大炸弹**
 
-**Stories 更新**:
-- 重命名文件：`Surface.stories.tsx` → `Card.stories.tsx`
-- 更新导入：`import { Surface }` → `import { Card }`
-- 更新所有 `<Surface>` → `<Card>`
+常见炸弹包括：
 
----
-
-### 3. Dialog
-
-**位置**: `ui-next/Dialog.tsx`
-
-**基于旧版改造，Token 替换**:
-```tsx
-// Overlay
-"bg-black/60 backdrop-blur-sm" // 保持
-
-// Content
-"bg-ds-surface-elevated rounded-ds-lg shadow-ds-elevation-3"
-
-// Title
-"text-ds-text-primary"
-
-// Description
-"text-ds-text-secondary"
-```
-
-**Stories**:
-- Default（基础弹窗）
-- WithFooter（带 Footer 的表单弹窗）
-- LongContent（长内容滚动）
+* 4 张炸弹
+* 5 张炸弹
+* 6 张炸弹
+* 7 张炸弹
+* 8 张炸弹
+* 四王炸
 
 ---
 
-### 4. Input
+## 三、级牌
 
-**位置**: `ui-next/Input.tsx`
+* 每一局都会指定一个 **级牌点数**
+所有该点数的牌，称为级牌。
+* **级牌大小顺序**：
 
-**Token 替换**:
-```tsx
-"border-ds-border bg-ds-surface-base text-ds-text-primary"
-"rounded-ds-sm shadow-ds-elevation-1"
-"focus-visible:border-ds-state-active focus-visible:shadow-ds-elevation-2"
-"disabled:bg-ds-state-disabled disabled:text-ds-text-secondary"
-```
-
-**Label**:
-```tsx
-"text-ds-text-primary"
-```
-
-**Stories**:
-- Default
-- WithLabel
-- Disabled
-- Error（可选，如需 error 状态）
+  * 小于大小王
+  * 大于所有非级牌的普通牌
+* 级牌可参与所有牌型组合（如对子、三张、炸弹等）
 
 ---
 
-### 5. DropdownMenu
+## 四、万能牌规则
 
-**位置**: `ui-next/DropdownMenu.tsx`
+* **红桃级牌** 为万能牌
+* 万能牌可以：
 
-**Token 替换**:
-```tsx
-// Content
-"bg-ds-surface-elevated shadow-ds-elevation-2 rounded-ds-md"
-
-// Item
-"text-ds-text-primary hover:bg-ds-surface-emphasis"
-
-// Separator
-"bg-ds-border"
-```
-
-**Stories**:
-- Default（基础菜单）
-- WithSeparator（带分隔符）
+  * 替代 **除大小王以外的任意牌**
+  * 用于组合任意合法牌型
+* 万能牌 **不可替代大小王**
 
 ---
 
-### 6. Slider
+## 五、胜负与名次
 
-**位置**: `ui-next/Slider.tsx`
-
-**Token 替换**:
-```tsx
-// Track
-"bg-ds-state-disabled rounded-ds-sm"
-
-// Range
-"bg-ds-state-active"
-
-// Thumb
-"border-ds-state-active bg-ds-surface-base"
-```
-
-**Stories**:
-- Default
-- WithValue（展示当前值）
+* 第一个出完牌的玩家：**头游**
+* 第二、第三依次排名
+* 最后出完牌的玩家：**末游**
+* 胜负与升级均按 **队伍** 计算
 
 ---
 
-## 实施步骤
+## 六、升级规则
 
-### Step 1: 重命名现有组件
-1. `ActionButton.tsx` → `Button.tsx`（增加 danger）
-2. `ActionButton.stories.tsx` → `Button.stories.tsx`
-3. `Surface.tsx` → `Card.tsx`
-4. `Surface.stories.tsx` → `Card.stories.tsx`
-5. 更新 `index.ts` 导出
+* 每局结束后，**胜利队伍升级**
+* 升级规则如下：
 
-### Step 2: 新建组件（按优先级）
-1. Dialog（中优先级，通用弹窗）
-2. Input（中优先级，表单）
-3. DropdownMenu（低优先级，菜单）
-4. Slider（低优先级，滑块）
-
-### Step 3: 验证
-- 运行 `npm run ladle`
-- 检查所有 stories
-- 验证 TypeScript 无错误
+  * **双下**（胜方包揽头游和二游）：胜方 **连升 3 级**
+  * **单下**（胜方仅有头游）：胜方 **升 1 级**
+* 若双方各有一人头游 / 末游，则 **不升级**
+* 当某一队 **达到 A 级并再次获胜**，游戏结束，该队最终获胜
 
 ---
 
-## 验证标准
+## 七、进贡规则
 
-### 重命名部分
-- [ ] Button 有 4 个 variant（primary/secondary/neutral/danger）
-- [ ] Card 保持 3 个 variant（base/elevated/emphasis）
-- [ ] Ladle 中 Button/Card stories 正常显示
-- [ ] `index.ts` 正确导出 Button, Card
+### 1. 进贡判定
 
-### 新组件部分
-- [ ] 每个组件使用 `--ds-*` token
-- [ ] 每个组件有对应的 stories
-- [ ] TypeScript 无错误
-- [ ] API 与旧版兼容
+* **双下**：
 
----
+  * 两名失败方玩家 **各进贡一张最大牌**
+  * 胜方两名玩家 **各返还一张任意牌**
 
-## 文件清单
+* **单下**：
 
-| 操作 | 文件 |
-|------|------|
-| **重命名** | ActionButton.tsx → Button.tsx |
-| **重命名** | ActionButton.stories.tsx → Button.stories.tsx |
-| **重命名** | Surface.tsx → Card.tsx |
-| **重命名** | Surface.stories.tsx → Card.stories.tsx |
-| **更新** | index.ts |
-| **新建** | Dialog.tsx, Dialog.stories.tsx |
-| **新建** | Input.tsx, Input.stories.tsx |
-| **新建** | DropdownMenu.tsx, DropdownMenu.stories.tsx |
-| **新建** | Slider.tsx, Slider.stories.tsx |
-
-**总计**: 4 个重命名 + 1 个更新 + 8 个新建
+  * 末游玩家 **进贡一张最大牌**
+  * 胜方玩家 **返还一张任意牌**
+  * **末游先出牌**
 
 ---
 
-## 注意事项
+### 2. 扛贡规则
 
-1. **重命名后无需保留旧组件**（已确认选项 A）
-2. **Avatar 和 Badge 保持不变**（已实现）
-3. **所有组件统一游戏风格**（圆角、阴影、过渡）
-4. **保持 API 兼容**，便于业务组件迁移
+* 若进贡者手中 **持有两张大王**，可选择 **扛贡**
+* 扛贡成立时：
+
+  * 本局 **不进行进贡与返还**
+  * **上游玩家先出牌**
+
+---
+
+### 3. 出牌顺序判定
+
+* 若发生进贡且 **未扛贡**：
+
+  * **进贡牌较大者先出牌**
+  * 若进贡牌相同，则按 **顺时针顺序** 出牌

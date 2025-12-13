@@ -3,6 +3,7 @@ package room
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"sort"
 	"sync"
 	"time"
@@ -49,9 +50,10 @@ type Player struct {
 // Room represents a game room
 type Room struct {
 	ID          string     `json:"id"`
+	RoomCode    string     `json:"room_code"`
 	Status      RoomStatus `json:"status"`
-	Players     [4]*Player `json:"players"`     // Fixed 4 seats (0-3)
-	Owner       string     `json:"owner"`       // Owner user ID
+	Players     [4]*Player `json:"players"`      // Fixed 4 seats (0-3)
+	Owner       string     `json:"owner"`        // Owner user ID
 	PlayerCount int        `json:"player_count"` // Number of players currently in room
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
@@ -60,6 +62,7 @@ type Room struct {
 // RoomInfo provides room information for listing
 type RoomInfo struct {
 	ID          string     `json:"id"`
+	RoomCode    string     `json:"room_code"`
 	Status      RoomStatus `json:"status"`
 	PlayerCount int        `json:"player_count"`
 	Players     []*Player  `json:"players"`
@@ -80,6 +83,7 @@ type RoomListResponse struct {
 type RoomService interface {
 	CreateRoom(ownerID string) (*Room, error)
 	JoinRoom(roomID, playerID string) (*Room, error)
+	JoinRoomByCode(roomCode, playerID string) (*Room, error)
 	LeaveRoom(roomID, playerID string) (*Room, error)
 	GetRoom(roomID string) (*Room, error)
 	GetRoomList(page, limit int, statusFilter *RoomStatus) (*RoomListResponse, error)
@@ -91,19 +95,33 @@ type RoomService interface {
 
 // roomService implements RoomService interface
 type roomService struct {
-	rooms       map[string]*Room    // roomID -> Room
-	playerRooms map[string]string   // playerID -> roomID
+	rooms       map[string]*Room  // roomID -> Room
+	roomCodes   map[string]string // roomCode -> roomID
+	playerRooms map[string]string // playerID -> roomID
 	authService auth.AuthService
 	mu          sync.RWMutex
 }
 
 // NewRoomService creates a new room service
 func NewRoomService(authService auth.AuthService) RoomService {
+	rand.Seed(time.Now().UnixNano())
 	return &roomService{
 		rooms:       make(map[string]*Room),
+		roomCodes:   make(map[string]string),
 		playerRooms: make(map[string]string),
 		authService: authService,
 	}
+}
+
+// generateUniqueRoomCode generates a unique 4-digit room code
+func (s *roomService) generateUniqueRoomCode() (string, error) {
+	for i := 0; i < 100; i++ {
+		code := fmt.Sprintf("%04d", rand.Intn(10000))
+		if _, exists := s.roomCodes[code]; !exists {
+			return code, nil
+		}
+	}
+	return "", errors.New("failed to generate unique room code: too many active rooms")
 }
 
 // CreateRoom creates a new room with the specified owner
@@ -125,9 +143,16 @@ func (s *roomService) CreateRoom(ownerID string) (*Room, error) {
 	// Generate room ID
 	roomID := fmt.Sprintf("room_%d", time.Now().UnixNano())
 
+	// Generate unique room code
+	roomCode, err := s.generateUniqueRoomCode()
+	if err != nil {
+		return nil, err
+	}
+
 	// Create room
 	room := &Room{
 		ID:          roomID,
+		RoomCode:    roomCode,
 		Status:      RoomStatusWaiting,
 		Players:     [4]*Player{},
 		Owner:       ownerID,
@@ -146,8 +171,9 @@ func (s *roomService) CreateRoom(ownerID string) (*Room, error) {
 		Online:    owner.Online,
 	}
 
-	// Store room and player mapping
+	// Store room, room code, and player mapping
 	s.rooms[roomID] = room
+	s.roomCodes[roomCode] = roomID
 	s.playerRooms[ownerID] = roomID
 
 	return room, nil
@@ -280,6 +306,7 @@ func (s *roomService) LeaveRoom(roomID, playerID string) (*Room, error) {
 		} else {
 			// No players left, close room
 			room.Status = RoomStatusClosed
+			delete(s.roomCodes, room.RoomCode)
 			delete(s.rooms, roomID)
 			return nil, nil // Room closed
 		}
@@ -295,6 +322,7 @@ func (s *roomService) LeaveRoom(roomID, playerID string) (*Room, error) {
 				delete(s.playerRooms, room.Players[i].ID)
 			}
 		}
+		delete(s.roomCodes, room.RoomCode)
 		delete(s.rooms, roomID)
 		return nil, nil // Room closed due to game ending
 	}
@@ -408,6 +436,7 @@ func (s *roomService) GetRoomList(page, limit int, statusFilter *RoomStatus) (*R
 
 		roomInfos[i] = &RoomInfo{
 			ID:          room.ID,
+			RoomCode:    room.RoomCode,
 			Status:      room.Status,
 			PlayerCount: room.PlayerCount,
 			Players:     players,
@@ -495,7 +524,8 @@ func (s *roomService) CloseRoom(roomID string) error {
 		}
 	}
 
-	// Remove room
+	// Remove room code and room
+	delete(s.roomCodes, room.RoomCode)
 	delete(s.rooms, roomID)
 
 	return nil
@@ -519,4 +549,17 @@ func (s *roomService) GetPlayerRoom(playerID string) (*Room, error) {
 	}
 
 	return room, nil
+}
+
+// JoinRoomByCode allows a player to join a room using a room code
+func (s *roomService) JoinRoomByCode(roomCode, playerID string) (*Room, error) {
+	s.mu.RLock()
+	roomID, exists := s.roomCodes[roomCode]
+	s.mu.RUnlock()
+
+	if !exists {
+		return nil, errors.New("room code not found")
+	}
+
+	return s.JoinRoom(roomID, playerID)
 }

@@ -12,7 +12,13 @@ function groupCardsByRank(cards: SdkCard[]): SdkCard[][] {
   }
 
   const groups = Array.from(byRank.entries());
-  groups.sort((a, b) => a[0] - b[0]);
+  groups.sort((a, b) => {
+    const cardA = a[1][0];
+    const cardB = b[1][0];
+    if (cardA.greaterThan(cardB)) return 1;
+    if (cardB.greaterThan(cardA)) return -1;
+    return 0;
+  });
 
   return groups.map(([_rank, cards]) => cards);
 }

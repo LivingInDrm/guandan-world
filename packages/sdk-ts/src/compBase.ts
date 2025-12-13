@@ -24,6 +24,10 @@ export class BaseComp implements CardComp {
     return this.cards;
   }
 
+  getNormalizedCards(): SdkCard[] {
+    return this.normalizedCards;
+  }
+
   isValid(): boolean {
     return this.valid;
   }

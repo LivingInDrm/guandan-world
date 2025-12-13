@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
@@ -30,7 +29,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     confirmPassword: ''
   });
   const [errors, setErrors] = useState<Partial<RegisterFormData>>({});
-  const navigate = useNavigate();
   const { login, setLoading, setError, isLoading, error } = useAuthStore();
 
   const validateForm = (): boolean => {
@@ -108,7 +106,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       if (response.user && response.token) {
         apiClient.setToken(response.token.access_token);
         login(response.user, response.token);
-        navigate('/lobby');
       } else {
         setError('注册失败');
       }

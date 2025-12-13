@@ -104,6 +104,7 @@ func main() {
 		{
 			rooms.GET("", roomHandler.GetRooms)
 			rooms.POST("/create", roomHandler.CreateRoom)
+			rooms.POST("/join-by-code", roomHandler.JoinRoomByCode)
 			rooms.GET("/my", roomHandler.GetMyRoom)
 			rooms.GET("/:id", roomHandler.GetRoom)
 			rooms.POST("/:id/join", roomHandler.JoinRoom)

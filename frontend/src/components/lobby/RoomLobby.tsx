@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import RoomList from './RoomList';
 import CreateRoomModal from './CreateRoomModal';
+import JoinRoomModal from './JoinRoomModal';
 import { Button, Card } from '../ui';
 
 const RoomLobby: React.FC = () => {
@@ -28,6 +29,7 @@ const RoomLobby: React.FC = () => {
   } = useRoomStore();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
   const [isCheckingRoom, setIsCheckingRoom] = useState(true);
 
@@ -126,6 +128,19 @@ const RoomLobby: React.FC = () => {
     }
   };
 
+  // Handle room join by code
+  const handleJoinByCode = async (roomCode: string) => {
+    if (!user) return;
+
+    const response = await apiClient.joinRoomByCode(roomCode);
+    if (response.success && response.data) {
+      setCurrentRoom(response.data);
+      navigate(`/game/${response.data.id}`);
+    } else {
+      throw new Error(response.error || '加入房间失败');
+    }
+  };
+
   // Check user's room status on mount
   useEffect(() => {
     checkUserRoom();
@@ -216,7 +231,7 @@ const RoomLobby: React.FC = () => {
                 <Plus className="w-5 h-5" />
                 创建房间
               </Button>
-              <Button intent="neutral" size="lg" className="w-full" onClick={() => {}}>
+              <Button intent="neutral" size="lg" className="w-full" onClick={() => setShowJoinModal(true)}>
                 <Users className="w-5 h-5" />
                 加入游戏
               </Button>
@@ -242,6 +257,12 @@ const RoomLobby: React.FC = () => {
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onConfirm={handleCreateRoom}
+      />
+
+      <JoinRoomModal
+        open={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
+        onJoin={handleJoinByCode}
       />
     </div>
   );
