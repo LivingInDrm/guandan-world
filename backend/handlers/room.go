@@ -61,6 +61,11 @@ type JoinRoomRequest struct {
 	// Room ID is in the URL path, player ID comes from auth context
 }
 
+// JoinRoomByCodeRequest represents a room join by code request
+type JoinRoomByCodeRequest struct {
+	RoomCode string `json:"room_code" binding:"required,len=4"`
+}
+
 // RoomResponse represents a room response
 type RoomResponse struct {
 	Room *room.Room `json:"room"`
@@ -254,6 +259,93 @@ func (h *RoomHandler) JoinRoom(c *gin.Context) {
 
 	// Broadcast room update to all room members via WebSocket
 	h.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
+		Type: "room_update",
+		Data: map[string]interface{}{
+			"action":    "player_joined",
+			"room":      updatedRoom,
+			"player_id": userIDStr,
+		},
+		Timestamp: time.Now(),
+	})
+
+	c.JSON(http.StatusOK, RoomResponse{
+		Room: updatedRoom,
+	})
+}
+
+// JoinRoomByCode handles room joining by room code
+func (h *RoomHandler) JoinRoomByCode(c *gin.Context) {
+	var req JoinRoomByCodeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Room code is required and must be 4 digits",
+		})
+		return
+	}
+
+	// Validate room code is all digits
+	for _, ch := range req.RoomCode {
+		if ch < '0' || ch > '9' {
+			c.JSON(http.StatusBadRequest, ErrorResponse{
+				Error:   "invalid_room_code",
+				Message: "Room code must be 4 digits",
+			})
+			return
+		}
+	}
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{
+			Error:   "unauthorized",
+			Message: "User not authenticated",
+		})
+		return
+	}
+
+	userIDStr, ok := userID.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error:   "internal_error",
+			Message: "Invalid user ID in context",
+		})
+		return
+	}
+
+	updatedRoom, err := h.roomService.JoinRoomByCode(req.RoomCode, userIDStr)
+	if err != nil {
+		statusCode := http.StatusBadRequest
+		errorCode := "join_room_failed"
+
+		switch err.Error() {
+		case "room code not found":
+			statusCode = http.StatusNotFound
+			errorCode = "room_code_not_found"
+		case "room not found":
+			statusCode = http.StatusNotFound
+			errorCode = "room_not_found"
+		case "room is full":
+			statusCode = http.StatusConflict
+			errorCode = "room_full"
+		case "room is not accepting new players":
+			statusCode = http.StatusConflict
+			errorCode = "room_not_accepting"
+		}
+
+		if strings.Contains(err.Error(), "player is already in room") {
+			statusCode = http.StatusConflict
+			errorCode = "already_in_room"
+		}
+
+		c.JSON(statusCode, ErrorResponse{
+			Error:   errorCode,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	h.wsManager.BroadcastToRoom(updatedRoom.ID, &websocket.WSMessage{
 		Type: "room_update",
 		Data: map[string]interface{}{
 			"action":    "player_joined",

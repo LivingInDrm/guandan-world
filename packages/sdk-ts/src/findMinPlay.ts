@@ -330,6 +330,25 @@ function findMinPlate(cards: SdkCard[], prev: CardComp): CardComp | null {
   return findFirstGreater(candidates, prev);
 }
 
+function compareFullHouse(a: CardComp, b: CardComp): number {
+  if (a.greaterThan(b)) return 1;
+  if (b.greaterThan(a)) return -1;
+  const aWildcards = a.getCards().filter(c => c.isWildcard()).length;
+  const bWildcards = b.getCards().filter(c => c.isWildcard()).length;
+  if (aWildcards !== bWildcards) return aWildcards - bWildcards;
+  const aPairCard = a.getNormalizedCards()[3];
+  const bPairCard = b.getNormalizedCards()[3];
+  if (!aPairCard || !bPairCard) return 0;
+  if (aPairCard.greaterThan(bPairCard)) return 1;
+  if (bPairCard.greaterThan(aPairCard)) return -1;
+  return 0;
+}
+
+function findFirstGreaterFullHouse(candidates: CardComp[], prev: CardComp): CardComp | null {
+  candidates.sort(compareFullHouse);
+  return candidates.find(comp => comp.greaterThan(prev)) ?? null;
+}
+
 function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
   const analysis = analyzeHand(cards);
 
@@ -342,7 +361,7 @@ function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
 
   const candidates: CardComp[] = [];
 
-  for (let tripleRank = 1; tripleRank <= 13; tripleRank++) {
+  for (let tripleRank = 2; tripleRank <= 14; tripleRank++) {
     const tripleHave = cardCounts.get(tripleRank) ?? 0;
     const tripleNeed = Math.max(0, 3 - tripleHave);
 
@@ -351,7 +370,7 @@ function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
     const wildcardForTriple = tripleNeed;
     const remainingWildcards = analysis.wildcards.length - wildcardForTriple;
 
-    for (let pairRank = 1; pairRank <= 13; pairRank++) {
+    for (let pairRank = 2; pairRank <= 14; pairRank++) {
       if (pairRank === tripleRank) continue;
 
       const pairHave = cardCounts.get(pairRank) ?? 0;
@@ -395,7 +414,7 @@ function findMinFullHouse(cards: SdkCard[], prev: CardComp): CardComp | null {
     }
   }
 
-  return findFirstGreater(candidates, prev);
+  return findFirstGreaterFullHouse(candidates, prev);
 }
 
 export function findMinPlay(cards: SdkCard[], prev: CardComp): CardComp | null {

@@ -174,6 +174,17 @@ class ApiClient {
     };
   }
 
+  async joinRoomByCode(roomCode: string): Promise<ApiResponse<Room>> {
+    const response = await this.request<{ room: Room }>('/api/rooms/join-by-code', {
+      method: 'POST',
+      body: JSON.stringify({ room_code: roomCode }),
+    });
+    return {
+      ...response,
+      data: response.data?.room as Room
+    };
+  }
+
   async leaveRoom(roomId: string): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/rooms/${roomId}/leave`, {
       method: 'POST',

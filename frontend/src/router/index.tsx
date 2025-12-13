@@ -4,6 +4,7 @@ import LoginPage from '../components/auth/LoginPage';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import RoomLobby from '../components/lobby/RoomLobby';
 import GamePage from '../components/game/GamePage';
+import JoinByInvite from '../components/lobby/JoinByInvite';
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +18,10 @@ export const router = createBrowserRouter([
       {
         path: 'login',
         element: <LoginPage />
+      },
+      {
+        path: 'join',
+        element: <JoinByInvite />
       },
       {
         path: 'lobby',

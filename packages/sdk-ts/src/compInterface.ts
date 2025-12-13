@@ -5,6 +5,7 @@ export interface CardComp {
   greaterThan(other: CardComp): boolean;
   isBomb(): boolean;
   getCards(): SdkCard[];
+  getNormalizedCards(): SdkCard[];
   toString(): string;
   isValid(): boolean;
   getType(): CompType;

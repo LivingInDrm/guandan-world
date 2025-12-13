@@ -108,6 +108,7 @@ export interface Player {
 
 export interface Room {
   id: string;
+  room_code?: string;
   status: RoomStatus;
   players: (Player | null)[];
   owner: string;
@@ -116,6 +117,7 @@ export interface Room {
 
 export interface RoomInfo {
   id: string;
+  room_code?: string;
   status: RoomStatus;
   player_count: number;
   players: Player[];

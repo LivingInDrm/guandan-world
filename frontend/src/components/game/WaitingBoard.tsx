@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { UserPlus } from 'lucide-react';
 import type { Player } from '../../types';
 import type { PlayerPosition } from './GameTable';
 import GameTable from './GameTable';
 import PlayerCard from './PlayerCard';
+import InviteModal from './InviteModal';
 import { Button, Card } from '../ui';
 
 interface WaitingBoardProps {
   players: (Player | null)[];
   currentPlayerSeat: number;
   roomId: string;
+  roomCode: string;
   ownerId: string;
   currentUserId: string;
   isConnected: boolean;
@@ -21,7 +24,9 @@ interface WaitingBoardProps {
 const WaitingBoard: React.FC<WaitingBoardProps> = ({
   players,
   currentPlayerSeat,
-  roomId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  roomId: _roomId,
+  roomCode,
   ownerId,
   currentUserId,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -31,6 +36,7 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
   isStarting,
   isLeaving,
 }) => {
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const playerCount = players.filter(p => p !== null).length;
   const isRoomOwner = currentUserId === ownerId;
   const canStartGame = isRoomOwner && playerCount === 4;
@@ -87,8 +93,18 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
 
   const renderTopLeft = () => (
     <Card variant="elevated" interactive={false} className="absolute top-4 left-4 z-10 p-3">
-      <div className="text-sm text-[hsl(var(--color-text-secondary))]">
-        房间ID: <span className="font-mono text-[hsl(var(--color-text-primary))]">{roomId}</span>
+      <div className="flex items-center gap-3">
+        <div className="text-sm text-[hsl(var(--color-text-secondary))]">
+          房间码: <span className="font-mono text-[hsl(var(--color-text-primary))] font-bold">{roomCode}</span>
+        </div>
+        <Button
+          intent="secondary"
+          size="sm"
+          onClick={() => setShowInviteModal(true)}
+        >
+          <UserPlus className="w-4 h-4" />
+          邀请
+        </Button>
       </div>
     </Card>
   );
@@ -101,6 +117,11 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
         renderPlayer={renderPlayer}
         renderCenter={renderCenter}
         topLeftSlot={renderTopLeft()}
+      />
+      <InviteModal
+        open={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        roomCode={roomCode}
       />
     </div>
   );

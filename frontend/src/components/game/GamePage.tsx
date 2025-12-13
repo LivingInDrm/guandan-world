@@ -487,6 +487,7 @@ const GamePage: React.FC = () => {
           players={currentRoom.players}
           currentPlayerSeat={playerSeat ?? 0}
           roomId={currentRoom.id}
+          roomCode={currentRoom.room_code || ''}
           ownerId={currentRoom.owner}
           currentUserId={user?.id || ''}
           isConnected={isConnected}
