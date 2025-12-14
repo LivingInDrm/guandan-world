@@ -15,6 +15,8 @@ import GameBoard from './GameBoard';
 import WaitingBoard from './WaitingBoard';
 import PlayerControlPanel from './PlayerControlPanel';
 import TributeBoard from './tribute/TributeBoard';
+import TributeControlPanel from './tribute/TributeControlPanel';
+import { TributeStatus } from '../../types/generated/view';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
 import { useDealResultData, useMatchResultData } from '../../hooks/useResultData';
@@ -511,21 +513,35 @@ const GamePage: React.FC = () => {
           </>
         );
 
-      case GamePageState.TRIBUTE_PHASE:
-        return tributeData && currentRoom && playerSeat !== null ? (
-          <TributeBoard
-            tributeData={tributeData}
-            players={currentRoom.players}
-            currentPlayerSeat={playerSeat}
-            teamLevels={playerViewData?.teamLevels || [2, 2]}
-            currentLevel={playerViewData?.dealLevel || 2}
-            playerHand={hand}
-            selectedCards={selectedCards}
-            onCardSelect={setSelectedCards}
-            onSelectTribute={handleSelectTribute}
-            onReturnTribute={handleReturnTribute}
-          />
-        ) : null;
+      case GamePageState.TRIBUTE_PHASE: {
+        if (!tributeData || !currentRoom || playerSeat === null) return null;
+        const canReturnTribute = 
+          tributeData.status === TributeStatus.TRIBUTE_STATUS_RETURNING &&
+          tributeData.receivers.includes(playerSeat);
+        return (
+          <div className="max-w-6xl mx-auto p-6 space-y-6">
+            <TributeBoard
+              tributeData={tributeData}
+              players={currentRoom.players}
+              currentPlayerSeat={playerSeat}
+              teamLevels={playerViewData?.teamLevels || [2, 2]}
+              currentLevel={playerViewData?.dealLevel || 2}
+              onSelectTribute={handleSelectTribute}
+            />
+            {canReturnTribute && (
+              <TributeControlPanel
+                cards={hand}
+                selectedCards={selectedCards}
+                onCardSelect={setSelectedCards}
+                currentLevel={playerViewData?.dealLevel || 2}
+                canReturnTribute={true}
+                turnDeadlineAtMs={turnDeadline?.deadlineAtMs || 0}
+                onReturnTribute={handleReturnTribute}
+              />
+            )}
+          </div>
+        );
+      }
 
       case GamePageState.PLAYING:
         return renderPlaying();

@@ -19,6 +19,7 @@ const buttonVariants = cva(
       intent: {
         primary: "bg-action-primary text-fg-inverse",
         secondary: "bg-action-secondary text-fg-inverse",
+        tertiary: "bg-action-tertiary text-fg-inverse",
         neutral: "bg-action-neutral text-fg-inverse",
         danger: "bg-action-danger text-fg-inverse",
       },

@@ -68,6 +68,7 @@
   /* ==================== 语义颜色 ==================== */
   --color-action-primary: var(--primitive-success-500);
   --color-action-secondary: var(--primitive-warning-500);
+  --color-action-tertiary: var(--primitive-accent-500);
   --color-action-neutral: var(--primitive-neutral-500);
   --color-action-danger: var(--primitive-danger-500);
   --color-error: var(--primitive-danger-500);

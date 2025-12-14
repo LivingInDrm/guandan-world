@@ -63,30 +63,11 @@ function createTributePair(
   };
 }
 
-function createPlayerHand(): Card[] {
-  return [
-    mockCards.spadeA,
-    mockCards.heartA,
-    mockCards.clubK,
-    mockCards.diamondK,
-    mockCards.spadeQ,
-    mockCards.heartQ,
-    mockCards.clubJ,
-    mockCards.diamond10,
-    mockCards.spade9,
-    mockCards.heart8,
-    mockCards.club7,
-    mockCards.diamond6,
-  ];
-}
-
 const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="min-h-screen bg-gray-800 p-4">{children}</div>
 );
 
 export const DoubleDownWaiting: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -106,11 +87,7 @@ export const DoubleDownWaiting: Story = () => {
         currentPlayerSeat={0}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -120,8 +97,6 @@ DoubleDownWaiting.meta = {
 };
 
 export const DoubleDownPartialSubmitted: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -141,11 +116,7 @@ export const DoubleDownPartialSubmitted: Story = () => {
         currentPlayerSeat={2}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -155,8 +126,6 @@ DoubleDownPartialSubmitted.meta = {
 };
 
 export const DoubleDownSelecting: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -176,11 +145,7 @@ export const DoubleDownSelecting: Story = () => {
         currentPlayerSeat={1}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -190,8 +155,6 @@ DoubleDownSelecting.meta = {
 };
 
 export const DoubleDownReturning: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -211,11 +174,7 @@ export const DoubleDownReturning: Story = () => {
         currentPlayerSeat={1}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -225,8 +184,6 @@ DoubleDownReturning.meta = {
 };
 
 export const SingleLastWaiting: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -243,11 +200,7 @@ export const SingleLastWaiting: Story = () => {
         currentPlayerSeat={0}
         teamLevels={[5, 2]}
         currentLevel={5}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -257,8 +210,6 @@ SingleLastWaiting.meta = {
 };
 
 export const PartnerLastWaiting: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -275,11 +226,7 @@ export const PartnerLastWaiting: Story = () => {
         currentPlayerSeat={0}
         teamLevels={[5, 3]}
         currentLevel={5}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -289,8 +236,6 @@ PartnerLastWaiting.meta = {
 };
 
 export const ViewFromSeat0: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -310,11 +255,7 @@ export const ViewFromSeat0: Story = () => {
         currentPlayerSeat={0}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -324,8 +265,6 @@ ViewFromSeat0.meta = {
 };
 
 export const ViewFromSeat1: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -345,11 +284,7 @@ export const ViewFromSeat1: Story = () => {
         currentPlayerSeat={1}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -359,8 +294,6 @@ ViewFromSeat1.meta = {
 };
 
 export const ViewFromSeat2: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -380,11 +313,7 @@ export const ViewFromSeat2: Story = () => {
         currentPlayerSeat={2}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -394,8 +323,6 @@ ViewFromSeat2.meta = {
 };
 
 export const ViewFromSeat3: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -415,11 +342,7 @@ export const ViewFromSeat3: Story = () => {
         currentPlayerSeat={3}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -429,8 +352,6 @@ ViewFromSeat3.meta = {
 };
 
 export const ReceiverSelectingHighlight: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   return (
     <Wrapper>
       <TributeBoard
@@ -450,11 +371,7 @@ export const ReceiverSelectingHighlight: Story = () => {
         currentPlayerSeat={0}
         teamLevels={[2, 5]}
         currentLevel={2}
-        playerHand={createPlayerHand()}
-        selectedCards={selectedCards}
-        onCardSelect={setSelectedCards}
         onSelectTribute={(deckIndex) => console.log('Select tribute:', deckIndex)}
-        onReturnTribute={(deckIndex) => console.log('Return tribute:', deckIndex)}
       />
     </Wrapper>
   );
@@ -464,7 +381,6 @@ ReceiverSelectingHighlight.meta = {
 };
 
 export const FlyingCardSubmit: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [poolCards, setPoolCards] = useState<Card[]>([]);
   const [tributePairs, setTributePairs] = useState<TributePair[]>([
     createTributePair(0, 1),
@@ -536,11 +452,7 @@ export const FlyingCardSubmit: Story = () => {
           currentPlayerSeat={0}
           teamLevels={[2, 5]}
           currentLevel={2}
-          playerHand={createPlayerHand()}
-          selectedCards={selectedCards}
-          onCardSelect={setSelectedCards}
           onSelectTribute={(deckIndex) => console.log('Select:', deckIndex)}
-          onReturnTribute={(deckIndex) => console.log('Return:', deckIndex)}
         />
       </div>
     </Wrapper>
@@ -551,7 +463,6 @@ FlyingCardSubmit.meta = {
 };
 
 export const FlyingCardSelect: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [poolCards, setPoolCards] = useState<Card[]>([
     mockCards.bigJoker,
     mockCards.smallJoker,
@@ -610,11 +521,7 @@ export const FlyingCardSelect: Story = () => {
           currentPlayerSeat={0}
           teamLevels={[2, 5]}
           currentLevel={2}
-          playerHand={createPlayerHand()}
-          selectedCards={selectedCards}
-          onCardSelect={setSelectedCards}
           onSelectTribute={(deckIndex) => console.log('Select:', deckIndex)}
-          onReturnTribute={(deckIndex) => console.log('Return:', deckIndex)}
         />
       </div>
     </Wrapper>
@@ -625,8 +532,6 @@ FlyingCardSelect.meta = {
 };
 
 export const FlyingCardReturn: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
-
   const handleReturnCard = (fromSeat: number, toSeat: number) => {
     wsClient.__mockEmit__(WS_MESSAGE_TYPES.GAME_EVENT, {
       type: EventType.EVENT_TYPE_TRIBUTE_CARD_RETURNED,
@@ -673,11 +578,7 @@ export const FlyingCardReturn: Story = () => {
           currentPlayerSeat={0}
           teamLevels={[2, 5]}
           currentLevel={2}
-          playerHand={createPlayerHand()}
-          selectedCards={selectedCards}
-          onCardSelect={setSelectedCards}
           onSelectTribute={(deckIndex) => console.log('Select:', deckIndex)}
-          onReturnTribute={(deckIndex) => console.log('Return:', deckIndex)}
         />
       </div>
     </Wrapper>
@@ -688,7 +589,6 @@ FlyingCardReturn.meta = {
 };
 
 export const FlyingCardAutoDemo: Story = () => {
-  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [poolCards, setPoolCards] = useState<Card[]>([]);
   const [phase, setPhase] = useState<'idle' | 'submit' | 'select' | 'return' | 'done'>('idle');
   const [tributePairs, setTributePairs] = useState<TributePair[]>([
@@ -810,11 +710,7 @@ export const FlyingCardAutoDemo: Story = () => {
           currentPlayerSeat={0}
           teamLevels={[2, 5]}
           currentLevel={2}
-          playerHand={createPlayerHand()}
-          selectedCards={selectedCards}
-          onCardSelect={setSelectedCards}
           onSelectTribute={(deckIndex) => console.log('Select:', deckIndex)}
-          onReturnTribute={(deckIndex) => console.log('Return:', deckIndex)}
         />
       </div>
     </Wrapper>

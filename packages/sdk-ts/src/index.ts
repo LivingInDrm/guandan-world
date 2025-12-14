@@ -12,7 +12,7 @@ export { BaseComp } from './compBase';
 
 export { fromCardList, fromCardListWithType } from './fromCardList';
 export { findMinPlay } from './findMinPlay';
-export { FirstPlayRecommender, NextPlayRecommender } from './playRecommender';
+export { FirstPlayRecommender, NextPlayRecommender, TributeRecommender } from './playRecommender';
 
 export { Fold } from './comps/fold';
 export { Illegal } from './comps/illegal';

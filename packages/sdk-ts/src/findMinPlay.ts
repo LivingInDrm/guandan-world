@@ -99,7 +99,7 @@ const plateStartPositions = [
   [8, 9], [9, 10], [10, 11], [11, 12], [12, 13], [13, 1],
 ];
 
-function findAllBombs(cards: SdkCard[]): CardComp[] {
+export function findAllBombs(cards: SdkCard[]): CardComp[] {
   const analysis = analyzeHand(cards);
   const bombs: CardComp[] = [];
 

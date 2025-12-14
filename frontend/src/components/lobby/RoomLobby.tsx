@@ -31,7 +31,7 @@ const RoomLobby: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
-  const [isCheckingRoom, setIsCheckingRoom] = useState(true);
+  const [isCheckingRoom, setIsCheckingRoom] = useState(false);
   const [isQuickStarting, setIsQuickStarting] = useState(false);
 
   // Check if user is already in a room
@@ -214,17 +214,6 @@ const RoomLobby: React.FC = () => {
     );
   }
 
-  if (isCheckingRoom) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action-primary mx-auto mb-4"></div>
-          <p className="text-fg-secondary">检查房间状态...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-6xl mx-auto p-6 bg-surface-elevated/20 rounded-lg">
       {error && (
@@ -253,7 +242,7 @@ const RoomLobby: React.FC = () => {
                 <Plus className="w-5 h-5" />
                 创建房间
               </Button>
-              <Button intent="neutral" size="lg" className="w-full" onClick={() => setShowJoinModal(true)}>
+              <Button intent="tertiary" size="lg" className="w-full" onClick={() => setShowJoinModal(true)}>
                 <Users className="w-5 h-5" />
                 加入游戏
               </Button>

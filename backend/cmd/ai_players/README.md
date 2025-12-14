@@ -16,7 +16,7 @@
 
 ```bash
 cd backend/cmd/ai_players
-go run main.go -room-id <房间ID>
+go run main.go -room-code <4位房间码>
 ```
 
 ### 命令行参数
@@ -24,7 +24,7 @@ go run main.go -room-id <房间ID>
 | 参数 | 说明 | 默认值 | 必需 |
 |------|------|--------|------|
 | `-server` | 后端服务器地址(host:port) | localhost:8080 | 否 |
-| `-room-id` | 要加入的房间ID | 无 | **是** |
+| `-room-code` | 要加入的房间码（4位数字） | 无 | **是** |
 | `-verbose` | 启用详细日志输出 | false | 否 |
 | `-num-players` | AI玩家数量(1-3) | 3 | 否 |
 | `-username-prefix` | AI玩家用户名前缀 | ai_player | 否 |
@@ -34,22 +34,22 @@ go run main.go -room-id <房间ID>
 
 1. **基本测试（3个AI玩家）**
 ```bash
-go run main.go -room-id room_1234567890
+go run main.go -room-code 1234
 ```
 
 2. **使用详细日志**
 ```bash
-go run main.go -room-id room_1234567890 -verbose
+go run main.go -room-code 1234 -verbose
 ```
 
 3. **自定义服务器地址**
 ```bash
-go run main.go -server 192.168.1.100:8080 -room-id room_1234567890
+go run main.go -server 192.168.1.100:8080 -room-code 1234
 ```
 
 4. **只启动2个AI玩家**
 ```bash
-go run main.go -room-id room_1234567890 -num-players 2
+go run main.go -room-code 1234 -num-players 2
 ```
 
 ## 完整测试流程
@@ -68,13 +68,13 @@ go run main.go
 1. 打开浏览器访问前端应用
 2. 登录或注册账号
 3. 创建一个新房间
-4. 记下房间ID（例如：`room_1734567890123`）
+4. 记下房间码（右上角显示的4位数字，例如：`1234`）
 
 ### 3. 启动AI玩家客户端
 
 ```bash
 cd backend/cmd/ai_players
-go run main.go -room-id room_1734567890123 -verbose
+go run main.go -room-code 1234 -verbose
 ```
 
 你将看到类似以下的输出：
@@ -82,14 +82,14 @@ go run main.go -room-id room_1734567890123 -verbose
 ```
 === AI Players Test Client ===
 Server: localhost:8080
-Room ID: room_1734567890123
+Room Code: 1234
 Number of players: 3
 Verbose: true
 ==============================
 
 [ai_player_1] Starting AI player client...
 [ai_player_1] Authentication successful
-[ai_player_1] Joined room room_1734567890123, seat: 1
+[ai_player_1] Joined room 1234 (ID: room_1734567890123), seat: 1
 [ai_player_1] WebSocket connected
 [ai_player_1] Sent join_room message
 [ai_player_1] AI player client started, waiting for game...
@@ -97,7 +97,7 @@ Verbose: true
 
 [ai_player_2] Starting AI player client...
 [ai_player_2] Authentication successful
-[ai_player_2] Joined room room_1734567890123, seat: 2
+[ai_player_2] Joined room 1234 (ID: room_1734567890123), seat: 2
 [ai_player_2] WebSocket connected
 [ai_player_2] Sent join_room message
 [ai_player_2] AI player client started, waiting for game...
@@ -105,7 +105,7 @@ Verbose: true
 
 [ai_player_3] Starting AI player client...
 [ai_player_3] Authentication successful
-[ai_player_3] Joined room room_1734567890123, seat: 3
+[ai_player_3] Joined room 1234 (ID: room_1734567890123), seat: 3
 [ai_player_3] WebSocket connected
 [ai_player_3] Sent join_room message
 [ai_player_3] AI player client started, waiting for game...
@@ -153,13 +153,13 @@ Press Ctrl+C to exit
 - 确认后端服务器正在运行
 - 检查服务器地址和端口是否正确
 
-### 问题：房间ID不存在
+### 问题：房间码不存在
 
-**原因**：房间ID输入错误或房间已关闭
+**原因**：房间码输入错误或房间已关闭
 
 **解决**：
 - 在前端重新创建房间
-- 确认房间ID拼写正确
+- 确认房间码拼写正确
 
 ### 问题：房间已满
 

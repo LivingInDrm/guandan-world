@@ -20,6 +20,7 @@ import (
 type AIPlayerClient struct {
 	// 配置
 	serverURL   string
+	roomCode    string
 	roomID      string
 	username    string
 	password    string
@@ -55,15 +56,16 @@ type AIPlayerClient struct {
 }
 
 // NewAIPlayerClient 创建新的AI玩家客户端
-func NewAIPlayerClient(serverURL, roomID, username, password string, verbose bool) *AIPlayerClient {
-	return NewAIPlayerClientWithDelay(serverURL, roomID, username, password, verbose, 5*time.Second)
+func NewAIPlayerClient(serverURL, roomCode, username, password string, verbose bool) *AIPlayerClient {
+	return NewAIPlayerClientWithDelay(serverURL, roomCode, username, password, verbose, 5*time.Second)
 }
 
 // NewAIPlayerClientWithDelay 创建新的AI玩家客户端并指定出牌延迟
-func NewAIPlayerClientWithDelay(serverURL, roomID, username, password string, verbose bool, playDelay time.Duration) *AIPlayerClient {
+func NewAIPlayerClientWithDelay(serverURL, roomCode, username, password string, verbose bool, playDelay time.Duration) *AIPlayerClient {
 	return &AIPlayerClient{
 		serverURL:   serverURL,
-		roomID:      roomID,
+		roomCode:    roomCode,
+		roomID:      "",
 		username:    username,
 		password:    password,
 		verbose:     verbose,
@@ -92,7 +94,7 @@ func (c *AIPlayerClient) Start() error {
 	if err := c.joinRoom(); err != nil {
 		return fmt.Errorf("failed to join room: %w", err)
 	}
-	c.log(fmt.Sprintf("Joined room %s, seat: %d", c.roomID, c.playerSeat))
+	c.log(fmt.Sprintf("Joined room %s (ID: %s), seat: %d", c.roomCode, c.roomID, c.playerSeat))
 
 	// 3. 连接WebSocket
 	if err := c.connectWebSocket(); err != nil {
@@ -153,12 +155,22 @@ func (c *AIPlayerClient) registerOrLogin() error {
 
 // joinRoom 加入房间
 func (c *AIPlayerClient) joinRoom() error {
-	url := fmt.Sprintf("/api/rooms/%s/join", c.roomID)
+	url := "/api/rooms/join-by-code"
+	
+	reqBody := map[string]string{
+		"room_code": c.roomCode,
+	}
+	
 	var roomResp handlers.RoomResponse
 
-	if err := c.httpClient.CallAPI("POST", url, nil, &roomResp); err != nil {
-		return err
+	if err := c.httpClient.CallAPI("POST", url, reqBody, &roomResp); err != nil {
+		return fmt.Errorf("failed to join room by code %s: %w", c.roomCode, err)
 	}
+
+	if roomResp.Room.ID == "" {
+		return fmt.Errorf("room ID not returned from server")
+	}
+	c.roomID = roomResp.Room.ID
 
 	// 找到自己的座位号
 	for _, player := range roomResp.Room.Players {

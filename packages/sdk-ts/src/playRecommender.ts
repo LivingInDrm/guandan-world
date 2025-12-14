@@ -1,6 +1,6 @@
 import { SdkCard } from './card';
 import type { CardComp } from './compInterface';
-import { findMinPlay } from './findMinPlay';
+import { findAllBombs, findMinPlay } from './findMinPlay';
 
 function groupCardsByRank(cards: SdkCard[]): SdkCard[][] {
   const byRank = new Map<number, SdkCard[]>();
@@ -58,5 +58,40 @@ export class NextPlayRecommender {
       this.currentComp = this.prevComp;
       return null;
     }
+  }
+}
+
+export class TributeRecommender {
+  private candidates: SdkCard[];
+  private currentIndex: number = -1;
+
+  constructor(cards: SdkCard[]) {
+    const bombs = findAllBombs(cards);
+
+    const bombCardKeys = new Set<string>();
+    for (const bomb of bombs) {
+      for (const card of bomb.getCards()) {
+        bombCardKeys.add(`${card.deckIndex}-${card.suit}-${card.rank}`);
+      }
+    }
+
+    const sortedCards = [...cards].sort((a, b) => {
+      if (a.greaterThan(b)) return 1;
+      if (b.greaterThan(a)) return -1;
+      return 0;
+    });
+
+    const nonBombCards = sortedCards.filter((card) => {
+      const key = `${card.deckIndex}-${card.suit}-${card.rank}`;
+      return !bombCardKeys.has(key);
+    });
+
+    this.candidates = nonBombCards.length > 0 ? nonBombCards : sortedCards;
+  }
+
+  next(): SdkCard | null {
+    if (this.candidates.length === 0) return null;
+    this.currentIndex = (this.currentIndex + 1) % this.candidates.length;
+    return this.candidates[this.currentIndex];
   }
 }

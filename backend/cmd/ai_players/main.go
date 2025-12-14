@@ -18,15 +18,25 @@ func main() {
 	password := "Ai@123456"
 
 	serverURL := flag.String("server", "localhost:8080", "Backend server URL (host:port)")
-	roomID := flag.String("room-id", "", "Room ID to join (required)")
+	roomCode := flag.String("room-code", "", "Room code to join (4-digit code, required)")
 	verbose := flag.Bool("verbose", false, "Enable verbose logging")
 	numPlayers := flag.Int("num-players", 3, "Number of AI players to create (default: 3)")
 	playDelay := flag.Int("play-delay", 2, "AI play delay in seconds (default: 2)")
 
 	flag.Parse()
 
-	if *roomID == "" {
-		log.Fatal("Error: -room-id is required")
+	if *roomCode == "" {
+		log.Fatal("Error: -room-code is required")
+	}
+
+	if len(*roomCode) != 4 {
+		log.Fatal("Error: -room-code must be exactly 4 digits")
+	}
+
+	for _, ch := range *roomCode {
+		if ch < '0' || ch > '9' {
+			log.Fatal("Error: -room-code must contain only digits")
+		}
 	}
 
 	if *numPlayers < 1 || *numPlayers > 3 {
@@ -35,7 +45,7 @@ func main() {
 
 	log.Printf("=== AI Players Test Client ===")
 	log.Printf("Server: %s", *serverURL)
-	log.Printf("Room ID: %s", *roomID)
+	log.Printf("Room Code: %s", *roomCode)
 	log.Printf("Number of players: %d", *numPlayers)
 	log.Printf("Play delay: %d seconds", *playDelay)
 	log.Printf("Verbose: %v", *verbose)
@@ -47,7 +57,7 @@ func main() {
 
 	clients := make([]*test.AIPlayerClient, *numPlayers)
 	for i := 0; i < *numPlayers; i++ {
-		clients[i] = test.NewAIPlayerClientWithDelay(*serverURL, *roomID, usernames[i], password, *verbose, time.Duration(*playDelay)*time.Second)
+		clients[i] = test.NewAIPlayerClientWithDelay(*serverURL, *roomCode, usernames[i], password, *verbose, time.Duration(*playDelay)*time.Second)
 	}
 
 	// 使用WaitGroup等待所有客户端启动

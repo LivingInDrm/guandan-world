@@ -13,6 +13,7 @@ export default {
         action: {
           primary: 'hsl(var(--color-action-primary))',
           secondary: 'hsl(var(--color-action-secondary))',
+          tertiary: 'hsl(var(--color-action-tertiary))',
           neutral: 'hsl(var(--color-action-neutral))',
           danger: 'hsl(var(--color-action-danger))',
         },

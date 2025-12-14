@@ -12,8 +12,6 @@ import TeamLevelDisplay from '../TeamLevelDisplay';
 import TributePool from './TributePool';
 import TributeRoleBadge from './TributeRoleBadge';
 import CardFlyAnimation from './CardFlyAnimation';
-import PlayerHand from '../PlayerHand';
-import { Button } from '@/components/ui';
 
 interface FlyingCard {
   id: string;
@@ -40,11 +38,7 @@ interface TributeBoardProps {
   currentPlayerSeat: number;
   teamLevels: [number, number];
   currentLevel: number;
-  playerHand: Card[];
-  selectedCards: Card[];
-  onCardSelect: (cards: Card[]) => void;
   onSelectTribute: (deckIndex: number) => void;
-  onReturnTribute: (deckIndex: number) => void;
 }
 
 const TributeBoard: React.FC<TributeBoardProps> = ({
@@ -53,11 +47,7 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
   currentPlayerSeat,
   teamLevels,
   currentLevel,
-  playerHand,
-  selectedCards,
-  onCardSelect,
   onSelectTribute,
-  onReturnTribute,
 }) => {
   const boardRef = useRef<HTMLDivElement>(null);
   const poolRef = useRef<HTMLDivElement>(null);
@@ -99,10 +89,6 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
   const canSelectFromPool = 
     status === TributeStatus.TRIBUTE_STATUS_SELECTING && 
     currentSelectingSeat === currentPlayerSeat;
-  
-  const canReturnTribute = 
-    status === TributeStatus.TRIBUTE_STATUS_RETURNING && 
-    isReceiver(currentPlayerSeat);
 
   const getPositionForSeat = useCallback((
     seat: number | 'pool',
@@ -256,12 +242,6 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
     }
   };
 
-  const handleReturnCard = () => {
-    if (canReturnTribute && selectedCards.length === 1) {
-      onReturnTribute(selectedCards[0].deckIndex);
-    }
-  };
-
   const handleSlotRefReady = useCallback((slotIndex: number, element: HTMLDivElement | null) => {
     poolSlotRefs.current[slotIndex] = element;
   }, []);
@@ -316,53 +296,30 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div ref={boardRef} className="relative">
-        <GameTable
-          players={players}
-          currentPlayerSeat={currentPlayerSeat}
-          renderPlayer={renderPlayer}
-          renderCenter={renderCenter}
-          topLeftSlot={
-            <TeamLevelDisplay 
-              teamLevels={teamLevels} 
-              currentLevel={currentLevel}
-              currentPlayerSeat={currentPlayerSeat}
-            />
-          }
-        />
-        
-        {flyingCards.map((fc) => (
-          <CardFlyAnimation
-            key={fc.id}
-            card={fc.card}
-            fromPosition={getPositionForSeat(fc.fromSeat, fc.fromPoolSlot)}
-            toPosition={getPositionForSeat(fc.toSeat, fc.toPoolSlot)}
-            onComplete={() => removeFlyingCard(fc.id)}
-          />
-        ))}
-      </div>
-
-      {status === TributeStatus.TRIBUTE_STATUS_RETURNING && canReturnTribute && (
-        <div className="flex flex-col">
-          <div className="flex justify-center">
-            <Button
-              onClick={handleReturnCard}
-              disabled={selectedCards.length !== 1}
-              intent="primary"
-              size="sm"
-            >
-              确认还贡
-            </Button>
-          </div>
-          <PlayerHand
-            cards={playerHand}
-            selectedCards={selectedCards}
-            onCardSelect={onCardSelect}
+    <div ref={boardRef} className="relative">
+      <GameTable
+        players={players}
+        currentPlayerSeat={currentPlayerSeat}
+        renderPlayer={renderPlayer}
+        renderCenter={renderCenter}
+        topLeftSlot={
+          <TeamLevelDisplay 
+            teamLevels={teamLevels} 
             currentLevel={currentLevel}
+            currentPlayerSeat={currentPlayerSeat}
           />
-        </div>
-      )}
+        }
+      />
+      
+      {flyingCards.map((fc) => (
+        <CardFlyAnimation
+          key={fc.id}
+          card={fc.card}
+          fromPosition={getPositionForSeat(fc.fromSeat, fc.fromPoolSlot)}
+          toPosition={getPositionForSeat(fc.toSeat, fc.toPoolSlot)}
+          onComplete={() => removeFlyingCard(fc.id)}
+        />
+      ))}
     </div>
   );
 };
