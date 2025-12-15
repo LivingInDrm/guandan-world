@@ -39,3 +39,7 @@ export {
   PlayerTimeoutActionType,
 } from './generated/event';
 
+// 从 action.proto 导出
+export type { GameAction, TurnDeadline } from './generated/action';
+export { GameActionType } from './generated/action';
+

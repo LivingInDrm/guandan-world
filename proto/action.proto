@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package guandan.action;
+
+import "common.proto";
+
+option go_package = "guandan-world/proto/action";
+
+// GameActionType 游戏动作类型枚举
+// 用于标识客户端需要执行的动作类型
+enum GameActionType {
+  // 未指定（默认值）
+  GAME_ACTION_TYPE_UNSPECIFIED = 0;
+  // 出牌决策：玩家需要出牌或过牌
+  GAME_ACTION_TYPE_PLAY_DECISION = 1;
+  // 选贡：玩家从贡牌池中选择一张牌
+  GAME_ACTION_TYPE_TRIBUTE_SELECTION = 2;
+  // 还贡：玩家选择一张手牌还给对方
+  GAME_ACTION_TYPE_RETURN_TRIBUTE = 3;
+}
+
+// GameAction 游戏动作请求
+// 服务器发送给客户端，通知玩家需要执行某个操作
+message GameAction {
+  // 动作类型
+  GameActionType action_type = 1;
+  
+  // 目标玩家座位号 (0-3)
+  int32 player_seat = 2;
+  
+  // 玩家手牌（用于 PLAY_DECISION）
+  repeated guandan.common.Card hand = 3;
+  
+  // 可选牌列表（用于 TRIBUTE_SELECTION 和 RETURN_TRIBUTE）
+  repeated guandan.common.Card options = 4;
+  
+  // 超时秒数
+  int32 timeout = 5;
+}
+
+// TurnDeadline 回合截止时间广播
+// 服务器广播给房间内所有玩家，通知当前操作的截止时间
+message TurnDeadline {
+  // 当前操作玩家座位号 (0-3)
+  int32 player_seat = 1;
+  
+  // 动作类型
+  GameActionType action_type = 2;
+  
+  // 截止时间（Unix 毫秒时间戳）
+  int64 deadline_at_ms = 3;
+}

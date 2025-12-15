@@ -215,7 +215,9 @@ const GamePage: React.FC = () => {
 
     const handleGameAction = (message: WSMessage) => {
       console.log('[game_action]', message);
-      const actionData = message.data as GameActionData;
+      const wrapper = message.data as { game_action?: GameActionData };
+      const actionData = wrapper.game_action;
+      if (!actionData) return;
 
       if (actionData.timeout !== undefined) {
         setCountdown(actionData.timeout);
@@ -224,10 +226,13 @@ const GamePage: React.FC = () => {
 
     const handleTurnDeadline = (message: WSMessage) => {
       console.log('[turn_deadline]', message);
-      const data = message.data as TurnDeadlineData;
+      const wrapper = message.data as { turn_deadline?: TurnDeadlineData };
+      const data = wrapper.turn_deadline;
+      if (!data) return;
+      
       setTurnDeadline({
-        playerSeat: data.player_seat,
-        deadlineAtMs: data.deadline_at_ms,
+        playerSeat: data.playerSeat,
+        deadlineAtMs: data.deadlineAtMs,
       });
     };
 

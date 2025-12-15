@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"guandan-world/backend/websocket"
+	actionpb "guandan-world/proto/action"
 	eventpb "guandan-world/proto/event"
 	viewpb "guandan-world/proto/view"
 	"guandan-world/sdk"
@@ -496,22 +497,23 @@ func (rip *RoomInputProvider) RequestPlayDecision(ctx context.Context, playerSea
 		rip.mu.Unlock()
 	}()
 
-	// Send request to player via WebSocket
-	wsData := map[string]interface{}{
-		"action_type": "play_decision_required",
-		"player_seat": playerSeat,
-		"hand":        hand,
-		"trick_info":  trickInfo,
+	// Build proto GameAction message
+	gameAction := &actionpb.GameAction{
+		ActionType: actionpb.GameActionType_GAME_ACTION_TYPE_PLAY_DECISION,
+		PlayerSeat: int32(playerSeat),
+		Hand:       sdk.ConvertCardsToProto(hand),
 	}
 	
 	// Include timeout if context has a deadline
 	if secs, ok := getRemainingTimeout(ctx); ok {
-		wsData["timeout"] = secs
+		gameAction.Timeout = int32(secs)
 	}
 	
 	wsMessage := &websocket.WSMessage{
 		Type:      websocket.MSG_GAME_ACTION,
-		Data:      wsData,
+		Data:      map[string]interface{}{
+			"game_action": marshalProtoToRawJSON(gameAction, "GameAction"),
+		},
 		Timestamp: time.Now(),
 	}
 
@@ -522,12 +524,15 @@ func (rip *RoomInputProvider) RequestPlayDecision(ctx context.Context, playerSea
 
 	// Broadcast deadline to all players in the room
 	if deadline, ok := ctx.Deadline(); ok {
+		turnDeadline := &actionpb.TurnDeadline{
+			PlayerSeat:   int32(playerSeat),
+			ActionType:   actionpb.GameActionType_GAME_ACTION_TYPE_PLAY_DECISION,
+			DeadlineAtMs: deadline.UnixMilli(),
+		}
 		rip.wsManager.BroadcastToRoom(rip.roomID, &websocket.WSMessage{
 			Type: websocket.MSG_TURN_DEADLINE,
 			Data: map[string]interface{}{
-				"player_seat":    playerSeat,
-				"action_type":    "play_decision",
-				"deadline_at_ms": deadline.UnixMilli(),
+				"turn_deadline": marshalProtoToRawJSON(turnDeadline, "TurnDeadline"),
 			},
 			Timestamp: time.Now(),
 		})
@@ -568,21 +573,23 @@ func (rip *RoomInputProvider) RequestTributeSelection(ctx context.Context, playe
 		rip.mu.Unlock()
 	}()
 
-	// Send request to player
-	wsData := map[string]interface{}{
-		"action_type": "tribute_selection_required",
-		"player_seat": playerSeat,
-		"options":     options,
+	// Build proto GameAction message
+	gameAction := &actionpb.GameAction{
+		ActionType: actionpb.GameActionType_GAME_ACTION_TYPE_TRIBUTE_SELECTION,
+		PlayerSeat: int32(playerSeat),
+		Options:    sdk.ConvertCardsToProto(options),
 	}
 	
 	// Include timeout if context has a deadline
 	if secs, ok := getRemainingTimeout(ctx); ok {
-		wsData["timeout"] = secs
+		gameAction.Timeout = int32(secs)
 	}
 	
 	wsMessage := &websocket.WSMessage{
 		Type:      websocket.MSG_GAME_ACTION,
-		Data:      wsData,
+		Data:      map[string]interface{}{
+			"game_action": marshalProtoToRawJSON(gameAction, "GameAction"),
+		},
 		Timestamp: time.Now(),
 	}
 
@@ -592,12 +599,15 @@ func (rip *RoomInputProvider) RequestTributeSelection(ctx context.Context, playe
 
 	// Broadcast deadline to all players in the room
 	if deadline, ok := ctx.Deadline(); ok {
+		turnDeadline := &actionpb.TurnDeadline{
+			PlayerSeat:   int32(playerSeat),
+			ActionType:   actionpb.GameActionType_GAME_ACTION_TYPE_TRIBUTE_SELECTION,
+			DeadlineAtMs: deadline.UnixMilli(),
+		}
 		rip.wsManager.BroadcastToRoom(rip.roomID, &websocket.WSMessage{
 			Type: websocket.MSG_TURN_DEADLINE,
 			Data: map[string]interface{}{
-				"player_seat":    playerSeat,
-				"action_type":    "tribute_selection",
-				"deadline_at_ms": deadline.UnixMilli(),
+				"turn_deadline": marshalProtoToRawJSON(turnDeadline, "TurnDeadline"),
 			},
 			Timestamp: time.Now(),
 		})
@@ -638,21 +648,24 @@ func (rip *RoomInputProvider) RequestReturnTribute(ctx context.Context, playerSe
 		rip.mu.Unlock()
 	}()
 
-	// Send request to player
-	wsData := map[string]interface{}{
-		"action_type": "return_tribute_required",
-		"player_seat": playerSeat,
-		"hand":        hand,
+	// Build proto GameAction message
+	// Note: for return tribute, hand cards are sent as options (cards available for return)
+	gameAction := &actionpb.GameAction{
+		ActionType: actionpb.GameActionType_GAME_ACTION_TYPE_RETURN_TRIBUTE,
+		PlayerSeat: int32(playerSeat),
+		Options:    sdk.ConvertCardsToProto(hand),
 	}
 	
 	// Include timeout if context has a deadline
 	if secs, ok := getRemainingTimeout(ctx); ok {
-		wsData["timeout"] = secs
+		gameAction.Timeout = int32(secs)
 	}
 	
 	wsMessage := &websocket.WSMessage{
 		Type:      websocket.MSG_GAME_ACTION,
-		Data:      wsData,
+		Data:      map[string]interface{}{
+			"game_action": marshalProtoToRawJSON(gameAction, "GameAction"),
+		},
 		Timestamp: time.Now(),
 	}
 
@@ -662,12 +675,15 @@ func (rip *RoomInputProvider) RequestReturnTribute(ctx context.Context, playerSe
 
 	// Broadcast deadline to all players in the room
 	if deadline, ok := ctx.Deadline(); ok {
+		turnDeadline := &actionpb.TurnDeadline{
+			PlayerSeat:   int32(playerSeat),
+			ActionType:   actionpb.GameActionType_GAME_ACTION_TYPE_RETURN_TRIBUTE,
+			DeadlineAtMs: deadline.UnixMilli(),
+		}
 		rip.wsManager.BroadcastToRoom(rip.roomID, &websocket.WSMessage{
 			Type: websocket.MSG_TURN_DEADLINE,
 			Data: map[string]interface{}{
-				"player_seat":    playerSeat,
-				"action_type":    "return_tribute",
-				"deadline_at_ms": deadline.UnixMilli(),
+				"turn_deadline": marshalProtoToRawJSON(turnDeadline, "TurnDeadline"),
 			},
 			Timestamp: time.Now(),
 		})

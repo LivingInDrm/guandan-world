@@ -230,20 +230,9 @@ export const PlayerStatus = {
 
 export type PlayerStatus = typeof PlayerStatus[keyof typeof PlayerStatus];
 
-export interface GameActionData {
-  action_type: 'play_decision_required' | 'tribute_selection_required' | 'return_tribute_required';
-  player_seat: number;
-  hand?: Card[];
-  trick_info?: TrickInfo;
-  timeout?: number;
-  options?: Card[];
-}
-
-export interface TurnDeadlineData {
-  player_seat: number;
-  action_type: 'play_decision' | 'tribute_selection' | 'return_tribute';
-  deadline_at_ms: number;
-}
+// GameActionData 和 TurnDeadlineData 使用 Proto 生成的类型
+export type { GameAction as GameActionData, TurnDeadline as TurnDeadlineData } from './proto';
+export { GameActionType } from './proto';
 
 // ========== Deal and Tribute Status (使用 Proto) ==========
 // DealStatus 和 TributeStatus 现在从 proto/view.ts 导出，见文件顶部
