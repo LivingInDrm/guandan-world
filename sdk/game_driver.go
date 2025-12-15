@@ -84,6 +84,9 @@ type GameDriverConfig struct {
 
 	// 局间延时配置
 	DealEndedDelay time.Duration `json:"deal_ended_delay"` // 牌局结束后展示结算画面的延时
+
+	// 游戏阶段延时配置
+	PlayingStartedDelay time.Duration `json:"playing_started_delay"` // 游戏阶段开始前延时
 }
 
 // DefaultGameDriverConfig 返回默认的游戏驱动器配置
@@ -101,6 +104,7 @@ func DefaultGameDriverConfig() *GameDriverConfig {
 		TributeReturningDelay: 2000 * time.Millisecond,     // Returning 阶段结束后延时
 		TributeFinishedDelay:  2000 * time.Millisecond,     // 阶段完成后延时
 		DealEndedDelay:        10 * time.Second,            // 牌局结束后10秒展示结算画面
+		PlayingStartedDelay:   1000 * time.Millisecond,     // 游戏阶段开始前1秒延迟
 	}
 }
 
@@ -454,6 +458,12 @@ func (gd *GameDriver) runDeal() error {
 
 	// 处理游戏阶段
 	if gd.engine.GetCurrentDealStatus() == DealStatusPlaying {
+		// 延时等待 player_view 先到达客户端
+		if gd.config.PlayingStartedDelay > 0 {
+			if !gd.sleepWithContext(gd.config.PlayingStartedDelay) {
+				return fmt.Errorf("game cancelled during playing started delay")
+			}
+		}
 		if err := gd.runPlayingPhase(); err != nil {
 			return fmt.Errorf("failed to run playing phase: %w", err)
 		}

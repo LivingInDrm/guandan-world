@@ -13,6 +13,7 @@ import {
 } from './services/types.js';
 import { AIStrategy } from './AIStrategy.js';
 import type { AIPlayerConfig } from './config.js';
+import { createLogger, Logger } from './utils/Logger.js';
 
 export enum AIState {
   IDLE = 'IDLE',
@@ -38,6 +39,7 @@ export interface AIPlayerInfo {
 export class AIPlayer {
   private readonly id: string;
   private readonly createdAt: Date;
+  private readonly logger: Logger;
   private api: ApiClient;
   private ws: WebSocketClient;
   private strategy: AIStrategy;
@@ -61,42 +63,45 @@ export class AIPlayer {
     this.id = randomUUID();
     this.createdAt = new Date();
     this.config = config;
-    this.api = new ApiClient(config.serverUrl);
+    this.logger = createLogger();
+    this.api = new ApiClient(config.serverUrl, this.logger);
     const wsUrl = config.serverUrl.replace(/^http/, 'ws') + '/ws';
-    this.ws = new WebSocketClient({ url: wsUrl });
+    this.ws = new WebSocketClient({ url: wsUrl }, this.logger);
     this.strategy = new AIStrategy(config.level || 1);
   }
 
   async start(): Promise<void> {
     try {
       if (this.config.autoRegister) {
+        this.logger.info('start', 'IDLE -> REGISTERING');
         this.state = AIState.REGISTERING;
         this.username = `ai_${randomUUID().slice(0, 8)}`;
+        this.logger.setContext({ username: this.username });
         const password = this.config.password || 'Ai_Password_123';
-        console.log(`Registering as ${this.username}...`);
         const auth = await this.api.register({ username: this.username, password });
         this.userId = auth.user.id;
         this.accessToken = auth.token.access_token;
         this.refreshToken = auth.token.refresh_token;
         this.api.setToken(this.accessToken);
         this.api.setRefreshToken(this.refreshToken);
-        console.log(`Registered successfully as ${this.username}`);
+        this.logger.info('start', `registered as ${this.username}`);
       } else {
+        this.logger.info('start', 'IDLE -> LOGGING_IN');
         this.state = AIState.LOGGING_IN;
         this.username = this.config.username!;
+        this.logger.setContext({ username: this.username });
         const password = this.config.password || 'Ai_Password_123';
-        console.log(`Logging in as ${this.username}...`);
         const auth = await this.api.login({ username: this.username, password });
         this.userId = auth.user.id;
         this.accessToken = auth.token.access_token;
         this.refreshToken = auth.token.refresh_token;
         this.api.setToken(this.accessToken);
         this.api.setRefreshToken(this.refreshToken);
-        console.log(`Logged in successfully as ${this.username}`);
+        this.logger.info('start', `logged in as ${this.username}`);
       }
 
       this.api.setOnTokenRefreshed((auth) => {
-        console.log('Token refreshed successfully');
+        this.logger.warn('onTokenRefreshed', 'token refreshed');
         this.accessToken = auth.token.access_token;
         this.refreshToken = auth.token.refresh_token;
         this.ws.reconnect(this.accessToken);
@@ -104,7 +109,7 @@ export class AIPlayer {
 
       if (this.config.nickname) {
         await this.api.updateProfile({ nickname: this.config.nickname });
-        console.log(`Nickname set to ${this.config.nickname}`);
+        this.logger.debug('start', `nickname set to ${this.config.nickname}`);
       }
 
       this.setupMessageHandlers();
@@ -113,16 +118,16 @@ export class AIPlayer {
       await this.waitForConnection();
 
       this.state = AIState.JOINING_ROOM;
-      console.log(`Joining room with code ${this.config.roomCode}...`);
       const room = await this.api.joinRoomByCode(this.config.roomCode);
       this.roomId = room.id;
       this.isOwner = room.owner === this.userId;
       this.state = AIState.WAITING_IN_ROOM;
-      console.log(`Joined room ${this.roomId}, isOwner: ${this.isOwner}`);
+      this.logger.setContext({ roomCode: this.config.roomCode });
+      this.logger.info('start', `joined room=${this.config.roomCode} roomId=${this.roomId} isOwner=${this.isOwner}`);
 
       this.checkAndStartGame(room);
     } catch (error) {
-      console.error('Failed to start AI player:', error);
+      this.logger.error('start', `failed: ${error}`);
       throw error;
     }
   }
@@ -177,22 +182,28 @@ export class AIPlayer {
       const data = msg.data as { player_view?: PlayerView };
       const view = data.player_view;
       if (!view) {
-        console.log('[DEBUG] player_view: no view in message');
+        this.logger.debug('onPlayerView', 'no view in message');
         return;
       }
 
       const seq = Number(view.seq);
-      console.log(`[DEBUG] player_view: seq=${seq}, dealStatus=${view.dealStatus}, playerSeat=${view.playerSeat}`);
+      this.logger.debug('onPlayerView', `seq=${seq} dealStatus=${view.dealStatus} playerSeat=${view.playerSeat}`);
 
       if (seq <= this.lastSeq) {
-        console.log(`[DEBUG] player_view: skipped (seq ${seq} <= lastSeq ${this.lastSeq})`);
+        this.logger.debug('onPlayerView', `skipped (seq ${seq} <= lastSeq ${this.lastSeq})`);
         return;
+      }
+      if (this.lastSeq !== -1 && seq > this.lastSeq + 1) {
+        this.logger.warn('onPlayerView', `seq jump: expected=${this.lastSeq + 1} actual=${seq}`);
       }
       this.lastSeq = seq;
 
       this.playerSeat = view.playerSeat;
       this.playerView = view;
-      this.state = AIState.PLAYING;
+      if (this.state !== AIState.PLAYING) {
+        this.logger.info('onPlayerView', `${this.state} -> PLAYING`);
+        this.state = AIState.PLAYING;
+      }
 
       if (view.matchResult) {
         this.handleMatchEnd();
@@ -204,7 +215,7 @@ export class AIPlayer {
       const view = data.tribute_view;
       if (!view) return;
 
-      console.log(`[DEBUG] tribute_view: status=${view.status}, receivers=${JSON.stringify(view.receivers)}, givers=${JSON.stringify(view.givers)}`);
+      this.logger.debug('onTributeView', `status=${view.status} receivers=${JSON.stringify(view.receivers)} givers=${JSON.stringify(view.givers)}`);
     });
 
     // ========== 行动指令消息 ==========
@@ -213,14 +224,20 @@ export class AIPlayer {
       const wrapper = msg.data as { game_action?: GameActionData };
       const data = wrapper.game_action;
       if (!data || data.actionType === undefined) {
-        console.log('[DEBUG] game_action: no actionType in message');
+        this.logger.debug('onGameAction', 'no actionType in message');
         return;
       }
 
-      console.log(`[DEBUG] game_action: actionType=${data.actionType}, playerSeat=${data.playerSeat}, optionsCount=${data.options?.length || 0}`);
+      this.logger.debug('onGameAction', `actionType=${data.actionType} playerSeat=${data.playerSeat} optionsCount=${data.options?.length || 0}`);
+
+      // 如果还没有设置 playerSeat，从 game_action 中初始化
+      if (this.playerSeat === null) {
+        this.playerSeat = data.playerSeat;
+        this.logger.debug('onGameAction', `initialized playerSeat=${data.playerSeat}`);
+      }
 
       if (data.playerSeat !== this.playerSeat) {
-        console.log(`[DEBUG] game_action: ignored (playerSeat=${data.playerSeat} !== my seat=${this.playerSeat})`);
+        this.logger.debug('onGameAction', `ignored (playerSeat=${data.playerSeat} !== my seat=${this.playerSeat})`);
         return;
       }
 
@@ -232,14 +249,14 @@ export class AIPlayer {
     const playerCount = room.players.filter(p => p !== null).length;
 
     if (playerCount === 4 && this.isOwner && !this.startGameTimer) {
-      console.log('Room is full, starting game in 5 seconds...');
+      this.logger.info('checkAndStartGame', 'room full, will start in 5s');
       this.startGameTimer = setTimeout(async () => {
         try {
-          console.log('Starting game...');
+          this.logger.info('checkAndStartGame', 'starting game...');
           await this.api.startGame(this.roomId!);
-          console.log('Game started');
+          this.logger.info('checkAndStartGame', 'game started');
         } catch (error) {
-          console.error('Failed to start game:', error);
+          this.logger.error('checkAndStartGame', `failed: ${error}`);
         }
       }, 5000);
     }
@@ -249,11 +266,11 @@ export class AIPlayer {
 
   private async handleGameAction(data: GameActionData): Promise<void> {
     if (this.actionInProgress) {
-      console.log(`[DEBUG] game_action: skipped (actionInProgress=true)`);
+      this.logger.debug('handleGameAction', 'skipped (actionInProgress=true)');
       return;
     }
 
-    console.log(`[DEBUG] game_action: executing actionType=${data.actionType}`);
+    this.logger.debug('handleGameAction', `executing actionType=${data.actionType}`);
 
     switch (data.actionType) {
       case GameActionType.GAME_ACTION_TYPE_PLAY_DECISION:
@@ -270,7 +287,7 @@ export class AIPlayer {
 
   private async handlePlayDecision(data: GameActionData): Promise<void> {
     if (!this.playerView) {
-      console.log('[DEBUG] handlePlayDecision: no playerView');
+      this.logger.debug('handlePlayDecision', 'no playerView');
       return;
     }
 
@@ -280,7 +297,7 @@ export class AIPlayer {
       const handCards = data.hand || this.playerView.playerCards;
       const hand = fromProtoCards(handCards, dealLevel);
 
-      console.log(`[DEBUG] handlePlayDecision: handSize=${hand.length}`);
+      this.logger.debug('handlePlayDecision', `handSize=${hand.length}`);
 
       const isLeader = this.playerView.leader === this.playerSeat || this.playerView.plays.length === 0;
 
@@ -302,16 +319,15 @@ export class AIPlayer {
 
       if (cardsToPlay && cardsToPlay.length > 0) {
         const deckIndexes = cardsToPlay.map(c => c.deckIndex);
-        console.log(`[DEBUG] Playing cards: ${cardsToPlay.map(c => c.toShortString()).join(', ')}`);
+        const cardsStr = cardsToPlay.map(c => c.toShortString()).join(', ');
+        this.logger.info('handlePlayDecision', `play cards=[${cardsStr}] deckIdx=[${deckIndexes.join(', ')}]`);
         await this.api.playCards(this.roomId!, this.playerSeat!, deckIndexes);
-        console.log('[DEBUG] playCards completed');
       } else {
-        console.log('[DEBUG] Passing...');
+        this.logger.info('handlePlayDecision', 'pass');
         await this.api.pass(this.roomId!, this.playerSeat!);
-        console.log('[DEBUG] pass completed');
       }
     } catch (error) {
-      console.error('[DEBUG] Failed to play:', error);
+      this.logger.error('handlePlayDecision', `failed: ${error}`);
     } finally {
       this.actionInProgress = false;
     }
@@ -319,7 +335,7 @@ export class AIPlayer {
 
   private async handleTributeSelection(data: GameActionData): Promise<void> {
     if (!data.options || data.options.length === 0) {
-      console.log('[DEBUG] handleTributeSelection: no options provided');
+      this.logger.debug('handleTributeSelection', 'no options provided');
       return;
     }
 
@@ -328,20 +344,19 @@ export class AIPlayer {
       const dealLevel = this.playerView?.dealLevel || 2;
       const poolCards = fromProtoCards(data.options, dealLevel);
 
-      console.log(`[DEBUG] handleTributeSelection: optionsCount=${poolCards.length}`);
+      this.logger.debug('handleTributeSelection', `optionsCount=${poolCards.length}`);
 
       const tributeCard = this.strategy.selectTributeCard(poolCards);
 
       if (tributeCard) {
-        console.log(`[DEBUG] Selecting tribute card: ${tributeCard.toShortString()}, deckIndex=${tributeCard.deckIndex}`);
         await this.delay(500 + Math.random() * 1000);
+        this.logger.info('handleTributeSelection', `selectTribute card=${tributeCard.toShortString()} deckIdx=${tributeCard.deckIndex}`);
         await this.api.selectTribute(this.roomId!, this.playerSeat!, tributeCard.deckIndex);
-        console.log(`[DEBUG] selectTribute completed`);
       } else {
-        console.log(`[DEBUG] handleTributeSelection: no card selected`);
+        this.logger.warn('handleTributeSelection', 'no card selected');
       }
     } catch (error) {
-      console.error('[DEBUG] Failed to select tribute:', error);
+      this.logger.error('handleTributeSelection', `failed: ${error}`);
     } finally {
       this.actionInProgress = false;
     }
@@ -349,7 +364,7 @@ export class AIPlayer {
 
   private async handleReturnTribute(data: GameActionData): Promise<void> {
     if (!data.options || data.options.length === 0) {
-      console.log('[DEBUG] handleReturnTribute: no options provided');
+      this.logger.debug('handleReturnTribute', 'no options provided');
       return;
     }
 
@@ -358,35 +373,35 @@ export class AIPlayer {
       const dealLevel = this.playerView?.dealLevel || 2;
       const hand = fromProtoCards(data.options, dealLevel);
 
-      console.log(`[DEBUG] handleReturnTribute: optionsCount=${hand.length}`);
+      this.logger.debug('handleReturnTribute', `optionsCount=${hand.length}`);
 
       const returnCard = this.strategy.selectReturnTributeCard(hand);
 
       if (returnCard) {
-        console.log(`[DEBUG] Returning tribute card: ${returnCard.toShortString()}, deckIndex=${returnCard.deckIndex}`);
         await this.delay(500 + Math.random() * 1000);
+        this.logger.info('handleReturnTribute', `returnTribute card=${returnCard.toShortString()} deckIdx=${returnCard.deckIndex}`);
         await this.api.returnTribute(this.roomId!, this.playerSeat!, returnCard.deckIndex);
-        console.log(`[DEBUG] returnTribute completed`);
       } else {
-        console.log(`[DEBUG] handleReturnTribute: no card selected`);
+        this.logger.warn('handleReturnTribute', 'no card selected');
       }
     } catch (error) {
-      console.error('[DEBUG] Failed to return tribute:', error);
+      this.logger.error('handleReturnTribute', `failed: ${error}`);
     } finally {
       this.actionInProgress = false;
     }
   }
 
   private async handleMatchEnd(): Promise<void> {
-    console.log('Match ended, leaving room...');
+    this.logger.info('handleMatchEnd', `PLAYING -> LEAVING_ROOM (match ended)`);
     this.state = AIState.LEAVING_ROOM;
     try {
       await this.api.leaveRoom(this.roomId!);
-      console.log('Left room successfully');
+      this.logger.info('handleMatchEnd', 'left room');
     } catch (error) {
-      console.error('Failed to leave room:', error);
+      this.logger.error('handleMatchEnd', `failed to leave room: ${error}`);
     }
     this.reset();
+    this.logger.info('handleMatchEnd', 'LEAVING_ROOM -> IDLE');
     this.state = AIState.IDLE;
   }
 
@@ -396,6 +411,7 @@ export class AIPlayer {
     this.playerView = null;
     this.isOwner = false;
     this.lastSeq = -1;
+    this.logger.setContext({ roomCode: null });
     if (this.startGameTimer) {
       clearTimeout(this.startGameTimer);
       this.startGameTimer = null;
@@ -403,7 +419,7 @@ export class AIPlayer {
   }
 
   async stop(): Promise<void> {
-    console.log('Stopping AI player...');
+    this.logger.info('stop', 'stopping...');
     this.state = AIState.STOPPED;
     if (this.roomId) {
       try {
@@ -413,7 +429,8 @@ export class AIPlayer {
     }
     this.ws.disconnect();
     this.reset();
-    console.log('AI player stopped');
+    this.logger.info('stop', 'stopped');
+    this.logger.close();
   }
 
   private delay(ms: number): Promise<void> {

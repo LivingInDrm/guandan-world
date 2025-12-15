@@ -6,6 +6,7 @@ import type {
   Room,
   User
 } from './types.js';
+import type { Logger } from '../utils/Logger.js';
 
 class ApiError extends Error {
   public status: number;
@@ -30,9 +31,11 @@ class ApiClient {
   private refreshPromise: Promise<AuthResponse> | null = null;
   private onUnauthorized: (() => void) | null = null;
   private onTokenRefreshed: ((auth: AuthResponse) => void) | null = null;
+  private logger?: Logger;
 
-  constructor(baseURL: string) {
+  constructor(baseURL: string, logger?: Logger) {
     this.baseURL = baseURL;
+    this.logger = logger;
   }
 
   setToken(token: string | null) {
@@ -58,6 +61,8 @@ class ApiClient {
     isRetry: boolean = false
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
+    const method = options.method || 'GET';
+    const startTime = Date.now();
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -74,15 +79,19 @@ class ApiClient {
         headers,
       });
 
+      const elapsed = Date.now() - startTime;
       const data = await response.json() as Record<string, unknown>;
 
       if (!response.ok) {
+        this.logger?.debug('request', `${method} ${endpoint} ${response.status} (${elapsed}ms)`);
         throw new ApiError(
           (data.message || data.error || 'Request failed') as string,
           response.status,
           data
         );
       }
+
+      this.logger?.debug('request', `${method} ${endpoint} ${response.status} (${elapsed}ms)`);
 
       return {
         success: true,
@@ -95,6 +104,7 @@ class ApiClient {
           (error.response as Record<string, unknown>)?.error === 'token_expired';
         
         if (isTokenExpired && !isRetry && this.refreshTokenValue) {
+          this.logger?.warn('request', `token expired, refreshing...`);
           try {
             const auth = await this.refreshToken(this.refreshTokenValue);
             this.token = auth.token.access_token;
@@ -117,6 +127,8 @@ class ApiClient {
         throw error;
       }
 
+      const elapsed = Date.now() - startTime;
+      this.logger?.error('request', `${method} ${endpoint} failed (${elapsed}ms): ${error}`);
       throw new ApiError(
         error instanceof Error ? error.message : 'Network error',
         0

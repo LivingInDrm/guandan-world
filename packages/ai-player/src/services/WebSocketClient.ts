@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import type { WSMessage, WSMessageType } from './types.js';
+import type { Logger } from '../utils/Logger.js';
 
 export type WSEventHandler = (message: WSMessage) => void;
 export type WSConnectionHandler = (connected: boolean) => void;
@@ -25,16 +26,18 @@ class WebSocketClient {
   private isConnected: boolean = false;
   private isReconnecting: boolean = false;
   private shouldReconnect: boolean = true;
+  private logger?: Logger;
 
   private messageHandlers: Map<WSMessageType | '*', WSEventHandler[]> = new Map();
   private connectionHandlers: WSConnectionHandler[] = [];
   private errorHandlers: WSErrorHandler[] = [];
 
-  constructor(options: WSClientOptions) {
+  constructor(options: WSClientOptions, logger?: Logger) {
     this.url = options.url;
     this.reconnectInterval = options.reconnectInterval || 3000;
     this.maxReconnectAttempts = options.maxReconnectAttempts || 10;
     this.heartbeatInterval = options.heartbeatInterval || 30000;
+    this.logger = logger;
   }
 
   connect(token?: string): void {
@@ -54,7 +57,7 @@ class WebSocketClient {
       this.ws.on('close', this.handleClose.bind(this));
       this.ws.on('error', this.handleError.bind(this));
     } catch (error) {
-      console.error('WebSocket connection failed:', error);
+      this.logger?.error('connect', `connection failed: ${error}`);
       this.scheduleReconnect();
     }
   }
@@ -73,14 +76,14 @@ class WebSocketClient {
   }
 
   reconnect(token?: string): void {
-    console.log('Reconnecting WebSocket with new token...');
+    this.logger?.debug('reconnect', 'reconnecting with new token...');
     this.disconnect();
     this.connect(token);
   }
 
   send(type: WSMessageType, data: unknown): boolean {
     if (!this.isConnected || !this.ws) {
-      console.warn('WebSocket not connected, message not sent:', { type, data });
+      this.logger?.warn('send', `not connected, message not sent: type=${type}`);
       return false;
     }
 
@@ -94,7 +97,7 @@ class WebSocketClient {
       this.ws.send(JSON.stringify(message));
       return true;
     } catch (error) {
-      console.error('Failed to send WebSocket message:', error);
+      this.logger?.error('send', `failed: ${error}`);
       return false;
     }
   }
@@ -125,7 +128,7 @@ class WebSocketClient {
   }
 
   private handleOpen(): void {
-    console.log('WebSocket connected');
+    this.logger?.info('handleOpen', 'connected');
     this.isConnected = true;
     this.isReconnecting = false;
     this.reconnectAttempts = 0;
@@ -143,13 +146,13 @@ class WebSocketClient {
         return;
       }
 
-      console.log(`[WS DEBUG] Received message type: ${message.type}`);
+      this.logger?.trace('handleMessage', `type=${message.type}`);
 
       const handlers = this.messageHandlers.get(message.type as WSMessageType);
       if (handlers) {
         handlers.forEach(handler => handler(message));
       } else {
-        console.log(`[WS DEBUG] No handler registered for message type: ${message.type}`);
+        this.logger?.warn('handleMessage', `no handler for type=${message.type}`);
       }
 
       const genericHandlers = this.messageHandlers.get('*');
@@ -157,12 +160,12 @@ class WebSocketClient {
         genericHandlers.forEach(handler => handler(message));
       }
     } catch (error) {
-      console.error('Failed to parse WebSocket message:', error);
+      this.logger?.error('handleMessage', `parse failed: ${error}`);
     }
   }
 
   private handleClose(): void {
-    console.log('WebSocket disconnected');
+    this.logger?.info('handleClose', 'disconnected');
     this.isConnected = false;
     this.clearTimers();
 
@@ -174,13 +177,13 @@ class WebSocketClient {
   }
 
   private handleError(error: Error): void {
-    console.error('WebSocket error:', error);
+    this.logger?.error('handleError', `${error}`);
     this.errorHandlers.forEach(handler => handler(error));
   }
 
   private scheduleReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('Max reconnection attempts reached');
+      this.logger?.error('scheduleReconnect', 'max attempts reached');
       return;
     }
 
@@ -190,7 +193,7 @@ class WebSocketClient {
 
     this.isReconnecting = true;
     this.reconnectAttempts++;
-    console.log(`Reconnecting... attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+    this.logger?.warn('scheduleReconnect', `attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
 
     this.reconnectTimer = setTimeout(() => {
       this.connect(this.token);

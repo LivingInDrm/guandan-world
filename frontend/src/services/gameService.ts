@@ -191,8 +191,8 @@ class GameService {
 
   // WebSocket message handlers
   private handleRoomUpdate(message: WSMessage): void {
-    const roomData = message.data;
-    if (roomData) {
+    const roomData = message.data?.room || message.data;
+    if (roomData?.id) {
       useRoomStore.getState().updateRoomInList(roomData);
       
       // Update current room if it matches
