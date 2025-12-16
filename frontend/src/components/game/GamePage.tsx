@@ -17,7 +17,7 @@ import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
 import Header from '../layout/Header';
 import TributeBoard from './tribute/TributeBoard';
-import TributeControlPanel from './tribute/TributeControlPanel';
+import TributeControls from './tribute/TributeControls';
 import { TributeStatus } from '../../types/generated/view';
 import DealResult from './DealResult';
 import MatchResult from './MatchResult';
@@ -584,25 +584,51 @@ const GamePage: React.FC = () => {
           tributeData.status === TributeStatus.TRIBUTE_STATUS_RETURNING &&
           tributeData.receivers.includes(playerSeat);
         return (
-          <div className="max-w-6xl mx-auto p-6 space-y-6">
-            <TributeBoard
-              tributeData={tributeData}
-              players={currentRoom.players}
-              currentPlayerSeat={playerSeat}
-              teamLevels={playerViewData?.teamLevels || [2, 2]}
-              currentLevel={playerViewData?.dealLevel || 2}
-              onSelectTribute={handleSelectTribute}
-            />
-            {canReturnTribute && (
-              <TributeControlPanel
-                cards={hand}
-                selectedCards={selectedCards}
-                onCardSelect={setSelectedCards}
+          <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
+            <Header collapsible />
+            <div className="absolute inset-0 p-2">
+              <TributeBoard
+                tributeData={tributeData}
+                players={currentRoom.players}
+                currentPlayerSeat={playerSeat}
+                teamLevels={playerViewData?.teamLevels || [2, 2]}
                 currentLevel={playerViewData?.dealLevel || 2}
-                canReturnTribute={true}
-                turnDeadlineAtMs={turnDeadline?.deadlineAtMs || 0}
-                onReturnTribute={handleReturnTribute}
+                onSelectTribute={handleSelectTribute}
+                className="h-full"
               />
+            </div>
+            {canReturnTribute && (
+              <div
+                className="absolute left-1/2 z-20"
+                style={{
+                  transform: 'translateX(-50%)',
+                  top: 'calc(50% + var(--play-area-offset-y, 0) + var(--table-center-height) / 2)',
+                }}
+              >
+                <TributeControls
+                  selectedCards={selectedCards}
+                  canReturnTribute={true}
+                  turnDeadlineAtMs={turnDeadline?.deadlineAtMs || 0}
+                  onReturnTribute={() => {
+                    if (selectedCards.length === 1) {
+                      handleReturnTribute(selectedCards[0].deckIndex);
+                    }
+                  }}
+                  onHint={setSelectedCards}
+                  handCards={hand}
+                  dealLevel={playerViewData?.dealLevel || 2}
+                />
+              </div>
+            )}
+            {hand.length > 0 && (
+              <div className="absolute bottom-0 left-0 right-0 z-10">
+                <PlayerHand
+                  cards={hand}
+                  selectedCards={selectedCards}
+                  onCardSelect={setSelectedCards}
+                  currentLevel={playerViewData?.dealLevel || 2}
+                />
+              </div>
             )}
           </div>
         );

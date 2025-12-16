@@ -99,28 +99,28 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 mobile-landscape:py-4">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       {/* 背景装饰 */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-surface-muted via-surface-elevated to-surface-base" />
         <div
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] mobile-landscape:w-[400px] mobile-landscape:h-[400px]"
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px]"
           style={{
             background: 'radial-gradient(circle, hsla(158,55%,42%,0.08) 0%, transparent 60%)',
           }}
         />
         <div
-          className="absolute bottom-0 right-0 w-[600px] h-[600px] mobile-landscape:w-[300px] mobile-landscape:h-[300px]"
+          className="absolute bottom-0 right-0 w-[600px] h-[600px]"
           style={{
             background: 'radial-gradient(circle, hsla(42,95%,52%,0.06) 0%, transparent 60%)',
           }}
         />
       </div>
 
-      <div className="w-full max-w-md space-y-6 mobile-landscape:space-y-3">
+      <div className="w-full max-w-md space-y-6">
         {/* 标题 */}
-        <div className="text-center mb-8 mobile-landscape:mb-3">
-          <h1 className="font-display text-4xl mobile-landscape:text-2xl font-bold tracking-wider mb-2 mobile-landscape:mb-1">
+        <div className="text-center mb-8">
+          <h1 className="font-display text-4xl font-bold tracking-wider mb-2">
             <span className={cn(
               "bg-gradient-primary",
               "bg-clip-text text-transparent",
@@ -128,7 +128,7 @@ const LoginPage: React.FC = () => {
               一起掼蛋
             </span>
           </h1>
-          <p className="text-fg-secondary text-sm mobile-landscape:text-xs tracking-wide">
+          <p className="text-fg-secondary text-sm tracking-wide">
             GuanDan Together
           </p>
         </div>
@@ -180,11 +180,11 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* 底部装饰 */}
-        <div className="flex items-center justify-center gap-2 pt-6 mobile-landscape:pt-2 opacity-40">
-          <span className="text-2xl mobile-landscape:text-lg">♠</span>
-          <span className="text-2xl mobile-landscape:text-lg text-suit-red">♥</span>
-          <span className="text-2xl mobile-landscape:text-lg">♣</span>
-          <span className="text-2xl mobile-landscape:text-lg text-suit-red">♦</span>
+        <div className="flex items-center justify-center gap-2 pt-6 opacity-40">
+          <span className="text-2xl">♠</span>
+          <span className="text-2xl text-suit-red">♥</span>
+          <span className="text-2xl">♣</span>
+          <span className="text-2xl text-suit-red">♦</span>
         </div>
       </div>
     </div>

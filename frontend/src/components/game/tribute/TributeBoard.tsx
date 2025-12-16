@@ -12,6 +12,7 @@ import TeamLevelDisplay from '../TeamLevelDisplay';
 import TributePool from './TributePool';
 import TributeRoleBadge from './TributeRoleBadge';
 import CardFlyAnimation from './CardFlyAnimation';
+import { cn } from '@/lib/utils';
 
 interface FlyingCard {
   id: string;
@@ -39,6 +40,7 @@ interface TributeBoardProps {
   teamLevels: [number, number];
   currentLevel: number;
   onSelectTribute: (deckIndex: number) => void;
+  className?: string;
 }
 
 const TributeBoard: React.FC<TributeBoardProps> = ({
@@ -48,6 +50,7 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
   teamLevels,
   currentLevel,
   onSelectTribute,
+  className,
 }) => {
   const boardRef = useRef<HTMLDivElement>(null);
   const poolRef = useRef<HTMLDivElement>(null);
@@ -296,12 +299,13 @@ const TributeBoard: React.FC<TributeBoardProps> = ({
   };
 
   return (
-    <div ref={boardRef} className="relative">
+    <div ref={boardRef} className={cn("relative", className)}>
       <GameTable
         players={players}
         currentPlayerSeat={currentPlayerSeat}
         renderPlayer={renderPlayer}
         renderCenter={renderCenter}
+        className="h-full"
         topLeftSlot={
           <TeamLevelDisplay 
             teamLevels={teamLevels} 

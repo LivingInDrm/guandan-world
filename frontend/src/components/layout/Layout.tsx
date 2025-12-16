@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
+import OrientationGuard from '../ui/OrientationGuard';
 import { cn } from '@/lib/utils';
 
 interface LayoutProps {
@@ -9,6 +10,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
+    <OrientationGuard>
     <div className="relative min-h-screen overflow-hidden">
       {/* 背景层 - 东方雅韵氛围 */}
       <div className="fixed inset-0 -z-10">
@@ -57,6 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* 底部装饰 */}
       <div className="fixed bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-stroke/30 to-transparent" />
     </div>
+    </OrientationGuard>
   );
 };
 

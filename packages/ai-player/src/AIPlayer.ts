@@ -70,6 +70,17 @@ export class AIPlayer {
     this.strategy = new AIStrategy(config.level || 1);
   }
 
+  private static readonly NICKNAMES = [
+    '二牛', '狗子', '妞妞', '铁蛋', '猪猪', '胖胖',
+    '阿童木', '熊大', '熊二', '我是小小鸟', '我是大大胖',
+    '没头脑', '不开心'
+  ];
+
+  private getRandomNickname(): string {
+    const index = Math.floor(Math.random() * AIPlayer.NICKNAMES.length);
+    return AIPlayer.NICKNAMES[index];
+  }
+
   async start(): Promise<void> {
     try {
       if (this.config.autoRegister) {
@@ -85,6 +96,10 @@ export class AIPlayer {
         this.api.setToken(this.accessToken);
         this.api.setRefreshToken(this.refreshToken);
         this.logger.info('start', `registered as ${this.username}`);
+
+        if (!this.config.nickname) {
+          this.config.nickname = this.getRandomNickname();
+        }
       } else {
         this.logger.info('start', 'IDLE -> LOGGING_IN');
         this.state = AIState.LOGGING_IN;

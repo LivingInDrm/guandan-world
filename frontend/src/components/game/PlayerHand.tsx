@@ -122,6 +122,18 @@ const getRankConfig = (rank: number) => {
   }
 };
 
+const findCardDeckIndex = (x: number, y: number): number | null => {
+  const elements = document.elementsFromPoint(x, y);
+  for (const element of elements) {
+    const cardElement = (element as HTMLElement).closest('[data-deck-index]');
+    if (cardElement) {
+      const deckIndex = cardElement.getAttribute('data-deck-index');
+      return deckIndex ? parseInt(deckIndex, 10) : null;
+    }
+  }
+  return null;
+};
+
 const PlayerHand: React.FC<PlayerHandProps> = ({ 
   cards, 
   selectedCards, 
@@ -133,6 +145,8 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
   const touchedIndexesRef = useRef<Set<number>>(new Set());
   const selectedCardsRef = useRef(selectedCards);
   selectedCardsRef.current = selectedCards;
+  const cardsRef = useRef(cards);
+  cardsRef.current = cards;
 
   const safeCards = Array.isArray(cards) ? cards : [];
   
@@ -174,6 +188,28 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     }
   }, [onCardSelect]);
 
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+
+    const deckIndex = findCardDeckIndex(e.clientX, e.clientY);
+    if (deckIndex === null) return;
+    if (touchedIndexesRef.current.has(deckIndex)) return;
+
+    touchedIndexesRef.current.add(deckIndex);
+
+    const card = cardsRef.current.find(c => c.deckIndex === deckIndex);
+    if (!card) return;
+
+    const currentSelected = selectedCardsRef.current;
+    const isCardSelected = currentSelected.some(c => c.deckIndex === deckIndex);
+
+    if (isCardSelected) {
+      onCardSelect(currentSelected.filter(c => c.deckIndex !== deckIndex));
+    } else {
+      onCardSelect([...currentSelected, card]);
+    }
+  }, [onCardSelect]);
+
   useEffect(() => {
     const handleGlobalPointerUp = () => {
       isDraggingRef.current = false;
@@ -194,6 +230,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
         "pt-2 px-4 pb-2 mobile-landscape:pt-1 mobile-landscape:px-2 mobile-landscape:pb-1",
       )}
       onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
     >
       {/* 清空选择按钮 */}
       <div className="flex justify-end mb-1">

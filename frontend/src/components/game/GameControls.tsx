@@ -199,12 +199,12 @@ const GameControls: React.FC<GameControlsProps> = ({
         {/* 不出按钮 */}
         <Button
           intent="neutral"
-          size="sm"
+          size="md"
           onClick={handlePass}
           disabled={isPassDisabled}
           className={cn(
-            "min-w-[var(--control-button-min-width)]",
-            "mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1",
+            "min-w-[90px] h-10 px-4 pr-5 text-base",
+            "mobile-landscape:min-w-[70px] mobile-landscape:h-8 mobile-landscape:px-3 mobile-landscape:pr-4 mobile-landscape:text-sm",
             "bg-white/10 hover:bg-white/20",
             "text-white/80 hover:text-white",
             "border border-white/20 hover:border-white/30",
@@ -212,7 +212,7 @@ const GameControls: React.FC<GameControlsProps> = ({
             "disabled:bg-white/5 disabled:text-white/30 disabled:border-white/10",
           )}
         >
-          <X className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3 mr-1" />
+          <X className="w-5 h-5 mobile-landscape:w-4 mobile-landscape:h-4 mr-1.5" />
           不出
         </Button>
 
@@ -228,12 +228,12 @@ const GameControls: React.FC<GameControlsProps> = ({
         {/* 提示按钮 */}
         <Button
           intent="secondary"
-          size="sm"
+          size="md"
           onClick={handleHint}
           disabled={isHintDisabled}
           className={cn(
-            "min-w-[var(--control-button-min-width)]",
-            "mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1",
+            "min-w-[90px] h-10 px-4 pr-5 text-base",
+            "mobile-landscape:min-w-[70px] mobile-landscape:h-8 mobile-landscape:px-3 mobile-landscape:pr-4 mobile-landscape:text-sm",
             "bg-[hsl(158,55%,35%)]/80 hover:bg-[hsl(158,55%,42%)]",
             "text-white",
             "border border-[hsl(158,55%,50%)]/30 hover:border-[hsl(158,55%,50%)]/50",
@@ -241,19 +241,19 @@ const GameControls: React.FC<GameControlsProps> = ({
             "disabled:bg-white/5 disabled:text-white/30 disabled:border-white/10",
           )}
         >
-          <Lightbulb className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3 mr-1" />
+          <Lightbulb className="w-5 h-5 mobile-landscape:w-4 mobile-landscape:h-4 mr-1.5" />
           提示
         </Button>
 
         {/* 出牌按钮 */}
         <Button
           intent="primary"
-          size="sm"
+          size="md"
           onClick={handlePlayCards}
           disabled={isPlayDisabled}
           className={cn(
-            "min-w-[var(--control-button-min-width)]",
-            "mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1",
+            "min-w-[90px] h-10 px-4 pr-5 text-base",
+            "mobile-landscape:min-w-[70px] mobile-landscape:h-8 mobile-landscape:px-3 mobile-landscape:pr-4 mobile-landscape:text-sm",
             "bg-gradient-to-r from-state-active to-[hsl(42,95%,45%)]",
             "hover:from-[hsl(42,95%,55%)] hover:to-[hsl(42,95%,48%)]",
             "text-primitive-neutral-900 font-bold",
@@ -264,7 +264,7 @@ const GameControls: React.FC<GameControlsProps> = ({
             "disabled:text-white/30 disabled:shadow-none",
           )}
         >
-          <Play className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3 mr-1" />
+          <Play className="w-5 h-5 mobile-landscape:w-4 mobile-landscape:h-4 mr-1.5" />
           出牌
         </Button>
       </div>

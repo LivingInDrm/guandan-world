@@ -8,20 +8,20 @@ import JoinByInvite from '../components/lobby/JoinByInvite';
 
 export const router = createBrowserRouter([
   {
+    path: '/login',
+    element: <LoginPage />
+  },
+  {
+    path: '/join',
+    element: <JoinByInvite />
+  },
+  {
     path: '/',
     element: <Layout />,
     children: [
       {
         index: true,
         element: <Navigate to="/lobby" replace />
-      },
-      {
-        path: 'login',
-        element: <LoginPage />
-      },
-      {
-        path: 'join',
-        element: <JoinByInvite />
       },
       {
         path: 'lobby',
