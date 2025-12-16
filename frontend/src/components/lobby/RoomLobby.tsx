@@ -249,52 +249,92 @@ const RoomLobby: React.FC = () => {
         {/* 顶部装饰边 */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-state-active/60 to-transparent z-50" />
 
+        {/* 品牌标识 */}
+        <div className={cn(
+          "absolute top-4 left-4 mobile-landscape:top-2 mobile-landscape:left-3 z-40",
+          "flex items-center gap-3 mobile-landscape:gap-2",
+        )}>
+          {/* Logo 装饰 */}
+          <div className={cn(
+            "relative flex items-center justify-center",
+            "w-12 h-12 mobile-landscape:w-8 mobile-landscape:h-8",
+            "rounded-xl",
+            "bg-gradient-to-br from-[hsl(158,55%,38%)] to-[hsl(158,55%,28%)]",
+            "shadow-[0_4px_16px_rgba(45,106,79,0.3)]",
+            "border border-white/20",
+          )}>
+            {/* 扑克牌图案 */}
+            <div className="relative text-white font-bold text-lg mobile-landscape:text-sm">
+              <span className="absolute -top-0.5 -left-0.5 text-[hsl(42,95%,55%)]">♠</span>
+              <span className="absolute -bottom-0.5 -right-0.5 text-suit-red">♥</span>
+            </div>
+            {/* 光泽效果 */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/25 via-transparent to-transparent" />
+          </div>
+
+          {/* 品牌文字 */}
+          <div className="flex flex-col">
+            <h1 className={cn(
+              "font-display font-black tracking-tight",
+              "text-2xl mobile-landscape:text-base lg:text-3xl",
+              "bg-gradient-to-r from-[hsl(158,55%,32%)] via-[hsl(158,45%,40%)] to-[hsl(42,80%,45%)]",
+              "bg-clip-text text-transparent",
+              "drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]",
+            )}>
+              一起掼蛋
+            </h1>
+            <span className={cn(
+              "text-[10px] mobile-landscape:text-[8px] lg:text-xs",
+              "font-medium tracking-[0.2em] uppercase",
+              "text-fg-secondary/60",
+              "-mt-0.5 mobile-landscape:-mt-1",
+            )}>
+              Happy Together
+            </span>
+          </div>
+        </div>
+
         {/* 用户菜单浮动按钮 */}
         <UserMenuFab />
 
+        {/* 错误提示浮层 */}
+        {error && (
+          <div className={cn(
+            "fixed top-4 left-1/2 -translate-x-1/2 z-50",
+            "px-4 py-3 rounded-xl",
+            "bg-action-danger/95 backdrop-blur-sm",
+            "border border-action-danger/50",
+            "shadow-lg",
+            "animate-in fade-in-0 slide-in-from-top-4 duration-normal",
+          )}>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-white">
+                <AlertCircle className="w-5 h-5 shrink-0" />
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+              <button
+                onClick={clearError}
+                className={cn(
+                  "p-1 rounded-md",
+                  "text-white/70 hover:text-white",
+                  "hover:bg-white/10",
+                  "transition-colors duration-fast",
+                )}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* 主内容区 */}
         <main className={cn(
-          "absolute inset-0 pt-4 mobile-landscape:pt-2",
-          "container mx-auto px-4 py-6",
-          "mobile-landscape:px-1 mobile-landscape:py-1 mobile-landscape:max-w-none",
-          "overflow-auto",
+          "absolute inset-0",
+          "flex items-center justify-center",
+          "px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2",
+          "overflow-hidden",
         )}>
-          <div className={cn(
-            "max-w-6xl mx-auto mobile-landscape:max-w-none",
-            "p-6 mobile-landscape:p-2 rounded-2xl mobile-landscape:rounded-lg",
-            "bg-surface-base/60 backdrop-blur-sm",
-            "border border-stroke/30 mobile-landscape:border-0",
-            "shadow-[var(--elevation-2)] mobile-landscape:shadow-none",
-            "mobile-landscape:bg-transparent",
-          )}>
-            {/* 错误提示 */}
-            {error && (
-              <div className={cn(
-                "mb-6 p-4 rounded-xl",
-                "bg-action-danger/10 border border-action-danger/30",
-                "animate-in fade-in-0 slide-in-from-top-2 duration-normal",
-              )}>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-action-danger">
-                    <AlertCircle className="w-5 h-5 shrink-0" />
-                    <p className="text-sm">{error}</p>
-                  </div>
-                  <button
-                    onClick={clearError}
-                    className={cn(
-                      "p-1 rounded-md",
-                      "text-action-danger/70 hover:text-action-danger",
-                      "hover:bg-action-danger/10",
-                      "transition-colors duration-fast",
-                    )}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-col mobile-landscape:flex-row lg:flex-row gap-4 mobile-landscape:gap-3 lg:gap-8">
+          <div className="flex flex-col mobile-landscape:flex-row lg:flex-row gap-4 mobile-landscape:gap-3 lg:gap-6 w-full max-w-6xl mobile-landscape:max-w-none">
               {/* 左侧操作面板 */}
               <div className="w-full mobile-landscape:w-48 lg:w-72 mobile-landscape:shrink-0 shrink-0">
                 <Card
@@ -409,18 +449,17 @@ const RoomLobby: React.FC = () => {
               </div>
             </div>
 
-            <CreateRoomModal
-              open={showCreateModal}
-              onClose={() => setShowCreateModal(false)}
-              onConfirm={handleCreateRoom}
-            />
+          <CreateRoomModal
+            open={showCreateModal}
+            onClose={() => setShowCreateModal(false)}
+            onConfirm={handleCreateRoom}
+          />
 
-            <JoinRoomModal
-              open={showJoinModal}
-              onClose={() => setShowJoinModal(false)}
-              onJoin={handleJoinByCode}
-            />
-          </div>
+          <JoinRoomModal
+            open={showJoinModal}
+            onClose={() => setShowJoinModal(false)}
+            onJoin={handleJoinByCode}
+          />
         </main>
 
         {/* 底部装饰 */}

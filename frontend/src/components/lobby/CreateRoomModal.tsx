@@ -36,7 +36,7 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ open, onClose, onConf
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm mobile-landscape:max-w-xs">
         <DialogHeader>
           <DialogTitle className={cn(
             "font-display",

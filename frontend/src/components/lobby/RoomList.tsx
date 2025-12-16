@@ -35,43 +35,48 @@ const getStatusStyles = (status: RoomStatus) => {
   switch (status) {
     case RoomStatus.WAITING:
       return {
-        badge: 'bg-state-active/15 text-state-active-muted border border-state-active/30',
-        dot: 'bg-state-active animate-pulse shadow-glow-sm',
+        badge: 'bg-gradient-to-r from-state-active/10 to-state-active/20 text-state-active-muted border border-state-active/25',
+        dot: 'bg-state-active shadow-[0_0_6px_hsla(42,95%,52%,0.6)]',
+        animate: true,
       };
     case RoomStatus.READY:
       return {
-        badge: 'bg-action-primary/15 text-action-primary-dark border border-action-primary/30',
-        dot: 'bg-action-primary',
+        badge: 'bg-gradient-to-r from-action-primary/10 to-action-primary/15 text-action-primary-dark border border-action-primary/25',
+        dot: 'bg-action-primary shadow-[0_0_4px_hsla(158,55%,42%,0.5)]',
+        animate: false,
       };
     case RoomStatus.PLAYING:
       return {
-        badge: 'bg-action-primary/15 text-action-primary border border-action-primary/30',
-        dot: 'bg-action-primary',
+        badge: 'bg-gradient-to-r from-[hsl(200,80%,50%)]/10 to-[hsl(200,80%,50%)]/15 text-[hsl(200,80%,40%)] border border-[hsl(200,80%,50%)]/25',
+        dot: 'bg-[hsl(200,80%,50%)] shadow-[0_0_4px_hsla(200,80%,50%,0.5)]',
+        animate: false,
       };
     case RoomStatus.CLOSED:
       return {
-        badge: 'bg-state-disabled/15 text-fg-secondary border border-stroke/30',
+        badge: 'bg-stroke/10 text-fg-secondary/70 border border-stroke/20',
         dot: 'bg-state-disabled',
+        animate: false,
       };
     default:
       return {
-        badge: 'bg-state-disabled/15 text-fg-secondary border border-stroke/30',
+        badge: 'bg-stroke/10 text-fg-secondary/70 border border-stroke/20',
         dot: 'bg-state-disabled',
+        animate: false,
       };
   }
 };
 
 const TableHeader = () => (
-  <thead className={cn(
-    "bg-gradient-header",
-    "text-white/90",
-  )}>
-    <tr>
-      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">房间</th>
-      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">状态</th>
-      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">玩家</th>
-      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">人数</th>
-      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">操作</th>
+  <thead>
+    <tr className={cn(
+      "bg-gradient-to-r from-[hsl(158,55%,32%)] via-[hsl(158,55%,38%)] to-[hsl(158,55%,32%)]",
+      "text-white",
+    )}>
+      <th className="px-4 py-2.5 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center text-sm mobile-landscape:text-xs font-display font-bold tracking-wide">房间</th>
+      <th className="px-4 py-2.5 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center text-sm mobile-landscape:text-xs font-display font-bold tracking-wide">状态</th>
+      <th className="px-4 py-2.5 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center text-sm mobile-landscape:text-xs font-display font-bold tracking-wide">玩家</th>
+      <th className="px-4 py-2.5 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center text-sm mobile-landscape:text-xs font-display font-bold tracking-wide">人数</th>
+      <th className="px-4 py-2.5 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center text-sm mobile-landscape:text-xs font-display font-bold tracking-wide">操作</th>
     </tr>
   </thead>
 );
@@ -186,7 +191,15 @@ const RoomList: React.FC<RoomListProps> = ({
   };
 
   return (
-    <div className="space-y-6 mobile-landscape:space-y-3">
+    <div className="relative">
+      {/* 左右翻页按钮 */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+        variant="arrows"
+      />
+
       <div className={cn(
         "bg-surface-base rounded-xl mobile-landscape:rounded-lg overflow-hidden",
         "shadow-[var(--elevation-2),var(--shadow-relief)]",
@@ -196,7 +209,7 @@ const RoomList: React.FC<RoomListProps> = ({
           <table className="w-full min-w-[640px] mobile-landscape:min-w-[560px]">
             <TableHeader />
             <tbody>
-              {sortedRooms.map((room, rowIndex) => {
+              {sortedRooms.slice(0, 5).map((room, rowIndex) => {
                 const isUserInRoom = room.players.some(player => player.id === currentUserId);
                 const canJoin = room.can_join && !isUserInRoom;
                 const playersWithSlots = getPlayersWithSlots(room);
@@ -212,7 +225,7 @@ const RoomList: React.FC<RoomListProps> = ({
                       rowIndex % 2 === 0 ? "bg-surface-base" : "bg-surface-elevated/20",
                     )}
                   >
-                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2 text-center">
+                    <td className="px-4 py-2 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center">
                       <span className={cn(
                         "font-mono text-sm mobile-landscape:text-xs font-medium",
                         "text-fg-primary",
@@ -220,7 +233,7 @@ const RoomList: React.FC<RoomListProps> = ({
                         #{room.id.slice(-6)}
                       </span>
                     </td>
-                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2 text-center">
+                    <td className="px-4 py-2 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center">
                       <span className={cn(
                         "inline-flex items-center gap-1.5 mobile-landscape:gap-1 px-3 py-1 mobile-landscape:px-2 rounded-full text-xs mobile-landscape:text-[10px] font-medium",
                         statusStyles.badge,
@@ -229,7 +242,7 @@ const RoomList: React.FC<RoomListProps> = ({
                         {getStatusText(room.status)}
                       </span>
                     </td>
-                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2">
+                    <td className="px-4 py-2 mobile-landscape:px-2 mobile-landscape:py-1.5">
                       <div className="flex justify-center gap-3 mobile-landscape:gap-1.5">
                         {playersWithSlots.map((player, index) => (
                           <PlayerMiniCard
@@ -240,7 +253,7 @@ const RoomList: React.FC<RoomListProps> = ({
                         ))}
                       </div>
                     </td>
-                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2 text-center">
+                    <td className="px-4 py-2 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center">
                       <span className={cn(
                         "inline-flex items-center justify-center",
                         "min-w-[2.5rem] mobile-landscape:min-w-[2rem] px-2 mobile-landscape:px-1.5 py-0.5 rounded-md",
@@ -250,7 +263,7 @@ const RoomList: React.FC<RoomListProps> = ({
                         {room.player_count}/4
                       </span>
                     </td>
-                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2 text-center">
+                    <td className="px-4 py-2 mobile-landscape:px-2 mobile-landscape:py-1.5 text-center">
                       {isUserInRoom ? (
                         <Button
                           intent="neutral"
@@ -291,7 +304,7 @@ const RoomList: React.FC<RoomListProps> = ({
 
       {/* 加载指示器 */}
       {isLoading && rooms.length > 0 && (
-        <div className="text-center py-4">
+        <div className="absolute inset-0 flex items-center justify-center bg-surface-base/50 backdrop-blur-sm rounded-xl">
           <div className="inline-flex items-center gap-2 text-fg-secondary">
             <div className={cn(
               "w-4 h-4 rounded-full border-2",
@@ -301,14 +314,6 @@ const RoomList: React.FC<RoomListProps> = ({
             <span className="text-sm">更新中...</span>
           </div>
         </div>
-      )}
-
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
       )}
     </div>
   );

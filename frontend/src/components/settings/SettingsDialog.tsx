@@ -53,7 +53,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChange }) =
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md mobile-landscape:max-w-xs">
         <DialogHeader>
           <DialogTitle className="text-center">设置</DialogTitle>
           <DialogDescription className="sr-only">

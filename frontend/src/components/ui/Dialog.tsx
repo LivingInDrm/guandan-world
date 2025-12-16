@@ -45,6 +45,7 @@ const DialogContent = React.forwardRef<
         "fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]",
         // 尺寸
         "grid w-full max-w-lg gap-5 p-6",
+        "mobile-landscape:max-w-xs mobile-landscape:gap-3 mobile-landscape:p-4",
         // 背景 - 多层渐变营造深度
         "bg-gradient-to-b from-surface-base to-surface-elevated",
         "backdrop-blur-xl",
@@ -73,7 +74,7 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Close
         className={cn(
           "absolute right-4 top-4",
-          "flex items-center justify-center w-8 h-8",
+          "flex items-center justify-center w-8 h-8 mobile-landscape:w-6 mobile-landscape:h-6",
           "rounded-full",
           // 背景渐变
           "bg-gradient-to-b from-surface-elevated to-[hsl(35,6%,82%)]",
@@ -111,7 +112,7 @@ const DialogHeader = ({
   <div
     className={cn(
       "flex flex-col space-y-2 text-center sm:text-left",
-      "pb-4 border-b border-stroke/30",
+      "pb-4 mobile-landscape:pb-2 border-b border-stroke/30",
       className
     )}
     {...props}
@@ -126,7 +127,7 @@ const DialogFooter = ({
   <div
     className={cn(
       "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-      "pt-4 border-t border-stroke/30",
+      "pt-4 mobile-landscape:pt-2 border-t border-stroke/30",
       className
     )}
     {...props}
@@ -141,7 +142,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "font-display text-xl font-semibold leading-tight tracking-wide",
+      "font-display text-xl mobile-landscape:text-base font-semibold leading-tight tracking-wide",
       // 金色渐变文字
       "bg-gradient-to-r from-[hsl(42,95%,45%)] via-[hsl(42,95%,55%)] to-[hsl(42,95%,45%)]",
       "bg-clip-text text-transparent",

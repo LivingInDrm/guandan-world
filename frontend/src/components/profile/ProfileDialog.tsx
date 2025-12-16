@@ -115,7 +115,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({ open, onOpenChange }) => 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md mobile-landscape:max-w-xs">
           <DialogHeader>
             <DialogTitle className="text-center">个人资料</DialogTitle>
             <DialogDescription className="sr-only">
