@@ -44,11 +44,13 @@ const GamePage: React.FC = () => {
     playerSeat,
     currentPhase,
     isMyTurn,
+    myFinishRank,
     setCountdown,
     setCurrentPhase,
     setPlayerSeat,
     setPlayerView,
-    setMyTurn
+    setMyTurn,
+    setMyFinishRank
   } = useGameStore();
 
   const dealResultData = useDealResultData();
@@ -154,8 +156,12 @@ const GamePage: React.FC = () => {
         audioService.playPassSound();
       } else if (event.type === EventType.EVENT_TYPE_PLAYER_FINISHED && event.playerFinished) {
         audioService.playRankSound(event.playerFinished.finishRank);
+        if (event.actorSeat === playerSeat) {
+          setMyFinishRank(event.playerFinished.finishRank);
+        }
       } else if (event.type === EventType.EVENT_TYPE_DEAL_STARTED) {
         audioService.playDealStartSound();
+        setMyFinishRank(null);
       } else if (event.type === EventType.EVENT_TYPE_DEAL_ENDED && event.dealEnded) {
         const myTeam = playerSeat !== null ? playerSeat % 2 : -1;
         const isWinner = myTeam === event.dealEnded.winningTeam;
@@ -164,6 +170,7 @@ const GamePage: React.FC = () => {
         const myTeam = playerSeat !== null ? playerSeat % 2 : -1;
         const isWinner = myTeam === event.matchEnded.winner;
         audioService.playMatchEndSound(isWinner);
+        setMyFinishRank(null);
       }
     };
 
@@ -267,7 +274,7 @@ const GamePage: React.FC = () => {
       wsClient.off(WS_MESSAGE_TYPES.TURN_DEADLINE, handleTurnDeadline);
       wsClient.off(WS_MESSAGE_TYPES.TRIBUTE_VIEW, handleTributeView);
     };
-  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom]);
+  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom, setMyFinishRank]);
 
   // 连接成功后请求同步游戏状态（防抖 300ms，避免网络抖动时重复请求）
   useEffect(() => {
@@ -479,6 +486,7 @@ const GamePage: React.FC = () => {
             playerSeat={playerSeat}
             dealLevel={dealLevel || 2}
             disabled={false}
+            finishRank={myFinishRank}
           />
         </div>
       </div>

@@ -19,6 +19,7 @@ interface PlayerControlPanelProps {
   playerSeat: number;
   dealLevel: number;
   disabled?: boolean;
+  finishRank?: number | null;
 }
 
 const PlayerControlPanel: React.FC<PlayerControlPanelProps> = ({
@@ -37,6 +38,7 @@ const PlayerControlPanel: React.FC<PlayerControlPanelProps> = ({
   playerSeat,
   dealLevel,
   disabled = false,
+  finishRank,
 }) => {
   return (
     <div className="flex flex-col">
@@ -62,6 +64,7 @@ const PlayerControlPanel: React.FC<PlayerControlPanelProps> = ({
         selectedCards={selectedCards}
         onCardSelect={onCardSelect}
         currentLevel={currentLevel}
+        finishRank={finishRank}
       />
     </div>
   );

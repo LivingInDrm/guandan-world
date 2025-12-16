@@ -2,6 +2,8 @@ import WebSocket from 'ws';
 import type { WSMessage, WSMessageType } from './types.js';
 import type { Logger } from '../utils/Logger.js';
 
+const IGNORED_MESSAGE_TYPES = new Set(['ping', 'game_event', 'turn_deadline']);
+
 export type WSEventHandler = (message: WSMessage) => void;
 export type WSConnectionHandler = (connected: boolean) => void;
 export type WSErrorHandler = (error: Error) => void;
@@ -143,6 +145,10 @@ class WebSocketClient {
       const message: WSMessage = JSON.parse(data.toString());
 
       if (message.type === 'pong') {
+        return;
+      }
+
+      if (IGNORED_MESSAGE_TYPES.has(message.type)) {
         return;
       }
 

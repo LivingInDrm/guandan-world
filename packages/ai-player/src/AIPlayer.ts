@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { fromProtoCards, fromCardList } from '@guandan/sdk-ts';
+import { fromProtoCards, fromCardList, compTypeToString } from '@guandan/sdk-ts';
 import type { CardComp } from '@guandan/sdk-ts';
 import { ApiClient } from './services/ApiClient.js';
 import { WebSocketClient } from './services/WebSocketClient.js';
@@ -193,9 +193,6 @@ export class AIPlayer {
         this.logger.debug('onPlayerView', `skipped (seq ${seq} <= lastSeq ${this.lastSeq})`);
         return;
       }
-      if (this.lastSeq !== -1 && seq > this.lastSeq + 1) {
-        this.logger.warn('onPlayerView', `seq jump: expected=${this.lastSeq + 1} actual=${seq}`);
-      }
       this.lastSeq = seq;
 
       this.playerSeat = view.playerSeat;
@@ -293,6 +290,13 @@ export class AIPlayer {
 
     this.actionInProgress = true;
     try {
+      await this.delay(1000 + Math.random() * 2000);
+
+      if (!this.playerView) {
+        this.logger.debug('handlePlayDecision', 'no playerView after delay');
+        return;
+      }
+
       const dealLevel = this.playerView.dealLevel;
       const handCards = data.hand || this.playerView.playerCards;
       const hand = fromProtoCards(handCards, dealLevel);
@@ -308,14 +312,15 @@ export class AIPlayer {
           if (lastPlay.cards && lastPlay.cards.length > 0 && !lastPlay.isPass) {
             const lastCards = fromProtoCards(lastPlay.cards, dealLevel);
             prevComp = fromCardList(lastCards);
+            const prevCardsStr = lastCards.map(c => c.toShortString()).join(', ');
+            const prevTypeStr = compTypeToString(prevComp.getType());
+            this.logger.info('handlePlayDecision', `prevComp cards=[${prevCardsStr}] type=${prevTypeStr} valid=${prevComp.isValid()}`);
             break;
           }
         }
       }
 
       const cardsToPlay = this.strategy.selectCardsToPlay(hand, isLeader, prevComp);
-
-      await this.delay(500 + Math.random() * 1000);
 
       if (cardsToPlay && cardsToPlay.length > 0) {
         const deckIndexes = cardsToPlay.map(c => c.deckIndex);
@@ -349,7 +354,7 @@ export class AIPlayer {
       const tributeCard = this.strategy.selectTributeCard(poolCards);
 
       if (tributeCard) {
-        await this.delay(500 + Math.random() * 1000);
+        await this.delay(1000 + Math.random() * 2000);
         this.logger.info('handleTributeSelection', `selectTribute card=${tributeCard.toShortString()} deckIdx=${tributeCard.deckIndex}`);
         await this.api.selectTribute(this.roomId!, this.playerSeat!, tributeCard.deckIndex);
       } else {
@@ -378,7 +383,7 @@ export class AIPlayer {
       const returnCard = this.strategy.selectReturnTributeCard(hand);
 
       if (returnCard) {
-        await this.delay(500 + Math.random() * 1000);
+        await this.delay(1000 + Math.random() * 2000);
         this.logger.info('handleReturnTribute', `returnTribute card=${returnCard.toShortString()} deckIdx=${returnCard.deckIndex}`);
         await this.api.returnTribute(this.roomId!, this.playerSeat!, returnCard.deckIndex);
       } else {

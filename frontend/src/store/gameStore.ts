@@ -12,6 +12,7 @@ interface GameState {
   isConnected: boolean;
   error: string | null;
   currentPhase: string;
+  myFinishRank: number | null;
 }
 
 interface GameActions {
@@ -26,6 +27,7 @@ interface GameActions {
   clearError: () => void;
   reset: () => void;
   setCurrentPhase: (phase: string) => void;
+  setMyFinishRank: (rank: number | null) => void;
 }
 
 type GameStore = GameState & GameActions;
@@ -39,7 +41,8 @@ const initialState: GameState = {
   lastMessage: null,
   isConnected: false,
   error: null,
-  currentPhase: 'waiting_players'
+  currentPhase: 'waiting_players',
+  myFinishRank: null
 };
 
 export const useGameStore = create<GameStore>((set) => ({
@@ -65,6 +68,8 @@ export const useGameStore = create<GameStore>((set) => ({
   clearError: () => set({ error: null }),
   
   setCurrentPhase: (phase: string) => set({ currentPhase: phase }),
+  
+  setMyFinishRank: (myFinishRank: number | null) => set({ myFinishRank }),
   
   reset: () => set(initialState)
 }));

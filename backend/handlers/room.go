@@ -25,6 +25,7 @@ type DriverServiceInterface interface {
 type WSManagerInterface interface {
 	BroadcastToRoom(roomID string, message *websocket.WSMessage)
 	SendToPlayer(playerID string, message *websocket.WSMessage) error
+	AddPlayerToRoom(playerID, roomID string)
 }
 
 // RoomHandler handles room-related HTTP requests
@@ -115,6 +116,8 @@ func (h *RoomHandler) CreateRoom(c *gin.Context) {
 		})
 		return
 	}
+
+	h.wsManager.AddPlayerToRoom(userIDStr, newRoom.ID)
 
 	c.JSON(http.StatusCreated, RoomResponse{
 		Room: newRoom,
@@ -257,6 +260,8 @@ func (h *RoomHandler) JoinRoom(c *gin.Context) {
 		return
 	}
 
+	h.wsManager.AddPlayerToRoom(userIDStr, roomID)
+
 	// Broadcast room update to all room members via WebSocket
 	h.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
 		Type: "room_update",
@@ -345,6 +350,8 @@ func (h *RoomHandler) JoinRoomByCode(c *gin.Context) {
 		return
 	}
 
+	h.wsManager.AddPlayerToRoom(userIDStr, updatedRoom.ID)
+
 	h.wsManager.BroadcastToRoom(updatedRoom.ID, &websocket.WSMessage{
 		Type: "room_update",
 		Data: map[string]interface{}{
@@ -396,6 +403,8 @@ func (h *RoomHandler) QuickJoin(c *gin.Context) {
 		})
 		return
 	}
+
+	h.wsManager.AddPlayerToRoom(userIDStr, room.ID)
 
 	h.wsManager.BroadcastToRoom(room.ID, &websocket.WSMessage{
 		Type: "room_update",

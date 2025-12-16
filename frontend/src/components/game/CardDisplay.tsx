@@ -83,6 +83,7 @@ const CardSuitLarge: React.FC<{
     <img 
       src={SUIT_IMAGES[suit]}
       alt={SUIT_SYMBOLS[suit]}
+      draggable="false"
       className="absolute"
       style={{ 
         width: `calc(${sizeConfig.centerIconSize} * ${scale})`,
@@ -175,6 +176,7 @@ const JokerContent: React.FC<{
       <img 
         src={jokerImg}
         alt={isBigJoker ? 'Big Joker' : 'Small Joker'}
+        draggable="false"
         className="absolute right-1"
         style={{ 
           bottom: sizeConfig.jokerImgBottom,

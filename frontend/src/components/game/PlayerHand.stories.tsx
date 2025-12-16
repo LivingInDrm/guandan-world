@@ -49,10 +49,11 @@ function createJokerHand(): Card[] {
   ];
 }
 
-const InteractiveWrapper: React.FC<{ initialCards: Card[]; initialSelected?: Card[]; currentLevel?: number }> = ({ 
+const InteractiveWrapper: React.FC<{ initialCards: Card[]; initialSelected?: Card[]; currentLevel?: number; finishRank?: number }> = ({ 
   initialCards, 
   initialSelected = [],
-  currentLevel = 10
+  currentLevel = 10,
+  finishRank
 }) => {
   const [selectedCards, setSelectedCards] = useState<Card[]>(initialSelected);
   
@@ -63,6 +64,7 @@ const InteractiveWrapper: React.FC<{ initialCards: Card[]; initialSelected?: Car
         selectedCards={selectedCards}
         onCardSelect={setSelectedCards}
         currentLevel={currentLevel}
+        finishRank={finishRank}
       />
     </div>
   );
@@ -106,4 +108,32 @@ export const WithSelectedCards: Story = () => {
 };
 WithSelectedCards.meta = {
   description: '预选中部分牌',
+};
+
+export const FinishRank1: Story = () => {
+  return <InteractiveWrapper initialCards={[]} finishRank={1} />;
+};
+FinishRank1.meta = {
+  description: '头游 - 第一名完成',
+};
+
+export const FinishRank2: Story = () => {
+  return <InteractiveWrapper initialCards={[]} finishRank={2} />;
+};
+FinishRank2.meta = {
+  description: '二游 - 第二名完成',
+};
+
+export const FinishRank3: Story = () => {
+  return <InteractiveWrapper initialCards={[]} finishRank={3} />;
+};
+FinishRank3.meta = {
+  description: '三游 - 第三名完成',
+};
+
+export const FinishRank4: Story = () => {
+  return <InteractiveWrapper initialCards={[]} finishRank={4} />;
+};
+FinishRank4.meta = {
+  description: '末游 - 第四名完成',
 };

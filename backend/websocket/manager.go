@@ -520,6 +520,34 @@ func (m *WSManager) IsPlayerConnected(playerID string) bool {
 	return exists
 }
 
+// AddPlayerToRoom synchronizes a player's WebSocket connection to a room
+func (m *WSManager) AddPlayerToRoom(playerID, roomID string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	conn, exists := m.connections[playerID]
+	if !exists {
+		return
+	}
+
+	// Remove from old room
+	if conn.roomID != "" && conn.roomID != roomID {
+		if oldRoomConns, exists := m.rooms[conn.roomID]; exists {
+			delete(oldRoomConns, playerID)
+			if len(oldRoomConns) == 0 {
+				delete(m.rooms, conn.roomID)
+			}
+		}
+	}
+
+	// Add to new room
+	conn.roomID = roomID
+	if _, exists := m.rooms[roomID]; !exists {
+		m.rooms[roomID] = make(map[string]*WSConnection)
+	}
+	m.rooms[roomID][playerID] = conn
+}
+
 // notifyPlayerDisconnected notifies about player disconnection
 func (m *WSManager) notifyPlayerDisconnected(playerID, roomID string) {
 	// This would typically trigger auto-play or other disconnection handling
