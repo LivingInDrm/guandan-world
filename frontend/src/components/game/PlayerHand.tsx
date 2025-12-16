@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import type { Card } from '../../types/proto';
 import { isJoker } from '../../utils/cardUtils';
 import CardDisplay from './CardDisplay';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Trophy, Medal, Award, Frown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PlayerHandProps {
@@ -57,7 +57,7 @@ const CardGroup: React.FC<CardGroupProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center mb-4">
+    <div className="flex flex-col items-center mb-4 mobile-landscape:mb-2">
       <div className="flex flex-col items-center">
         {sortedCards.map((card, index) => (
           <CardDisplay
@@ -77,13 +77,48 @@ const CardGroup: React.FC<CardGroupProps> = ({
   );
 };
 
-const getRankText = (rank: number): string => {
+const getRankConfig = (rank: number) => {
   switch (rank) {
-    case 1: return '头游';
-    case 2: return '二游';
-    case 3: return '三游';
-    case 4: return '末游';
-    default: return '';
+    case 1:
+      return {
+        text: '头游',
+        icon: Trophy,
+        gradient: 'from-state-active via-[hsl(42,95%,60%)] to-[hsl(42,95%,45%)]',
+        glow: '0 0 40px hsla(42, 95%, 52%, 0.6), 0 0 20px hsla(42, 95%, 52%, 0.4)',
+        iconColor: 'text-state-active',
+      };
+    case 2:
+      return {
+        text: '二游',
+        icon: Medal,
+        gradient: 'from-[hsl(158,55%,42%)] via-[hsl(158,55%,50%)] to-[hsl(158,55%,38%)]',
+        glow: '0 0 30px hsla(158, 55%, 42%, 0.5)',
+        iconColor: 'text-[hsl(158,55%,42%)]',
+      };
+    case 3:
+      return {
+        text: '三游',
+        icon: Award,
+        gradient: 'from-[hsl(30,50%,50%)] via-[hsl(30,55%,55%)] to-[hsl(30,45%,45%)]',
+        glow: '0 0 20px hsla(30, 50%, 50%, 0.4)',
+        iconColor: 'text-[hsl(30,50%,50%)]',
+      };
+    case 4:
+      return {
+        text: '末游',
+        icon: Frown,
+        gradient: 'from-white/60 via-white/50 to-white/40',
+        glow: 'none',
+        iconColor: 'text-white/50',
+      };
+    default:
+      return {
+        text: '',
+        icon: null,
+        gradient: '',
+        glow: 'none',
+        iconColor: '',
+      };
   }
 };
 
@@ -153,28 +188,34 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
   }, []);
 
   return (
-    <div 
-      className="bg-transparent pt-4 px-4 pb-2 select-none touch-none"
+    <div
+      className={cn(
+        "select-none touch-none",
+        "pt-2 px-4 pb-2 mobile-landscape:pt-1 mobile-landscape:px-2 mobile-landscape:pb-1",
+      )}
       onPointerDown={handlePointerDown}
     >
-      <div className="flex justify-end mb-3">
+      {/* 清空选择按钮 */}
+      <div className="flex justify-end mb-1">
         <button
           onClick={handleClearSelection}
           className={cn(
-            "p-1.5 rounded-md",
-            "text-fg-secondary hover:text-fg-primary",
-            "hover:bg-surface-elevated",
-            "transition-colors duration-fast",
-            "opacity-60 hover:opacity-100",
+            "p-2 mobile-landscape:p-1.5 rounded-lg",
+            "text-white/60 hover:text-white",
+            "bg-black/20 hover:bg-black/40",
+            "border border-white/10 hover:border-white/20",
+            "transition-all duration-200",
+            "hover:shadow-[0_0_8px_hsla(158,55%,42%,0.3)]",
             selectedCards.length > 0 ? '' : 'invisible'
           )}
           aria-label="清空选择"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3" />
         </button>
       </div>
-      
-      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 justify-center h-64 overflow-y-auto">
+
+      {/* 手牌区域 */}
+      <div className="flex flex-wrap items-end gap-x-1 gap-y-2 mobile-landscape:gap-x-0.5 mobile-landscape:gap-y-1 justify-center min-h-[var(--hand-area-height)] pb-2">
         {sortedRanks.map(rank => (
           <CardGroup
             key={rank}
@@ -187,33 +228,49 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
           />
         ))}
       </div>
-      
+
+      {/* 空手牌状态 - 完成排名或等待 */}
       {safeCards.length === 0 && (
-        <div className="flex items-start justify-center h-64 pt-4">
+        <div className="flex items-start justify-center min-h-[var(--hand-area-height)] pt-4 mobile-landscape:pt-2 pb-2">
           {finishRank ? (
-            <div className="text-center">
-              <span 
-                className={cn(
-                  "text-5xl font-black tracking-widest",
-                  "bg-gradient-to-b bg-clip-text text-transparent",
-                  finishRank === 1 
-                    ? "from-state-active via-action-secondary to-action-secondary" 
-                    : finishRank === 4 
-                      ? "from-fg-secondary via-action-neutral to-action-neutral"
-                      : "from-action-primary via-action-primary to-action-primary/70"
-                )}
-                style={{ 
-                  textShadow: finishRank === 1 
-                    ? '0 0 30px hsla(var(--primitive-accent-500), 0.6)' 
-                    : undefined 
-                }}
-              >
-                {getRankText(finishRank)}
-              </span>
-            </div>
+            (() => {
+              const config = getRankConfig(finishRank);
+              const IconComponent = config.icon;
+              return (
+                <div className={cn(
+                  "flex flex-col items-center gap-3 mobile-landscape:gap-2 p-6 mobile-landscape:p-3 rounded-2xl mobile-landscape:rounded-xl",
+                  "bg-black/30 backdrop-blur-sm",
+                  "border border-white/10",
+                  finishRank === 1 && "animate-pulse-glow",
+                )}>
+                  {IconComponent && (
+                    <IconComponent
+                      className={cn("w-12 h-12 mobile-landscape:w-8 mobile-landscape:h-8", config.iconColor)}
+                      strokeWidth={1.5}
+                    />
+                  )}
+                  <span
+                    className={cn(
+                      "text-5xl mobile-landscape:text-3xl font-black tracking-widest font-display",
+                      "bg-gradient-to-b bg-clip-text text-transparent",
+                      config.gradient,
+                    )}
+                    style={{
+                      textShadow: config.glow !== 'none' ? config.glow : undefined,
+                    }}
+                  >
+                    {config.text}
+                  </span>
+                </div>
+              );
+            })()
           ) : (
-            <div className="text-center text-fg-secondary">
-              暂无手牌
+            <div className={cn(
+              "flex flex-col items-center gap-2 p-4 mobile-landscape:p-2 rounded-xl",
+              "bg-black/20 backdrop-blur-sm",
+              "border border-white/10",
+            )}>
+              <span className="text-white/50 text-sm mobile-landscape:text-xs">暂无手牌</span>
             </div>
           )}
         </div>

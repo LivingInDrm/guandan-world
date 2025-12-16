@@ -1,15 +1,28 @@
+// Button
 export { Button, buttonVariants } from './Button'
 export type { ButtonProps } from './Button'
 
-export { Badge, badgeVariants } from './Badge'
+// Badge
+export { Badge, BadgeDot, badgeVariants } from './Badge'
 export type { BadgeProps } from './Badge'
 
-export { Card, cardVariants } from './Card'
+// Card
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  cardVariants
+} from './Card'
 export type { CardProps } from './Card'
 
-export { Avatar, avatarVariants } from './Avatar'
+// Avatar
+export { Avatar, AvatarGroup, avatarVariants } from './Avatar'
 export type { AvatarProps } from './Avatar'
 
+// Dialog
 export {
   Dialog,
   DialogPortal,
@@ -23,9 +36,11 @@ export {
   DialogDescription,
 } from './Dialog'
 
-export { Input, Label } from './Input'
+// Input
+export { Input, Label, Textarea, InputGroup, InputHelper, inputVariants } from './Input'
 export type { InputProps } from './Input'
 
+// DropdownMenu
 export {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -44,4 +59,9 @@ export {
   DropdownMenuRadioGroup,
 } from './DropdownMenu'
 
-export { Slider } from './Slider'
+// Slider
+export { Slider, SliderWithMarks } from './Slider'
+export type { SliderProps } from './Slider'
+
+// OrientationGuard
+export { default as OrientationGuard } from './OrientationGuard'

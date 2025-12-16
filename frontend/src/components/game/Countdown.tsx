@@ -84,23 +84,24 @@ const Countdown: React.FC<CountdownProps> = ({
   const offset = circumference * (1 - displayProgress);
 
   const getRingColor = (): string => {
-    if (!isActive) return 'hsl(var(--primitive-neutral-500))';
-    if (secondsLeft <= 5) return 'hsl(var(--primitive-danger-500))';
-    if (secondsLeft <= 10) return 'hsl(var(--primitive-warning-500))';
-    return 'hsl(var(--primitive-accent-500))';
+    if (!isActive) return 'hsl(0, 0%, 50%)';
+    if (secondsLeft <= 5) return 'hsl(0, 70%, 50%)'; // 朱砂红
+    if (secondsLeft <= 10) return 'hsl(42, 95%, 52%)'; // 帝王金
+    return 'hsl(158, 55%, 42%)'; // 翡翠绿
   };
 
   const getTextColor = (): string => {
-    if (!isActive) return 'hsl(var(--primitive-neutral-500))';
-    if (secondsLeft <= 5) return 'hsl(var(--primitive-danger-500))';
-    if (secondsLeft <= 10) return 'hsl(var(--primitive-warning-500))';
-    return 'hsl(var(--primitive-neutral-700))';
+    if (!isActive) return 'hsla(0, 0%, 100%, 0.5)';
+    if (secondsLeft <= 5) return 'hsl(0, 70%, 60%)';
+    if (secondsLeft <= 10) return 'hsl(42, 95%, 55%)';
+    return 'hsla(0, 0%, 100%, 0.9)';
   };
 
   const getRingFilter = (): string => {
     if (!isActive) return 'none';
-    if (secondsLeft <= 5) return 'drop-shadow(0 0 6px hsl(var(--primitive-danger-500) / 0.7))';
-    return 'drop-shadow(0 0 4px hsl(var(--primitive-accent-500) / 0.6))';
+    if (secondsLeft <= 5) return 'drop-shadow(0 0 8px hsla(0, 70%, 50%, 0.7))';
+    if (secondsLeft <= 10) return 'drop-shadow(0 0 6px hsla(42, 95%, 52%, 0.6))';
+    return 'drop-shadow(0 0 6px hsla(158, 55%, 42%, 0.5))';
   };
 
   const viewBoxSize = config.radius * 2 + config.strokeWidth * 2;
@@ -108,16 +109,16 @@ const Countdown: React.FC<CountdownProps> = ({
 
   return (
     <div
-      className="relative inline-flex items-center justify-center"
+      className="relative inline-flex items-center justify-center mobile-landscape:scale-75"
       style={{ width: config.width, height: config.width }}
     >
       <div
         className="
           absolute inset-0 rounded-full
-          bg-gradient-to-b from-white/90 to-surface-elevated/85
+          bg-gradient-to-b from-black/50 to-black/70
           backdrop-blur-sm
-          border border-white/70
-          shadow-elevation-2
+          border border-white/20
+          shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_hsla(0,0%,100%,0.1)]
         "
       />
 
@@ -127,20 +128,22 @@ const Countdown: React.FC<CountdownProps> = ({
         viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
         className="absolute"
       >
+        {/* 底色轨道 */}
         <circle
           cx={center}
           cy={center}
           r={config.radius}
-          stroke="hsl(var(--primitive-neutral-500) / 0.45)"
+          stroke="hsla(0, 0%, 100%, 0.15)"
           strokeWidth={config.strokeWidth}
           fill="none"
         />
 
+        {/* 内阴影效果 */}
         <circle
           cx={center}
           cy={center}
           r={config.radius}
-          stroke="hsl(var(--primitive-neutral-900) / 0.15)"
+          stroke="hsla(0, 0%, 0%, 0.3)"
           strokeWidth={config.strokeWidth + 2}
           fill="none"
           className="blur-[3px]"
@@ -163,11 +166,11 @@ const Countdown: React.FC<CountdownProps> = ({
       </svg>
 
       <div
-        className="relative font-bold leading-none"
+        className="relative font-bold leading-none font-display"
         style={{
           fontSize: config.fontSize,
           color: getTextColor(),
-          textShadow: '0 1px 2px hsl(var(--primitive-neutral-900) / 0.4)',
+          textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
         }}
       >
         {displaySeconds}

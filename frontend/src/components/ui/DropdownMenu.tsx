@@ -15,6 +15,51 @@ const DropdownMenuSub = DropdownMenuPrimitive.Sub
 
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup
 
+// 共享的菜单内容样式
+const menuContentStyles = [
+  "z-50 min-w-[180px] overflow-hidden",
+  // 内边距
+  "p-1.5",
+  // 背景 - 精致毛玻璃
+  "bg-gradient-to-b from-surface-base/95 to-surface-elevated/95",
+  "backdrop-blur-xl",
+  // 边框
+  "border border-stroke/50 rounded-lg",
+  // 阴影 - 多层次立体感
+  "shadow-[var(--elevation-3),var(--shadow-relief),0_0_20px_hsla(0,0%,0%,0.08)]",
+  // 动画
+  "data-[state=open]:animate-in data-[state=closed]:animate-out",
+  "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+  "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+  "data-[side=bottom]:slide-in-from-top-2",
+  "data-[side=left]:slide-in-from-right-2",
+  "data-[side=right]:slide-in-from-left-2",
+  "data-[side=top]:slide-in-from-bottom-2",
+]
+
+// 共享的菜单项样式
+const menuItemStyles = [
+  "relative flex cursor-pointer select-none items-center",
+  "rounded-md px-3 py-2.5 text-sm",
+  "outline-none",
+  // 文字颜色
+  "text-fg-primary",
+  // 左侧装饰边
+  "border-l-2 border-transparent",
+  // 过渡动画
+  "transition-all duration-fast ease-bounce",
+  // 悬停效果
+  "hover:bg-surface-emphasis/80",
+  "hover:border-state-active",
+  "hover:pl-4",
+  // 聚焦效果
+  "focus:bg-surface-emphasis/80",
+  "focus:border-state-active",
+  "focus:pl-4",
+  // 禁用状态
+  "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+]
+
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ComponentRef<typeof DropdownMenuPrimitive.SubTrigger>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
@@ -24,24 +69,17 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-md px-3 py-2 text-sm outline-none",
-      "text-fg-primary border-l-2 border-transparent",
-      "hover:bg-gradient-to-r hover:from-surface-emphasis hover:to-transparent",
-      "hover:border-state-active",
-      "hover:shadow-[0_0_8px_hsla(45,100%,51%,0.3)]",
-      "hover:scale-[1.02]",
-      "focus:bg-gradient-to-r focus:from-surface-emphasis focus:to-transparent",
-      "focus:border-state-active",
-      "data-[state=open]:bg-gradient-to-r data-[state=open]:from-surface-emphasis data-[state=open]:to-transparent",
+      ...menuItemStyles,
+      "data-[state=open]:bg-surface-emphasis/80",
       "data-[state=open]:border-state-active",
-      "transition-all duration-normal ease-bounce",
+      "data-[state=open]:pl-4",
       inset && "pl-8",
       className
     )}
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4 text-state-active" />
+    <ChevronRight className="ml-auto h-4 w-4 text-state-active transition-transform duration-fast group-data-[state=open]:rotate-90" />
   </DropdownMenuPrimitive.SubTrigger>
 ))
 DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName
@@ -52,18 +90,7 @@ const DropdownMenuSubContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.SubContent
     ref={ref}
-    className={cn(
-      "z-50 min-w-[8rem] overflow-hidden p-1.5",
-      "bg-surface-elevated backdrop-blur-sm",
-      "shadow-[var(--elevation-3),var(--shadow-relief),0_0_12px_hsla(145,60%,50%,0.15)]",
-      "border border-stroke-emphasis rounded-lg",
-      "data-[state=open]:animate-in data-[state=closed]:animate-out",
-      "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-      "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
-      "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    )}
+    className={cn(...menuContentStyles, className)}
     {...props}
   />
 ))
@@ -72,23 +99,12 @@ DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayNam
 const DropdownMenuContent = React.forwardRef<
   React.ComponentRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
+>(({ className, sideOffset = 6, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
-      className={cn(
-        "z-50 min-w-[8rem] overflow-hidden p-1.5",
-        "bg-surface-elevated backdrop-blur-sm",
-        "shadow-[var(--elevation-3),var(--shadow-relief),0_0_12px_hsla(145,60%,50%,0.15)]",
-        "border border-stroke-emphasis rounded-lg",
-        "data-[state=open]:animate-in data-[state=closed]:animate-out",
-        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-        "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
-        "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        className
-      )}
+      className={cn(...menuContentStyles, className)}
       {...props}
     />
   </DropdownMenuPrimitive.Portal>
@@ -99,21 +115,18 @@ const DropdownMenuItem = React.forwardRef<
   React.ComponentRef<typeof DropdownMenuPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
     inset?: boolean
+    destructive?: boolean
   }
->(({ className, inset, ...props }, ref) => (
+>(({ className, inset, destructive, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-md px-3 py-2 text-sm outline-none",
-      "text-fg-primary border-l-2 border-transparent",
-      "hover:bg-gradient-to-r hover:from-surface-emphasis hover:to-transparent",
-      "hover:border-state-active",
-      "hover:shadow-[0_0_8px_hsla(45,100%,51%,0.3)]",
-      "hover:scale-[1.02]",
-      "focus:bg-gradient-to-r focus:from-surface-emphasis focus:to-transparent",
-      "focus:border-state-active",
-      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "transition-all duration-normal ease-bounce",
+      ...menuItemStyles,
+      destructive && [
+        "text-action-danger",
+        "hover:bg-action-danger/10",
+        "focus:bg-action-danger/10",
+      ],
       inset && "pl-8",
       className
     )}
@@ -129,22 +142,14 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-md py-2 pl-9 pr-3 text-sm outline-none",
-      "text-fg-primary border-l-2 border-transparent",
-      "hover:bg-gradient-to-r hover:from-surface-emphasis hover:to-transparent",
-      "hover:border-state-active",
-      "hover:shadow-[0_0_8px_hsla(45,100%,51%,0.3)]",
-      "hover:scale-[1.02]",
-      "focus:bg-gradient-to-r focus:from-surface-emphasis focus:to-transparent",
-      "focus:border-state-active",
-      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "transition-all duration-normal ease-bounce",
+      ...menuItemStyles,
+      "pl-9",
       className
     )}
     checked={checked}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-3 flex h-4 w-4 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
         <Check className="h-4 w-4 text-state-active" />
       </DropdownMenuPrimitive.ItemIndicator>
@@ -161,23 +166,15 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-md py-2 pl-9 pr-3 text-sm outline-none",
-      "text-fg-primary border-l-2 border-transparent",
-      "hover:bg-gradient-to-r hover:from-surface-emphasis hover:to-transparent",
-      "hover:border-state-active",
-      "hover:shadow-[0_0_8px_hsla(45,100%,51%,0.3)]",
-      "hover:scale-[1.02]",
-      "focus:bg-gradient-to-r focus:from-surface-emphasis focus:to-transparent",
-      "focus:border-state-active",
-      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "transition-all duration-normal ease-bounce",
+      ...menuItemStyles,
+      "pl-9",
       className
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-3 flex h-4 w-4 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current text-state-active" />
+        <Circle className="h-2.5 w-2.5 fill-state-active text-state-active" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -194,8 +191,10 @@ const DropdownMenuLabel = React.forwardRef<
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn(
-      "px-3 py-2 text-sm font-semibold",
-      "bg-gradient-to-r from-state-active to-action-primary bg-clip-text text-transparent",
+      "px-3 py-2 text-xs font-display font-semibold tracking-wide",
+      // 金色渐变文字
+      "bg-gradient-to-r from-[hsl(42,95%,45%)] via-[hsl(42,95%,55%)] to-[hsl(42,95%,45%)]",
+      "bg-clip-text text-transparent",
       inset && "pl-8",
       className
     )}
@@ -210,7 +209,11 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1.5 h-[1.5px] bg-gradient-to-r from-transparent via-stroke to-transparent", className)}
+    className={cn(
+      "-mx-1 my-1.5 h-px",
+      "bg-gradient-to-r from-transparent via-stroke to-transparent",
+      className
+    )}
     {...props}
   />
 ))
@@ -222,7 +225,12 @@ const DropdownMenuShortcut = ({
 }: React.HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
-      className={cn("ml-auto text-xs tracking-widest text-state-active opacity-70", className)}
+      className={cn(
+        "ml-auto text-xs tracking-widest",
+        "text-state-active/70",
+        "font-mono",
+        className
+      )}
       {...props}
     />
   )

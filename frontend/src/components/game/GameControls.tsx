@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import type { Card, PlayAction } from '../../types';
 import Countdown from './Countdown';
 import { Button } from '@/components/ui';
+import { Play, X, Lightbulb } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   fromProtoCard,
   fromCardList,
@@ -190,18 +192,31 @@ const GameControls: React.FC<GameControlsProps> = ({
   const isPassDisabled = disabled || !canPlay || !isMyTurn || isFirstPlay();
 
   return (
-    <div className="py-2 px-4">
-      <div className="flex items-center justify-between gap-3">
+    <div className={cn(
+      "py-2 px-4 mobile-landscape:py-1 mobile-landscape:px-2",
+    )}>
+      <div className="flex items-center justify-center gap-[var(--control-gap)]">
+        {/* 不出按钮 */}
         <Button
           intent="neutral"
           size="sm"
           onClick={handlePass}
           disabled={isPassDisabled}
-          className="flex-1"
+          className={cn(
+            "min-w-[var(--control-button-min-width)]",
+            "mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1",
+            "bg-white/10 hover:bg-white/20",
+            "text-white/80 hover:text-white",
+            "border border-white/20 hover:border-white/30",
+            "shadow-none hover:shadow-[0_0_8px_hsla(0,0%,100%,0.2)]",
+            "disabled:bg-white/5 disabled:text-white/30 disabled:border-white/10",
+          )}
         >
+          <X className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3 mr-1" />
           不出
         </Button>
 
+        {/* 倒计时 */}
         <div className="flex items-center justify-center">
           <Countdown
             deadlineAtMs={turnDeadlineAtMs}
@@ -210,23 +225,46 @@ const GameControls: React.FC<GameControlsProps> = ({
           />
         </div>
 
+        {/* 提示按钮 */}
         <Button
           intent="secondary"
           size="sm"
           onClick={handleHint}
           disabled={isHintDisabled}
-          className="flex-1"
+          className={cn(
+            "min-w-[var(--control-button-min-width)]",
+            "mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1",
+            "bg-[hsl(158,55%,35%)]/80 hover:bg-[hsl(158,55%,42%)]",
+            "text-white",
+            "border border-[hsl(158,55%,50%)]/30 hover:border-[hsl(158,55%,50%)]/50",
+            "shadow-none hover:shadow-[0_0_12px_hsla(158,55%,42%,0.4)]",
+            "disabled:bg-white/5 disabled:text-white/30 disabled:border-white/10",
+          )}
         >
+          <Lightbulb className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3 mr-1" />
           提示
         </Button>
 
+        {/* 出牌按钮 */}
         <Button
           intent="primary"
           size="sm"
           onClick={handlePlayCards}
           disabled={isPlayDisabled}
-          className="flex-1"
+          className={cn(
+            "min-w-[var(--control-button-min-width)]",
+            "mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1",
+            "bg-gradient-to-r from-state-active to-[hsl(42,95%,45%)]",
+            "hover:from-[hsl(42,95%,55%)] hover:to-[hsl(42,95%,48%)]",
+            "text-primitive-neutral-900 font-bold",
+            "border-none",
+            "shadow-[0_2px_8px_hsla(42,95%,52%,0.4)]",
+            "hover:shadow-[0_4px_16px_hsla(42,95%,52%,0.5)]",
+            "disabled:bg-white/10 disabled:from-white/10 disabled:to-white/10",
+            "disabled:text-white/30 disabled:shadow-none",
+          )}
         >
+          <Play className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3 mr-1" />
           出牌
         </Button>
       </div>

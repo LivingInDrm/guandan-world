@@ -1,5 +1,7 @@
 import React from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui';
+import { cn } from '@/lib/utils';
 
 interface PaginationProps {
   currentPage: number;
@@ -49,42 +51,74 @@ const Pagination: React.FC<PaginationProps> = ({
   const visiblePages = getVisiblePages();
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className={cn(
+      "flex items-center justify-center gap-1.5",
+      "p-2 rounded-xl",
+      "bg-surface-base/60 backdrop-blur-sm",
+      "border border-stroke/30",
+    )}>
+      {/* 上一页按钮 */}
       <Button
         intent="neutral"
         size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="min-w-0 px-4"
+        className={cn(
+          "min-w-0 px-3",
+          "border-stroke/50",
+          !currentPage && "opacity-50",
+        )}
       >
+        <ChevronLeft className="w-4 h-4" />
         上一页
       </Button>
 
-      {visiblePages.map((page, index) => (
-        <React.Fragment key={index}>
-          {page === '...' ? (
-            <span className="px-2 py-2 text-fg-secondary">...</span>
-          ) : (
-            <Button
-              intent={currentPage === page ? 'primary' : 'neutral'}
-              size="sm"
-              onClick={() => onPageChange(page as number)}
-              className="min-w-0 px-3"
-            >
-              {page}
-            </Button>
-          )}
-        </React.Fragment>
-      ))}
+      {/* 页码 */}
+      <div className="flex items-center gap-1 mx-2">
+        {visiblePages.map((page, index) => (
+          <React.Fragment key={index}>
+            {page === '...' ? (
+              <span className="px-2 py-1 text-fg-secondary/60 text-sm">...</span>
+            ) : (
+              <button
+                onClick={() => onPageChange(page as number)}
+                className={cn(
+                  "min-w-[2rem] h-8 px-2 rounded-lg",
+                  "text-sm font-medium",
+                  "transition-all duration-fast",
+                  currentPage === page
+                    ? [
+                        "bg-gradient-to-r from-[hsl(158,55%,35%)] to-[hsl(158,55%,42%)]",
+                        "text-white",
+                        "shadow-[var(--elevation-2),var(--shadow-relief)]",
+                      ]
+                    : [
+                        "text-fg-secondary hover:text-fg-primary",
+                        "hover:bg-surface-elevated/80",
+                      ],
+                )}
+              >
+                {page}
+              </button>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
 
+      {/* 下一页按钮 */}
       <Button
         intent="neutral"
         size="sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="min-w-0 px-4"
+        className={cn(
+          "min-w-0 px-3",
+          "border-stroke/50",
+          currentPage === totalPages && "opacity-50",
+        )}
       >
         下一页
+        <ChevronRight className="w-4 h-4" />
       </Button>
     </div>
   );

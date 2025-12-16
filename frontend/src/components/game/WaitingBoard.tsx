@@ -1,10 +1,12 @@
 import React from 'react';
+import { Play, LogOut, Loader2, Users } from 'lucide-react';
 import type { Player } from '../../types';
 import type { PlayerPosition } from './GameTable';
 import GameTable from './GameTable';
 import PlayerCard from './PlayerCard';
 import RoomInfoPanel from './RoomInfoPanel';
 import { Button } from '../ui';
+import { cn } from '@/lib/utils';
 
 interface WaitingBoardProps {
   players: (Player | null)[];
@@ -52,9 +54,17 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
         isHighlighted={isCurrentUser}
         statusSlot={
           player && (
-            <div className="flex items-center gap-1">
-              <div className={`w-2 h-2 rounded-full ${player.online ? 'bg-[hsl(var(--primitive-success-500))]' : 'bg-[hsl(var(--primitive-neutral-500))]'}`} />
-              <span className="text-xs text-[hsl(var(--color-text-secondary))]">
+            <div className="flex items-center gap-1.5">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                player.online
+                  ? "bg-[hsl(158,55%,42%)] shadow-[0_0_4px_hsla(158,55%,42%,0.6)]"
+                  : "bg-state-disabled",
+              )} />
+              <span className={cn(
+                "text-xs",
+                player.online ? "text-white/80" : "text-white/50",
+              )}>
                 {player.online ? '在线' : '离线'}
               </span>
             </div>
@@ -65,32 +75,89 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
   };
 
   const renderCenter = () => (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
+    <div className="flex flex-col items-center justify-center h-full gap-5 mobile-landscape:gap-2 relative z-10">
+      {/* 人数状态 */}
+      <div className={cn(
+        "flex items-center gap-2 px-4 py-2 mobile-landscape:px-3 mobile-landscape:py-1.5 rounded-full",
+        "bg-black/20 backdrop-blur-sm",
+        "border border-white/10",
+      )}>
+        <Users className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3 text-state-active" />
+        <span className="text-white/90 text-sm mobile-landscape:text-xs font-medium">
+          {playerCount}/4 位玩家
+        </span>
+        {playerCount < 4 && (
+          <span className="text-white/50 text-xs mobile-landscape:hidden">
+            (等待中...)
+          </span>
+        )}
+      </div>
+
+      {/* 开始游戏按钮 */}
       <Button
         onClick={onStartGame}
         disabled={!canStartGame || isStarting}
         size="lg"
-        className="px-8"
+        className={cn(
+          "px-10 py-3 mobile-landscape:px-6 mobile-landscape:py-2 mobile-landscape:text-sm",
+          canStartGame
+            ? [
+                "bg-gradient-to-r from-state-active to-[hsl(42,95%,45%)]",
+                "hover:from-[hsl(42,95%,55%)] hover:to-[hsl(42,95%,48%)]",
+                "text-primitive-neutral-900 font-bold",
+                "shadow-[var(--elevation-3),var(--shadow-relief)]",
+                "hover:shadow-[var(--elevation-3),var(--shadow-relief),var(--shadow-glow-lg)]",
+                "animate-pulse-glow",
+              ]
+            : [
+                "bg-white/10",
+                "text-white/60",
+                "border border-white/20",
+              ],
+        )}
       >
-        {isStarting 
-          ? (isRoomOwner ? '开始中...' : '等待中...') 
-          : (isRoomOwner ? '开始游戏' : '等待开始')
-        }
+        {isStarting ? (
+          <>
+            <Loader2 className="w-5 h-5 mobile-landscape:w-4 mobile-landscape:h-4 animate-spin" />
+            {isRoomOwner ? '开始中...' : '等待中...'}
+          </>
+        ) : (
+          <>
+            <Play className="w-5 h-5 mobile-landscape:w-4 mobile-landscape:h-4" />
+            {isRoomOwner ? '开始游戏' : '等待房主开始'}
+          </>
+        )}
       </Button>
 
+      {/* 离开房间按钮 */}
       <Button
         onClick={onLeaveRoom}
         disabled={isLeaving}
         intent="neutral"
         size="sm"
+        className={cn(
+          "text-white/70 hover:text-white mobile-landscape:text-xs",
+          "bg-transparent hover:bg-white/10",
+          "border border-white/20 hover:border-white/30",
+        )}
       >
-        {isLeaving ? '离开中...' : '离开房间'}
+        {isLeaving ? (
+          <>
+            <Loader2 className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3 animate-spin" />
+            离开中...
+          </>
+        ) : (
+          <>
+            <LogOut className="w-4 h-4 mobile-landscape:w-3 mobile-landscape:h-3" />
+            离开房间
+          </>
+        )}
       </Button>
     </div>
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6 mobile-landscape:p-2">
       <GameTable
         players={players}
         currentPlayerSeat={effectiveSeat}

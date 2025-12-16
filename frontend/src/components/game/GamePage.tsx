@@ -13,7 +13,9 @@ import { eventTypeToJSON, EventType } from '../../types/generated/event';
 import { audioService } from '../../services/audioService';
 import GameBoard from './GameBoard';
 import WaitingBoard from './WaitingBoard';
-import PlayerControlPanel from './PlayerControlPanel';
+import PlayerHand from './PlayerHand';
+import GameControls from './GameControls';
+import Header from '../layout/Header';
 import TributeBoard from './tribute/TributeBoard';
 import TributeControlPanel from './tribute/TributeControlPanel';
 import { TributeStatus } from '../../types/generated/view';
@@ -426,18 +428,43 @@ const GamePage: React.FC = () => {
   // 渲染游戏准备倒计时
   const renderGamePrepare = () => {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-surface-elevated rounded-lg p-8 text-center max-w-md mx-4">
-          <h2 className="text-2xl font-bold text-fg-primary mb-4">游戏即将开始</h2>
-          <div className="text-6xl font-bold text-action-primary mb-4">
-            {countdown}
-          </div>
-          <p className="text-fg-secondary">请准备好开始游戏...</p>
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="relative bg-gradient-to-b from-surface-elevated to-surface-base rounded-2xl p-10 text-center max-w-md mx-4 border border-stroke/50 shadow-card-elevated">
+          {/* 顶部装饰线 */}
+          <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-transparent via-state-active to-transparent" />
 
-          {/* Connection status indicator */}
-          <div className="mt-4 flex items-center justify-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
-              }`} />
+          {/* 装饰性扑克牌花色 */}
+          <div className="flex items-center justify-center gap-3 mb-4 opacity-30">
+            <span className="text-2xl">♠</span>
+            <span className="text-2xl text-suit-red">♥</span>
+            <span className="text-2xl">♣</span>
+            <span className="text-2xl text-suit-red">♦</span>
+          </div>
+
+          <h2 className="text-2xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent mb-6">
+            游戏即将开始
+          </h2>
+
+          {/* 倒计时数字 */}
+          <div className="relative mb-6">
+            <div className="text-7xl font-display font-bold bg-gradient-active bg-clip-text text-transparent animate-pulse-glow">
+              {countdown}
+            </div>
+            {/* 光晕效果 */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-24 h-24 rounded-full bg-state-active/20 blur-xl animate-pulse" />
+            </div>
+          </div>
+
+          <p className="text-fg-secondary mb-6">请准备好开始游戏...</p>
+
+          {/* 连接状态指示器 */}
+          <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-surface-elevated/50 border border-stroke/30 inline-flex mx-auto">
+            <div className={`w-2.5 h-2.5 rounded-full ${isConnected
+              ? 'bg-action-primary shadow-jade'
+              : 'bg-action-danger shadow-ruby'
+              }`}
+            />
             <span className="text-sm text-fg-secondary">
               {isConnected ? '连接正常' : '连接断开'}
             </span>
@@ -453,39 +480,58 @@ const GamePage: React.FC = () => {
     const { teamLevels, dealLevel, plays, currentTurn, leader } = playerViewData;
     const players = currentRoom.players;
 
-    const handleHint = (cards: Card[]) => {
-      setSelectedCards(cards);
-    };
-
     return (
-      <div className="max-w-6xl mx-auto p-6">
-        <GameBoard
-          teamLevels={teamLevels || [2, 2]}
-          currentLevel={dealLevel || 2}
-          plays={plays || []}
-          currentTurn={currentTurn ?? -1}
-          players={players}
-          currentPlayerSeat={playerSeat}
-          turnDeadline={turnDeadline}
-        />
+      <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
+        {/* 可收起的 Header */}
+        <Header collapsible />
 
-        <div className="-mt-24 relative z-10">
-          <PlayerControlPanel
-            cards={hand}
+        {/* 牌桌 - 占满屏幕 */}
+        <div className="absolute inset-0 p-2">
+          <GameBoard
+            teamLevels={teamLevels || [2, 2]}
+            currentLevel={dealLevel || 2}
+            plays={plays || []}
+            currentTurn={currentTurn ?? -1}
+            players={players}
+            currentPlayerSeat={playerSeat}
+            turnDeadline={turnDeadline}
+            className="h-full"
+          />
+        </div>
+
+        {/* 控制按钮 - 紧贴出牌区下边缘 */}
+        <div
+          className="absolute left-1/2 z-20"
+          style={{
+            transform: 'translateX(-50%)',
+            // 定位: 50% + 出牌区偏移 + 出牌区高度/2
+            top: 'calc(50% + var(--play-area-offset-y, 0) + var(--table-center-height) / 2)',
+          }}
+        >
+          <GameControls
             selectedCards={selectedCards}
-            onCardSelect={setSelectedCards}
-            currentLevel={dealLevel}
             canPlay={canPlay}
             isMyTurn={isMyTurn}
             turnDeadlineAtMs={turnDeadline?.deadlineAtMs || 0}
             onPlayCards={handlePlayCards}
             onPass={handlePass}
-            onHint={handleHint}
+            onHint={(cards) => setSelectedCards(cards)}
+            handCards={hand}
             plays={plays || []}
             leader={leader}
             playerSeat={playerSeat}
             dealLevel={dealLevel || 2}
             disabled={false}
+          />
+        </div>
+
+        {/* 手牌区域 - 固定在底部，浮在牌桌上方 */}
+        <div className="absolute bottom-0 left-0 right-0 z-10">
+          <PlayerHand
+            cards={hand}
+            selectedCards={selectedCards}
+            onCardSelect={setSelectedCards}
+            currentLevel={dealLevel}
             finishRank={myFinishRank}
           />
         </div>
@@ -587,7 +633,15 @@ const GamePage: React.FC = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-fg-secondary">请先登录</p>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-2 mb-4 opacity-40">
+            <span className="text-3xl">♠</span>
+            <span className="text-3xl text-suit-red">♥</span>
+            <span className="text-3xl">♣</span>
+            <span className="text-3xl text-suit-red">♦</span>
+          </div>
+          <p className="text-fg-secondary">请先登录</p>
+        </div>
       </div>
     );
   }
@@ -596,15 +650,22 @@ const GamePage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action-primary mx-auto mb-4"></div>
-          <p className="text-fg-secondary">加载房间信息...</p>
+          {/* 加载动画 */}
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full border-4 border-state-active/20" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-state-active animate-spin" />
+            <div className="absolute inset-2 rounded-full bg-surface-elevated/50 flex items-center justify-center">
+              <span className="text-state-active text-lg">♠</span>
+            </div>
+          </div>
+          <p className="text-fg-secondary font-medium">加载房间信息...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-surface-base">
+    <div className="min-h-screen">
       {renderCurrentPhase()}
     </div>
   );

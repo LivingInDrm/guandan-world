@@ -1,58 +1,15 @@
 export type CardSize = 'small' | 'normal';
 
-export interface SizeConfig {
-  width: string;
-  height: string;
-  fontSize: string;
-  iconSize: string;
-  centerIconSize: string;
-  borderRadius: string;
-  padding: string;
-  jokerFontSize: string;
-  jokerImgBottom: string;
-  jokerTextLeft: string;
-  cornerTextLeft: string;
-}
-
-export const CARD_SIZES: Record<CardSize, SizeConfig> = {
-  small: {
-    width: '48px',
-    height: '68px',
-    fontSize: '12px',
-    iconSize: '12px',
-    centerIconSize: '20px',
-    borderRadius: '6px',
-    padding: '4px',
-    jokerFontSize: '10px',
-    jokerImgBottom: '10px',
-    jokerTextLeft: '2px',
-    cornerTextLeft: '0',
-  },
-  normal: {
-    width: '70px',
-    height: '98px',
-    fontSize: '16px',
-    iconSize: '14px',
-    centerIconSize: '32px',
-    borderRadius: '8px',
-    padding: '6px',
-    jokerFontSize: '14px',
-    jokerImgBottom: '16px',
-    jokerTextLeft: '2px',
-    cornerTextLeft: '0',
-  },
-};
-
 export const SUIT_SYMBOLS = ['♠', '♥', '♣', '♦'];
 
 export const SUIT_COLORS = {
   black: {
     text: 'text-suit-black',
-    shadow: 'text-shadow-sm',
+    shadow: 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]',
   },
   red: {
     text: 'text-suit-red',
-    shadow: 'drop-shadow-sm',
+    shadow: 'drop-shadow-[0_1px_1px_rgba(180,0,0,0.2)]',
   }
 };
 
@@ -60,41 +17,50 @@ export const JOKER_CONFIG = {
   small: {
     rank: 15,
     text: 'JOKER',
-    color: 'text-fg-secondary',
-    bgGradient: 'bg-surface-elevated',
+    color: 'text-[hsl(158,55%,35%)]',
+    bgGradient: 'bg-gradient-to-br from-[hsl(158,20%,95%)] via-[hsl(158,25%,90%)] to-[hsl(158,30%,85%)]',
   },
   big: {
     rank: 16,
     text: 'JOKER',
     color: 'text-suit-red',
-    bgGradient: 'bg-gradient-to-br from-yellow-50 via-yellow-100 to-red-100',
+    bgGradient: 'bg-gradient-to-br from-[hsl(42,60%,95%)] via-[hsl(42,70%,88%)] to-[hsl(0,60%,90%)]',
   }
 };
 
 export const SELECTED_COLORS = {
-  border: 'hsl(var(--color-state-active))',
-  overlay: 'hsl(var(--color-state-active) / 0.15)',
-  glow: 'var(--shadow-glow-md)',
+  border: 'hsl(42, 95%, 52%)',
+  overlay: 'hsla(42, 95%, 52%, 0.12)',
+  glow: '0 0 12px hsla(42, 95%, 52%, 0.5), 0 0 4px hsla(42, 95%, 52%, 0.3)',
 };
 
 export const LEVEL_BADGE_CONFIG = {
   normal: {
-    bgColor: 'hsl(var(--badge-level))',
+    bgColor: 'hsl(158, 55%, 38%)',
     text: '级',
   },
   wild: {
-    bgColor: 'hsl(var(--badge-wild))',
+    bgColor: 'hsl(0, 70%, 50%)',
     text: '万',
   }
 };
 
 export const ANIMATIONS = {
-  hover: 'hover:scale-105 hover:shadow-elevation-3',
-  selected: '',
-  transition: 'transition-[transform,box-shadow,border-color] duration-fast ease-bounce',
+  hover: 'hover:scale-105 hover:-translate-y-1 hover:shadow-[var(--elevation-3),var(--shadow-relief)]',
+  selected: 'scale-105',
+  transition: 'transition-all duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
 };
 
-export const getCardSizeStyle = (size: CardSize) => CARD_SIZES[size];
+export const CARD_BORDER = {
+  normal: 'border border-stroke/40',
+  hover: 'hover:border-stroke/60',
+  selected: 'border-2 border-state-active',
+};
+
+export const CARD_BG = {
+  base: 'bg-gradient-to-br from-[hsl(40,15%,98%)] via-[hsl(40,10%,96%)] to-[hsl(40,8%,93%)]',
+  shine: 'before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/40 before:via-transparent before:to-transparent before:rounded-[inherit] before:pointer-events-none',
+};
 
 export const getSuitColorClass = (suit: number) => {
   return suit === 1 || suit === 3 ? SUIT_COLORS.red.text : SUIT_COLORS.black.text;

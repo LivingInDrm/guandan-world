@@ -3,6 +3,7 @@ import { RoomStatus, type RoomInfo } from '../../types';
 import { Button } from '../ui';
 import PlayerMiniCard from './PlayerMiniCard';
 import Pagination from './Pagination';
+import { cn } from '@/lib/utils';
 
 interface RoomListProps {
   rooms: RoomInfo[];
@@ -30,44 +31,47 @@ const getStatusText = (status: RoomStatus) => {
   }
 };
 
-const getStatusColor = (status: RoomStatus) => {
+const getStatusStyles = (status: RoomStatus) => {
   switch (status) {
     case RoomStatus.WAITING:
-      return 'bg-action-primary/20 text-action-primary';
+      return {
+        badge: 'bg-state-active/15 text-state-active-muted border border-state-active/30',
+        dot: 'bg-state-active animate-pulse shadow-glow-sm',
+      };
     case RoomStatus.READY:
-      return 'bg-action-secondary/20 text-action-secondary';
+      return {
+        badge: 'bg-action-primary/15 text-action-primary-dark border border-action-primary/30',
+        dot: 'bg-action-primary',
+      };
     case RoomStatus.PLAYING:
-      return 'bg-team-us/20 text-team-us';
+      return {
+        badge: 'bg-action-primary/15 text-action-primary border border-action-primary/30',
+        dot: 'bg-action-primary',
+      };
     case RoomStatus.CLOSED:
-      return 'bg-state-disabled/20 text-fg-secondary';
+      return {
+        badge: 'bg-state-disabled/15 text-fg-secondary border border-stroke/30',
+        dot: 'bg-state-disabled',
+      };
     default:
-      return 'bg-state-disabled/20 text-fg-secondary';
-  }
-};
-
-const getStatusDot = (status: RoomStatus) => {
-  switch (status) {
-    case RoomStatus.WAITING:
-      return 'bg-action-primary animate-pulse';
-    case RoomStatus.READY:
-      return 'bg-action-secondary';
-    case RoomStatus.PLAYING:
-      return 'bg-team-us';
-    case RoomStatus.CLOSED:
-      return 'bg-state-disabled';
-    default:
-      return 'bg-state-disabled';
+      return {
+        badge: 'bg-state-disabled/15 text-fg-secondary border border-stroke/30',
+        dot: 'bg-state-disabled',
+      };
   }
 };
 
 const TableHeader = () => (
-  <thead className="bg-surface-elevated/50">
+  <thead className={cn(
+    "bg-gradient-header",
+    "text-white/90",
+  )}>
     <tr>
-      <th className="px-4 py-3 text-center text-sm font-medium text-fg-secondary">房间</th>
-      <th className="px-4 py-3 text-center text-sm font-medium text-fg-secondary">状态</th>
-      <th className="px-4 py-3 text-center text-sm font-medium text-fg-secondary">玩家</th>
-      <th className="px-4 py-3 text-center text-sm font-medium text-fg-secondary">人数</th>
-      <th className="px-4 py-3 text-center text-sm font-medium text-fg-secondary">操作</th>
+      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">房间</th>
+      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">状态</th>
+      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">玩家</th>
+      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">人数</th>
+      <th className="px-4 py-3 mobile-landscape:px-2 mobile-landscape:py-2 text-center text-sm mobile-landscape:text-xs font-medium">操作</th>
     </tr>
   </thead>
 );
@@ -100,40 +104,71 @@ const RoomList: React.FC<RoomListProps> = ({
 
   if (isLoading && rooms.length === 0) {
     return (
-      <div className="bg-surface-base rounded-lg shadow-elevation-1 border border-stroke overflow-x-auto">
-        <table className="w-full min-w-[640px]">
-          <TableHeader />
-          <tbody>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <tr key={index} className="border-t border-stroke animate-pulse">
-                <td className="px-4 py-4 text-center"><div className="h-4 bg-surface-elevated rounded w-20 mx-auto"></div></td>
-                <td className="px-4 py-4 text-center"><div className="h-5 bg-surface-elevated rounded w-16 mx-auto"></div></td>
-                <td className="px-4 py-4">
-                  <div className="flex justify-center gap-3">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="flex flex-col items-center gap-1">
-                        <div className="h-10 w-10 bg-surface-elevated rounded-full"></div>
-                        <div className="h-3 bg-surface-elevated rounded w-10"></div>
-                      </div>
-                    ))}
-                  </div>
-                </td>
-                <td className="px-4 py-4 text-center"><div className="h-4 bg-surface-elevated rounded w-8 mx-auto"></div></td>
-                <td className="px-4 py-4 text-center"><div className="h-8 bg-surface-elevated rounded w-16 mx-auto"></div></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className={cn(
+        "bg-surface-base rounded-xl overflow-hidden",
+        "shadow-[var(--elevation-2),var(--shadow-relief)]",
+        "border border-stroke/50",
+      )}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px]">
+            <TableHeader />
+            <tbody>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <tr key={index} className="border-t border-stroke/50 animate-pulse">
+                  <td className="px-4 py-4 text-center">
+                    <div className="h-4 bg-surface-elevated rounded-md w-20 mx-auto" />
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="h-6 bg-surface-elevated rounded-full w-16 mx-auto" />
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex justify-center gap-3">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="flex flex-col items-center gap-1">
+                          <div className="h-10 w-10 bg-surface-elevated rounded-full" />
+                          <div className="h-3 bg-surface-elevated rounded w-10" />
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="h-4 bg-surface-elevated rounded w-8 mx-auto" />
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="h-8 bg-surface-elevated rounded-lg w-16 mx-auto" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
 
   if (rooms.length === 0 && !isLoading) {
     return (
-      <div className="text-center py-12">
-        <div className="text-fg-secondary text-6xl mb-4">&#127918;</div>
-        <h3 className="text-lg font-medium text-fg-primary mb-2">暂无房间</h3>
-        <p className="text-fg-secondary mb-6">成为第一个创建房间的玩家吧！</p>
+      <div className={cn(
+        "text-center py-16 px-8 rounded-xl",
+        "bg-surface-base/80 backdrop-blur-sm",
+        "border border-stroke/30",
+        "shadow-[var(--elevation-1)]",
+      )}>
+        {/* 装饰图案 */}
+        <div className="flex items-center justify-center gap-3 mb-6 opacity-40">
+          <span className="text-4xl">♠</span>
+          <span className="text-4xl text-suit-red">♥</span>
+          <span className="text-4xl">♣</span>
+          <span className="text-4xl text-suit-red">♦</span>
+        </div>
+        <h3 className={cn(
+          "text-xl font-display font-bold mb-2",
+          "bg-gradient-primary",
+          "bg-clip-text text-transparent",
+        )}>
+          暂无房间
+        </h3>
+        <p className="text-fg-secondary">成为第一个创建房间的玩家吧！</p>
       </div>
     );
   }
@@ -151,68 +186,119 @@ const RoomList: React.FC<RoomListProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-surface-base rounded-lg shadow-elevation-1 border border-stroke overflow-x-auto">
-        <table className="w-full min-w-[640px]">
-          <TableHeader />
-          <tbody>
-            {sortedRooms.map((room) => {
-              const isUserInRoom = room.players.some(player => player.id === currentUserId);
-              const canJoin = room.can_join && !isUserInRoom;
-              const playersWithSlots = getPlayersWithSlots(room);
+    <div className="space-y-6 mobile-landscape:space-y-3">
+      <div className={cn(
+        "bg-surface-base rounded-xl mobile-landscape:rounded-lg overflow-hidden",
+        "shadow-[var(--elevation-2),var(--shadow-relief)]",
+        "border border-stroke/50",
+      )}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] mobile-landscape:min-w-[560px]">
+            <TableHeader />
+            <tbody>
+              {sortedRooms.map((room, rowIndex) => {
+                const isUserInRoom = room.players.some(player => player.id === currentUserId);
+                const canJoin = room.can_join && !isUserInRoom;
+                const playersWithSlots = getPlayersWithSlots(room);
+                const statusStyles = getStatusStyles(room.status);
 
-              return (
-                <tr key={room.id} className="border-t border-stroke hover:bg-surface-elevated/30 transition-colors">
-                  <td className="px-4 py-4 text-center">
-                    <span className="font-mono text-sm text-fg-primary">#{room.id.slice(-6)}</span>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(room.status)}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(room.status)}`}></span>
-                      {getStatusText(room.status)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex justify-center gap-3">
-                      {playersWithSlots.map((player, index) => (
-                        <PlayerMiniCard
-                          key={index}
-                          player={player}
-                          isCurrentUser={player?.id === currentUserId}
-                        />
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <span className="text-sm text-fg-secondary">{room.player_count}/4</span>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    {isUserInRoom ? (
-                      <Button intent="neutral" size="sm" onClick={() => onJoinRoom(room.id)}>
-                        返回
-                      </Button>
-                    ) : canJoin ? (
-                      <Button intent="primary" size="sm" onClick={() => onJoinRoom(room.id)}>
-                        加入
-                      </Button>
-                    ) : (
-                      <Button intent="neutral" size="sm" disabled>
-                        加入
-                      </Button>
+                return (
+                  <tr
+                    key={room.id}
+                    className={cn(
+                      "border-t border-stroke/30",
+                      "hover:bg-surface-elevated/50",
+                      "transition-colors duration-fast",
+                      rowIndex % 2 === 0 ? "bg-surface-base" : "bg-surface-elevated/20",
                     )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  >
+                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2 text-center">
+                      <span className={cn(
+                        "font-mono text-sm mobile-landscape:text-xs font-medium",
+                        "text-fg-primary",
+                      )}>
+                        #{room.id.slice(-6)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2 text-center">
+                      <span className={cn(
+                        "inline-flex items-center gap-1.5 mobile-landscape:gap-1 px-3 py-1 mobile-landscape:px-2 rounded-full text-xs mobile-landscape:text-[10px] font-medium",
+                        statusStyles.badge,
+                      )}>
+                        <span className={cn("w-1.5 h-1.5 mobile-landscape:w-1 mobile-landscape:h-1 rounded-full", statusStyles.dot)} />
+                        {getStatusText(room.status)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2">
+                      <div className="flex justify-center gap-3 mobile-landscape:gap-1.5">
+                        {playersWithSlots.map((player, index) => (
+                          <PlayerMiniCard
+                            key={index}
+                            player={player}
+                            isCurrentUser={player?.id === currentUserId}
+                          />
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2 text-center">
+                      <span className={cn(
+                        "inline-flex items-center justify-center",
+                        "min-w-[2.5rem] mobile-landscape:min-w-[2rem] px-2 mobile-landscape:px-1.5 py-0.5 rounded-md",
+                        "bg-surface-elevated/80 text-sm mobile-landscape:text-xs font-medium text-fg-secondary",
+                        "border border-stroke/30",
+                      )}>
+                        {room.player_count}/4
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 mobile-landscape:px-2 mobile-landscape:py-2 text-center">
+                      {isUserInRoom ? (
+                        <Button
+                          intent="neutral"
+                          size="sm"
+                          onClick={() => onJoinRoom(room.id)}
+                          className="border-state-active/50 text-state-active hover:bg-state-active/10 mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1"
+                        >
+                          返回
+                        </Button>
+                      ) : canJoin ? (
+                        <Button
+                          intent="primary"
+                          size="sm"
+                          onClick={() => onJoinRoom(room.id)}
+                          className={cn(
+                            "bg-gradient-primary",
+                            "hover:brightness-110",
+                            "shadow-elevation-1",
+                            "hover:shadow-jade",
+                            "mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1",
+                          )}
+                        >
+                          加入
+                        </Button>
+                      ) : (
+                        <Button intent="neutral" size="sm" disabled className="mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1">
+                          加入
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
+      {/* 加载指示器 */}
       {isLoading && rooms.length > 0 && (
         <div className="text-center py-4">
-          <div className="inline-flex items-center text-fg-secondary">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-action-primary mr-2"></div>
-            更新中...
+          <div className="inline-flex items-center gap-2 text-fg-secondary">
+            <div className={cn(
+              "w-4 h-4 rounded-full border-2",
+              "border-state-active/30 border-t-state-active",
+              "animate-spin",
+            )} />
+            <span className="text-sm">更新中...</span>
           </div>
         </div>
       )}

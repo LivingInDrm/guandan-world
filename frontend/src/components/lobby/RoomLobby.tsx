@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Zap, Plus, Users } from 'lucide-react';
+import { Zap, Plus, Users, X, AlertCircle } from 'lucide-react';
 import { useRoomStore } from '../../store/roomStore';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../services/api';
 import RoomList from './RoomList';
 import CreateRoomModal from './CreateRoomModal';
 import JoinRoomModal from './JoinRoomModal';
-import { Button, Card } from '../ui';
+import { Button, Card, CardContent } from '../ui';
+import { cn } from '@/lib/utils';
 
 const RoomLobby: React.FC = () => {
   const { user } = useAuthStore();
@@ -215,41 +216,138 @@ const RoomLobby: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-surface-elevated/20 rounded-lg">
+    <div className={cn(
+      "max-w-6xl mx-auto",
+      "p-6 rounded-2xl",
+      "bg-surface-base/60 backdrop-blur-sm",
+      "border border-stroke/30",
+      "shadow-[var(--elevation-2)]",
+    )}>
+      {/* 错误提示 */}
       {error && (
-        <div className="bg-error/10 border border-error/30 rounded-sm p-4 mb-6">
-          <div className="flex justify-between items-center">
-            <p className="text-error">{error}</p>
+        <div className={cn(
+          "mb-6 p-4 rounded-xl",
+          "bg-action-danger/10 border border-action-danger/30",
+          "animate-in fade-in-0 slide-in-from-top-2 duration-normal",
+        )}>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-action-danger">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p className="text-sm">{error}</p>
+            </div>
             <button
               onClick={clearError}
-              className="text-error/70 hover:text-error"
+              className={cn(
+                "p-1 rounded-md",
+                "text-action-danger/70 hover:text-action-danger",
+                "hover:bg-action-danger/10",
+                "transition-colors duration-fast",
+              )}
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-        <div className="w-full lg:w-64 shrink-0">
-          <Card variant="emphasis" className="p-4" interactive={false}>
-            <div className="flex flex-col gap-3">
-              <Button intent="primary" size="lg" className="w-full" onClick={handleQuickStart} disabled={isQuickStarting}>
-                <Zap className="w-5 h-5" />
-                快速开始
-              </Button>
-              <Button intent="secondary" size="lg" className="w-full" onClick={() => setShowCreateModal(true)}>
-                <Plus className="w-5 h-5" />
-                创建房间
-              </Button>
-              <Button intent="tertiary" size="lg" className="w-full" onClick={() => setShowJoinModal(true)}>
-                <Users className="w-5 h-5" />
-                加入游戏
-              </Button>
-            </div>
+        {/* 左侧操作面板 */}
+        <div className="w-full lg:w-72 shrink-0">
+          <Card
+            variant="elevated"
+            interactive={false}
+            className={cn(
+              "overflow-hidden",
+              "bg-gradient-to-b from-surface-base to-surface-elevated/80",
+              "border border-stroke/50",
+              "shadow-card-interactive",
+            )}
+          >
+            {/* 装饰顶部 */}
+            <div className="h-1 bg-gradient-to-r from-transparent via-state-active to-transparent" />
+
+            <CardContent className="p-5">
+              {/* 标题 */}
+              <h2 className={cn(
+                "text-lg font-display font-bold text-center mb-5",
+                "bg-gradient-primary",
+                "bg-clip-text text-transparent",
+              )}>
+                开始游戏
+              </h2>
+
+              <div className="flex flex-col gap-3">
+                {/* 快速开始按钮 */}
+                <Button
+                  intent="primary"
+                  size="lg"
+                  className={cn(
+                    "w-full",
+                    "bg-gradient-active",
+                    "hover:brightness-110",
+                    "shadow-card-interactive",
+                    "hover:shadow-card-elevated",
+                    "text-primitive-neutral-900 font-bold",
+                  )}
+                  onClick={handleQuickStart}
+                  disabled={isQuickStarting}
+                >
+                  <Zap className="w-5 h-5" />
+                  快速开始
+                </Button>
+
+                <div className="flex items-center gap-3 my-1">
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-stroke to-transparent" />
+                  <span className="text-xs text-fg-secondary">或</span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-stroke to-transparent" />
+                </div>
+
+                {/* 创建房间按钮 */}
+                <Button
+                  intent="secondary"
+                  size="lg"
+                  className={cn(
+                    "w-full",
+                    "bg-gradient-primary",
+                    "hover:brightness-110",
+                    "border-none text-white",
+                    "shadow-card-interactive",
+                    "hover:shadow-card-elevated",
+                  )}
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  <Plus className="w-5 h-5" />
+                  创建房间
+                </Button>
+
+                {/* 加入游戏按钮 */}
+                <Button
+                  intent="tertiary"
+                  size="lg"
+                  className={cn(
+                    "w-full",
+                    "border-stroke/50 hover:border-state-active/50",
+                    "hover:bg-state-active/5",
+                  )}
+                  onClick={() => setShowJoinModal(true)}
+                >
+                  <Users className="w-5 h-5" />
+                  输入房间码
+                </Button>
+              </div>
+
+              {/* 底部装饰 */}
+              <div className="flex items-center justify-center gap-2 mt-5 pt-4 border-t border-stroke/30">
+                <span className="text-lg opacity-30">♠</span>
+                <span className="text-lg text-suit-red opacity-30">♥</span>
+                <span className="text-lg opacity-30">♣</span>
+                <span className="text-lg text-suit-red opacity-30">♦</span>
+              </div>
+            </CardContent>
           </Card>
         </div>
 
+        {/* 右侧房间列表 */}
         <div className="flex-1 min-w-0">
           <RoomList
             rooms={roomList}

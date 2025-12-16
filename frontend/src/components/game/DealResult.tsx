@@ -3,6 +3,8 @@ import type { Player } from '../../types';
 import type { DealEndedPayload } from '../../types/generated/event';
 import { VictoryType } from '../../types/proto';
 import { Card, Badge, Button } from '@/components/ui';
+import { Trophy, Clock, Repeat, Swords, ArrowUp, Home } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DealResultProps {
   dealResult: DealEndedPayload;
@@ -123,63 +125,90 @@ const DealResult: React.FC<DealResultProps> = ({
   const isWinner = myTeam === winningTeam;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <Card 
-        variant="elevated" 
+    <div className={cn(
+      "fixed inset-0 flex items-center justify-center z-50",
+      "bg-black/70 backdrop-blur-md",
+    )}>
+      <Card
+        variant="elevated"
         interactive={false}
-        className="p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-elevation-3 border border-stroke-emphasis"
+        className={cn(
+          "p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto",
+          "bg-gradient-to-b from-[hsl(158,25%,15%)] to-[hsl(158,30%,10%)]",
+          "border border-[hsl(158,55%,30%)]/30",
+          "shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_60px_hsla(158,55%,30%,0.15)]",
+        )}
       >
+        {/* 标题区域 */}
         <div className="text-center mb-6">
           {isWinner ? (
-            <div className="relative py-4">
+            <div className="relative py-6">
+              {/* 背景光晕 */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-32 h-32 bg-gradient-radial from-state-active/40 via-state-active/20 to-transparent rounded-full blur-xl animate-pulse"></div>
+                <div className="w-40 h-40 bg-gradient-radial from-state-active/50 via-state-active/20 to-transparent rounded-full blur-2xl animate-pulse"></div>
               </div>
-              <div className="flex flex-col items-center">
-                <h2 
-                  className="relative text-5xl font-black tracking-[0.3em] bg-gradient-to-b from-state-active via-action-secondary to-action-secondary bg-clip-text text-transparent animate-bounce pl-[0.3em]"
-                  style={{ 
-                    textShadow: '0 0 30px hsla(var(--primitive-accent-500), 0.8), 0 0 60px hsla(var(--primitive-accent-500), 0.4)',
-                    WebkitTextStroke: '1px hsla(var(--primitive-accent-700), 0.3)'
+              <div className="relative flex flex-col items-center">
+                <Trophy className="w-16 h-16 text-state-active mb-3 drop-shadow-[0_0_20px_hsla(42,95%,52%,0.6)]" />
+                <h2
+                  className={cn(
+                    "text-5xl font-black tracking-[0.3em] font-display pl-[0.3em]",
+                    "bg-gradient-to-b from-state-active via-[hsl(42,95%,60%)] to-[hsl(42,95%,45%)]",
+                    "bg-clip-text text-transparent",
+                  )}
+                  style={{
+                    textShadow: '0 0 40px hsla(42, 95%, 52%, 0.8), 0 0 80px hsla(42, 95%, 52%, 0.4)',
                   }}
                 >
                   胜 利
                 </h2>
-                <div className="flex justify-center gap-2 mt-2">
-                  <span className="text-2xl animate-bounce" style={{ animationDelay: '0.1s' }}>⭐</span>
-                  <span className="text-3xl animate-bounce" style={{ animationDelay: '0.2s' }}>🏆</span>
-                  <span className="text-2xl animate-bounce" style={{ animationDelay: '0.3s' }}>⭐</span>
+                <div className="flex items-center gap-2 mt-3 text-state-active/80 text-sm">
+                  <span>♠</span>
+                  <span>恭喜赢得本局</span>
+                  <span>♥</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="relative py-4">
-              <h2 
-                className="text-5xl font-black tracking-[0.3em] bg-gradient-to-b from-fg-secondary via-action-neutral to-action-neutral bg-clip-text text-transparent"
-                style={{ textShadow: '0 2px 10px hsla(var(--primitive-neutral-900), 0.2)' }}
-              >
-                失 败
-              </h2>
-              <div className="text-fg-secondary mt-2 text-sm">再接再厉！</div>
+            <div className="relative py-6">
+              <div className="relative flex flex-col items-center">
+                <Swords className="w-12 h-12 text-white/40 mb-3" />
+                <h2
+                  className={cn(
+                    "text-5xl font-black tracking-[0.3em] font-display pl-[0.3em]",
+                    "bg-gradient-to-b from-white/70 via-white/50 to-white/30",
+                    "bg-clip-text text-transparent",
+                  )}
+                  style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)' }}
+                >
+                  失 败
+                </h2>
+                <div className="text-white/50 mt-2 text-sm">再接再厉！</div>
+              </div>
             </div>
           )}
         </div>
 
+        {/* 队伍结果卡片 */}
         <div className="grid grid-cols-2 gap-5 mb-6">
-          <Card 
-            variant="emphasis" 
-            interactive={false}
-            className="!bg-team-us p-4 shadow-elevation-3 border-2 border-state-active/60 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-state-active/20 to-transparent rounded-bl-3xl"></div>
+          {/* 胜方队伍 */}
+          <div className={cn(
+            "p-4 rounded-xl relative overflow-hidden",
+            "bg-gradient-to-br from-state-active/20 via-state-active/10 to-transparent",
+            "border-2 border-state-active/40",
+            "shadow-[0_4px_20px_hsla(42,95%,52%,0.2)]",
+          )}>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-state-active/20 to-transparent rounded-bl-full"></div>
             <h3 className="text-lg font-bold text-state-active mb-4 text-center tracking-wide flex items-center justify-center gap-2">
-              <span className="text-2xl">🏆</span>
+              <Trophy className="w-5 h-5" />
               队伍{winningTeam + 1} (胜方)
             </h3>
             <div className="space-y-2.5">
               {teamRankings[winningTeam].map(({ rank, player }) => (
-                <div key={player.seat} className="flex justify-between items-center bg-white/5 rounded-sm px-3 py-1.5">
-                  <span className="font-medium text-fg-inverse tracking-wide">{player.username}</span>
+                <div key={player.seat} className={cn(
+                  "flex justify-between items-center px-3 py-2 rounded-lg",
+                  "bg-black/20 border border-white/10",
+                )}>
+                  <span className="font-medium text-white tracking-wide">{player.username}</span>
                   <Badge variant="landlord" size="sm">
                     第{rank}名
                   </Badge>
@@ -187,34 +216,41 @@ const DealResult: React.FC<DealResultProps> = ({
               ))}
             </div>
             <div className="mt-4 pt-3 border-t border-white/10">
-              <div className="flex justify-between text-sm text-fg-inverse/70 mb-1">
+              <div className="flex justify-between text-sm text-white/70 mb-1">
                 <span>当前等级</span>
-                <span className="font-bold text-fg-inverse text-base">
+                <span className="font-bold text-white text-base font-display">
                   {getLevelText(teamLevels[winningTeam])}
                 </span>
               </div>
-              <div className="flex justify-between text-sm text-fg-inverse/70">
-                <span>升级</span>
-                <span className="font-extrabold text-action-primary text-base">
+              <div className="flex justify-between text-sm text-white/70">
+                <span className="flex items-center gap-1">
+                  <ArrowUp className="w-3 h-3 text-[hsl(158,55%,50%)]" />
+                  升级
+                </span>
+                <span className="font-extrabold text-[hsl(158,55%,50%)] text-base">
                   +{dealResult.levelChange[winningTeam]}级
                 </span>
               </div>
             </div>
-          </Card>
+          </div>
 
-          <Card 
-            variant="base" 
-            interactive={false}
-            className="!bg-team-them p-4 shadow-elevation-3 border border-white/10 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-black/10 to-transparent rounded-bl-3xl"></div>
-            <h3 className="text-lg font-bold text-fg-inverse mb-4 text-center tracking-wide">
+          {/* 负方队伍 */}
+          <div className={cn(
+            "p-4 rounded-xl relative overflow-hidden",
+            "bg-black/30",
+            "border border-white/10",
+          )}>
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-white/5 to-transparent rounded-bl-3xl"></div>
+            <h3 className="text-lg font-bold text-white/70 mb-4 text-center tracking-wide">
               队伍{losingTeam + 1} (负方)
             </h3>
             <div className="space-y-2.5">
               {teamRankings[losingTeam].map(({ rank, player }) => (
-                <div key={player.seat} className="flex justify-between items-center bg-black/10 rounded-sm px-3 py-1.5">
-                  <span className="font-medium text-fg-inverse tracking-wide">{player.username}</span>
+                <div key={player.seat} className={cn(
+                  "flex justify-between items-center px-3 py-2 rounded-lg",
+                  "bg-black/20 border border-white/5",
+                )}>
+                  <span className="font-medium text-white/80 tracking-wide">{player.username}</span>
                   <Badge variant="neutral" size="sm">
                     第{rank}名
                   </Badge>
@@ -222,49 +258,72 @@ const DealResult: React.FC<DealResultProps> = ({
               ))}
             </div>
             <div className="mt-4 pt-3 border-t border-white/10">
-              <div className="flex justify-between text-sm text-fg-inverse/70 mb-1">
+              <div className="flex justify-between text-sm text-white/50 mb-1">
                 <span>当前等级</span>
-                <span className="font-bold text-fg-inverse text-base">
+                <span className="font-bold text-white/70 text-base font-display">
                   {getLevelText(teamLevels[losingTeam])}
                 </span>
               </div>
-              <div className="flex justify-between text-sm text-fg-inverse/70">
+              <div className="flex justify-between text-sm text-white/50">
                 <span>升级</span>
-                <span className="font-bold text-fg-inverse/50 text-base">
+                <span className="font-bold text-white/50 text-base">
                   +{dealResult.levelChange[losingTeam]}级
                 </span>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
 
-        <Card variant="elevated" interactive={false} className="p-5 mb-5 border border-stroke shadow-elevation-1">
+        {/* 统计信息 */}
+        <div className={cn(
+          "p-4 mb-5 rounded-xl",
+          "bg-black/30 border border-white/10",
+        )}>
           <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col items-center bg-surface-emphasis rounded-md p-3 border border-stroke-emphasis">
-              <span className="text-action-primary/70 text-xs font-medium mb-1">游戏时长</span>
-              <span className="font-bold text-fg-primary text-lg">{formatDuration(dealResult.durationMs)}</span>
+            <div className={cn(
+              "flex flex-col items-center p-3 rounded-lg",
+              "bg-black/20 border border-white/5",
+            )}>
+              <Clock className="w-5 h-5 text-[hsl(158,55%,50%)] mb-1" />
+              <span className="text-white/50 text-xs font-medium mb-1">游戏时长</span>
+              <span className="font-bold text-white text-lg font-display">{formatDuration(dealResult.durationMs)}</span>
             </div>
-            <div className="flex flex-col items-center bg-surface-emphasis rounded-md p-3 border border-stroke-emphasis">
-              <span className="text-action-primary/70 text-xs font-medium mb-1">总轮次</span>
-              <span className="font-bold text-fg-primary text-lg">{dealResult.trickCount}</span>
+            <div className={cn(
+              "flex flex-col items-center p-3 rounded-lg",
+              "bg-black/20 border border-white/5",
+            )}>
+              <Repeat className="w-5 h-5 text-[hsl(158,55%,50%)] mb-1" />
+              <span className="text-white/50 text-xs font-medium mb-1">总轮次</span>
+              <span className="font-bold text-white text-lg font-display">{dealResult.trickCount}</span>
             </div>
-            <div className="flex flex-col items-center bg-surface-emphasis rounded-md p-3 border border-stroke-emphasis">
-              <span className="text-action-secondary/70 text-xs font-medium mb-1">胜利类型</span>
-              <span className="font-bold text-action-secondary text-lg">{getVictoryTypeText(dealResult.victoryType)}</span>
+            <div className={cn(
+              "flex flex-col items-center p-3 rounded-lg",
+              "bg-black/20 border border-white/5",
+            )}>
+              <Swords className="w-5 h-5 text-state-active mb-1" />
+              <span className="text-white/50 text-xs font-medium mb-1">胜利类型</span>
+              <span className="font-bold text-state-active text-lg font-display">{getVictoryTypeText(dealResult.victoryType)}</span>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card variant="elevated" interactive={false} className="p-5 mb-6 border border-stroke shadow-elevation-1">
+        {/* 玩家统计表格 */}
+        <div className={cn(
+          "p-4 mb-6 rounded-xl overflow-hidden",
+          "bg-black/30 border border-white/10",
+        )}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-surface-elevated text-fg-secondary border-b border-stroke">
-                  <th className="text-left py-3 px-4 rounded-tl-sm font-medium">玩家</th>
-                  <th className="text-center py-3 px-2 font-medium">排名</th>
-                  <th className="text-center py-3 px-2 font-medium">出牌</th>
-                  <th className="text-center py-3 px-2 font-medium">胜轮</th>
-                  <th className="text-center py-3 px-4 rounded-tr-sm font-medium">过牌</th>
+                <tr className={cn(
+                  "bg-gradient-to-r from-[hsl(158,55%,25%)] to-[hsl(158,55%,20%)]",
+                  "border-b border-[hsl(158,55%,30%)]/30",
+                )}>
+                  <th className="text-left py-3 px-4 font-medium text-white/80">玩家</th>
+                  <th className="text-center py-3 px-2 font-medium text-white/80">排名</th>
+                  <th className="text-center py-3 px-2 font-medium text-white/80">出牌</th>
+                  <th className="text-center py-3 px-2 font-medium text-white/80">胜轮</th>
+                  <th className="text-center py-3 px-4 font-medium text-white/80">过牌</th>
                 </tr>
               </thead>
               <tbody>
@@ -272,11 +331,15 @@ const DealResult: React.FC<DealResultProps> = ({
                   const player = getPlayerBySeat(stats.playerSeat);
                   const isTopTwo = stats.finishRank <= 2;
                   return (
-                    <tr 
-                      key={stats.playerSeat} 
-                      className={`border-b border-stroke/50 hover:bg-surface-emphasis/30 transition-colors duration-fast ${index % 2 === 0 ? 'bg-surface-base/40' : 'bg-transparent'}`}
+                    <tr
+                      key={stats.playerSeat}
+                      className={cn(
+                        "border-b border-white/5",
+                        "hover:bg-white/5 transition-colors",
+                        index % 2 === 0 ? 'bg-black/20' : 'bg-transparent',
+                      )}
                     >
-                      <td className="py-3 px-4 font-medium text-fg-primary">
+                      <td className="py-3 px-4 font-medium text-white">
                         {player?.username || `玩家${stats.playerSeat + 1}`}
                       </td>
                       <td className="text-center py-3 px-2">
@@ -284,27 +347,43 @@ const DealResult: React.FC<DealResultProps> = ({
                           第{stats.finishRank}名
                         </Badge>
                       </td>
-                      <td className="text-center py-3 px-2 text-fg-primary font-medium">{stats.cardsPlayed}</td>
-                      <td className="text-center py-3 px-2 text-fg-primary font-medium">{stats.tricksWon}</td>
-                      <td className="text-center py-3 px-4 text-fg-secondary">{stats.passCount}</td>
+                      <td className="text-center py-3 px-2 text-white font-medium">{stats.cardsPlayed}</td>
+                      <td className="text-center py-3 px-2 text-white font-medium">{stats.tricksWon}</td>
+                      <td className="text-center py-3 px-4 text-white/60">{stats.passCount}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-        </Card>
+        </div>
 
+        {/* 底部按钮区域 */}
         <div className="flex flex-col items-center space-y-5 pt-2">
           {countdown !== null && countdown > 0 && (
-            <div className="bg-surface-base backdrop-blur-md rounded-full px-6 py-2 border border-stroke shadow-elevation-1 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-action-primary animate-pulse"></div>
-              <span className="text-fg-secondary text-sm font-medium">下一局开始倒计时</span>
-              <span className="text-action-primary font-bold text-xl tabular-nums">{countdown}</span>
-              <span className="text-fg-secondary text-xs self-end mb-1">s</span>
+            <div className={cn(
+              "flex items-center gap-3 px-6 py-3 rounded-full",
+              "bg-black/40 backdrop-blur-sm",
+              "border border-state-active/30",
+              "shadow-[0_0_20px_hsla(42,95%,52%,0.2)]",
+            )}>
+              <div className="w-2 h-2 rounded-full bg-state-active animate-pulse"></div>
+              <span className="text-white/70 text-sm font-medium">下一局开始倒计时</span>
+              <span className="text-state-active font-bold text-2xl tabular-nums font-display">{countdown}</span>
+              <span className="text-white/50 text-xs self-end mb-1">s</span>
             </div>
           )}
-          <Button intent="neutral" size="lg" onClick={onExit}>
+          <Button
+            intent="neutral"
+            size="lg"
+            onClick={onExit}
+            className={cn(
+              "bg-white/10 hover:bg-white/20",
+              "text-white/80 hover:text-white",
+              "border border-white/20 hover:border-white/30",
+            )}
+          >
+            <Home className="w-5 h-5 mr-2" />
             返回大厅
           </Button>
         </div>

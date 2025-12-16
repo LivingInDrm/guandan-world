@@ -17,17 +17,19 @@ interface GameBoardProps {
   currentPlayerSeat: number;
   playStates?: [number, number, number, number];
   turnDeadline?: { playerSeat: number; deadlineAtMs: number } | null;
+  className?: string;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ 
+const GameBoard: React.FC<GameBoardProps> = ({
   teamLevels,
   currentLevel,
   plays,
   currentTurn,
-  players, 
+  players,
   currentPlayerSeat,
   playStates: _playStates,
-  turnDeadline
+  turnDeadline,
+  className
 }) => {
   const getPlayForSeat = (seat: number): PlayAction | null => {
     if (currentTurn === seat) {
@@ -94,12 +96,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
       renderPlayer={renderPlayer}
       renderCenter={renderCenter}
       topLeftSlot={
-        <TeamLevelDisplay 
-          teamLevels={teamLevels} 
+        <TeamLevelDisplay
+          teamLevels={teamLevels}
           currentLevel={currentLevel}
           currentPlayerSeat={currentPlayerSeat}
         />
       }
+      className={className}
     />
   );
 };

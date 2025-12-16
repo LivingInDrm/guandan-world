@@ -1,36 +1,51 @@
+/* ==================== 字体导入 (必须在最前面) ==================== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=ZCOOL+KuaiLe&display=swap');
+
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
 :root,
 [data-theme="light"] {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* 主字体：思源宋体 - 优雅的中文衬线字体 */
+  font-family: 'Noto Serif SC', 'Songti SC', 'STSong', Georgia, serif;
+  /* 标题字体：站酷快乐体 - 活泼有趣 */
+  --font-display: 'ZCOOL KuaiLe', 'Noto Serif SC', cursive;
+  /* 数字字体：等宽清晰 */
+  --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  line-height: 1.6;
   font-weight: 400;
+  letter-spacing: 0.02em;
 
   /* ==================== 基础单位 ==================== */
   --base-unit: 4px;
 
-  /* ==================== 原语色板 ==================== */
-  --primitive-primary-300: 145 60% 75%;
-  --primitive-primary-500: 145 60% 50%;
-  --primitive-primary-700: 145 60% 35%;
-  --primitive-danger-300: 0 60% 75%;
-  --primitive-danger-500: 0 60% 50%;
-  --primitive-danger-700: 0 60% 35%;
-  --primitive-warning-300: 30 90% 70%;
-  --primitive-warning-500: 30 90% 55%;
-  --primitive-warning-700: 30 90% 40%;
-  --primitive-success-300: 142 70% 70%;
-  --primitive-success-500: 142 70% 50%;
-  --primitive-success-700: 142 70% 35%;
-  --primitive-neutral-100: 0 0% 96%;
-  --primitive-neutral-300: 0 0% 85%;
-  --primitive-neutral-500: 0 0% 60%;
-  --primitive-neutral-700: 0 0% 40%;
-  --primitive-neutral-900: 0 0% 15%;
-  --primitive-accent-300: 45 100% 70%;
-  --primitive-accent-500: 45 100% 51%;
-  --primitive-accent-700: 45 100% 40%;
+  /* ==================== 原语色板 - 东方雅韵 ==================== */
+  /* 翡翠绿 - 吉祥高贵 */
+  --primitive-primary-300: 158 55% 65%;
+  --primitive-primary-500: 158 55% 42%;
+  --primitive-primary-700: 158 55% 28%;
+  /* 朱砂红 - 热情喜庆 */
+  --primitive-danger-300: 5 75% 65%;
+  --primitive-danger-500: 5 75% 50%;
+  --primitive-danger-700: 5 75% 35%;
+  /* 琥珀橙 - 温暖活力 */
+  --primitive-warning-300: 28 85% 65%;
+  --primitive-warning-500: 28 85% 52%;
+  --primitive-warning-700: 28 85% 38%;
+  /* 青玉绿 - 生机盎然 */
+  --primitive-success-300: 152 60% 60%;
+  --primitive-success-500: 152 60% 42%;
+  --primitive-success-700: 152 60% 30%;
+  /* 水墨灰 - 沉稳大气 */
+  --primitive-neutral-100: 40 8% 95%;
+  --primitive-neutral-300: 35 6% 82%;
+  --primitive-neutral-500: 30 4% 55%;
+  --primitive-neutral-700: 25 6% 35%;
+  --primitive-neutral-900: 20 10% 12%;
+  /* 帝王金 - 尊贵华丽 */
+  --primitive-accent-300: 42 95% 68%;
+  --primitive-accent-500: 42 95% 52%;
+  --primitive-accent-700: 42 95% 38%;
 
   /* ==================== Spacing ==================== */
   --spacing-18: calc(var(--base-unit) * 18);
@@ -53,17 +68,39 @@
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-snap: cubic-bezier(0.4, 0, 0.6, 1);
 
-  /* ==================== Elevation ==================== */
+  /* ==================== Elevation - 层次分明 ==================== */
   --elevation-0: none;
-  --elevation-1: 0 1px 2px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.1);
-  --elevation-2: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
-  --elevation-3: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --elevation-1:
+    0 1px 2px rgba(0,0,0,0.08),
+    0 2px 4px rgba(0,0,0,0.06),
+    0 0 1px rgba(0,0,0,0.12);
+  --elevation-2:
+    0 2px 4px rgba(0,0,0,0.08),
+    0 4px 8px rgba(0,0,0,0.1),
+    0 8px 16px rgba(0,0,0,0.06);
+  --elevation-3:
+    0 4px 8px rgba(0,0,0,0.1),
+    0 8px 16px rgba(0,0,0,0.12),
+    0 16px 32px rgba(0,0,0,0.08);
 
-  /* ==================== Special Shadows ==================== */
-  --shadow-relief: inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -2px 4px rgba(0,0,0,0.1);
-  --shadow-glow-sm: 0 0 8px hsla(45, 100%, 51%, 0.3);
-  --shadow-glow-md: 0 0 12px hsla(45, 100%, 51%, 0.4);
-  --shadow-glow-lg: 0 0 20px hsla(45, 100%, 51%, 0.5);
+  /* ==================== Special Shadows - 精致立体 ==================== */
+  --shadow-relief:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -1px 0 rgba(0,0,0,0.08),
+    inset 0 2px 6px rgba(255,255,255,0.3);
+  --shadow-glow-sm: 0 0 10px hsla(42, 95%, 52%, 0.35);
+  --shadow-glow-md: 0 0 16px hsla(42, 95%, 52%, 0.45), 0 0 4px hsla(42, 95%, 52%, 0.6);
+  --shadow-glow-lg: 0 0 24px hsla(42, 95%, 52%, 0.5), 0 0 8px hsla(42, 95%, 52%, 0.7);
+
+  /* ==================== 装饰阴影 ==================== */
+  --shadow-jade: 0 0 16px hsla(158, 55%, 42%, 0.4);
+  --shadow-ruby: 0 0 16px hsla(5, 75%, 50%, 0.4);
+  --shadow-inner-light: inset 0 1px 2px rgba(255,255,255,0.6);
+  --shadow-paper:
+    0 1px 1px rgba(0,0,0,0.08),
+    0 2px 2px rgba(0,0,0,0.06),
+    0 4px 4px rgba(0,0,0,0.04),
+    0 8px 8px rgba(0,0,0,0.02);
 
   /* ==================== 语义颜色 ==================== */
   --color-action-primary: var(--primitive-success-500);
@@ -85,11 +122,105 @@
   --color-border-base: var(--primitive-neutral-300);
   --color-border-emphasis: var(--primitive-primary-500) / 0.3;
 
+  /* ==================== 语义颜色变体 ==================== */
+  --color-action-primary-dark: 158 55% 30%;
+  --color-action-primary-darker: 158 55% 28%;
+  --color-action-primary-darkest: 158 55% 24%;
+  --color-state-active-dark: 42 95% 45%;
+  --color-state-active-muted: 42 80% 40%;
+  --color-state-active-light: 42 95% 68%;
+  --color-state-active-lighter: 42 95% 72%;
+  --color-surface-muted: 40 8% 96%;
+  --color-surface-game: 158 35% 28%;
+  --color-surface-game-dark: 158 35% 22%;
+  --color-surface-play-area: 158 30% 24%;
+  --color-surface-play-area-dark: 158 30% 20%;
+  --color-stroke-game: 158 30% 18%;
+  --color-stroke-game-dark: 158 25% 16%;
+  --color-stroke-play-area: 158 25% 16%;
+  --color-stroke-header: 158 55% 20%;
+
   /* ==================== 游戏专用 ==================== */
   --suit-red: 0 84% 50%;
   --suit-black: 215 14% 27%;
   --badge-level: 142 71% 45%;
   --badge-wild: 0 84% 60%;
+
+  /* ==================== 响应式布局变量 - 桌面端默认值 ==================== */
+  /* 卡牌尺寸 */
+  --card-width: 70px;
+  --card-height: 98px;
+  --card-width-small: 48px;
+  --card-height-small: 68px;
+  --card-border-radius: 8px;
+  --card-border-radius-small: 6px;
+  --card-font-size: 16px;
+  --card-font-size-small: 12px;
+  --card-icon-size: 14px;
+  --card-icon-size-small: 12px;
+  --card-center-icon: 32px;
+  --card-center-icon-small: 20px;
+  /* 卡牌堆叠偏移 (宽度/高度 * 0.76) */
+  --card-stack-offset-h: 49px;
+  --card-stack-offset-v: 75px;
+  --card-stack-offset-h-small: 34px;
+  --card-stack-offset-v-small: 52px;
+  /* 卡牌内边距 */
+  --card-padding: 6px;
+  --card-padding-small: 2px;
+  /* Joker 字体和位置 */
+  --card-joker-font-size: 14px;
+  --card-joker-font-size-small: 10px;
+  --card-joker-img-bottom: 16px;
+  --card-joker-img-bottom-small: 10px;
+  --card-joker-text-left: 2px;
+  --card-joker-text-left-small: 2px;
+  --card-joker-line-height: 1.1;
+  --card-joker-line-height-small: 1.05;
+  /* 级牌角标 */
+  --card-badge-size: 24px;
+  --card-badge-size-small: 18px;
+  --card-badge-font-size: 12px;
+  --card-badge-font-size-small: 9px;
+  /* 卡牌内部定位 */
+  --card-corner-top: 2px;
+  --card-corner-top-small: 1px;
+  --card-corner-gap: 2px;
+  --card-corner-gap-small: 1px;
+  --card-suit-bottom: 20px;
+  --card-suit-bottom-small: 8px;
+  --card-suit-right: 14px;
+  --card-suit-right-small: 8px;
+  --card-joker-top: 4px;
+  --card-joker-top-small: 2px;
+  --card-joker-right: 4px;
+  --card-joker-right-small: 2px;
+
+  /* 牌桌尺寸 - 基于视口高度自适应 */
+  /* 游戏中预留: 手牌区域(176px) + 控制按钮(60px) - 重叠(64px) + 安全边距 ≈ 200px */
+  --table-height: min(32rem, calc(100vh - 200px));
+  --table-height: min(32rem, calc(100dvh - 200px));
+  --table-center-width: 440px;
+  --table-center-height: 260px;
+  --table-padding: 1.5rem;
+
+  /* 手牌区域 - 浮在牌桌上方 */
+  --hand-area-height: 12rem;
+  /* 出牌区域垂直偏移 - 向上移动，紧贴顶部玩家 */
+  --play-area-offset-y: -12%;
+  --hand-padding-y: 1rem;
+  --hand-gap-x: 0.25rem;
+
+  /* 玩家卡片 */
+  --player-card-offset: 1rem;
+  --player-avatar-size: 5rem;
+
+  /* 控制按钮 */
+  --control-button-min-width: 80px;
+  --control-gap: 1rem;
+
+  /* Header */
+  --header-height: 56px;
 }
 
 [data-theme="dark"] {
@@ -106,44 +237,292 @@
   --badge-wild: 0 75% 50%;
 }
 
+/* ==================== 移动端横屏响应式变量 ==================== */
+/* iPhone 横屏等高度受限设备 (高度 < 500px) */
+@media (max-height: 500px) and (orientation: landscape) {
+  :root {
+    /* 卡牌尺寸缩小约 30% */
+    --card-width: 50px;
+    --card-height: 70px;
+    --card-width-small: 36px;
+    --card-height-small: 50px;
+    --card-border-radius: 6px;
+    --card-border-radius-small: 4px;
+    --card-font-size: 12px;
+    --card-font-size-small: 10px;
+    --card-icon-size: 10px;
+    --card-icon-size-small: 8px;
+    --card-center-icon: 22px;
+    --card-center-icon-small: 14px;
+    /* 卡牌堆叠偏移 (宽度/高度 * 0.76) */
+    --card-stack-offset-h: 35px;
+    --card-stack-offset-v: 53px;
+    --card-stack-offset-h-small: 25px;
+    --card-stack-offset-v-small: 38px;
+    /* 卡牌内边距 */
+    --card-padding: 4px;
+    --card-padding-small: 1px;
+    /* Joker 字体和位置 */
+    --card-joker-font-size: 10px;
+    --card-joker-font-size-small: 8px;
+    --card-joker-img-bottom: 8px;
+    --card-joker-img-bottom-small: 6px;
+    --card-joker-text-left: 1px;
+    --card-joker-text-left-small: 1px;
+    --card-joker-line-height: 1;
+    --card-joker-line-height-small: 1.1;
+    /* 级牌角标 */
+    --card-badge-size: 18px;
+    --card-badge-size-small: 14px;
+    --card-badge-font-size: 9px;
+    --card-badge-font-size-small: 7px;
+    /* 卡牌内部定位 */
+    --card-corner-top: 1px;
+    --card-corner-top-small: 1px;
+    --card-corner-gap: 1px;
+    --card-corner-gap-small: 1px;
+    --card-suit-bottom: 10px;
+    --card-suit-bottom-small: 4px;
+    --card-suit-right: 8px;
+    --card-suit-right-small: 4px;
+    --card-joker-top: 2px;
+    --card-joker-top-small: 1px;
+    --card-joker-right: 2px;
+    --card-joker-right-small: 1px;
+
+    /* 牌桌适配视口 */
+    --table-height: calc(100vh - 100px);
+    --table-height: calc(100dvh - 100px);
+    --table-center-width: 320px;
+    --table-center-height: 140px;
+    --table-padding: 0.25rem;
+
+    /* 手牌区域压缩 */
+    --hand-area-height: 5.5rem;
+    --hand-padding-y: 0.25rem;
+    --hand-gap-x: 0.125rem;
+
+    /* 玩家卡片 */
+    --player-card-offset: 0.25rem;
+    --player-avatar-size: 3rem;
+
+    /* 控制按钮 */
+    --control-button-min-width: 56px;
+    --control-gap: 0.5rem;
+
+    /* Header */
+    --header-height: 40px;
+  }
+}
+
+/* 平板横屏 (768px+ 宽度，高度 500-700px) */
+@media (min-width: 768px) and (min-height: 501px) and (max-height: 700px) and (orientation: landscape) {
+  :root {
+    /* 卡牌尺寸适中 */
+    --card-width: 60px;
+    --card-height: 84px;
+    --card-width-small: 42px;
+    --card-height-small: 58px;
+    --card-border-radius: 7px;
+    --card-border-radius-small: 5px;
+    --card-font-size: 14px;
+    --card-font-size-small: 11px;
+    --card-icon-size: 12px;
+    --card-icon-size-small: 10px;
+    --card-center-icon: 28px;
+    --card-center-icon-small: 18px;
+    /* 卡牌堆叠偏移 (宽度/高度 * 0.76) */
+    --card-stack-offset-h: 42px;
+    --card-stack-offset-v: 64px;
+    --card-stack-offset-h-small: 29px;
+    --card-stack-offset-v-small: 44px;
+    /* 卡牌内边距 */
+    --card-padding: 5px;
+    --card-padding-small: 2px;
+    /* Joker 字体和位置 */
+    --card-joker-font-size: 12px;
+    --card-joker-font-size-small: 9px;
+    --card-joker-img-bottom: 12px;
+    --card-joker-img-bottom-small: 8px;
+    --card-joker-text-left: 2px;
+    --card-joker-text-left-small: 1px;
+    --card-joker-line-height: 1;
+    --card-joker-line-height-small: 1;
+    /* 级牌角标 */
+    --card-badge-size: 20px;
+    --card-badge-size-small: 16px;
+    --card-badge-font-size: 10px;
+    --card-badge-font-size-small: 8px;
+    /* 卡牌内部定位 */
+    --card-corner-top: 2px;
+    --card-corner-top-small: 1px;
+    --card-corner-gap: 1px;
+    --card-corner-gap-small: 1px;
+    --card-suit-bottom: 15px;
+    --card-suit-bottom-small: 6px;
+    --card-suit-right: 10px;
+    --card-suit-right-small: 6px;
+    --card-joker-top: 3px;
+    --card-joker-top-small: 2px;
+    --card-joker-right: 3px;
+    --card-joker-right-small: 2px;
+
+    /* 牌桌 */
+    --table-height: calc(100vh - 120px);
+    --table-height: calc(100dvh - 120px);
+    --table-center-width: 360px;
+    --table-center-height: 200px;
+    --table-padding: 1rem;
+
+    /* 手牌区域 */
+    --hand-area-height: 8rem;
+    --hand-padding-y: 0.5rem;
+
+    /* 玩家卡片 */
+    --player-card-offset: 0.5rem;
+    --player-avatar-size: 3.5rem;
+
+    /* 控制按钮 */
+    --control-button-min-width: 70px;
+    --control-gap: 0.75rem;
+
+    /* Header */
+    --header-height: 48px;
+  }
+}
+
+/* 安全区域支持 (iPhone 刘海屏等) */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+    padding-top: max(0.25rem, env(safe-area-inset-top));
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 20% 0%, hsla(158, 55%, 42%, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, hsla(42, 95%, 52%, 0.06) 0%, transparent 50%),
+    linear-gradient(180deg, hsl(40 8% 95%) 0%, hsl(35 6% 92%) 100%);
+  color: hsl(20 10% 12%);
 }
 
 @layer utilities {
+  /* 字体工具类 */
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* 文字阴影 */
   .text-shadow-sm {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   }
-  
+
+  .text-shadow-gold {
+    text-shadow: 0 0 8px hsla(42, 95%, 52%, 0.5), 0 1px 2px rgba(0,0,0,0.15);
+  }
+
+  .text-shadow-emboss {
+    text-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 -1px 0 rgba(0,0,0,0.15);
+  }
+
+  /* 3D 卡片阴影 */
   .card-3d-shadow {
-    box-shadow: 
+    box-shadow:
       0 1px 3px rgba(0,0,0,0.12),
-      0 1px 2px rgba(0,0,0,0.08),
-      inset 0 0 0 1px rgba(255,255,255,0.5),
-      inset 0 -1px 2px rgba(0,0,0,0.05);
+      0 2px 4px rgba(0,0,0,0.08),
+      0 4px 8px rgba(0,0,0,0.04),
+      inset 0 1px 0 rgba(255,255,255,0.6),
+      inset 0 -1px 0 rgba(0,0,0,0.08);
   }
-  
+
+  /* 玻璃拟态 */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px) saturate(1.5);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  }
+
+  .glass-dark {
+    background: rgba(30, 28, 26, 0.8);
+    backdrop-filter: blur(12px) saturate(1.5);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  }
+
+  /* 渐变边框 */
+  .border-gradient-gold {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--color-surface-elevated), var(--color-surface-elevated)) padding-box,
+      linear-gradient(135deg, hsl(42 95% 68%), hsl(42 95% 52%), hsl(42 95% 38%)) border-box;
+  }
+
+  .border-gradient-jade {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--color-surface-elevated), var(--color-surface-elevated)) padding-box,
+      linear-gradient(135deg, hsl(158 55% 65%), hsl(158 55% 42%), hsl(158 55% 28%)) border-box;
+  }
+
+  /* 书写模式 */
   .writing-vertical-rl {
     writing-mode: vertical-rl;
     text-orientation: mixed;
   }
-  
+
+  /* 3D 变换 */
   .perspective-1000 {
     perspective: 1000px;
   }
-  
+
   .backface-hidden {
     backface-visibility: hidden;
   }
-  
+
   .rotate-y-180 {
     transform: rotateY(180deg);
   }
+
+  /* 金属质感文字 */
+  .text-metallic-gold {
+    background: linear-gradient(
+      180deg,
+      hsl(42 95% 72%) 0%,
+      hsl(42 95% 52%) 45%,
+      hsl(42 95% 38%) 50%,
+      hsl(42 95% 52%) 55%,
+      hsl(42 95% 68%) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+  }
+
+  /* 装饰图案 */
+  .pattern-dots {
+    background-image: radial-gradient(circle, hsl(35 6% 75%) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .pattern-grid {
+    background-image:
+      linear-gradient(hsl(35 6% 82% / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(35 6% 82% / 0.5) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
 }
 
-/* 自定义动画关键帧 */
+/* ==================== 自定义动画关键帧 ==================== */
 @keyframes card-enter {
   from {
     opacity: 0;
@@ -155,6 +534,98 @@ body {
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px hsla(42, 95%, 52%, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px hsla(42, 95%, 52%, 0.7), 0 0 4px hsla(42, 95%, 52%, 0.9);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .animate-card-enter {
   animation: card-enter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(250, 204, 21, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0);
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

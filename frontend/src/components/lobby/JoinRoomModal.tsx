@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, Button } from '../ui';
+import { cn } from '@/lib/utils';
 
 interface JoinRoomModalProps {
   open: boolean;
@@ -99,39 +100,66 @@ const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ open, onClose, onJoin }) 
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>输入房间码</DialogTitle>
+          <DialogTitle className={cn(
+            "font-display",
+            "bg-gradient-to-r from-[hsl(158,55%,30%)] to-[hsl(158,55%,42%)]",
+            "bg-clip-text text-transparent",
+          )}>
+            输入房间码
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-center gap-3">
-              {digits.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => { inputRefs.current[index] = el; }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleDigitChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  onPaste={handlePaste}
-                  disabled={isJoining}
-                  className="w-14 h-14 text-center text-2xl font-semibold
-                    border border-stroke rounded-md bg-surface-elevated text-fg-primary
-                    shadow-[var(--elevation-2),var(--shadow-relief)]
-                    focus:outline-none focus-visible:border-state-active
-                    focus-visible:shadow-[var(--elevation-2),var(--shadow-relief),0_0_12px_hsla(45,100%,51%,0.3)]
-                    focus-visible:scale-[1.02]
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                    transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-                />
-              ))}
-            </div>
+        <div className="space-y-4 py-2">
+          {/* 房间码输入框 */}
+          <div className="flex justify-center gap-3">
+            {digits.map((digit, index) => (
+              <input
+                key={index}
+                ref={(el) => { inputRefs.current[index] = el; }}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleDigitChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={handlePaste}
+                disabled={isJoining}
+                className={cn(
+                  "w-14 h-14 text-center text-2xl font-semibold font-mono",
+                  "border-2 rounded-xl",
+                  "bg-gradient-to-b from-surface-base to-surface-elevated",
+                  "text-fg-primary",
+                  "shadow-[var(--elevation-2),var(--shadow-relief)]",
+                  // 默认边框
+                  digit ? "border-state-active/50" : "border-stroke/50",
+                  // 焦点状态
+                  "focus:outline-none",
+                  "focus:border-state-active",
+                  "focus:shadow-[var(--elevation-2),var(--shadow-relief),var(--shadow-glow-md)]",
+                  "focus:scale-105",
+                  // 禁用状态
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100",
+                  // 过渡
+                  "transition-all duration-normal ease-bounce",
+                )}
+              />
+            ))}
           </div>
 
+          {/* 提示文字 */}
+          <p className="text-xs text-fg-secondary text-center">
+            输入4位数字房间码，或粘贴邀请链接
+          </p>
+
+          {/* 错误提示 */}
           {error && (
-            <p className="text-error text-sm text-center">{error}</p>
+            <div className={cn(
+              "p-3 rounded-lg text-center",
+              "bg-action-danger/10 border border-action-danger/30",
+              "animate-in fade-in-0 slide-in-from-top-2 duration-normal",
+            )}>
+              <p className="text-sm text-action-danger">{error}</p>
+            </div>
           )}
         </div>
 
@@ -143,6 +171,12 @@ const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ open, onClose, onJoin }) 
             intent="primary"
             onClick={handleSubmit}
             disabled={roomCode.length !== 4 || isJoining}
+            className={cn(
+              "bg-gradient-to-r from-[hsl(158,55%,35%)] to-[hsl(158,55%,42%)]",
+              "hover:from-[hsl(158,55%,38%)] hover:to-[hsl(158,55%,45%)]",
+              "shadow-[var(--elevation-2),var(--shadow-relief)]",
+              "hover:shadow-[var(--elevation-3),var(--shadow-relief),var(--shadow-jade)]",
+            )}
           >
             {isJoining && <Loader2 className="animate-spin" />}
             {isJoining ? '加入中...' : '加入房间'}

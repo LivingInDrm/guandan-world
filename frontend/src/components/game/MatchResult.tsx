@@ -1,6 +1,9 @@
 import React from 'react';
 import type { Player } from '../../types';
 import type { MatchEndedPayload } from '../../types/generated/event';
+import { Trophy, Clock, Swords, Medal, RefreshCw, Home } from 'lucide-react';
+import { Button } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 interface MatchResultProps {
   matchResult: MatchEndedPayload;
@@ -64,76 +67,125 @@ const MatchResult: React.FC<MatchResultProps> = ({
   const losingTeam = 1 - winningTeam;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className={cn(
+      "fixed inset-0 flex items-center justify-center z-50",
+      "bg-black/70 backdrop-blur-md",
+    )}>
+      <div className={cn(
+        "max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto",
+        "p-8 rounded-2xl",
+        "bg-gradient-to-b from-[hsl(158,25%,15%)] to-[hsl(158,30%,10%)]",
+        "border border-[hsl(158,55%,30%)]/30",
+        "shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_80px_hsla(42,95%,52%,0.15)]",
+      )}>
+        {/* 标题区域 */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            🎉 比赛结束 🎉
-          </h1>
-          <div className="text-xl text-gray-600 mb-2">
-            队伍{winningTeam + 1}获得最终胜利！
-          </div>
-          <div className="text-lg text-gray-500">
-            恭喜率先达到A级！
+          <div className="relative py-6">
+            {/* 背景光晕 */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-48 h-48 bg-gradient-radial from-state-active/50 via-state-active/20 to-transparent rounded-full blur-3xl animate-pulse"></div>
+            </div>
+            <div className="relative flex flex-col items-center">
+              <Trophy className="w-20 h-20 text-state-active mb-4 drop-shadow-[0_0_30px_hsla(42,95%,52%,0.7)]" />
+              <h1
+                className={cn(
+                  "text-4xl font-black tracking-[0.2em] font-display",
+                  "bg-gradient-to-b from-state-active via-[hsl(42,95%,60%)] to-[hsl(42,95%,45%)]",
+                  "bg-clip-text text-transparent",
+                )}
+                style={{
+                  textShadow: '0 0 40px hsla(42, 95%, 52%, 0.8)',
+                }}
+              >
+                比赛结束
+              </h1>
+              <div className="flex items-center gap-3 mt-4 text-white/80 text-lg">
+                <span className="text-state-active">♠</span>
+                <span>队伍{winningTeam + 1}获得最终胜利！</span>
+                <span className="text-state-active">♥</span>
+              </div>
+              <div className="text-white/50 mt-2 text-sm">恭喜率先达到A级！</div>
+            </div>
           </div>
         </div>
 
-        {/* Final Team Results */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          {/* Winning Team */}
-          <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-300 rounded-lg p-6">
+        {/* 队伍结果卡片 */}
+        <div className="grid grid-cols-2 gap-6 mb-8">
+          {/* 冠军队伍 */}
+          <div className={cn(
+            "p-5 rounded-xl relative overflow-hidden",
+            "bg-gradient-to-br from-state-active/25 via-state-active/15 to-transparent",
+            "border-2 border-state-active/50",
+            "shadow-[0_4px_24px_hsla(42,95%,52%,0.25)]",
+          )}>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-state-active/30 to-transparent rounded-bl-full"></div>
             <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold text-yellow-800 mb-2">
-                🏆 队伍{winningTeam + 1}
+              <h2 className="text-2xl font-bold text-state-active mb-1 flex items-center justify-center gap-2">
+                <Trophy className="w-6 h-6" />
+                队伍{winningTeam + 1}
               </h2>
-              <div className="text-lg font-semibold text-yellow-700">
-                冠军队伍
-              </div>
+              <div className="text-sm font-medium text-state-active/80">冠军队伍</div>
             </div>
             <div className="space-y-3">
               {teamPlayers[winningTeam].map(player => (
-                <div key={player.seat} className="flex justify-between items-center bg-white rounded-lg p-3 shadow-sm">
-                  <span className="font-medium text-gray-800">{player.username}</span>
-                  <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                <div key={player.seat} className={cn(
+                  "flex justify-between items-center px-4 py-3 rounded-lg",
+                  "bg-black/30 border border-white/10",
+                )}>
+                  <span className="font-medium text-white">{player.username}</span>
+                  <span className={cn(
+                    "text-xs px-2 py-1 rounded-full",
+                    "bg-state-active/20 text-state-active border border-state-active/30",
+                  )}>
                     座位{player.seat + 1}
                   </span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-4 border-t border-yellow-200">
+            <div className="mt-4 pt-4 border-t border-white/10">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold text-yellow-800">最终等级:</span>
-                <span className="text-2xl font-bold text-yellow-800">
+                <span className="text-white/70">最终等级</span>
+                <span className="text-3xl font-black text-state-active font-display">
                   {getLevelText(matchResult.finalLevels[winningTeam])}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Losing Team */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+          {/* 亚军队伍 */}
+          <div className={cn(
+            "p-5 rounded-xl relative overflow-hidden",
+            "bg-black/30",
+            "border border-white/10",
+          )}>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/5 to-transparent rounded-bl-full"></div>
             <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-700 mb-2">
+              <h2 className="text-2xl font-bold text-white/70 mb-1 flex items-center justify-center gap-2">
+                <Medal className="w-5 h-5" />
                 队伍{losingTeam + 1}
               </h2>
-              <div className="text-lg font-semibold text-gray-600">
-                亚军队伍
-              </div>
+              <div className="text-sm font-medium text-white/50">亚军队伍</div>
             </div>
             <div className="space-y-3">
               {teamPlayers[losingTeam].map(player => (
-                <div key={player.seat} className="flex justify-between items-center bg-white rounded-lg p-3 shadow-sm">
-                  <span className="font-medium text-gray-800">{player.username}</span>
-                  <span className="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                <div key={player.seat} className={cn(
+                  "flex justify-between items-center px-4 py-3 rounded-lg",
+                  "bg-black/30 border border-white/5",
+                )}>
+                  <span className="font-medium text-white/80">{player.username}</span>
+                  <span className={cn(
+                    "text-xs px-2 py-1 rounded-full",
+                    "bg-white/5 text-white/50 border border-white/10",
+                  )}>
                     座位{player.seat + 1}
                   </span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mt-4 pt-4 border-t border-white/10">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold text-gray-700">最终等级:</span>
-                <span className="text-2xl font-bold text-gray-700">
+                <span className="text-white/50">最终等级</span>
+                <span className="text-3xl font-black text-white/70 font-display">
                   {getLevelText(matchResult.finalLevels[losingTeam])}
                 </span>
               </div>
@@ -141,71 +193,116 @@ const MatchResult: React.FC<MatchResultProps> = ({
           </div>
         </div>
 
-        {/* Match Statistics */}
-        <div className="bg-gray-50 rounded-lg p-6 mb-8">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">比赛统计</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600 mb-1">
+        {/* 比赛统计 */}
+        <div className={cn(
+          "p-5 mb-8 rounded-xl",
+          "bg-black/30 border border-white/10",
+        )}>
+          <h3 className="text-lg font-bold text-white/80 mb-4 text-center">比赛统计</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className={cn(
+              "flex flex-col items-center p-4 rounded-lg",
+              "bg-black/20 border border-white/5",
+            )}>
+              <Swords className="w-5 h-5 text-[hsl(158,55%,50%)] mb-2" />
+              <div className="text-2xl font-bold text-white font-display mb-1">
                 {matchResult.totalDeals}
               </div>
-              <div className="text-sm text-gray-600">总局数</div>
+              <div className="text-xs text-white/50">总局数</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600 mb-1">
+            <div className={cn(
+              "flex flex-col items-center p-4 rounded-lg",
+              "bg-black/20 border border-white/5",
+            )}>
+              <Clock className="w-5 h-5 text-[hsl(158,55%,50%)] mb-2" />
+              <div className="text-2xl font-bold text-white font-display mb-1">
                 {formatDuration(matchResult.durationMs)}
               </div>
-              <div className="text-sm text-gray-600">总时长</div>
+              <div className="text-xs text-white/50">总时长</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600 mb-1">
+            <div className={cn(
+              "flex flex-col items-center p-4 rounded-lg",
+              "bg-black/20 border border-white/5",
+            )}>
+              <Medal className="w-5 h-5 text-state-active mb-2" />
+              <div className="text-2xl font-bold text-white font-display mb-1">
                 {getLevelText(matchResult.finalLevels[0])} vs {getLevelText(matchResult.finalLevels[1])}
               </div>
-              <div className="text-sm text-gray-600">最终等级</div>
+              <div className="text-xs text-white/50">最终等级</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600 mb-1">
+            <div className={cn(
+              "flex flex-col items-center p-4 rounded-lg",
+              "bg-black/20 border border-white/5",
+            )}>
+              <Trophy className="w-5 h-5 text-state-active mb-2" />
+              <div className="text-2xl font-bold text-state-active font-display mb-1">
                 队伍{matchResult.winner + 1}
               </div>
-              <div className="text-sm text-gray-600">获胜队伍</div>
+              <div className="text-xs text-white/50">获胜队伍</div>
             </div>
           </div>
         </div>
 
-        {/* Congratulations Message */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              感谢参与本次掼蛋对战！
-            </h3>
-            <p className="text-gray-600 mb-4">
-              经过 {matchResult.totalDeals} 局激烈的对战，
-              队伍{winningTeam + 1} 成功率先达到A级，获得最终胜利！
-            </p>
-            <div className="flex justify-center items-center space-x-4 text-sm text-gray-500">
-              <span>🎯 精彩对局</span>
-              <span>•</span>
-              <span>🤝 友谊第一</span>
-              <span>•</span>
-              <span>🏆 比赛第二</span>
-            </div>
+        {/* 感谢信息 */}
+        <div className={cn(
+          "p-5 mb-8 rounded-xl text-center",
+          "bg-gradient-to-r from-[hsl(158,55%,20%)]/30 via-black/30 to-[hsl(42,95%,30%)]/20",
+          "border border-[hsl(158,55%,30%)]/20",
+        )}>
+          <h3 className="text-lg font-bold text-white/90 mb-2">
+            感谢参与本次掼蛋对战！
+          </h3>
+          <p className="text-white/60 mb-4">
+            经过 {matchResult.totalDeals} 局激烈的对战，
+            队伍{winningTeam + 1} 成功率先达到A级，获得最终胜利！
+          </p>
+          <div className="flex justify-center items-center gap-6 text-sm text-white/40">
+            <span className="flex items-center gap-1">
+              <span className="text-[hsl(158,55%,50%)]">♣</span>
+              精彩对局
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="text-suit-red">♥</span>
+              友谊第一
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="text-state-active">♦</span>
+              比赛第二
+            </span>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-center space-x-4">
-          <button
+        {/* 操作按钮 */}
+        <div className="flex justify-center gap-4">
+          <Button
             onClick={onPlayAgain}
-            className="px-8 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-lg"
+            size="lg"
+            className={cn(
+              "px-8",
+              "bg-gradient-to-r from-[hsl(158,55%,35%)] to-[hsl(158,55%,42%)]",
+              "hover:from-[hsl(158,55%,40%)] hover:to-[hsl(158,55%,47%)]",
+              "text-white font-bold",
+              "border-none",
+              "shadow-[0_4px_16px_hsla(158,55%,42%,0.4)]",
+              "hover:shadow-[0_6px_20px_hsla(158,55%,42%,0.5)]",
+            )}
           >
+            <RefreshCw className="w-5 h-5 mr-2" />
             再来一局
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onReturnToLobby}
-            className="px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
+            size="lg"
+            className={cn(
+              "px-8",
+              "bg-white/10 hover:bg-white/20",
+              "text-white/80 hover:text-white",
+              "border border-white/20 hover:border-white/30",
+            )}
           >
+            <Home className="w-5 h-5 mr-2" />
             返回大厅
-          </button>
+          </Button>
         </div>
       </div>
     </div>
