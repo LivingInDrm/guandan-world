@@ -24,7 +24,7 @@ export const EmptyRoom: Story = () => (
     players={[null, null, null, null]}
     currentPlayerSeat={0}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="owner-1"
     isConnected={true}
@@ -43,7 +43,7 @@ export const OnePlayer: Story = () => (
     players={[mockPlayers[0], null, null, null]}
     currentPlayerSeat={0}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="owner-1"
     isConnected={true}
@@ -62,7 +62,7 @@ export const PartialPlayers: Story = () => (
     players={[mockPlayers[0], mockPlayers[1], null, null]}
     currentPlayerSeat={0}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="owner-1"
     isConnected={true}
@@ -81,7 +81,7 @@ export const FullRoom: Story = () => (
     players={mockPlayers}
     currentPlayerSeat={0}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="owner-1"
     isConnected={true}
@@ -100,7 +100,7 @@ export const OwnerView: Story = () => (
     players={mockPlayers}
     currentPlayerSeat={0}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="owner-1"
     isConnected={true}
@@ -119,7 +119,7 @@ export const NonOwnerView: Story = () => (
     players={mockPlayers}
     currentPlayerSeat={1}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="p2"
     isConnected={true}
@@ -138,7 +138,7 @@ export const StartingGame: Story = () => (
     players={mockPlayers}
     currentPlayerSeat={0}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="owner-1"
     isConnected={true}
@@ -157,7 +157,7 @@ export const LeavingRoom: Story = () => (
     players={mockPlayers}
     currentPlayerSeat={0}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="owner-1"
     isConnected={true}
@@ -181,7 +181,7 @@ export const OfflinePlayer: Story = () => (
     ]}
     currentPlayerSeat={0}
     roomId="room-1"
-    roomCode="ABC123"
+    roomCode="8888"
     ownerId="owner-1"
     currentUserId="owner-1"
     isConnected={true}

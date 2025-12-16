@@ -4,7 +4,11 @@ import { useEffect } from "react";
 import RoomLobby from "./RoomLobby";
 import { useAuthStore } from "../../store/authStore";
 import { useRoomStore } from "../../store/roomStore";
+import { apiClient } from "../../services/api";
 import { RoomStatus, type RoomInfo, type Player } from "../../types";
+
+apiClient.getMyRoom = async () => ({ success: false, error: "Not in room" });
+apiClient.getRoomList = async () => ({ success: true, data: null });
 
 const createPlayer = (id: string, seat: number, online = true): Player => ({
   id,

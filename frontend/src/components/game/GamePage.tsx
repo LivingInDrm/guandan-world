@@ -24,6 +24,7 @@ import MatchResult from './MatchResult';
 import { useDealResultData, useMatchResultData } from '../../hooks/useResultData';
 import { useTributeData } from '../../hooks/useTributeData';
 import { usePlayerViewData, usePlayerHandData } from '../../hooks/useGameData';
+import OrientationGuard from '../ui/OrientationGuard';
 
 // 游戏页面状态常量
 const GamePageState = {
@@ -664,42 +665,48 @@ const GamePage: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4 opacity-40">
-            <span className="text-3xl">♠</span>
-            <span className="text-3xl text-suit-red">♥</span>
-            <span className="text-3xl">♣</span>
-            <span className="text-3xl text-suit-red">♦</span>
+      <OrientationGuard>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-4 opacity-40">
+              <span className="text-3xl">♠</span>
+              <span className="text-3xl text-suit-red">♥</span>
+              <span className="text-3xl">♣</span>
+              <span className="text-3xl text-suit-red">♦</span>
+            </div>
+            <p className="text-fg-secondary">请先登录</p>
           </div>
-          <p className="text-fg-secondary">请先登录</p>
         </div>
-      </div>
+      </OrientationGuard>
     );
   }
 
   if (!currentRoom && currentPhase === GamePageState.WAITING_PLAYERS) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          {/* 加载动画 */}
-          <div className="relative w-16 h-16 mx-auto mb-6">
-            <div className="absolute inset-0 rounded-full border-4 border-state-active/20" />
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-state-active animate-spin" />
-            <div className="absolute inset-2 rounded-full bg-surface-elevated/50 flex items-center justify-center">
-              <span className="text-state-active text-lg">♠</span>
+      <OrientationGuard>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            {/* 加载动画 */}
+            <div className="relative w-16 h-16 mx-auto mb-6">
+              <div className="absolute inset-0 rounded-full border-4 border-state-active/20" />
+              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-state-active animate-spin" />
+              <div className="absolute inset-2 rounded-full bg-surface-elevated/50 flex items-center justify-center">
+                <span className="text-state-active text-lg">♠</span>
+              </div>
             </div>
+            <p className="text-fg-secondary font-medium">加载房间信息...</p>
           </div>
-          <p className="text-fg-secondary font-medium">加载房间信息...</p>
         </div>
-      </div>
+      </OrientationGuard>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      {renderCurrentPhase()}
-    </div>
+    <OrientationGuard>
+      <div className="min-h-screen">
+        {renderCurrentPhase()}
+      </div>
+    </OrientationGuard>
   );
 };
 
