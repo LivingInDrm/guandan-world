@@ -217,11 +217,12 @@ const RoomLobby: React.FC = () => {
 
   return (
     <div className={cn(
-      "max-w-6xl mx-auto",
-      "p-6 rounded-2xl",
+      "max-w-6xl mx-auto mobile-landscape:max-w-none",
+      "p-6 mobile-landscape:p-2 rounded-2xl mobile-landscape:rounded-lg",
       "bg-surface-base/60 backdrop-blur-sm",
-      "border border-stroke/30",
-      "shadow-[var(--elevation-2)]",
+      "border border-stroke/30 mobile-landscape:border-0",
+      "shadow-[var(--elevation-2)] mobile-landscape:shadow-none",
+      "mobile-landscape:bg-transparent",
     )}>
       {/* 错误提示 */}
       {error && (
@@ -250,9 +251,9 @@ const RoomLobby: React.FC = () => {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+      <div className="flex flex-col mobile-landscape:flex-row lg:flex-row gap-4 mobile-landscape:gap-3 lg:gap-8">
         {/* 左侧操作面板 */}
-        <div className="w-full lg:w-72 shrink-0">
+        <div className="w-full mobile-landscape:w-48 lg:w-72 mobile-landscape:shrink-0 shrink-0">
           <Card
             variant="elevated"
             interactive={false}
@@ -266,23 +267,24 @@ const RoomLobby: React.FC = () => {
             {/* 装饰顶部 */}
             <div className="h-1 bg-gradient-to-r from-transparent via-state-active to-transparent" />
 
-            <CardContent className="p-5">
+            <CardContent className="p-5 mobile-landscape:p-3">
               {/* 标题 */}
               <h2 className={cn(
-                "text-lg font-display font-bold text-center mb-5",
+                "text-lg mobile-landscape:text-base font-display font-bold text-center mb-5 mobile-landscape:mb-3",
                 "bg-gradient-primary",
                 "bg-clip-text text-transparent",
               )}>
                 开始游戏
               </h2>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 mobile-landscape:gap-2">
                 {/* 快速开始按钮 */}
                 <Button
                   intent="primary"
                   size="lg"
                   className={cn(
                     "w-full",
+                    "mobile-landscape:h-9 mobile-landscape:text-sm",
                     "bg-gradient-active",
                     "hover:brightness-110",
                     "shadow-card-interactive",
@@ -292,11 +294,11 @@ const RoomLobby: React.FC = () => {
                   onClick={handleQuickStart}
                   disabled={isQuickStarting}
                 >
-                  <Zap className="w-5 h-5" />
+                  <Zap className="w-5 h-5 mobile-landscape:w-4 mobile-landscape:h-4" />
                   快速开始
                 </Button>
 
-                <div className="flex items-center gap-3 my-1">
+                <div className="flex items-center gap-3 my-1 mobile-landscape:my-0.5">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-stroke to-transparent" />
                   <span className="text-xs text-fg-secondary">或</span>
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-stroke to-transparent" />
@@ -308,6 +310,7 @@ const RoomLobby: React.FC = () => {
                   size="lg"
                   className={cn(
                     "w-full",
+                    "mobile-landscape:h-9 mobile-landscape:text-sm",
                     "bg-gradient-primary",
                     "hover:brightness-110",
                     "border-none text-white",
@@ -316,7 +319,7 @@ const RoomLobby: React.FC = () => {
                   )}
                   onClick={() => setShowCreateModal(true)}
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-5 h-5 mobile-landscape:w-4 mobile-landscape:h-4" />
                   创建房间
                 </Button>
 
@@ -326,18 +329,19 @@ const RoomLobby: React.FC = () => {
                   size="lg"
                   className={cn(
                     "w-full",
+                    "mobile-landscape:h-9 mobile-landscape:text-sm",
                     "border-stroke/50 hover:border-state-active/50",
                     "hover:bg-state-active/5",
                   )}
                   onClick={() => setShowJoinModal(true)}
                 >
-                  <Users className="w-5 h-5" />
+                  <Users className="w-5 h-5 mobile-landscape:w-4 mobile-landscape:h-4" />
                   输入房间码
                 </Button>
               </div>
 
               {/* 底部装饰 */}
-              <div className="flex items-center justify-center gap-2 mt-5 pt-4 border-t border-stroke/30">
+              <div className="flex items-center justify-center gap-2 mt-5 pt-4 border-t border-stroke/30 mobile-landscape:hidden">
                 <span className="text-lg opacity-30">♠</span>
                 <span className="text-lg text-suit-red opacity-30">♥</span>
                 <span className="text-lg opacity-30">♣</span>

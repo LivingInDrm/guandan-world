@@ -72,26 +72,29 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   if (!player) {
     return (
       <div className={cn(positionStyles.className, className)} style={positionStyles.style}>
-        <div className={cn(
-          "flex flex-col items-center p-2 mobile-landscape:p-1 rounded-xl mobile-landscape:rounded-lg",
-          "bg-black/20 backdrop-blur-sm",
-          "border border-white/10",
-        )}>
+        <Card
+          variant="emphasis"
+          interactive={false}
+          className={cn(
+            "flex flex-col items-center p-2 mobile-landscape:p-1 w-fit",
+            "bg-black/30 backdrop-blur-sm",
+            "border border-white/15",
+          )}
+        >
           <div
             className={cn(
-              "rounded-lg mobile-landscape:rounded",
+              "rounded-full",
               "bg-white/5 border-2 border-dashed border-white/20",
               "flex items-center justify-center",
+              "!w-[var(--player-avatar-size)] !h-[var(--player-avatar-size)]",
             )}
-            style={{
-              width: 'var(--player-avatar-size)',
-              height: 'var(--player-avatar-size)',
-            }}
           >
             <span className="text-white/30 text-2xl mobile-landscape:text-lg">+</span>
           </div>
-          <span className="mt-2 mobile-landscape:mt-1 text-xs mobile-landscape:text-[10px] font-medium text-white/40">空座位</span>
-        </div>
+          <span className="mt-2 mobile-landscape:mt-0.5 text-xs mobile-landscape:text-[10px] font-medium text-white/40">
+            空座位
+          </span>
+        </Card>
       </div>
     );
   }

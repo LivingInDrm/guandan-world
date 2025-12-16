@@ -20,6 +20,7 @@ interface WaitingBoardProps {
   onLeaveRoom: () => void;
   isStarting: boolean;
   isLeaving: boolean;
+  className?: string;
 }
 
 const WaitingBoard: React.FC<WaitingBoardProps> = ({
@@ -36,6 +37,7 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
   onLeaveRoom,
   isStarting,
   isLeaving,
+  className,
 }) => {
   const playerCount = players.filter(p => p !== null).length;
   const isRoomOwner = currentUserId === ownerId;
@@ -157,15 +159,14 @@ const WaitingBoard: React.FC<WaitingBoardProps> = ({
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6 mobile-landscape:p-2">
-      <GameTable
-        players={players}
-        currentPlayerSeat={effectiveSeat}
-        renderPlayer={renderPlayer}
-        renderCenter={renderCenter}
-        topLeftSlot={<RoomInfoPanel roomCode={roomCode} />}
-      />
-    </div>
+    <GameTable
+      players={players}
+      currentPlayerSeat={effectiveSeat}
+      renderPlayer={renderPlayer}
+      renderCenter={renderCenter}
+      topLeftSlot={<RoomInfoPanel roomCode={roomCode} />}
+      className={className}
+    />
   );
 };
 

@@ -91,6 +91,7 @@ const Header: React.FC<HeaderProps> = ({ collapsible = false }) => {
                       <button
                         className={cn(
                           "rounded-full cursor-pointer",
+                          "aspect-square",
                           "ring-2 ring-white/20",
                           "hover:ring-state-active/60",
                           "transition-all duration-normal",
@@ -194,6 +195,7 @@ const Header: React.FC<HeaderProps> = ({ collapsible = false }) => {
                     <button
                       className={cn(
                         "rounded-full cursor-pointer",
+                        "aspect-square",
                         "ring-2 ring-white/20 ring-offset-2 ring-offset-transparent",
                         "hover:ring-state-active/60",
                         "hover:shadow-[var(--shadow-glow-md)]",

@@ -544,19 +544,25 @@ const GamePage: React.FC = () => {
     const renderWaitingBoard = () => {
       if (!currentRoom) return null;
       return (
-        <WaitingBoard
-          players={currentRoom.players}
-          currentPlayerSeat={playerSeat ?? 0}
-          roomId={currentRoom.id}
-          roomCode={currentRoom.room_code || ''}
-          ownerId={currentRoom.owner}
-          currentUserId={user?.id || ''}
-          isConnected={isConnected}
-          onStartGame={handleStartGame}
-          onLeaveRoom={handleLeaveRoom}
-          isStarting={isStarting}
-          isLeaving={isLeaving}
-        />
+        <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
+          <Header collapsible />
+          <div className="absolute inset-0 p-2">
+            <WaitingBoard
+              players={currentRoom.players}
+              currentPlayerSeat={playerSeat ?? 0}
+              roomId={currentRoom.id}
+              roomCode={currentRoom.room_code || ''}
+              ownerId={currentRoom.owner}
+              currentUserId={user?.id || ''}
+              isConnected={isConnected}
+              onStartGame={handleStartGame}
+              onLeaveRoom={handleLeaveRoom}
+              isStarting={isStarting}
+              isLeaving={isLeaving}
+              className="h-full"
+            />
+          </div>
+        </div>
       );
     };
 

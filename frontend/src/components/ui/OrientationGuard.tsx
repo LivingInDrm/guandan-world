@@ -19,14 +19,12 @@ const OrientationGuard: React.FC<OrientationGuardProps> = ({
   minWidthThreshold = 1024,
 }) => {
   const [isPortrait, setIsPortrait] = useState(false);
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
 
   useEffect(() => {
     const checkOrientation = () => {
       const isNarrowScreen = window.innerWidth < minWidthThreshold;
       const isPortraitOrientation = window.innerHeight > window.innerWidth;
 
-      setIsMobileDevice(isNarrowScreen);
       setIsPortrait(isNarrowScreen && isPortraitOrientation);
     };
 

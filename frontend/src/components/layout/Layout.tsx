@@ -47,7 +47,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* 主内容区 */}
       <main className={cn(
         "relative container mx-auto px-4 py-6",
+        "mobile-landscape:px-1 mobile-landscape:py-1 mobile-landscape:max-w-none",
         "min-h-[calc(100vh-80px)]",
+        "mobile-landscape:min-h-[calc(100dvh-60px)]",
       )}>
         {children || <Outlet />}
       </main>
