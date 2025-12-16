@@ -5,7 +5,7 @@ import type { Player } from '../../types';
 import type { Card, PlayAction } from '../../types/proto';
 import { CompType } from '../../types/proto';
 import { useAuthStore } from '../../store/authStore';
-import Header from '../layout/Header';
+import UserMenuFab from '../layout/UserMenuFab';
 import GameBoard from './GameBoard';
 import GameControls from './GameControls';
 import PlayerHand from './PlayerHand';
@@ -157,7 +157,7 @@ const PlayingPhaseWrapper: React.FC<PlayingPhaseWrapperProps> = ({
 
   return (
     <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
-      <Header collapsible />
+      <UserMenuFab />
       <div className="absolute inset-0 p-2">
         <GameBoard
           teamLevels={teamLevels}
@@ -237,7 +237,7 @@ export const WithSelectedCards: Story = () => {
     const [selected, setSelected] = useState<Card[]>([hand[2], hand[3]]);
     return (
       <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
-        <Header collapsible />
+        <UserMenuFab />
         <div className="absolute inset-0 p-2">
           <GameBoard
             teamLevels={[5, 3]}

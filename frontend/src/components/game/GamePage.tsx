@@ -15,7 +15,7 @@ import GameBoard from './GameBoard';
 import WaitingBoard from './WaitingBoard';
 import PlayerHand from './PlayerHand';
 import GameControls from './GameControls';
-import Header from '../layout/Header';
+import UserMenuFab from '../layout/UserMenuFab';
 import TributeBoard from './tribute/TributeBoard';
 import TributeControls from './tribute/TributeControls';
 import { TributeStatus } from '../../types/generated/view';
@@ -483,8 +483,8 @@ const GamePage: React.FC = () => {
 
     return (
       <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
-        {/* 可收起的 Header */}
-        <Header collapsible />
+        {/* 用户菜单浮动按钮 */}
+        <UserMenuFab />
 
         {/* 牌桌 - 占满屏幕 */}
         <div className="absolute inset-0 p-2">
@@ -546,7 +546,7 @@ const GamePage: React.FC = () => {
       if (!currentRoom) return null;
       return (
         <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
-          <Header collapsible />
+          <UserMenuFab />
           <div className="absolute inset-0 p-2">
             <WaitingBoard
               players={currentRoom.players}
@@ -586,7 +586,7 @@ const GamePage: React.FC = () => {
           tributeData.receivers.includes(playerSeat);
         return (
           <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
-            <Header collapsible />
+            <UserMenuFab />
             <div className="absolute inset-0 p-2">
               <TributeBoard
                 tributeData={tributeData}

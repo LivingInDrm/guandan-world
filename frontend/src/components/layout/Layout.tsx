@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Header from './Header';
 import OrientationGuard from '../ui/OrientationGuard';
+import UserMenuFab from './UserMenuFab';
 import { cn } from '@/lib/utils';
 
 interface LayoutProps {
@@ -43,8 +43,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* 顶部装饰边 */}
       <div className="fixed top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-state-active/60 to-transparent z-50" />
 
-      {/* Header */}
-      <Header />
+      {/* 用户菜单浮动按钮 */}
+      <UserMenuFab />
 
       {/* 主内容区 */}
       <main className={cn(

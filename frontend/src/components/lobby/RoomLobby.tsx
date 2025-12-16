@@ -10,7 +10,7 @@ import JoinRoomModal from './JoinRoomModal';
 import { Button, Card, CardContent } from '../ui';
 import { cn } from '@/lib/utils';
 import OrientationGuard from '../ui/OrientationGuard';
-import Header from '../layout/Header';
+import UserMenuFab from '../layout/UserMenuFab';
 
 const RoomLobby: React.FC = () => {
   const { user } = useAuthStore();
@@ -249,12 +249,12 @@ const RoomLobby: React.FC = () => {
         {/* 顶部装饰边 */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-state-active/60 to-transparent z-50" />
 
-        {/* Header */}
-        <Header />
+        {/* 用户菜单浮动按钮 */}
+        <UserMenuFab />
 
         {/* 主内容区 */}
         <main className={cn(
-          "absolute inset-0 pt-14 mobile-landscape:pt-10",
+          "absolute inset-0 pt-4 mobile-landscape:pt-2",
           "container mx-auto px-4 py-6",
           "mobile-landscape:px-1 mobile-landscape:py-1 mobile-landscape:max-w-none",
           "overflow-auto",

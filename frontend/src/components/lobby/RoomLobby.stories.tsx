@@ -8,7 +8,7 @@ import { apiClient } from "../../services/api";
 import { RoomStatus, type RoomInfo, type Player } from "../../types";
 
 apiClient.getMyRoom = async () => ({ success: false, error: "Not in room" });
-apiClient.getRoomList = async () => ({ success: true, data: null });
+apiClient.getRoomList = async () => ({ success: true, data: { rooms: [], total_count: 0, page: 1, limit: 10 } });
 
 const createPlayer = (id: string, seat: number, online = true): Player => ({
   id,

@@ -3,7 +3,7 @@ import type { Story } from '@ladle/react';
 import { MemoryRouter } from 'react-router-dom';
 import type { Player } from '../../types';
 import { useAuthStore } from '../../store/authStore';
-import Header from '../layout/Header';
+import UserMenuFab from '../layout/UserMenuFab';
 import WaitingBoard from './WaitingBoard';
 
 const MockAuthProvider: React.FC<{ children: React.ReactNode; userId?: string }> = ({ 
@@ -78,7 +78,7 @@ const WaitingPhaseWrapper: React.FC<WaitingPhaseWrapperProps> = ({
 
   return (
     <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
-      <Header collapsible />
+      <UserMenuFab />
       <div className="absolute inset-0 p-2">
         <WaitingBoard
           players={players}

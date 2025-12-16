@@ -5,7 +5,7 @@ import type { Player, Card, TributePair } from '../../types';
 import { TributeStatus } from '../../types/generated/view';
 import { TributeType } from '../../types/generated/event';
 import { useAuthStore } from '../../store/authStore';
-import Header from '../layout/Header';
+import UserMenuFab from '../layout/UserMenuFab';
 import TributeBoard from './tribute/TributeBoard';
 import TributeControls from './tribute/TributeControls';
 import PlayerHand from './PlayerHand';
@@ -142,7 +142,7 @@ const TributePhaseWrapper: React.FC<TributePhaseWrapperProps> = ({
 
   return (
     <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
-      <Header collapsible />
+      <UserMenuFab />
       <div className="absolute inset-0 p-2">
         <TributeBoard
           tributeData={tributeData}
@@ -298,7 +298,7 @@ export const WithCardSelection: Story = () => {
     const [selected, setSelected] = useState<Card[]>([hand[5]]);
     return (
       <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
-        <Header collapsible />
+        <UserMenuFab />
         <div className="absolute inset-0 p-2">
           <TributeBoard
             tributeData={{
