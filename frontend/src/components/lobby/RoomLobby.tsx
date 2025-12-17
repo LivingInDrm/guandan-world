@@ -44,6 +44,8 @@ const RoomLobby: React.FC = () => {
       return;
     }
 
+    setIsCheckingRoom(true);
+
     try {
       const response = await apiClient.getMyRoom();
       if (response.success && response.data) {
@@ -64,10 +66,12 @@ const RoomLobby: React.FC = () => {
   };
 
   // Load room list
-  const loadRoomList = async (page: number = currentPage) => {
+  const loadRoomList = async (page: number = currentPage, silent: boolean = false) => {
     if (!user) return;
 
-    setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
     clearError();
 
     try {
@@ -177,7 +181,7 @@ const RoomLobby: React.FC = () => {
       loadRoomList();
       
       const interval = setInterval(() => {
-        loadRoomList();
+        loadRoomList(currentPage, true);
       }, 5000);
       
       setRefreshInterval(interval);
