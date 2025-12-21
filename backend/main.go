@@ -70,10 +70,11 @@ func main() {
 
 	roomService := room.NewRoomService(authService)
 	wsManager := websocket.NewWSManager(authService, roomService)
-	driverService := game.NewDriverService(wsManager)
+	driverService := game.NewDriverService(wsManager, roomService)
 	gameDriverHandler := handlers.NewGameDriverHandler(driverService)
 
 	wsManager.SetReconnectHandler(driverService)
+	wsManager.SetDisconnectHandler(driverService)
 	roomHandler := handlers.NewRoomHandler(roomService, authService, driverService, wsManager)
 
 	go wsManager.Run()

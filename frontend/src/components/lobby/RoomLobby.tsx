@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Zap, Plus, Users, X, AlertCircle } from 'lucide-react';
+import { Zap, Plus, Users, X, AlertCircle, ArrowRight } from 'lucide-react';
 import { useRoomStore } from '../../store/roomStore';
 import { useAuthStore } from '../../store/authStore';
+import { useGameStore } from '../../store/gameStore';
+import { useTributeStore } from '../../store/tributeStore';
 import { apiClient } from '../../services/api';
 import RoomList from './RoomList';
 import CreateRoomModal from './CreateRoomModal';
@@ -11,6 +13,8 @@ import { Button, Card, CardContent } from '../ui';
 import { cn } from '@/lib/utils';
 import OrientationGuard from '../ui/OrientationGuard';
 import UserMenuFab from '../layout/UserMenuFab';
+import type { Room, RoomInfo } from '../../types';
+import { RoomStatus as RoomStatusEnum } from '../../types';
 
 const RoomLobby: React.FC = () => {
   const { user } = useAuthStore();
@@ -36,6 +40,7 @@ const RoomLobby: React.FC = () => {
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
   const [isCheckingRoom, setIsCheckingRoom] = useState(false);
   const [isQuickStarting, setIsQuickStarting] = useState(false);
+  const [activeRoom, setActiveRoom] = useState<Room | null>(null);
 
   // Check if user is already in a room
   const checkUserRoom = async () => {
@@ -49,17 +54,17 @@ const RoomLobby: React.FC = () => {
     try {
       const response = await apiClient.getMyRoom();
       if (response.success && response.data) {
-        // User is already in a room, auto-redirect
-        // Set current room before navigation to avoid blank page
-        setCurrentRoom(response.data);
-        navigate(`/game/${response.data.id}`, { replace: true });
-        return;
+        // User is in a room - set activeRoom instead of auto-navigating
+        setActiveRoom(response.data);
+      } else {
+        setActiveRoom(null);
       }
     } catch (err: any) {
       // 404 means user is not in any room, which is normal
       if (err.status !== 404) {
         console.error('Failed to check user room:', err);
       }
+      setActiveRoom(null);
     } finally {
       setIsCheckingRoom(false);
     }
@@ -99,6 +104,10 @@ const RoomLobby: React.FC = () => {
   const handleCreateRoom = async () => {
     if (!user) return;
 
+    // Reset game state before entering new room
+    useGameStore.getState().reset();
+    useTributeStore.getState().reset();
+
     try {
       const response = await apiClient.createRoom();
       if (response.success && response.data) {
@@ -120,6 +129,10 @@ const RoomLobby: React.FC = () => {
   const handleJoinRoom = async (roomId: string) => {
     if (!user) return;
 
+    // Reset game state before entering new room
+    useGameStore.getState().reset();
+    useTributeStore.getState().reset();
+
     try {
       const response = await apiClient.joinRoom(roomId);
       if (response.success && response.data) {
@@ -136,9 +149,29 @@ const RoomLobby: React.FC = () => {
     }
   };
 
+  // Handle returning to a room (for users already in the room)
+  const handleReturnToRoom = (room: RoomInfo) => {
+    if (!user) return;
+
+    // For Playing rooms, navigate directly without calling JoinRoom API
+    // The player is still in the room (just in auto-play mode)
+    // GamePage will load the full room info via API
+    if (room.status === RoomStatusEnum.PLAYING) {
+      navigate(`/game/${room.id}`);
+      return;
+    }
+
+    // For non-Playing rooms, use normal join flow
+    handleJoinRoom(room.id);
+  };
+
   // Handle room join by code
   const handleJoinByCode = async (roomCode: string) => {
     if (!user) return;
+
+    // Reset game state before entering new room
+    useGameStore.getState().reset();
+    useTributeStore.getState().reset();
 
     const response = await apiClient.joinRoomByCode(roomCode);
     if (response.success && response.data) {
@@ -152,6 +185,10 @@ const RoomLobby: React.FC = () => {
   // Handle quick start
   const handleQuickStart = async () => {
     if (!user || isQuickStarting) return;
+
+    // Reset game state before entering new room
+    useGameStore.getState().reset();
+    useTributeStore.getState().reset();
 
     setIsQuickStarting(true);
     try {
@@ -175,13 +212,15 @@ const RoomLobby: React.FC = () => {
     checkUserRoom();
   }, [user]);
 
-  // Auto-refresh room list every 5 seconds
+  // Auto-refresh room list and active room status every 5 seconds
   useEffect(() => {
     if (user && !isCheckingRoom) {
       loadRoomList();
       
       const interval = setInterval(() => {
         loadRoomList(currentPage, true);
+        // Also refresh active room status
+        checkUserRoom();
       }, 5000);
       
       setRefreshInterval(interval);
@@ -331,6 +370,42 @@ const RoomLobby: React.FC = () => {
           </div>
         )}
 
+        {/* 回到游戏中提示 */}
+        {activeRoom && activeRoom.status === RoomStatusEnum.PLAYING && (
+          <div className={cn(
+            "fixed top-16 left-1/2 -translate-x-1/2 z-40",
+            "px-4 py-3 rounded-xl",
+            "bg-gradient-to-r from-state-active/95 to-[hsl(158,55%,38%)]/95",
+            "backdrop-blur-sm",
+            "border border-white/20",
+            "shadow-lg",
+            "animate-in fade-in-0 slide-in-from-top-4 duration-normal",
+          )}>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-white">
+                <span className="text-lg">♠</span>
+                <p className="text-sm font-medium">你有一局游戏正在进行中</p>
+              </div>
+              <Button
+                intent="secondary"
+                size="sm"
+                className={cn(
+                  "bg-white/20 hover:bg-white/30",
+                  "border-white/30 text-white",
+                  "shadow-none",
+                )}
+                onClick={() => {
+                  setCurrentRoom(activeRoom);
+                  navigate(`/game/${activeRoom.id}`);
+                }}
+              >
+                回到游戏
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* 主内容区 */}
         <main className={cn(
           "absolute inset-0",
@@ -448,6 +523,7 @@ const RoomLobby: React.FC = () => {
                   limit={limit}
                   onPageChange={handlePageChange}
                   onJoinRoom={handleJoinRoom}
+                  onReturnToRoom={handleReturnToRoom}
                   currentUserId={user.id}
                 />
               </div>

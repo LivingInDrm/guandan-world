@@ -103,6 +103,11 @@ type ReconnectHandler interface {
 	HandlePlayerReconnect(roomID, playerID string) error
 }
 
+// DisconnectHandler defines the interface for handling player disconnection
+type DisconnectHandler interface {
+	HandlePlayerDisconnect(roomID, playerID string) error
+}
+
 // WSManager manages WebSocket connections and message routing
 type WSManager struct {
 	// Connection management
@@ -110,9 +115,10 @@ type WSManager struct {
 	rooms       map[string]map[string]*WSConnection // roomID -> playerID -> connection
 
 	// Services
-	authService      auth.AuthService
-	roomService      room.RoomService
-	reconnectHandler ReconnectHandler
+	authService       auth.AuthService
+	roomService       room.RoomService
+	reconnectHandler  ReconnectHandler
+	disconnectHandler DisconnectHandler
 
 	// Channels for connection lifecycle
 	register   chan *WSConnection
@@ -198,6 +204,13 @@ func (m *WSManager) SetReconnectHandler(handler ReconnectHandler) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.reconnectHandler = handler
+}
+
+// SetDisconnectHandler sets the handler for player disconnection
+func (m *WSManager) SetDisconnectHandler(handler DisconnectHandler) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.disconnectHandler = handler
 }
 
 // handleSyncGameState handles client sync request for game state recovery.
@@ -500,6 +513,40 @@ func (m *WSManager) SendToPlayer(playerID string, message *WSMessage) error {
 	}
 }
 
+// SendToPlayerInRoom sends a message to a player only if they are in the specified room
+// This prevents cross-room message pollution when players quickly switch rooms
+func (m *WSManager) SendToPlayerInRoom(playerID, roomID string, message *WSMessage) error {
+	m.mu.RLock()
+	conn, exists := m.connections[playerID]
+	m.mu.RUnlock()
+
+	if !exists {
+		return fmt.Errorf("player %s not connected", playerID)
+	}
+
+	// Check if player's connection is in the expected room
+	conn.mu.RLock()
+	currentRoomID := conn.roomID
+	conn.mu.RUnlock()
+
+	if currentRoomID != roomID {
+		log.Printf("Skipping message to player %s: expected room %s but player is in room %s", playerID, roomID, currentRoomID)
+		return nil
+	}
+
+	messageData, err := json.Marshal(message)
+	if err != nil {
+		return fmt.Errorf("failed to marshal message: %w", err)
+	}
+
+	select {
+	case conn.send <- messageData:
+		return nil
+	default:
+		return fmt.Errorf("connection send channel full for player %s", playerID)
+	}
+}
+
 // GetRoomConnections returns the number of active connections in a room
 func (m *WSManager) GetRoomConnections(roomID string) int {
 	m.mu.RLock()
@@ -548,14 +595,40 @@ func (m *WSManager) AddPlayerToRoom(playerID, roomID string) {
 	m.rooms[roomID][playerID] = conn
 }
 
+// RemovePlayerFromRoom removes a player's WebSocket connection from their current room
+// The connection remains active but will no longer receive room broadcasts
+func (m *WSManager) RemovePlayerFromRoom(playerID string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	conn, exists := m.connections[playerID]
+	if !exists {
+		return
+	}
+
+	// Remove from current room
+	if conn.roomID != "" {
+		if roomConns, exists := m.rooms[conn.roomID]; exists {
+			delete(roomConns, playerID)
+			if len(roomConns) == 0 {
+				delete(m.rooms, conn.roomID)
+			}
+		}
+		conn.roomID = ""
+	}
+}
+
 // notifyPlayerDisconnected notifies about player disconnection
 func (m *WSManager) notifyPlayerDisconnected(playerID, roomID string) {
-	// This would typically trigger auto-play or other disconnection handling
-	// For now, we'll just log it
 	log.Printf("Player %s disconnected from room %s", playerID, roomID)
 
-	// TODO: Integrate with game service to handle player disconnection
-	// This should trigger the SDK's HandlePlayerDisconnect method
+	if m.disconnectHandler != nil {
+		go func() {
+			if err := m.disconnectHandler.HandlePlayerDisconnect(roomID, playerID); err != nil {
+				log.Printf("Failed to handle player disconnect for %s in room %s: %v", playerID, roomID, err)
+			}
+		}()
+	}
 }
 
 // handlePing handles ping messages for heartbeat

@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useRoomStore } from '../../store/roomStore';
 import { useGameStore } from '../../store/gameStore';
 import { useTributeStore } from '../../store/tributeStore';
 import { wsClient } from '../../services/websocket';
+import { gameService } from '../../services/gameService';
 import { apiClient } from '../../services/api';
 import type { WSMessage, GameActionData, TurnDeadlineData } from '../../types';
 import { WS_MESSAGE_TYPES, DealStatus } from '../../types';
@@ -25,6 +27,8 @@ import { useDealResultData, useMatchResultData } from '../../hooks/useResultData
 import { useTributeData } from '../../hooks/useTributeData';
 import { usePlayerViewData, usePlayerHandData } from '../../hooks/useGameData';
 import OrientationGuard from '../ui/OrientationGuard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/Dialog';
+import { Button } from '../ui/Button';
 
 // 游戏页面状态常量
 const GamePageState = {
@@ -66,10 +70,16 @@ const GamePage: React.FC = () => {
   const [canPlay, setCanPlay] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [turnDeadline, setTurnDeadline] = useState<{
     playerSeat: number;
     deadlineAtMs: number;
   } | null>(null);
+
+  // 确保 WebSocket 连接（从离开状态返回时重连）
+  useEffect(() => {
+    gameService.ensureConnected();
+  }, []);
 
   // 初始加载房间信息
   useEffect(() => {
@@ -105,8 +115,9 @@ const GamePage: React.FC = () => {
   }, [roomId, currentRoom, setCurrentRoom, setRoomError, setLoading, navigate, setCurrentPhase, currentPhase]);
 
   // WebSocket 事件监听
+  // 说明：事件处理器的注册不依赖连接状态，避免在连接切换或短暂断开时错过关键消息
   useEffect(() => {
-    if (!roomId || !isConnected) return;
+    if (!roomId) return;
 
     // 房间更新
     const handleRoomUpdate = (message: WSMessage) => {
@@ -150,7 +161,16 @@ const GamePage: React.FC = () => {
 
     // 游戏事件（仅日志，phase 由 PlayerView 驱动）
     const handleGameEvent = (message: WSMessage) => {
-      const event: GameEvent = message.data as GameEvent;
+      const data = message.data;
+
+      // 校验 room_id，若不匹配当前房间则忽略
+      if (data?.room_id && data.room_id !== roomId) {
+        console.log('[game_event] room_id mismatch, ignoring message from room', data.room_id);
+        return;
+      }
+
+      // 从新结构中获取 event，兼容旧结构
+      const event: GameEvent = data?.event || data;
       console.log('[game_event]', eventTypeToJSON(event.type), event);
 
       if (event.type === EventType.EVENT_TYPE_PLAYER_PLAYED && event.playerPlayed) {
@@ -184,6 +204,12 @@ const GamePage: React.FC = () => {
       const data = message.data;
       if (!data || !data.player_view) {
         console.warn('[player_view] no data, returning');
+        return;
+      }
+
+      // 校验 room_id，若不匹配当前房间则忽略
+      if (data.room_id && data.room_id !== roomId) {
+        console.log('[player_view] room_id mismatch, ignoring message from room', data.room_id);
         return;
       }
 
@@ -225,6 +251,13 @@ const GamePage: React.FC = () => {
 
     const handleGameAction = (message: WSMessage) => {
       console.log('[game_action]', message);
+
+      // 校验 room_id，若不匹配当前房间则忽略
+      if (message.data?.room_id && message.data.room_id !== roomId) {
+        console.log('[game_action] room_id mismatch, ignoring message from room', message.data.room_id);
+        return;
+      }
+
       const wrapper = message.data as { game_action?: GameActionData };
       const actionData = wrapper.game_action;
       if (!actionData) return;
@@ -236,6 +269,13 @@ const GamePage: React.FC = () => {
 
     const handleTurnDeadline = (message: WSMessage) => {
       console.log('[turn_deadline]', message);
+
+      // 校验 room_id，若不匹配当前房间则忽略
+      if (message.data?.room_id && message.data.room_id !== roomId) {
+        console.log('[turn_deadline] room_id mismatch, ignoring message from room', message.data.room_id);
+        return;
+      }
+
       const wrapper = message.data as { turn_deadline?: TurnDeadlineData };
       const data = wrapper.turn_deadline;
       if (!data) return;
@@ -248,6 +288,13 @@ const GamePage: React.FC = () => {
 
     const handleTributeView = (message: WSMessage) => {
       console.log('[tribute_view]', message.data);
+
+      // 校验 room_id，若不匹配当前房间则忽略
+      if (message.data?.room_id && message.data.room_id !== roomId) {
+        console.log('[tribute_view] room_id mismatch, ignoring message from room', message.data.room_id);
+        return;
+      }
+
       const tributeView = message.data?.tribute_view;
       if (tributeView) {
         useTributeStore.getState().setTributeView(tributeView);
@@ -277,7 +324,7 @@ const GamePage: React.FC = () => {
       wsClient.off(WS_MESSAGE_TYPES.TURN_DEADLINE, handleTurnDeadline);
       wsClient.off(WS_MESSAGE_TYPES.TRIBUTE_VIEW, handleTributeView);
     };
-  }, [roomId, isConnected, playerSeat, setCurrentPhase, setCountdown, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom, setMyFinishRank]);
+  }, [roomId, playerSeat, setCurrentPhase, setCountdown, setPlayerView, setPlayerSeat, setMyTurn, setCurrentRoom, setMyFinishRank]);
 
   // 连接成功后请求同步游戏状态（防抖 300ms，避免网络抖动时重复请求）
   useEffect(() => {
@@ -335,6 +382,12 @@ const GamePage: React.FC = () => {
     } finally {
       setIsLeaving(false);
     }
+  };
+
+  // 游戏中离开（进入托管模式）
+  const handleLeaveAndAutoPlay = () => {
+    wsClient.disconnect();
+    navigate('/lobby', { state: { shouldRefresh: true } });
   };
 
   // 出牌
@@ -486,6 +539,15 @@ const GamePage: React.FC = () => {
         {/* 用户菜单浮动按钮 */}
         <UserMenuFab />
 
+        {/* 离开按钮 - 左上角 */}
+        <button
+          onClick={() => setShowLeaveConfirm(true)}
+          className="absolute top-3 left-3 z-50 p-2 rounded-full bg-surface-base/80 backdrop-blur-sm border border-stroke/50 shadow-card-interactive hover:bg-surface-elevated transition-colors"
+          title="离开游戏"
+        >
+          <LogOut className="w-5 h-5 text-fg-secondary" />
+        </button>
+
         {/* 牌桌 - 占满屏幕 */}
         <div className="absolute inset-0 p-2">
           <GameBoard
@@ -587,6 +649,15 @@ const GamePage: React.FC = () => {
         return (
           <div className="fixed inset-0 z-40 overflow-hidden bg-gradient-to-br from-[hsl(40,8%,96%)] via-[hsl(38,6%,94%)] to-[hsl(35,8%,91%)]">
             <UserMenuFab />
+            
+            {/* 离开按钮 - 左上角 */}
+            <button
+              onClick={() => setShowLeaveConfirm(true)}
+              className="absolute top-3 left-3 z-50 p-2 rounded-full bg-surface-base/80 backdrop-blur-sm border border-stroke/50 shadow-card-interactive hover:bg-surface-elevated transition-colors"
+              title="离开游戏"
+            >
+              <LogOut className="w-5 h-5 text-fg-secondary" />
+            </button>
             <div className="absolute inset-0 p-2">
               <TributeBoard
                 tributeData={tributeData}
@@ -706,9 +777,37 @@ const GamePage: React.FC = () => {
       <div className="min-h-screen">
         {renderCurrentPhase()}
       </div>
+
+      {/* 离开确认对话框 */}
+      <Dialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>离开游戏</DialogTitle>
+            <DialogDescription>
+              离开后游戏将进入托管模式，系统会自动帮你出牌。你可以稍后返回继续游戏。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              intent="tertiary"
+              onClick={() => setShowLeaveConfirm(false)}
+            >
+              取消
+            </Button>
+            <Button
+              intent="danger"
+              onClick={() => {
+                setShowLeaveConfirm(false);
+                handleLeaveAndAutoPlay();
+              }}
+            >
+              确定离开
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </OrientationGuard>
   );
 };
 
 export default GamePage;
-

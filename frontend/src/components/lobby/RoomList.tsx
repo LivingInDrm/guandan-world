@@ -13,6 +13,7 @@ interface RoomListProps {
   limit: number;
   onPageChange: (page: number) => void;
   onJoinRoom: (roomId: string) => void;
+  onReturnToRoom: (room: RoomInfo) => void;
   currentUserId: string;
 }
 
@@ -89,6 +90,7 @@ const RoomList: React.FC<RoomListProps> = ({
   limit,
   onPageChange,
   onJoinRoom,
+  onReturnToRoom,
   currentUserId
 }) => {
   const sortedRooms = [...rooms].sort((a, b) => {
@@ -268,7 +270,7 @@ const RoomList: React.FC<RoomListProps> = ({
                         <Button
                           intent="neutral"
                           size="sm"
-                          onClick={() => onJoinRoom(room.id)}
+                          onClick={() => onReturnToRoom(room)}
                           className="border-state-active/50 text-state-active hover:bg-state-active/10 mobile-landscape:text-xs mobile-landscape:px-2 mobile-landscape:py-1"
                         >
                           返回

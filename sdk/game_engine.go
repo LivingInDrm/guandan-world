@@ -280,6 +280,12 @@ type GameEngineInterface interface {
 	//   - 可用于处理长时间未操作的玩家
 	SetPlayerAutoPlay(playerSeat int, enabled bool) error
 
+	// IsPlayerAutoPlay 检查玩家是否处于自动托管模式
+	IsPlayerAutoPlay(playerSeat int) bool
+
+	// IsPlayerOnline 检查玩家是否在线
+	IsPlayerOnline(playerSeat int) bool
+
 	// 新增状态查询接口
 
 	// GetCurrentDealStatus 获取当前牌局状态
@@ -827,6 +833,28 @@ func (ge *GameEngine) SetPlayerAutoPlay(playerSeat int, enabled bool) error {
 	return match.SetPlayerAutoPlay(playerSeat, enabled)
 }
 
+// IsPlayerAutoPlay checks if a player is in auto-play mode
+func (ge *GameEngine) IsPlayerAutoPlay(playerSeat int) bool {
+	ge.mutex.RLock()
+	defer ge.mutex.RUnlock()
+
+	if ge.currentMatch == nil {
+		return false
+	}
+	return ge.currentMatch.IsPlayerAutoPlay(playerSeat)
+}
+
+// IsPlayerOnline checks if a player is online
+func (ge *GameEngine) IsPlayerOnline(playerSeat int) bool {
+	ge.mutex.RLock()
+	defer ge.mutex.RUnlock()
+
+	if ge.currentMatch == nil {
+		return false
+	}
+	return ge.currentMatch.IsPlayerOnline(playerSeat)
+}
+
 // emitEventLocked is called when the caller already holds ge.mutex lock
 // It reads the observers without acquiring additional locks to avoid deadlock
 // Note: All calls to this method must be inside a ge.mutex.Lock() block
@@ -960,7 +988,7 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 		events = append(events, dealEndedEvent)
 		ge.dealEndedPayload = dealEndedEvent.GetDealEnded()
 
-		// Check if match is finished
+		// Check if match is finished normally
 		if matchFinished {
 			ge.status = GameStatusFinished
 
@@ -973,6 +1001,27 @@ func (ge *GameEngine) checkPostActionStateTransitions() []*GameEvent {
 				match.Winner, match.TeamLevels, durationMs, len(match.DealHistory))
 			events = append(events, matchEndedEvent)
 			ge.matchEndedPayload = matchEndedEvent.GetMatchEnded()
+		} else {
+			// Check if online player count is insufficient to continue
+			onlineCount := match.GetOnlinePlayerCount()
+			if onlineCount < 4 {
+				// Force end match due to insufficient players
+				match.ForceEndDueToInsufficientPlayers()
+				ge.status = GameStatusFinished
+
+				// Create match result
+				matchResult := ge.createMatchResult()
+
+				// Emit match ended event
+				durationMs := matchResult.Duration.Milliseconds()
+				matchEndedEvent := NewMatchEndedEvent(ge.eventMeta, match,
+					match.Winner, match.TeamLevels, durationMs, len(match.DealHistory))
+				events = append(events, matchEndedEvent)
+				ge.matchEndedPayload = matchEndedEvent.GetMatchEnded()
+
+				log.Info("match force ended due to insufficient online players",
+					"online_count", onlineCount, "winner", match.Winner)
+			}
 		}
 	} else if deal.CurrentTrick != nil && deal.CurrentTrick.Winner >= 0 {
 		// Check if current trick is finished (Winner >= 0 means trick has ended)

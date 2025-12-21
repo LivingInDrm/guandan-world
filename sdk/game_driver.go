@@ -541,38 +541,51 @@ func (gd *GameDriver) getTributeDelay(status TributeStatus) time.Duration {
 
 // getTributeInput 获取用户贡牌输入（选牌或还贡）
 func (gd *GameDriver) getTributeInput(action *TributeAction) (*Card, error) {
-	ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.TributeTimeout)
-	defer cancel()
-
 	var selectedCard *Card
-	var err error
 	var actionType string
 
 	switch action.Type {
 	case TributeActionSelect:
 		actionType = "tribute_select"
-		selectedCard, err = gd.inputProvider.RequestTributeSelection(ctx, action.PlayerID, action.Options)
 	case TributeActionReturn:
 		actionType = "return_tribute"
-		selectedCard, err = gd.inputProvider.RequestReturnTribute(ctx, action.PlayerID, action.Options)
 	default:
 		return nil, fmt.Errorf("unknown tribute action type: %v", action.Type)
+	}
+
+	// 检查玩家是否处于自动托管或离线状态，如果是则直接使用算法生成决策
+	if gd.engine.IsPlayerAutoPlay(action.PlayerID) || !gd.engine.IsPlayerOnline(action.PlayerID) {
+		selectedCard = gd.getDefaultTributeCard(action)
+		if selectedCard == nil {
+			return nil, fmt.Errorf("auto-play strategy returned nil and no valid card, player %d", action.PlayerID)
+		}
+		return selectedCard, nil
+	}
+
+	ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.TributeTimeout)
+	defer cancel()
+
+	var err error
+	switch action.Type {
+	case TributeActionSelect:
+		selectedCard, err = gd.inputProvider.RequestTributeSelection(ctx, action.PlayerID, action.Options)
+	case TributeActionReturn:
+		selectedCard, err = gd.inputProvider.RequestReturnTribute(ctx, action.PlayerID, action.Options)
 	}
 
 	ctxErr := ctx.Err()
 
 	if err != nil {
 		switch {
-		case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
+		case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
+			return nil, fmt.Errorf("game cancelled during %s for player %d", actionType, action.PlayerID)
+		default:
+			// 超时或其他错误（包括无连接），使用默认策略
 			gd.handleTimeout(action.PlayerID, actionType)
 			selectedCard = gd.getDefaultTributeCard(action)
 			if selectedCard == nil {
 				return nil, fmt.Errorf("timeout strategy returned nil and no valid card, player %d", action.PlayerID)
 			}
-		case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
-			return nil, fmt.Errorf("game cancelled during %s for player %d", actionType, action.PlayerID)
-		default:
-			return nil, fmt.Errorf("failed to get %s from player %d: %w", actionType, action.PlayerID, err)
 		}
 	}
 
@@ -684,30 +697,37 @@ func (gd *GameDriver) runTrick() error {
 			LeadComp: turnInfo.LeadComp,
 		}
 
-		// 请求玩家决策（带超时检测）
-		// 使用gameCancelCtx作为基础，这样游戏结束时会自动取消所有请求
-		ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.PlayDecisionTimeout)
-		decision, err := gd.inputProvider.RequestPlayDecision(ctx, currentPlayer, hand, trickInfo)
-		ctxErr := ctx.Err() // 在cancel()之前捕获上下文错误
-		cancel()
+		var decision *PlayDecision
+		var err error
 
-		// 处理超时情况
-		if err != nil {
-			switch {
-			case errors.Is(err, context.DeadlineExceeded) || ctxErr == context.DeadlineExceeded:
-				// 超时，使用默认策略生成决策
-				gd.handleTimeout(currentPlayer, "play_decision")
-				decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(hand, trickInfo)
-				if decision == nil {
-					// 如果策略返回nil，使用PASS作为后备
-					decision = &PlayDecision{Action: ActionPass}
+		// 检查玩家是否处于自动托管或离线状态，如果是则直接使用算法生成决策
+		if gd.engine.IsPlayerAutoPlay(currentPlayer) || !gd.engine.IsPlayerOnline(currentPlayer) {
+			decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(hand, trickInfo)
+			if decision == nil {
+				decision = &PlayDecision{Action: ActionPass}
+			}
+		} else {
+			// 请求玩家决策（带超时检测）
+			// 使用gameCancelCtx作为基础，这样游戏结束时会自动取消所有请求
+			ctx, cancel := context.WithTimeout(gd.gameCancelCtx, gd.config.PlayDecisionTimeout)
+			decision, err = gd.inputProvider.RequestPlayDecision(ctx, currentPlayer, hand, trickInfo)
+			ctxErr := ctx.Err() // 在cancel()之前捕获上下文错误
+			cancel()
+
+			// 处理超时或错误情况
+			if err != nil {
+				switch {
+				case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
+					// 游戏被取消（例如：游戏结束或用户中止）
+					return fmt.Errorf("game cancelled during play decision for player %d", currentPlayer)
+				default:
+					// 超时或其他错误（包括无连接），使用默认策略生成决策
+					gd.handleTimeout(currentPlayer, "play_decision")
+					decision = gd.config.TimeoutStrategy.GetDefaultPlayDecision(hand, trickInfo)
+					if decision == nil {
+						decision = &PlayDecision{Action: ActionPass}
+					}
 				}
-			case errors.Is(err, context.Canceled) || ctxErr == context.Canceled:
-				// 游戏被取消（例如：游戏结束或用户中止）
-				return fmt.Errorf("game cancelled during play decision for player %d", currentPlayer)
-			default:
-				// 其他错误
-				return fmt.Errorf("failed to get play decision from player %d: %w", currentPlayer, err)
 			}
 		}
 

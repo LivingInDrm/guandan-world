@@ -519,3 +519,50 @@ func (m *Match) String() string {
 func generateDealID() string {
 	return fmt.Sprintf("deal_%d", time.Now().UnixNano())
 }
+
+// GetTeamOnlineCount returns the number of online players for a team
+func (m *Match) GetTeamOnlineCount(team int) int {
+	count := 0
+	for seat, player := range m.Players {
+		if player != nil && player.Online && m.GetTeamForPlayer(seat) == team {
+			count++
+		}
+	}
+	return count
+}
+
+// ForceEndDueToInsufficientPlayers ends the match due to insufficient online players
+// Returns the winning team:
+//   - Team with higher level wins
+//   - If levels are equal, team with more online players wins
+//   - If both are equal, returns -1 (both teams lose)
+func (m *Match) ForceEndDueToInsufficientPlayers() int {
+	m.Status = MatchStatusFinished
+	now := time.Now()
+	m.EndTime = &now
+
+	// Compare team levels
+	if m.TeamLevels[0] > m.TeamLevels[1] {
+		m.Winner = 0
+		return 0
+	} else if m.TeamLevels[1] > m.TeamLevels[0] {
+		m.Winner = 1
+		return 1
+	}
+
+	// Levels are equal, compare online player count
+	team0Online := m.GetTeamOnlineCount(0)
+	team1Online := m.GetTeamOnlineCount(1)
+
+	if team0Online > team1Online {
+		m.Winner = 0
+		return 0
+	} else if team1Online > team0Online {
+		m.Winner = 1
+		return 1
+	}
+
+	// Both levels and online counts are equal - both teams lose
+	m.Winner = -1
+	return -1
+}

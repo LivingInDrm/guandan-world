@@ -19,6 +19,7 @@ import (
 // DriverServiceInterface defines the interface for game driver service
 type DriverServiceInterface interface {
 	StartGameWithDriver(roomID string, players []sdk.Player) error
+	HandlePlayerDisconnect(roomID, playerID string) error
 }
 
 // WSManagerInterface defines the interface for WebSocket manager
@@ -26,6 +27,7 @@ type WSManagerInterface interface {
 	BroadcastToRoom(roomID string, message *websocket.WSMessage)
 	SendToPlayer(playerID string, message *websocket.WSMessage) error
 	AddPlayerToRoom(playerID, roomID string)
+	RemovePlayerFromRoom(playerID string)
 }
 
 // RoomHandler handles room-related HTTP requests
@@ -451,7 +453,26 @@ func (h *RoomHandler) LeaveRoom(c *gin.Context) {
 		return
 	}
 
-	// Leave room
+	// Check room status before leaving
+	currentRoom, err := h.roomService.GetRoom(roomID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, ErrorResponse{
+			Error:   "room_not_found",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	isPlaying := currentRoom.Status == room.RoomStatusPlaying
+
+	// If game is PLAYING, notify the game engine to enable auto-play
+	if isPlaying {
+		if err := h.driverService.HandlePlayerDisconnect(roomID, userIDStr); err != nil {
+			log.Printf("Warning: failed to handle player disconnect in game engine: %v", err)
+		}
+	}
+
+	// Leave room (marks player offline if PLAYING, removes player otherwise)
 	updatedRoom, err := h.roomService.LeaveRoom(roomID, userIDStr)
 	if err != nil {
 		statusCode := http.StatusBadRequest
@@ -474,12 +495,22 @@ func (h *RoomHandler) LeaveRoom(c *gin.Context) {
 		return
 	}
 
-	// If room still exists, broadcast player left event via WebSocket
+	// Remove player's WebSocket connection from room only for non-Playing states
+	// Playing players keep WS connection to receive broadcasts when they return
+	if !isPlaying {
+		h.wsManager.RemovePlayerFromRoom(userIDStr)
+	}
+
+	// If room still exists, broadcast update via WebSocket
 	if updatedRoom != nil {
+		action := "player_left"
+		if isPlaying {
+			action = "player_autoplay"
+		}
 		h.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
 			Type: "room_update",
 			Data: map[string]interface{}{
-				"action":    "player_left",
+				"action":    action,
 				"room":      updatedRoom,
 				"player_id": userIDStr,
 			},

@@ -39,6 +39,7 @@ const defaultProps = {
   limit: 10,
   onPageChange: () => {},
   onJoinRoom: () => {},
+  onReturnToRoom: () => {},
   currentUserId: "current-user",
 };
 

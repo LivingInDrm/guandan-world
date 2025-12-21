@@ -48,6 +48,7 @@ const defaultProps = {
   limit: 12,
   onPageChange: vi.fn(),
   onJoinRoom: vi.fn(),
+  onReturnToRoom: vi.fn(),
   currentUserId: 'current-user'
 };
 

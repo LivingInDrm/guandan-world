@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"guandan-world/backend/room"
 	"guandan-world/backend/websocket"
 	actionpb "guandan-world/proto/action"
 	eventpb "guandan-world/proto/event"
@@ -72,6 +73,7 @@ func getRemainingTimeout(ctx context.Context) (int, bool) {
 type WSManagerInterface interface {
 	BroadcastToRoom(roomID string, message *websocket.WSMessage)
 	SendToPlayer(playerID string, message *websocket.WSMessage) error
+	SendToPlayerInRoom(playerID, roomID string, message *websocket.WSMessage) error
 }
 
 // DriverService provides complete game management using SDK's GameDriver
@@ -86,16 +88,20 @@ type DriverService struct {
 	// WebSocket manager for real-time communication
 	wsManager WSManagerInterface
 
+	// Room service for room state management
+	roomService room.RoomService
+
 	// Synchronization
 	mu sync.RWMutex
 }
 
 // NewDriverService creates a new game driver service
-func NewDriverService(wsManager WSManagerInterface) *DriverService {
+func NewDriverService(wsManager WSManagerInterface, roomService room.RoomService) *DriverService {
 	return &DriverService{
-		drivers:   make(map[string]*sdk.GameDriver),
-		providers: make(map[string]*RoomInputProvider),
-		wsManager: wsManager,
+		drivers:     make(map[string]*sdk.GameDriver),
+		providers:   make(map[string]*RoomInputProvider),
+		wsManager:   wsManager,
+		roomService: roomService,
 	}
 }
 
@@ -174,6 +180,40 @@ func (ds *DriverService) StartGameWithDriver(roomID string, players []sdk.Player
 
 		// Clean up after match
 		observer.Stop() // Stop event processing and handle remaining events
+
+		// Get online player IDs from the match result
+		var onlinePlayerIDs []string
+		engine := driver.GetEngine()
+		if engine != nil {
+			gameState := engine.GetGameState()
+			if gameState != nil && gameState.CurrentMatch != nil {
+				for _, player := range gameState.CurrentMatch.Players {
+					if player != nil && player.Online {
+						onlinePlayerIDs = append(onlinePlayerIDs, player.ID)
+					}
+				}
+			}
+		}
+
+		// Reset room to waiting state and remove offline players
+		updatedRoom, err := ds.roomService.EndMatchAndReset(roomID, onlinePlayerIDs)
+		if err != nil {
+			log.Printf("Failed to reset room %s after match: %v", roomID, err)
+		} else if updatedRoom != nil {
+			// Broadcast room state update to remaining players
+			ds.wsManager.BroadcastToRoom(roomID, &websocket.WSMessage{
+				Type: websocket.MSG_ROOM_UPDATE,
+				Data: map[string]interface{}{
+					"room":       updatedRoom,
+					"event_type": "match_ended",
+				},
+				Timestamp: time.Now(),
+			})
+			log.Printf("Room %s reset to waiting with %d players", roomID, updatedRoom.PlayerCount)
+		} else {
+			log.Printf("Room %s closed - no players remaining", roomID)
+		}
+
 		ds.mu.Lock()
 		delete(ds.drivers, roomID)
 		delete(ds.providers, roomID)
@@ -347,12 +387,13 @@ func (ds *DriverService) HandlePlayerReconnect(roomID, playerID string) error {
 					"player_view": playerViewJSON,
 					"event_type":  "reconnect",
 					"player_seat": playerSeat,
+					"room_id":     roomID,
 				},
 				Timestamp: time.Now(),
 				PlayerID:  playerID,
 			}
 
-			if err := ds.wsManager.SendToPlayer(playerID, wsMessage); err != nil {
+			if err := ds.wsManager.SendToPlayerInRoom(playerID, roomID, wsMessage); err != nil {
 				log.Printf("Failed to send player view on reconnect: %v", err)
 			}
 		}
@@ -368,12 +409,13 @@ func (ds *DriverService) HandlePlayerReconnect(roomID, playerID string) error {
 							"tribute_view": tributeViewJSON,
 							"event_type":   "reconnect",
 							"player_seat":  playerSeat,
+							"room_id":      roomID,
 						},
 						Timestamp: time.Now(),
 						PlayerID:  playerID,
 					}
 
-					if err := ds.wsManager.SendToPlayer(playerID, tributeMsg); err != nil {
+					if err := ds.wsManager.SendToPlayerInRoom(playerID, roomID, tributeMsg); err != nil {
 						log.Printf("Failed to send tribute view on reconnect: %v", err)
 					}
 				}
@@ -382,6 +424,58 @@ func (ds *DriverService) HandlePlayerReconnect(roomID, playerID string) error {
 	}
 
 	log.Printf("Player %s reconnected to room %s (seat %d)", playerID, roomID, playerSeat)
+	return nil
+}
+
+// HandlePlayerDisconnect handles player disconnection and enables auto-play
+func (ds *DriverService) HandlePlayerDisconnect(roomID, playerID string) error {
+	ds.mu.RLock()
+	driver, exists := ds.drivers[roomID]
+	ds.mu.RUnlock()
+
+	if !exists {
+		// No active game - this is normal for waiting rooms, not an error
+		return nil
+	}
+
+	engine := driver.GetEngine()
+	if engine == nil {
+		return fmt.Errorf("no game engine for room %s", roomID)
+	}
+
+	gameState := engine.GetGameState()
+	if gameState == nil || gameState.CurrentMatch == nil {
+		return fmt.Errorf("no active match for room %s", roomID)
+	}
+
+	playerSeat := -1
+	for seat, player := range gameState.CurrentMatch.Players {
+		if player != nil && player.ID == playerID {
+			playerSeat = seat
+			break
+		}
+	}
+
+	if playerSeat < 0 {
+		return fmt.Errorf("player %s not found in room %s", playerID, roomID)
+	}
+
+	// 1. Mark player as offline/autoplay (affects future requests)
+	_, err := engine.HandlePlayerDisconnect(playerSeat)
+	if err != nil {
+		log.Printf("Failed to handle player disconnect in SDK: %v", err)
+		return err
+	}
+
+	// 2. Cancel pending input requests to trigger immediate auto-play
+	ds.mu.RLock()
+	provider, providerExists := ds.providers[roomID]
+	ds.mu.RUnlock()
+	if providerExists {
+		provider.CancelPlayerRequest(playerSeat)
+	}
+
+	log.Printf("Player %s disconnected from room %s (seat %d), auto-play enabled", playerID, roomID, playerSeat)
 	return nil
 }
 
@@ -513,6 +607,7 @@ func (rip *RoomInputProvider) RequestPlayDecision(ctx context.Context, playerSea
 		Type:      websocket.MSG_GAME_ACTION,
 		Data:      map[string]interface{}{
 			"game_action": marshalProtoToRawJSON(gameAction, "GameAction"),
+			"room_id":     rip.roomID,
 		},
 		Timestamp: time.Now(),
 	}
@@ -533,6 +628,7 @@ func (rip *RoomInputProvider) RequestPlayDecision(ctx context.Context, playerSea
 			Type: websocket.MSG_TURN_DEADLINE,
 			Data: map[string]interface{}{
 				"turn_deadline": marshalProtoToRawJSON(turnDeadline, "TurnDeadline"),
+				"room_id":       rip.roomID,
 			},
 			Timestamp: time.Now(),
 		})
@@ -589,6 +685,7 @@ func (rip *RoomInputProvider) RequestTributeSelection(ctx context.Context, playe
 		Type:      websocket.MSG_GAME_ACTION,
 		Data:      map[string]interface{}{
 			"game_action": marshalProtoToRawJSON(gameAction, "GameAction"),
+			"room_id":     rip.roomID,
 		},
 		Timestamp: time.Now(),
 	}
@@ -608,6 +705,7 @@ func (rip *RoomInputProvider) RequestTributeSelection(ctx context.Context, playe
 			Type: websocket.MSG_TURN_DEADLINE,
 			Data: map[string]interface{}{
 				"turn_deadline": marshalProtoToRawJSON(turnDeadline, "TurnDeadline"),
+				"room_id":       rip.roomID,
 			},
 			Timestamp: time.Now(),
 		})
@@ -665,6 +763,7 @@ func (rip *RoomInputProvider) RequestReturnTribute(ctx context.Context, playerSe
 		Type:      websocket.MSG_GAME_ACTION,
 		Data:      map[string]interface{}{
 			"game_action": marshalProtoToRawJSON(gameAction, "GameAction"),
+			"room_id":     rip.roomID,
 		},
 		Timestamp: time.Now(),
 	}
@@ -684,6 +783,7 @@ func (rip *RoomInputProvider) RequestReturnTribute(ctx context.Context, playerSe
 			Type: websocket.MSG_TURN_DEADLINE,
 			Data: map[string]interface{}{
 				"turn_deadline": marshalProtoToRawJSON(turnDeadline, "TurnDeadline"),
+				"room_id":       rip.roomID,
 			},
 			Timestamp: time.Now(),
 		})
@@ -804,7 +904,31 @@ func (rip *RoomInputProvider) CancelAll() {
 	rip.seatToPlayerID = make(map[int]string)
 }
 
-// sendToPlayer sends a message to a specific player
+// CancelPlayerRequest cancels pending input requests for a specific player
+func (rip *RoomInputProvider) CancelPlayerRequest(playerSeat int) {
+	rip.mu.Lock()
+	defer rip.mu.Unlock()
+
+	// Cancel play decision request
+	if ch, exists := rip.playDecisions[playerSeat]; exists {
+		close(ch)
+		delete(rip.playDecisions, playerSeat)
+	}
+
+	// Cancel tribute selection request
+	if ch, exists := rip.tributeSelections[playerSeat]; exists {
+		close(ch)
+		delete(rip.tributeSelections, playerSeat)
+	}
+
+	// Cancel return tribute request
+	if ch, exists := rip.returnTributes[playerSeat]; exists {
+		close(ch)
+		delete(rip.returnTributes, playerSeat)
+	}
+}
+
+// sendToPlayer sends a message to a specific player in this room
 func (rip *RoomInputProvider) sendToPlayer(playerSeat int, message *websocket.WSMessage) error {
 	// Look up player ID from seat number
 	rip.mu.RLock()
@@ -815,8 +939,8 @@ func (rip *RoomInputProvider) sendToPlayer(playerSeat int, message *websocket.WS
 		return fmt.Errorf("player seat %d not found in room %s", playerSeat, rip.roomID)
 	}
 
-	// Send message to specific player
-	return rip.wsManager.SendToPlayer(playerID, message)
+	// Send message to specific player with room validation
+	return rip.wsManager.SendToPlayerInRoom(playerID, rip.roomID, message)
 }
 
 // WebSocketObserver implements sdk.EventObserver for WebSocket broadcasting
@@ -993,10 +1117,13 @@ func (wso *WebSocketObserver) handleEvent(event *sdk.GameEvent) {
 		return
 	}
 
-	// Send GameEvent directly without wrapping
+	// Send GameEvent with room_id for client validation
 	wsMessage := &websocket.WSMessage{
-		Type:      websocket.MSG_GAME_EVENT,
-		Data:      eventJSON, // Direct GameEvent JSON (flattened structure)
+		Type: websocket.MSG_GAME_EVENT,
+		Data: map[string]interface{}{
+			"event":   eventJSON,
+			"room_id": wso.roomID,
+		},
 		Timestamp: time.UnixMilli(event.CreatedAtMs),
 	}
 
@@ -1066,20 +1193,21 @@ func (wso *WebSocketObserver) sendPlayerViews(eventType eventpb.EventType) {
 				continue
 			}
 
-			// Create filtered player view message
+			// Create filtered player view message with room_id for client validation
 			wsMessage := &websocket.WSMessage{
 				Type: websocket.MSG_PLAYER_VIEW,
 				Data: map[string]interface{}{
 					"player_view": playerViewJSON,
 					"event_type":  eventType.String(),
 					"player_seat": playerSeat,
+					"room_id":     wso.roomID,
 				},
 				Timestamp: time.Now(),
 				PlayerID:  playerID,
 			}
 
-			// Send to specific player
-			if err := wso.wsManager.SendToPlayer(playerID, wsMessage); err != nil {
+			// Send to specific player with room validation
+			if err := wso.wsManager.SendToPlayerInRoom(playerID, wso.roomID, wsMessage); err != nil {
 				log.Printf("Failed to send player view to player %s: %v", playerID, err)
 			}
 
@@ -1098,12 +1226,13 @@ func (wso *WebSocketObserver) sendPlayerViews(eventType eventpb.EventType) {
 								"tribute_view": tributeViewJSON,
 								"event_type":   eventType.String(),
 								"player_seat":  playerSeat,
+								"room_id":      wso.roomID,
 							},
 							Timestamp: time.Now(),
 							PlayerID:  playerID,
 						}
 
-						if err := wso.wsManager.SendToPlayer(playerID, tributeMsg); err != nil {
+						if err := wso.wsManager.SendToPlayerInRoom(playerID, wso.roomID, tributeMsg); err != nil {
 							log.Printf("Failed to send tribute view to player %s: %v", playerID, err)
 						}
 					}

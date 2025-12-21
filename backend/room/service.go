@@ -92,6 +92,7 @@ type RoomService interface {
 	GetPlayerRoom(playerID string) (*Room, error)
 	RevertGameStart(roomID string) error
 	QuickJoin(playerID string) (*Room, error)
+	EndMatchAndReset(roomID string, onlinePlayerIDs []string) (*Room, error)
 }
 
 // roomService implements RoomService interface
@@ -254,6 +255,8 @@ func (s *roomService) JoinRoom(roomID, playerID string) (*Room, error) {
 }
 
 // LeaveRoom removes a player from a room
+// If the room is PLAYING, the player is marked as offline (托管) but keeps their seat
+// The game will continue with auto-play until the deal/match ends
 func (s *roomService) LeaveRoom(roomID, playerID string) (*Room, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -270,7 +273,7 @@ func (s *roomService) LeaveRoom(roomID, playerID string) (*Room, error) {
 		return nil, errors.New("player is not in this room")
 	}
 
-	// Find and remove player
+	// Find player seat
 	var playerSeat int = -1
 	for i := 0; i < 4; i++ {
 		if room.Players[i] != nil && room.Players[i].ID == playerID {
@@ -283,13 +286,19 @@ func (s *roomService) LeaveRoom(roomID, playerID string) (*Room, error) {
 		return nil, errors.New("player not found in room")
 	}
 
-	// Remove player
-	room.Players[playerSeat] = nil
-	room.PlayerCount--
 	room.UpdatedAt = time.Now()
 
-	// Remove player mapping
+	// If game is PLAYING, mark player as offline but keep seat for auto-play
+	// Keep playerRooms mapping so they can return to the game
+	if room.Status == RoomStatusPlaying {
+		room.Players[playerSeat].Online = false
+		return room, nil
+	}
+
+	// For non-PLAYING states, remove player from room completely
 	delete(s.playerRooms, playerID)
+	room.Players[playerSeat] = nil
+	room.PlayerCount--
 
 	// Handle owner leaving
 	if room.Owner == playerID {
@@ -311,21 +320,6 @@ func (s *roomService) LeaveRoom(roomID, playerID string) (*Room, error) {
 			delete(s.rooms, roomID)
 			return nil, nil // Room closed
 		}
-	}
-
-	// Check if game should end due to insufficient players
-	if room.Status == RoomStatusPlaying && room.PlayerCount < 4 {
-		// Game cannot continue with less than 4 players, close room
-		room.Status = RoomStatusClosed
-		// Remove all remaining player mappings
-		for i := 0; i < 4; i++ {
-			if room.Players[i] != nil {
-				delete(s.playerRooms, room.Players[i].ID)
-			}
-		}
-		delete(s.roomCodes, room.RoomCode)
-		delete(s.rooms, roomID)
-		return nil, nil // Room closed due to game ending
 	}
 
 	// Update room status
@@ -604,4 +598,68 @@ func (s *roomService) QuickJoin(playerID string) (*Room, error) {
 	}
 
 	return s.CreateRoom(playerID)
+}
+
+// EndMatchAndReset ends the match and resets room to waiting status
+// Removes offline players (those not in onlinePlayerIDs) from the room
+func (s *roomService) EndMatchAndReset(roomID string, onlinePlayerIDs []string) (*Room, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	room, exists := s.rooms[roomID]
+	if !exists {
+		return nil, errors.New("room not found")
+	}
+
+	// Build a set of online player IDs for quick lookup
+	onlineSet := make(map[string]bool)
+	for _, id := range onlinePlayerIDs {
+		onlineSet[id] = true
+	}
+
+	// Remove offline players and update online status
+	newPlayerCount := 0
+	var newOwner string
+	for i := 0; i < 4; i++ {
+		player := room.Players[i]
+		if player == nil {
+			continue
+		}
+
+		if !onlineSet[player.ID] {
+			// Player is offline, remove from room
+			delete(s.playerRooms, player.ID)
+			room.Players[i] = nil
+		} else {
+			// Player is online, reset their status
+			player.Online = true
+			newPlayerCount++
+			// Track potential new owner
+			if newOwner == "" {
+				newOwner = player.ID
+			}
+		}
+	}
+
+	room.PlayerCount = newPlayerCount
+	if newPlayerCount == 4 {
+		room.Status = RoomStatusReady
+	} else {
+		room.Status = RoomStatusWaiting
+	}
+	room.UpdatedAt = time.Now()
+
+	// Update owner if original owner was removed
+	if !onlineSet[room.Owner] && newOwner != "" {
+		room.Owner = newOwner
+	}
+
+	// If no players left, close the room
+	if newPlayerCount == 0 {
+		delete(s.roomCodes, room.RoomCode)
+		delete(s.rooms, roomID)
+		return nil, nil
+	}
+
+	return room, nil
 }

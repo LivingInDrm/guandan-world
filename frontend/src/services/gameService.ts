@@ -168,6 +168,8 @@ class GameService {
     try {
       await apiClient.leaveRoom(roomId);
       useRoomStore.getState().setCurrentRoom(null);
+      useGameStore.getState().reset();
+      useTributeStore.getState().reset();
     } catch (error) {
       console.error('Failed to leave room:', error);
     }
@@ -259,6 +261,13 @@ class GameService {
 
   get isAuthenticated(): boolean {
     return useAuthStore.getState().isAuthenticated;
+  }
+
+  ensureConnected(): void {
+    const { token } = useAuthStore.getState();
+    if (token && !wsClient.connected) {
+      wsClient.connect(token.access_token);
+    }
   }
 }
 
